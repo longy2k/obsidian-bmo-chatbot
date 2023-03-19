@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Obsidian Sample Plugin
 
 This is a sample plugin for Obsidian (https://obsidian.md).
@@ -94,3 +95,6 @@ If you have multiple URLs, you can also do:
 ## API Documentation
 
 See https://github.com/obsidianmd/obsidian-api
+=======
+# bmo-obsidian-gpt
+>>>>>>> origin/main
