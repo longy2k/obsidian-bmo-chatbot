@@ -67,6 +67,8 @@ export default class BMOGPT extends Plugin {
 	        return;
 	    }
 	    const editor = view.editor;
+			const filenameWithExtension = view.file.path.split('/').pop();
+    	const filename = filenameWithExtension.substring(0, filenameWithExtension.lastIndexOf('.'));
 
 	    try {
 	        const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -77,13 +79,16 @@ export default class BMOGPT extends Plugin {
 	            },
 	            body: JSON.stringify({
 	                model: 'gpt-3.5-turbo',
-	                messages: [{ role: 'user', content: editor.getValue() }],
+	                messages: [
+										{ role: 'system', content: "You will play the role of an AI-powered note optimization system. Imagine that you have been programmed to automatically analyze and optimize notes for maximum clarity and effectiveness. Your task is to thoroughly review the notes provided to you and make any necessary changes to improve their organization, structure, and coherence. Your role is not to provide guidance or suggestions, but to use your advanced analytical capabilities to enhance the notes to the best of your ability. As an AI system, you are not limited by personal biases or preferences and can optimize the notes objectively for the user's benefit."},
+										{ role: 'user', content: `${filename}\n\n${editor.getValue()}` }
+									],
 	            }),
 	        });
 
 	        const data = await response.json();
 					console.log(data); // Log the response data to the console
-					console.log(editor.getValue());
+					console.log(`${filename}\n\n${editor.getValue()}`);
 	        const message = data.choices[0].message.content;
 	        editor.replaceSelection(message);
 	    } catch (error) {
