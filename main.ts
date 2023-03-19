@@ -95,7 +95,7 @@ export default class BMOGPT extends Plugin {
 	        });
 
 	        const data = await response.json();
-					console.log(data); // Log the response data to the console
+					console.log(data);
 					console.log("Input: " + `\n${filename}\n\n${editor.getValue()}`);
 					console.log("System role: " + this.settings.system_role);
 	        const message = data.choices[0].message.content;
