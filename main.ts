@@ -5,15 +5,14 @@ import { Configuration, OpenAIApi } from "openai";
 
 interface BMOSettings {
 	apiKey: string;
-	temperature: number;
-	top_p: number;
-	n: number;
 	max_tokens: number;
-
+	temperature: number;
 }
 
 const DEFAULT_SETTINGS: BMOSettings = {
-	apiKey: ''
+	apiKey: '',
+	max_tokens: 4096,
+	temperature: 1,
 }
 
 export default class BMOGPT extends Plugin {
@@ -35,16 +34,16 @@ export default class BMOGPT extends Plugin {
 		});
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('bot', 'BMO GPT-3.5-Turbo', (evt: MouseEvent) => {
+		// const ribbonIconEl = this.addRibbonIcon('bot', 'BMO GPT-3.5-Turbo', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			new Notice('This is a notice! dasdasdas');
-		});
+		// 	new Notice('This is a notice! dasdasdas');
+		// });
 		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
+		// ribbonIconEl.addClass('my-plugin-ribbon-class');
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Tokens Used: 0');
+		// const statusBarItemEl = this.addStatusBarItem();
+		// statusBarItemEl.setText('Tokens Used: 0');
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new BMOSettingTab(this.app, this));
@@ -88,6 +87,8 @@ export default class BMOGPT extends Plugin {
 										{ role: 'system', content: "You will play the role of an AI-powered note optimization system. Imagine that you have been programmed to automatically analyze and optimize notes for maximum clarity and effectiveness. Your task is to thoroughly review the notes provided to you and make any necessary changes to improve their organization, structure, and coherence. Your role is not to provide guidance or suggestions, but to use your advanced analytical capabilities to enhance the notes to the best of your ability. As an AI system, you are not limited by personal biases or preferences and can optimize the notes objectively for the user's benefit. There is no need to explain the differences between the user's input and the assistant's output."},
 										{ role: 'user', content: `${filename}\n\n${editor.getValue()}` }
 									],
+									max_tokens: parseInt(this.settings.max_tokens),
+									temperature: parseInt(this.settings.temperature),
 	            }),
 	        });
 
@@ -128,6 +129,17 @@ class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('h2', {text: 'Settings for BMO-Obsdian-GPT'});
 
+		const textEl = containerEl.createEl("p", {
+		    text: "Check usage: ",
+		});
+
+		const linkEl = containerEl.createEl("a", {
+				text: "https://platform.openai.com/account/usage",
+				href: "https://platform.openai.com/account/usage",
+		});
+
+		textEl.appendChild(linkEl);
+
 		new Setting(containerEl)
 			.setName('OpenAI API Key')
 			.setDesc('Insert API Key from OpenAI')
@@ -138,5 +150,53 @@ class BMOSettingTab extends PluginSettingTab {
 					this.plugin.settings.apiKey = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName('Model')
+			.setDesc('Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will only be supported for a three month period ending on June 1st 2023. (Training Data: Up to Sep 2021)')
+			.addText(text => text
+				.setValue('gpt-3.5-turbo-0301')
+				.setDisabled(true)
+		);
+
+		new Setting(containerEl)
+			.setName('Max Tokens')
+			.setDesc(descLink('When you chat with an AI, this setting controls the maximum length of the response it can generate. The response is broken down into small units called "tokens," and the maximum number of these tokens is limited to a specific number. (Max Token: 4096)', 'https://platform.openai.com/tokenizer'))
+			.addText(text => text
+				.setPlaceholder('4096')
+				.setValue(this.plugin.settings.max_tokens)
+				.onChange(async (value) => {
+					this.plugin.settings.max_tokens = value;
+					await this.plugin.saveSettings();
+				})
+		);
+
+		new Setting(containerEl)
+			.setName('Temperature')
+			.setDesc('Temperature is a setting in AI language models that controls how predictable or random the generated text is. Lower values (closer to 0) produce more predictable text, while higher values (closer to 2) result in more creative and unpredictable outputs.')
+			.addText(text => text
+				.setPlaceholder('1')
+				.setValue(this.plugin.settings.temperature)
+				.onChange(async (value) => {
+					this.plugin.settings.temperature = value;
+					await this.plugin.saveSettings();
+				})
+		);
+
+		function descLink(text: string, link: string): DocumentFragment {
+				const frag = new DocumentFragment();
+				const desc = document.createElement('span');
+				desc.innerText = text + ' ';
+				frag.appendChild(desc);
+
+				const anchor = document.createElement('a');
+				anchor.href = link;
+				anchor.target = '_blank';
+				anchor.rel = 'noopener noreferrer';
+				anchor.innerText = 'https://platform.openai.com/tokenizer';
+				frag.appendChild(anchor);
+
+				return frag;
+		};
 	}
 }
