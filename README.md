@@ -1,0 +1,1 @@
+# bmo-obsidian-gpt
