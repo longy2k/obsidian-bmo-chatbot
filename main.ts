@@ -6,12 +6,14 @@ import { Configuration, OpenAIApi } from "openai";
 interface BMOSettings {
 	apiKey: string;
 	max_tokens: number;
+	system_role: string;
 	temperature: number;
 }
 
 const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
 	max_tokens: 4096,
+	system_role: 'You are a helpful assistant.',
 	temperature: 1,
 }
 
@@ -84,7 +86,7 @@ export default class BMOGPT extends Plugin {
 	            body: JSON.stringify({
 	                model: 'gpt-3.5-turbo',
 	                messages: [
-										{ role: 'system', content: "You will play the role of an AI-powered note optimization system. Imagine that you have been programmed to automatically analyze and optimize notes for maximum clarity and effectiveness. Your task is to thoroughly review the notes provided to you and make any necessary changes to improve their organization, structure, and coherence. Your role is not to provide guidance or suggestions, but to use your advanced analytical capabilities to enhance the notes to the best of your ability. As an AI system, you are not limited by personal biases or preferences and can optimize the notes objectively for the user's benefit. There is no need to explain the differences between the user's input and the assistant's output."},
+										{ role: 'system', content: this.settings.system_role},
 										{ role: 'user', content: `${filename}\n\n${editor.getValue()}` }
 									],
 									max_tokens: parseInt(this.settings.max_tokens),
@@ -94,7 +96,8 @@ export default class BMOGPT extends Plugin {
 
 	        const data = await response.json();
 					console.log(data); // Log the response data to the console
-					console.log(`${filename}\n\n${editor.getValue()}`);
+					console.log("Input: " + `\n${filename}\n\n${editor.getValue()}`);
+					console.log("System role: " + this.settings.system_role);
 	        const message = data.choices[0].message.content;
 	        editor.replaceSelection(message);
 	    } catch (error) {
@@ -157,6 +160,18 @@ class BMOSettingTab extends PluginSettingTab {
 			.addText(text => text
 				.setValue('gpt-3.5-turbo-0301')
 				.setDisabled(true)
+		);
+
+		new Setting(containerEl)
+			.setName('System')
+			.setDesc('System role prompt')
+			.addTextArea(text => text
+				.setPlaceholder('')
+				.setValue(this.plugin.settings.system_role)
+				.onChange(async (value) => {
+					this.plugin.settings.system_role = value;
+					await this.plugin.saveSettings();
+				})
 		);
 
 		new Setting(containerEl)
