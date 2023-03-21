@@ -38,7 +38,21 @@ export class BMOView extends ItemView {
         attr: {
             id: "modelName"
           }
-      });
+    });
+
+    bmoContainer.createEl("p", {
+        text: "",
+        attr: {
+            id: "userMessage"
+          }
+    });
+
+    bmoContainer.createEl("p", {
+        text: "",
+        attr: {
+            id: "bmoMessage"
+          }
+    });
 
     const chatbox = bmoContainer.createEl("textarea", {
         attr: {
@@ -54,17 +68,17 @@ export class BMOView extends ItemView {
         chatboxElement.style.height = `${chatboxElement.scrollHeight}px`;
       });
 
-      chatboxElement.addEventListener("keydown", (event) => {
+    chatboxElement.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
           const input = chatboxElement.value;
           window.postMessage({ type: "input", value: input });
-        }
-      });
-
-      chatboxElement.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          const input = chatboxElement.value;
-          window.postMessage({ type: "input", value: input });
+          const userMessage = document.querySelector("#userMessage");
+          const bmoMessage = document.querySelector("#bmoMessage");
+          if (userMessage) {
+            userMessage.textContent = input;
+            userMessage.style.display = "inline-block";
+          }
+          chatboxElement.value = "";
         }
       });
   }
@@ -78,7 +92,8 @@ export class BMOView extends ItemView {
     return chatboxElement.value;
   }
 
-  setMessageText(text: string) {
-    this.messageEl.setText(text);
-  }
+//   setMessageText(text: string) {
+//     this.messageEl.setText(text);
+//     console.log("Message:" + text);
+//   }
 }

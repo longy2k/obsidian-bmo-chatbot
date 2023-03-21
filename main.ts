@@ -97,34 +97,41 @@ export default class BMOGPT extends Plugin {
 	}
 
 	async BMOchatbot(input: string) {
+		if (!this.settings.apiKey) {
+	        new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
+	        return;
+	    }
+		console.log("BMO settings:", this.settings.system_role);
+		console.log("Max_Tokens test: " + this.settings.max_tokens);
 		try {
-		  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-			method: 'POST',
-			headers: {
-			  'Content-Type': 'application/json',
-			  'Authorization': `Bearer ${this.settings.apiKey}`
-			},
-			body: JSON.stringify({
-			  model: 'gpt-3.5-turbo',
-			  messages: [
-				{ role: 'system', content: this.settings.system_role },
-				{ role: 'user', content: input }
-			  ],
-			  max_tokens: parseInt(this.settings.max_tokens.toString()),
-			  temperature: parseInt(this.settings.temperature.toString()),
-			}),
-		  });
-	  
-		const data = await response.json();
-		const message = data.choices[0].message.content;
-		const leaf = this.app.workspace.getLeaf();
-		if (leaf && leaf.view instanceof BMOView) {
-			leaf.view.setMessageText(message);
-		}
-		} catch (error) {
-			new Notice('Error occurred while fetching completion: ' + error.message);
-		}
-	  }
+	        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+	            method: 'POST',
+	            headers: {
+	                'Content-Type': 'application/json',
+	                'Authorization': `Bearer ${this.settings.apiKey}`
+	            },
+	            body: JSON.stringify({
+	                model: 'gpt-3.5-turbo',
+	                messages: [
+										{ role: 'system', content: this.settings.system_role},
+										{ role: 'user', content: input }
+									],
+									max_tokens: parseInt(this.settings.max_tokens),
+									temperature: parseInt(this.settings.temperature),
+	            }),
+	        });
+
+	        const data = await response.json();
+			console.log(data);
+			console.log("System role: " + this.settings.system_role);
+	        const message = data.choices[0].message.content;
+	        const bmoMessageEl = document.getElementById("bmoMessage");
+			bmoMessageEl.textContent = message;
+			bmoMessageEl.style.display = "inline-block";
+	    } catch (error) {
+	        new Notice('Error occurred while fetching completion: ' + error.message);
+	    }
+	}
 
 	async handleChatbotCompletion() {
 	    if (!this.settings.apiKey) {
@@ -159,15 +166,15 @@ export default class BMOGPT extends Plugin {
 										{ role: 'system', content: this.settings.system_role},
 										{ role: 'user', content: `${filename}\n\n${editor.getValue()}` }
 									],
-									max_tokens: parseInt(this.settings.max_tokens.toString()),
-									temperature: parseInt(this.settings.temperature.toString()),
+									max_tokens: parseInt(this.settings.max_tokens),
+									temperature: parseInt(this.settings.temperature),
 	            }),
 	        });
 
 	        const data = await response.json();
-					console.log(data);
-					console.log("Input: " + `\n${filename}\n\n${editor.getValue()}`);
-					console.log("System role: " + this.settings.system_role);
+					// console.log(data);
+					// console.log("Input: " + `\n${filename}\n\n${editor.getValue()}`);
+					// console.log("System role: " + this.settings.system_role);
 	        const message = data.choices[0].message.content;
 	        editor.replaceSelection(message);
 	    } catch (error) {
@@ -261,9 +268,9 @@ class BMOSettingTab extends PluginSettingTab {
 			.setDesc(descLink('When you chat with an AI, this setting controls the maximum length of the response it can generate. The response is broken down into small units called "tokens," and the maximum number of these tokens is limited to a specific number. (Max Token: 4096)', 'https://platform.openai.com/tokenizer'))
 			.addText(text => text
 				.setPlaceholder('4096')
-				.setValue(this.plugin.settings.max_tokens.toString())
+				.setValue(this.plugin.settings.max_tokens)
 				.onChange(async (value) => {
-					this.plugin.settings.max_tokens = parseInt(value);
+					this.plugin.settings.max_tokens = value;
 					await this.plugin.saveSettings();
 				})
 		);
@@ -273,9 +280,9 @@ class BMOSettingTab extends PluginSettingTab {
 			.setDesc('Temperature is a setting in AI language models that controls how predictable or random the generated text is. Lower values (closer to 0) produce more predictable text, while higher values (closer to 2) result in more creative and unpredictable outputs.')
 			.addText(text => text
 				.setPlaceholder('1')
-				.setValue(this.plugin.settings.temperature.toString())
+				.setValue(this.plugin.settings.temperature)
 				.onChange(async (value) => {
-					this.plugin.settings.temperature = parseInt(value);
+					this.plugin.settings.temperature = value;
 					await this.plugin.saveSettings();
 				})
 		);
