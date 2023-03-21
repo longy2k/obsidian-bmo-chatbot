@@ -27,10 +27,24 @@ export default class BMOGPT extends Plugin {
 			(leaf) => new BMOView(leaf)
 		  );
 
+		  this.addRibbonIcon("BMO", "BMO", async () => {
+			const leaf = this.app.workspace.getLeaf();
+			if (leaf) {
+			  new BMOView(leaf);
+			}
+		  });
+
 		this.addRibbonIcon("dice", "Activate view", () => {
 		    this.activateView();
 		});
 		await this.loadSettings();
+
+		window.addEventListener("message", (event) => {
+			const { type, value } = event.data;
+			if (type === "input") {
+			  this.BMOchatbot(value);
+			}
+		  });
 
 		const configuration = new Configuration({
 			apiKey: this.settings.apiKey,
@@ -82,9 +96,35 @@ export default class BMOGPT extends Plugin {
 		);
 	}
 
-	async BMOchatbot() {
-		//...
-	}
+	async BMOchatbot(input: string) {
+		try {
+		  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+			method: 'POST',
+			headers: {
+			  'Content-Type': 'application/json',
+			  'Authorization': `Bearer ${this.settings.apiKey}`
+			},
+			body: JSON.stringify({
+			  model: 'gpt-3.5-turbo',
+			  messages: [
+				{ role: 'system', content: this.settings.system_role },
+				{ role: 'user', content: input }
+			  ],
+			  max_tokens: parseInt(this.settings.max_tokens.toString()),
+			  temperature: parseInt(this.settings.temperature.toString()),
+			}),
+		  });
+	  
+		const data = await response.json();
+		const message = data.choices[0].message.content;
+		const leaf = this.app.workspace.getLeaf();
+		if (leaf && leaf.view instanceof BMOView) {
+			leaf.view.setMessageText(message);
+		}
+		} catch (error) {
+			new Notice('Error occurred while fetching completion: ' + error.message);
+		}
+	  }
 
 	async handleChatbotCompletion() {
 	    if (!this.settings.apiKey) {

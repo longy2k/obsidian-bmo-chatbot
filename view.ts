@@ -3,26 +3,28 @@ import { ItemView, WorkspaceLeaf } from "obsidian";
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
 export class BMOView extends ItemView {
-  constructor(leaf: WorkspaceLeaf) {
-    super(leaf);
-  }
+    private messageEl: HTMLElement;
 
-  getViewType() {
-    return VIEW_TYPE_EXAMPLE;
-  }
+    constructor(leaf: WorkspaceLeaf) {
+        super(leaf);
+    }
 
-  getDisplayText() {
-    return "BMO";
-  }
+    getViewType() {
+        return VIEW_TYPE_EXAMPLE;
+    }
 
-  async onOpen() {
-    const container = this.containerEl.children[1];
-    container.empty();
-    const bmoContainer = container.createEl("div", {
-        attr: {
-          id: "bmoContainer",
-        }
-    });
+    getDisplayText() {
+        return "BMO";
+    }
+
+    async onOpen() {
+        const container = this.containerEl.children[1];
+        container.empty();
+        const bmoContainer = container.createEl("div", {
+            attr: {
+            id: "bmoContainer",
+            }
+        });
 
     bmoContainer.createEl("h1", { 
         text: "BMO",
@@ -47,13 +49,24 @@ export class BMOView extends ItemView {
 
     const chatboxElement = chatbox as HTMLTextAreaElement;
 
-    chatboxElement.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
+    chatboxElement.addEventListener("input", (event) => {
+        chatboxElement.style.height = "36px";
+        chatboxElement.style.height = `${chatboxElement.scrollHeight}px`;
+      });
+
+      chatboxElement.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
           const input = chatboxElement.value;
-          // Do something with the input
-          console.log("Input:", input);
-      }
-    });
+          window.postMessage({ type: "input", value: input });
+        }
+      });
+
+      chatboxElement.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          const input = chatboxElement.value;
+          window.postMessage({ type: "input", value: input });
+        }
+      });
   }
 
   async onClose() {
@@ -63,5 +76,9 @@ export class BMOView extends ItemView {
   getInputValue(): string {
     const chatboxElement = this.containerEl.querySelector("#chatbox") as HTMLTextAreaElement;
     return chatboxElement.value;
+  }
+
+  setMessageText(text: string) {
+    this.messageEl.setText(text);
   }
 }

@@ -51,3 +51,9 @@ If your plugin does not need CSS, delete this file.
     font-size: 16px;
 }
 
+#chatbox:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: black;
+  }
+
