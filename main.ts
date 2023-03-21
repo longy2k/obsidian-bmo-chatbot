@@ -22,6 +22,7 @@ export default class BMOGPT extends Plugin {
 	openai: OpenAIApi;
 
 	async onload() {
+		await this.loadSettings();
 		this.registerView(
 			VIEW_TYPE_EXAMPLE,
 			(leaf) => new BMOView(leaf)
@@ -37,7 +38,6 @@ export default class BMOGPT extends Plugin {
 		this.addRibbonIcon("dice", "Activate view", () => {
 		    this.activateView();
 		});
-		await this.loadSettings();
 
 		window.addEventListener("message", (event) => {
 			const { type, value } = event.data;
@@ -101,8 +101,11 @@ export default class BMOGPT extends Plugin {
 	        new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
 	        return;
 	    }
-		console.log("BMO settings:", this.settings.system_role);
+		console.log("BMO settings:", this.settings);
+		console.log("system_role:", this.settings.system_role);
 		try {
+			const maxTokens = parseInt(this.settings.max_tokens);
+			const temperature = parseInt(this.settings.temperature);
 	        const response = await fetch('https://api.openai.com/v1/chat/completions', {
 	            method: 'POST',
 	            headers: {
@@ -115,8 +118,8 @@ export default class BMOGPT extends Plugin {
 										{ role: 'system', content: this.settings.system_role},
 										{ role: 'user', content: input }
 									],
-									max_tokens: parseInt(this.settings.max_tokens),
-									temperature: parseInt(this.settings.temperature),
+									max_tokens: maxTokens,
+									temperature: temperature,
 	            }),
 	        });
 
@@ -124,8 +127,10 @@ export default class BMOGPT extends Plugin {
 			console.log(data);
 	        const message = data.choices[0].message.content;
 	        const bmoMessageEl = document.getElementById("bmoMessage");
-			bmoMessageEl.textContent = message;
-			bmoMessageEl.style.display = "inline-block";
+			if (bmoMessageEl.textContent !== message) {
+				bmoMessageEl.textContent = message;
+				bmoMessageEl.style.display = "inline-block";
+			  }
 	    } catch (error) {
 	        new Notice('Error occurred while fetching completion: ' + error.message);
 	    }
