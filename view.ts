@@ -69,18 +69,21 @@ export class BMOView extends ItemView {
       });
 
     chatboxElement.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          const input = chatboxElement.value;
-          window.postMessage({ type: "input", value: input });
-          const userMessage = document.querySelector("#userMessage");
-          const bmoMessage = document.querySelector("#bmoMessage");
-          if (userMessage) {
-            userMessage.textContent = input;
-            userMessage.style.display = "inline-block";
-          }
-          chatboxElement.value = "";
+    if (event.key === "Enter") {
+        const input = chatboxElement.value;
+        window.postMessage({ type: "input", value: input });
+        const userMessage = document.querySelector("#userMessage");
+        if (userMessage) {
+        userMessage.textContent = input;
+        userMessage.style.display = "inline-block";
         }
-      });
+        chatboxElement.value = "";
+        setTimeout(() => {
+            chatboxElement.style.height = "36px";
+            chatboxElement.setSelectionRange(0, 0);
+          }, 0);
+    }
+    });
   }
 
   async onClose() {

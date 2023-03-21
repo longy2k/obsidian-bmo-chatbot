@@ -102,7 +102,6 @@ export default class BMOGPT extends Plugin {
 	        return;
 	    }
 		console.log("BMO settings:", this.settings.system_role);
-		console.log("Max_Tokens test: " + this.settings.max_tokens);
 		try {
 	        const response = await fetch('https://api.openai.com/v1/chat/completions', {
 	            method: 'POST',
@@ -123,7 +122,6 @@ export default class BMOGPT extends Plugin {
 
 	        const data = await response.json();
 			console.log(data);
-			console.log("System role: " + this.settings.system_role);
 	        const message = data.choices[0].message.content;
 	        const bmoMessageEl = document.getElementById("bmoMessage");
 			bmoMessageEl.textContent = message;
@@ -172,9 +170,9 @@ export default class BMOGPT extends Plugin {
 	        });
 
 	        const data = await response.json();
-					// console.log(data);
-					// console.log("Input: " + `\n${filename}\n\n${editor.getValue()}`);
-					// console.log("System role: " + this.settings.system_role);
+			// console.log(data);
+			// console.log("Input: " + `\n${filename}\n\n${editor.getValue()}`);
+			// console.log("System role: " + this.settings.system_role);
 	        const message = data.choices[0].message.content;
 	        editor.replaceSelection(message);
 	    } catch (error) {
