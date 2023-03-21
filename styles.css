@@ -6,3 +6,48 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+#bmoContainer {
+    height: 100%;
+    max-height: 96%;
+    position: relative;
+    border-radius: 5px;
+    border: 2px solid black;
+}
+
+#bmoHeading {
+    color:  #498867;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 10px 0px 0px 0px;
+    font-size: 300%;
+}
+
+#modelName {
+    margin-top: 0;
+    text-align: center;
+    color:  #498867;
+    font-size: 16px;
+}
+
+#chatbox {
+    background-color: #498867;
+    width: 90%;
+    height: 36px;
+    min-height: 36px;
+    max-height: 15%;
+    resize: none;
+    position: absolute;
+    bottom: 20px;
+    left: 5%;
+    border: 2px solid black;
+    line-height: 1.5;
+    padding-top: 0.2em;
+    padding-bottom: 0.50em;
+}
+
+#chatbox input, textarea {
+    font-size: 16px;
+}
+

@@ -1,8 +1,8 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, ItemView } from 'obsidian';
 import { Configuration, OpenAIApi } from "openai";
+import { BMOView, VIEW_TYPE_EXAMPLE } from "./view";
 
 // Remember to rename these classes and interfaces!
-
 interface BMOSettings {
 	apiKey: string;
 	max_tokens: number;
@@ -22,6 +22,14 @@ export default class BMOGPT extends Plugin {
 	openai: OpenAIApi;
 
 	async onload() {
+		this.registerView(
+			VIEW_TYPE_EXAMPLE,
+			(leaf) => new BMOView(leaf)
+		  );
+
+		this.addRibbonIcon("dice", "Activate view", () => {
+		    this.activateView();
+		});
 		await this.loadSettings();
 
 		const configuration = new Configuration({
@@ -54,11 +62,28 @@ export default class BMOGPT extends Plugin {
 
 	async onunload() {
 		await this.loadSettings();
-
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE);
 		const configuration = new Configuration({
 			apiKey: this.settings.apiKey,
 		});
 		this.openai = new OpenAIApi(configuration);
+	}
+
+	async activateView() {
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE);
+	
+		await this.app.workspace.getRightLeaf(false).setViewState({
+		  type: VIEW_TYPE_EXAMPLE,
+		  active: true,
+		});
+	
+		this.app.workspace.revealLeaf(
+		  this.app.workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE)[0]
+		);
+	}
+
+	async BMOchatbot() {
+		//...
 	}
 
 	async handleChatbotCompletion() {
@@ -80,7 +105,6 @@ export default class BMOGPT extends Plugin {
 		}
 		console.log("view.file:", view.file);
 		console.log("view.file.path:", view.file.path);
-
 
 	    try {
 	        const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -138,16 +162,28 @@ class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('h2', {text: 'Settings for BMO-Obsdian-GPT'});
 
-		const textEl = containerEl.createEl("p", {
+		const usageText = containerEl.createEl("p", {
 		    text: "Check usage: ",
 		});
 
-		const linkEl = containerEl.createEl("a", {
+		const statusText = containerEl.createEl("p", {
+		    text: "Check status: ",
+		});
+		
+
+		const usageLink = containerEl.createEl("a", {
 				text: "https://platform.openai.com/account/usage",
 				href: "https://platform.openai.com/account/usage",
 		});
 
-		textEl.appendChild(linkEl);
+		const statusLink = containerEl.createEl("a", {
+			text: "https://status.openai.com/",
+			href: "https://status.openai.com/",
+	});
+
+
+	usageText.appendChild(usageLink);
+	statusText.appendChild(statusLink);
 
 		new Setting(containerEl)
 			.setName('OpenAI API Key')
@@ -221,3 +257,4 @@ class BMOSettingTab extends PluginSettingTab {
 		};
 	}
 }
+
