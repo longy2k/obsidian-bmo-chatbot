@@ -76,9 +76,14 @@ export class BMOView extends ItemView {
             this.BMOchatbot(input);
 
             // Create a new paragraph element for each message
-            const userMessage = document.createElement("p");
-            userMessage.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("userMessage");
             userMessage.style.display = "inline-block";
+
+            const userParagraph = document.createElement("p");
+            userParagraph.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
+
+            userMessage.appendChild(userParagraph);
             
             // Append the new message to the message container
             const messageContainer = document.querySelector("#messageContainer");
@@ -142,14 +147,16 @@ export class BMOView extends ItemView {
         // Append the bmoMessage element to the messageContainer div
         const messageContainerEl = document.getElementById("messageContainer");
         if (messageContainerEl) {
-        //   const botMessageEl = document.createElement("div");
-        //   botMessageEl.id = "bot";
-          const messageEl = document.createElement("p");
-          messageEl.style.display = "inline-block";
-          messageEl.textContent = message;
-        //   botMessageEl.appendChild(messageEl);
-          messageContainerEl.appendChild(messageEl);
-        }
+            const messageEl = document.createElement("div");
+            messageEl.classList.add("botMessage");
+            messageEl.style.display = "inline-block";
+            
+            const messageParagraph = document.createElement("p");
+            messageParagraph.textContent = message;
+            
+            messageEl.appendChild(messageParagraph);
+            messageContainerEl.appendChild(messageEl);
+          }
         
     
         } catch (error) {

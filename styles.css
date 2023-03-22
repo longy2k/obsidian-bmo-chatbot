@@ -13,7 +13,6 @@ If your plugin does not need CSS, delete this file.
     position: relative;
     border-radius: 5px;
     border: 1px solid gray;
-    padding: 0px 5px;
 }
 
 #bmoHeading {
@@ -33,8 +32,9 @@ If your plugin does not need CSS, delete this file.
 }
 
 #messageContainer {
-  height: 73%;
+  height: 72%;
   overflow-y: auto;
+  background-color: red;;
 }
 
 #messageContainer::-webkit-scrollbar {
@@ -51,7 +51,29 @@ If your plugin does not need CSS, delete this file.
   border-radius: 5px;
 }
 
-#messageContainer p{
+.userMessage {
+  margin: 0;
+  padding: 3px 5px;
+  background-color: blue;
+  width: 100%;
+}
+
+.userMessage p{
+  margin: 0;
+}
+
+.botMessage {
+  margin: 0;
+  padding: 3px 5px;
+  background-color: green;
+  width: 100%;
+}
+
+.botMessage p{
+  margin: 0;
+}
+
+/* #messageContainer p{
     display: none;
     float: right;
     background-color: #498867;
@@ -59,12 +81,12 @@ If your plugin does not need CSS, delete this file.
     padding: 5px 10px;
     max-width: 100%;
     margin: 0;
-}
+} */
 
-#bot {
+/* #botMessage {
   margin: 0;
-  background-color: #345e48;
-}
+  background-color: red;
+} */
   
   /* .bmoStyle {
     display: none;
