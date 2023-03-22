@@ -68,10 +68,10 @@ export class BMOView extends ItemView {
             userMessage.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
             userMessage.style.display = "inline-block";
 
-            console.log("sent");
             const inputReceivedEvent = new CustomEvent("inputReceived", { detail: { value: input } });
             window.dispatchEvent(inputReceivedEvent);
-    
+            console.log("SENT");
+            
             // Append the new message to the message container
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {

@@ -18,7 +18,7 @@ const DEFAULT_SETTINGS: BMOSettings = {
 }
 
 function handleInputReceived(event) {
-	console.log("inputReceived event received", event.detail.value);
+	console.log("RECEIVED", event.detail.value);
 	this.BMOchatbot(event.detail.value);
 }
 
@@ -33,12 +33,12 @@ export default class BMOGPT extends Plugin {
 			(leaf) => new BMOView(leaf)
 		  );
 
-		  this.addRibbonIcon("BMO", "BMO", async () => {
-			const leaf = this.app.workspace.getLeaf();
-			if (leaf) {
-			  new BMOView(leaf);
-			}
-		  });
+		//   this.addRibbonIcon("dice", "BMO", async () => {
+		// 	const leaf = this.app.workspace.getLeaf();
+		// 	if (leaf) {
+		// 	  new BMOView(leaf);
+		// 	}
+		//   });
 
 		this.addRibbonIcon("dice", "Activate view", () => {
 		    this.activateView();
@@ -49,16 +49,12 @@ export default class BMOGPT extends Plugin {
 		});
 		this.openai = new OpenAIApi(configuration);
 
-		this.addCommand({
-			id: "execute-note-prompt",
-			name: "Execute prompt (within current note)",
-			callback: this.handleChatbotCompletion.bind(this),
-		});
-
-		// window.addEventListener("inputReceived", (event) => {
-		//   console.log("inputReceived event received", event.detail.value);
-		//   this.BMOchatbot(event.detail.value);
+		// this.addCommand({
+		// 	id: "execute-note-prompt",
+		// 	name: "Execute prompt (within current note)",
+		// 	callback: this.handleChatbotCompletion.bind(this),
 		// });
+
 		window.addEventListener("inputReceived", handleInputReceived.bind(this));
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
@@ -72,6 +68,9 @@ export default class BMOGPT extends Plugin {
 			apiKey: this.settings.apiKey,
 		});
 		this.openai = new OpenAIApi(configuration);
+
+		const p = document.getElementById("messageContainer");
+		p.innerHTML = '';
 
 		window.removeEventListener("inputReceived", handleInputReceived.bind(this));
 	}
@@ -95,8 +94,9 @@ export default class BMOGPT extends Plugin {
 			return;
 		}
 	
-		// console.log("BMO settings:", this.settings);
+		console.log("BMO settings:", this.settings);
 		// console.log("system_role:", this.settings.system_role);
+		
 	
 		try {
 			const maxTokens = parseInt(this.settings.max_tokens);
@@ -128,11 +128,15 @@ export default class BMOGPT extends Plugin {
 			// bmoMessageEl.classList.add("bmoStyle");
 			const messageContainerEl = document.getElementById("messageContainer");
 			if (messageContainerEl) {
-				const bmoMessageEl = document.createElement("p");
-				bmoMessageEl.style.display = "inline-block";
-				bmoMessageEl.textContent = message;
-				messageContainerEl.appendChild(bmoMessageEl);
+			  const botMessageEl = document.createElement("div");
+			  botMessageEl.id = "bot";
+			  const messageEl = document.createElement("p");
+			  messageEl.style.display = "inline-block";
+			  messageEl.textContent = message;
+			  botMessageEl.appendChild(messageEl);
+			  messageContainerEl.appendChild(botMessageEl);
 			}
+			
 		
 			} catch (error) {
 				new Notice('Error occurred while fetching completion: ' + error.message);
@@ -140,56 +144,54 @@ export default class BMOGPT extends Plugin {
 	}
 	
 
-	async handleChatbotCompletion() {
-	    if (!this.settings.apiKey) {
-	        new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
-	        return;
-	    }
+	// async handleChatbotCompletion() {
+	//     if (!this.settings.apiKey) {
+	//         new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
+	//         return;
+	//     }
 
-	    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-	    if (!view) {
-	        new Notice("No active Markdown view found.");
-	        return;
-	    }
-	    const editor = view.editor;
-		const filenameWithExtension = view.file.path.split('/').pop();
-    	let filename;
-		if (filenameWithExtension) {
-			filename = filenameWithExtension.substring(0, filenameWithExtension.lastIndexOf('.'));
-		}
-		// console.log("view.file:", view.file);
-		// console.log("view.file.path:", view.file.path);
+	//     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+	//     if (!view) {
+	//         new Notice("No active Markdown view found.");
+	//         return;
+	//     }
+	//     const editor = view.editor;
+	// 	const filenameWithExtension = view.file.path.split('/').pop();
+    // 	let filename;
+	// 	if (filenameWithExtension) {
+	// 		filename = filenameWithExtension.substring(0, filenameWithExtension.lastIndexOf('.'));
+	// 	}
+	// 	console.log("view.file:", view.file);
+	// 	// console.log("view.file.path:", view.file.path);
 
-	    try {
-	        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-	            method: 'POST',
-	            headers: {
-	                'Content-Type': 'application/json',
-	                'Authorization': `Bearer ${this.settings.apiKey}`
-	            },
-	            body: JSON.stringify({
-	                model: 'gpt-3.5-turbo',
-	                messages: [
-										{ role: 'system', content: this.settings.system_role},
-										{ role: 'user', content: `${filename}\n\n${editor.getValue()}` }
-									],
-									max_tokens: parseInt(this.settings.max_tokens),
-									temperature: parseInt(this.settings.temperature),
-	            }),
-	        });
+	//     try {
+	//         const response = await fetch('https://api.openai.com/v1/chat/completions', {
+	//             method: 'POST',
+	//             headers: {
+	//                 'Content-Type': 'application/json',
+	//                 'Authorization': `Bearer ${this.settings.apiKey}`
+	//             },
+	//             body: JSON.stringify({
+	//                 model: 'gpt-3.5-turbo',
+	//                 messages: [
+	// 									{ role: 'system', content: this.settings.system_role},
+	// 									{ role: 'user', content: `${filename}\n\n${editor.getValue()}` }
+	// 								],
+	// 								max_tokens: parseInt(this.settings.max_tokens),
+	// 								temperature: parseInt(this.settings.temperature),
+	//             }),
+	//         });
 
-	        const data = await response.json();
-			// console.log(data);
-			// console.log("Input: " + `\n${filename}\n\n${editor.getValue()}`);
-			// console.log("System role: " + this.settings.system_role);
-	        const message = data.choices[0].message.content;
-	        editor.replaceSelection(message);
-	    } catch (error) {
-	        new Notice('Error occurred while fetching completion: ' + error.message);
-	    }
-	}
-
-
+	//         const data = await response.json();
+	// 		// console.log(data);
+	// 		// console.log("Input: " + `\n${filename}\n\n${editor.getValue()}`);
+	// 		// console.log("System role: " + this.settings.system_role);
+	//         const message = data.choices[0].message.content;
+	//         editor.replaceSelection(message);
+	//     } catch (error) {
+	//         new Notice('Error occurred while fetching completion: ' + error.message);
+	//     }
+	// }
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());

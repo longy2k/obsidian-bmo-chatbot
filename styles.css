@@ -32,16 +32,39 @@ If your plugin does not need CSS, delete this file.
     font-size: 16px;
 }
 
+#messageContainer {
+  height: 73%;
+  overflow-y: auto;
+}
+
+#messageContainer::-webkit-scrollbar {
+  width: 5px;
+}
+
+#messageContainer::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+#messageContainer::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
 #messageContainer p{
     display: none;
     float: right;
     background-color: #498867;
     color: white;
     padding: 5px 10px;
-    margin: 0px 5px;
-    border-radius: 20px;
-    max-width: 60%;
-  }
+    max-width: 100%;
+    margin: 0;
+}
+
+#bot {
+  margin: 0;
+  background-color: #345e48;
+}
   
   /* .bmoStyle {
     display: none;
