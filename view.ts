@@ -40,50 +40,53 @@ export class BMOView extends ItemView {
           }
     });
 
-    bmoContainer.createEl("p", {
-        text: "",
+    bmoContainer.createEl("div", {
         attr: {
-            id: "userMessage"
-          }
+            id: "messageContainer"
+        }
     });
-
-    bmoContainer.createEl("p", {
-        text: "",
-        attr: {
-            id: "bmoMessage"
-          }
-    });
-
+    
     const chatbox = bmoContainer.createEl("textarea", {
         attr: {
-          id: "chatbox",
-          placeholder: "Start typing...",
+            id: "chatbox",
+            placeholder: "Start typing...",
         }
     });
-
+    
     const chatboxElement = chatbox as HTMLTextAreaElement;
-
-    chatboxElement.addEventListener("keydown", (event) => {
+    
+    chatboxElement.addEventListener("keyup", (event) => {
         if (event.key === "Enter" && !event.shiftKey) {
-          const input = chatboxElement.value.trim();
-          if (input.length === 0) { // check if input is empty or just whitespace
             event.preventDefault(); // prevent submission
-            return;
-          }
-          window.postMessage({ type: "input", value: input });
-          const userMessage = document.querySelector("#userMessage");
-          if (userMessage) {
+            const input = chatboxElement.value.trim();
+            if (input.length === 0) { // check if input is empty or just whitespace
+                return;
+            }
+
+            // Create a new paragraph element for each message
+            const userMessage = document.createElement("p");
             userMessage.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
             userMessage.style.display = "inline-block";
-          }
-          chatboxElement.value = "";
-          setTimeout(() => {
-            chatboxElement.style.height = "36px";
-            chatboxElement.value = chatboxElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
-            chatboxElement.setSelectionRange(0, 0);
-          }, 0);
+
+            console.log("sent");
+            const inputReceivedEvent = new CustomEvent("inputReceived", { detail: { value: input } });
+            window.dispatchEvent(inputReceivedEvent);
+    
+            // Append the new message to the message container
+            const messageContainer = document.querySelector("#messageContainer");
+            if (messageContainer) {
+                messageContainer.appendChild(userMessage);
+            }
+    
+            chatboxElement.value = "";
+            setTimeout(() => {
+                chatboxElement.style.height = "36px";
+                chatboxElement.value = chatboxElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
+                chatboxElement.setSelectionRange(0, 0);
+            }, 0);
         }
-      });
+    });
+    
 
     chatboxElement.addEventListener("input", (event) => {
         chatboxElement.style.height = "36px";
@@ -95,10 +98,10 @@ export class BMOView extends ItemView {
     // Nothing to clean up.
   }
 
-  getInputValue(): string {
-    const chatboxElement = this.containerEl.querySelector("#chatbox") as HTMLTextAreaElement;
-    return chatboxElement.value;
-  }
+//   getInputValue(): string {
+//     const chatboxElement = this.containerEl.querySelector("#chatbox") as HTMLTextAreaElement;
+//     return chatboxElement.value;
+//   }
 
 //   setMessageText(text: string) {
 //     this.messageEl.setText(text);

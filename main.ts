@@ -39,13 +39,6 @@ export default class BMOGPT extends Plugin {
 		    this.activateView();
 		});
 
-		window.addEventListener("message", (event) => {
-			const { type, value } = event.data;
-			if (type === "input") {
-			  this.BMOchatbot(value);
-			}
-		  });
-
 		const configuration = new Configuration({
 			apiKey: this.settings.apiKey,
 		});
@@ -56,6 +49,18 @@ export default class BMOGPT extends Plugin {
 			name: "Execute prompt (within current note)",
 			callback: this.handleChatbotCompletion.bind(this),
 		});
+
+		// window.addEventListener("inputReceived", (event) => {
+		//   console.log("inputReceived event received", event.detail.value);
+		//   this.BMOchatbot(event.detail.value);
+		// });
+
+		window.addEventListener("inputReceived", (event) => {
+		//   console.log("inputReceived event received", event.detail.value);
+		  this.BMOchatbot(event.detail.value);
+		});
+
+
 
 		// This creates an icon in the left ribbon.
 		// const ribbonIconEl = this.addRibbonIcon('bot', 'BMO GPT-3.5-Turbo', (evt: MouseEvent) => {
@@ -75,12 +80,15 @@ export default class BMOGPT extends Plugin {
 	}
 
 	async onunload() {
-		await this.loadSettings();
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE);
 		const configuration = new Configuration({
 			apiKey: this.settings.apiKey,
 		});
 		this.openai = new OpenAIApi(configuration);
+		console.log("Unloading plugin...");
+		window.removeEventListener("inputReceived", (event) => {
+			this.BMOchatbot(event.detail.value);
+		});
 	}
 
 	async activateView() {
@@ -95,46 +103,57 @@ export default class BMOGPT extends Plugin {
 		  this.app.workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE)[0]
 		);
 	}
-
+	
 	async BMOchatbot(input: string) {
 		if (!this.settings.apiKey) {
-	        new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
-	        return;
-	    }
-		console.log("BMO settings:", this.settings);
-		console.log("system_role:", this.settings.system_role);
+			new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
+			return;
+		}
+	
+		// console.log("BMO settings:", this.settings);
+		// console.log("system_role:", this.settings.system_role);
+	
 		try {
 			const maxTokens = parseInt(this.settings.max_tokens);
 			const temperature = parseInt(this.settings.temperature);
-	        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-	            method: 'POST',
-	            headers: {
-	                'Content-Type': 'application/json',
-	                'Authorization': `Bearer ${this.settings.apiKey}`
-	            },
-	            body: JSON.stringify({
-	                model: 'gpt-3.5-turbo',
-	                messages: [
-										{ role: 'system', content: this.settings.system_role},
-										{ role: 'user', content: input }
-									],
-									max_tokens: maxTokens,
-									temperature: temperature,
-	            }),
-	        });
-
-	        const data = await response.json();
-			console.log(data);
-	        const message = data.choices[0].message.content;
-	        const bmoMessageEl = document.getElementById("bmoMessage");
-			if (bmoMessageEl.textContent !== message) {
-				bmoMessageEl.textContent = message;
+	
+			const response = await fetch('https://api.openai.com/v1/chat/completions', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${this.settings.apiKey}`
+				},
+				body: JSON.stringify({
+					model: 'gpt-3.5-turbo',
+					messages: [
+						{ role: 'system', content: this.settings.system_role },
+						{ role: 'user', content: input }
+					],
+					max_tokens: maxTokens,
+					temperature: temperature,
+				}),
+			});
+	
+			const data = await response.json();
+			// console.log(data);
+	
+			const message = data.choices[0].message.content;
+	
+			// Append the bmoMessage element to the messageContainer div
+			// bmoMessageEl.classList.add("bmoStyle");
+			const messageContainerEl = document.getElementById("messageContainer");
+			if (messageContainerEl) {
+				const bmoMessageEl = document.createElement("p");
 				bmoMessageEl.style.display = "inline-block";
-			  }
-	    } catch (error) {
-	        new Notice('Error occurred while fetching completion: ' + error.message);
-	    }
+				bmoMessageEl.textContent = message;
+				messageContainerEl.appendChild(bmoMessageEl);
+			}
+		
+			} catch (error) {
+				new Notice('Error occurred while fetching completion: ' + error.message);
+			}
 	}
+	
 
 	async handleChatbotCompletion() {
 	    if (!this.settings.apiKey) {
@@ -153,8 +172,8 @@ export default class BMOGPT extends Plugin {
 		if (filenameWithExtension) {
 			filename = filenameWithExtension.substring(0, filenameWithExtension.lastIndexOf('.'));
 		}
-		console.log("view.file:", view.file);
-		console.log("view.file.path:", view.file.path);
+		// console.log("view.file:", view.file);
+		// console.log("view.file.path:", view.file.path);
 
 	    try {
 	        const response = await fetch('https://api.openai.com/v1/chat/completions', {
