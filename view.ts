@@ -1,12 +1,22 @@
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, App } from "obsidian";
 
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
+
+interface BMOSettings {
+	apiKey: string;
+	max_tokens: number;
+	system_role: string;
+	temperature: number;
+}
+
 export class BMOView extends ItemView {
     private messageEl: HTMLElement;
+    private settings: BMOSettings;
 
-    constructor(leaf: WorkspaceLeaf) {
+    constructor(leaf: WorkspaceLeaf, settings: BMOSettings) {
         super(leaf);
+        this.settings = settings;
     }
 
     getViewType() {
@@ -63,14 +73,12 @@ export class BMOView extends ItemView {
                 return;
             }
 
+            this.BMOchatbot(input);
+
             // Create a new paragraph element for each message
             const userMessage = document.createElement("p");
             userMessage.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
             userMessage.style.display = "inline-block";
-
-            const inputReceivedEvent = new CustomEvent("inputReceived", { detail: { value: input } });
-            window.dispatchEvent(inputReceivedEvent);
-            console.log("SENT");
             
             // Append the new message to the message container
             const messageContainer = document.querySelector("#messageContainer");
@@ -94,17 +102,63 @@ export class BMOView extends ItemView {
       });
   }
 
+  async BMOchatbot(input: string) {
+    if (!this.settings.apiKey) {
+    	new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
+    	return;
+    }
+
+    console.log("BMO settings:", this.settings);
+    // console.log("system_role:", this.settings.system_role);
+    
+
+    try {
+    	const maxTokens = parseInt(this.settings.max_tokens);
+    	const temperature = parseInt(this.settings.temperature);
+
+    	const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    		method: 'POST',
+    		headers: {
+    			'Content-Type': 'application/json',
+    			'Authorization': `Bearer ${this.settings.apiKey}`
+    		},
+    		body: JSON.stringify({
+    			model: 'gpt-3.5-turbo',
+    			messages: [
+    				{ role: 'system', content: this.settings.system_role },
+    				{ role: 'user', content: input }
+    			],
+    			max_tokens: maxTokens,
+    			temperature: temperature,
+    		}),
+    	});
+
+        const data = await response.json();
+        // console.log(data);
+
+        const message = data.choices[0].message.content;
+        console.log(message);
+
+        // Append the bmoMessage element to the messageContainer div
+        const messageContainerEl = document.getElementById("messageContainer");
+        if (messageContainerEl) {
+        //   const botMessageEl = document.createElement("div");
+        //   botMessageEl.id = "bot";
+          const messageEl = document.createElement("p");
+          messageEl.style.display = "inline-block";
+          messageEl.textContent = message;
+        //   botMessageEl.appendChild(messageEl);
+          messageContainerEl.appendChild(messageEl);
+        }
+        
+    
+        } catch (error) {
+        	new Notice('Error occurred while fetching completion: ' + error.message);
+        }
+}
+
   async onClose() {
     // Nothing to clean up.
   }
 
-//   getInputValue(): string {
-//     const chatboxElement = this.containerEl.querySelector("#chatbox") as HTMLTextAreaElement;
-//     return chatboxElement.value;
-//   }
-
-//   setMessageText(text: string) {
-//     this.messageEl.setText(text);
-//     console.log("Message:" + text);
-//   }
 }
