@@ -17,6 +17,11 @@ const DEFAULT_SETTINGS: BMOSettings = {
 	temperature: 1,
 }
 
+function handleInputReceived(event) {
+	console.log("inputReceived event received", event.detail.value);
+	this.BMOchatbot(event.detail.value);
+}
+
 export default class BMOGPT extends Plugin {
 	settings: BMOSettings;
 	openai: OpenAIApi;
@@ -54,25 +59,7 @@ export default class BMOGPT extends Plugin {
 		//   console.log("inputReceived event received", event.detail.value);
 		//   this.BMOchatbot(event.detail.value);
 		// });
-
-		window.addEventListener("inputReceived", (event) => {
-		//   console.log("inputReceived event received", event.detail.value);
-		  this.BMOchatbot(event.detail.value);
-		});
-
-
-
-		// This creates an icon in the left ribbon.
-		// const ribbonIconEl = this.addRibbonIcon('bot', 'BMO GPT-3.5-Turbo', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-		// 	new Notice('This is a notice! dasdasdas');
-		// });
-		// Perform additional things with the ribbon
-		// ribbonIconEl.addClass('my-plugin-ribbon-class');
-
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		// const statusBarItemEl = this.addStatusBarItem();
-		// statusBarItemEl.setText('Tokens Used: 0');
+		window.addEventListener("inputReceived", handleInputReceived.bind(this));
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new BMOSettingTab(this.app, this));
@@ -85,10 +72,8 @@ export default class BMOGPT extends Plugin {
 			apiKey: this.settings.apiKey,
 		});
 		this.openai = new OpenAIApi(configuration);
-		console.log("Unloading plugin...");
-		window.removeEventListener("inputReceived", (event) => {
-			this.BMOchatbot(event.detail.value);
-		});
+
+		window.removeEventListener("inputReceived", handleInputReceived.bind(this));
 	}
 
 	async activateView() {
