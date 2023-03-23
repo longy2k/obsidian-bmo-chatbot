@@ -57,7 +57,7 @@ export class BMOView extends ItemView {
 
     bmoContainer.createEl("div", {
         attr: {
-            id: "messageContainer"
+            id: "messageContainer",
         }
     });
     
