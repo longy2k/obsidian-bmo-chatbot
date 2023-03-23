@@ -96,7 +96,7 @@ export class BMOView extends ItemView {
             }
 
             messageHistory += input + "\n";
-            this.BMOchatbot(input);
+            // this.BMOchatbot(input);
             console.log(messageHistory);
 
             // Create a new paragraph element for each message
@@ -135,6 +135,40 @@ export class BMOView extends ItemView {
                 loadingEl.style.display = "inline-block"; // set display style to "inline-block"
                 loadingEl.textContent = "..."; // set the text of the span element to "..."
                 botMessage.appendChild(loadingEl); // add loadingEl to botMessage
+
+                // Define a function to update the loading animation
+                const updateLoadingAnimation = () => {
+                    // Add a dot to the loading animation
+                    loadingEl.textContent += ".";
+                    // If the loading animation has reached three dots, reset it to one dot
+                    if (loadingEl.textContent.length > 3) {
+                        loadingEl.textContent = ".";
+                    }
+                };
+
+                // Call the updateLoadingAnimation function every 500 milliseconds
+                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+
+                // Call the chatbot function with the user's input
+                this.BMOchatbot(input)
+                    .then(response => {
+                        // Stop the loading animation and update the bot message with the response
+                        clearInterval(loadingAnimationIntervalId);
+                        
+                        // Scroll to the bottom of the message container
+                        messageContainer.scrollTo(0, document.body.scrollHeight);
+                    })
+                    .catch(error => {
+                        // Stop the loading animation and update the bot message with an error message
+                        clearInterval(loadingAnimationIntervalId);
+                        loadingEl.textContent = "";
+                        const botParagraph = document.createElement("p");
+                        botParagraph.innerText = "Oops, something went wrong. Please try again.";
+                        botMessage.appendChild(botParagraph);
+                        
+                        // Scroll to the bottom of the message container
+                        messageContainer.scrollTo(0, document.body.scrollHeight);
+                    });
             }
             
 
@@ -201,20 +235,18 @@ export class BMOView extends ItemView {
             const lastBotMessage = botMessages[botMessages.length - 1];
             const loadingEl = lastBotMessage.querySelector("#loading");
             
-            // if (loadingEl) {
-            //   lastBotMessage.removeChild(loadingEl); // Remove loading message
-            // }
+            if (loadingEl) {
+              lastBotMessage.removeChild(loadingEl); // Remove loading message
+            }
           
-            // const messageParagraph = document.createElement("p");
-            // messageParagraph.textContent = message;
+            const messageParagraph = document.createElement("p");
+            messageParagraph.textContent = message;
             
-            // lastBotMessage.appendChild(messageParagraph);
-          }
-        
-    
-        } catch (error) {
-        	new Notice('Error occurred while fetching completion: ' + error.message);
+            lastBotMessage.appendChild(messageParagraph);
         }
+    } catch (error) {
+        new Notice('Error occurred while fetching completion: ' + error.message);
+    }
 }
 
   async onClose() {
