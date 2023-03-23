@@ -77,6 +77,13 @@ export class BMOView extends ItemView {
             placeholder: "Start typing...",
         }
     });
+
+    const loadingEl = bmoContainer.createEl("div", {
+        attr: {
+            id: "loading",
+        },
+        text: "Loading..."
+    });
     
     const chatboxElement = chatbox as HTMLTextAreaElement;
     
@@ -111,6 +118,11 @@ export class BMOView extends ItemView {
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {
                 messageContainer.appendChild(userMessage);
+                // const loadingEl = document.createElement("div");
+                // loadingEl.classList.add("botMessage");
+                loadingEl.style.display = "inline-block";
+                // loadingEl.textContent = "Loading...";
+                messageContainer.appendChild(loadingEl);
             }
 
             messageContainer.scrollTo(0, document.body.scrollHeight);
@@ -167,15 +179,22 @@ export class BMOView extends ItemView {
         const message = data.choices[0].message.content;
         messageHistory += message + "\n";
 
+
         // Append the bmoMessage element to the messageContainer div
         const messageContainerEl = document.getElementById("messageContainer");
+        const loadingEl = document.getElementById("loading");
+
+        // Remove loading message
+        if (messageContainerEl) {
+            messageContainerEl.removeChild(loadingEl);
+        }
         if (messageContainerEl) {
             const messageEl = document.createElement("div");
             messageEl.classList.add("botMessage");
             messageEl.style.display = "inline-block";
             
             const botNameSpan = document.createElement("span"); // create span element
-            botNameSpan.innerText = "BMO";
+            botNameSpan.innerText = this.settings.botName || DEFAULT_SETTINGS.botName;
             botNameSpan.setAttribute("id", "botName"); // set the id of the span element
             messageEl.appendChild(botNameSpan);
             
