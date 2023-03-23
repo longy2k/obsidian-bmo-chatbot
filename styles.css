@@ -33,6 +33,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 #messageContainer {
+  position: relative;
   height: 81%;
   overflow-y: auto;
   user-select: text;
@@ -88,20 +89,22 @@ If your plugin does not need CSS, delete this file.
 
 
 #chatbox {
-    background-color: var(--interactive-accent); /* #498867; */
-    width: 93%;
-    margin-left: -6px;
-    height: 36px;
-    min-height: 36px;
-    max-height: 15%;
-    resize: none;
-    position: absolute;
-    bottom: 20px;
-    left: 5%;
-    border: 1px solid gray;
-    line-height: 1.5;
-    padding-top: 0.3em;
-    padding-bottom: 0.50em;
+  background-color: var(--interactive-accent); /* #498867; */
+  width: calc(100% - 10%);
+  /* changed the value of the left property to 50% */
+  left: 50%;
+  height: 36px;
+  min-height: 36px;
+  max-height: 15%;
+  resize: none;
+  position: absolute;
+  bottom: 20px;
+  /* changed the value of the transform property to translateX(-50%) */
+  transform: translateX(-50%);
+  border: 1px solid gray;
+  line-height: 1.5;
+  padding-top: 0.3em;
+  padding-bottom: 0.50em;
 }
 
 #chatbox input, textarea {

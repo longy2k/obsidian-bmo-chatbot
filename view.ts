@@ -172,12 +172,11 @@ export class BMOView extends ItemView {
                         messageContainer.scrollTo(0, document.body.scrollHeight);
                     });
             }
-            
 
             messageContainer.scrollTo(0, document.body.scrollHeight);
     
-            chatboxElement.value = "";
             setTimeout(() => {
+                chatboxElement.value = "";
                 chatboxElement.style.height = "36px";
                 chatboxElement.value = chatboxElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
                 chatboxElement.setSelectionRange(0, 0);
@@ -185,9 +184,16 @@ export class BMOView extends ItemView {
         }
     });
 
-    chatboxElement.addEventListener("input", (event) => {
-        chatboxElement.style.height = "36px";
-        chatboxElement.style.height = `${chatboxElement.scrollHeight}px`;
+    chatboxElement.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") { // check if enter key was pressed
+          event.preventDefault(); // prevent default behavior
+        }
+      });
+      
+      chatboxElement.addEventListener("input", (event) => {
+        if (event.target.value.slice(-1) !== "\n") { // check if enter key was not pressed
+          chatboxElement.style.height = `${chatboxElement.scrollHeight}px`;
+        }
       });
   }
 
