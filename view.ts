@@ -201,14 +201,14 @@ export class BMOView extends ItemView {
             const lastBotMessage = botMessages[botMessages.length - 1];
             const loadingEl = lastBotMessage.querySelector("#loading");
             
-            if (loadingEl) {
-              lastBotMessage.removeChild(loadingEl); // Remove loading message
-            }
+            // if (loadingEl) {
+            //   lastBotMessage.removeChild(loadingEl); // Remove loading message
+            // }
           
-            const messageParagraph = document.createElement("p");
-            messageParagraph.textContent = message;
+            // const messageParagraph = document.createElement("p");
+            // messageParagraph.textContent = message;
             
-            lastBotMessage.appendChild(messageParagraph);
+            // lastBotMessage.appendChild(messageParagraph);
           }
         
     
