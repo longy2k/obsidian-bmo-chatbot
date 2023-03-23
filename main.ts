@@ -33,16 +33,8 @@ export default class BMOGPT extends Plugin {
 			VIEW_TYPE_EXAMPLE,
 			(leaf) => new BMOView(leaf, this.settings)
 		);
-		
 
-		//   this.addRibbonIcon("dice", "BMO", async () => {
-		// 	const leaf = this.app.workspace.getLeaf();
-		// 	if (leaf) {
-		// 	  new BMOView(leaf);
-		// 	}
-		//   });
-
-		this.addRibbonIcon("dice", "Activate view", () => {
+		this.addRibbonIcon("bot", "Chatbot", () => {
 			console.log("Ribbon pressed!");
 			this.resetMessageHistory();
 		    this.activateView();

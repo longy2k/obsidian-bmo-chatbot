@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, App } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, View } from "obsidian";
 
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
@@ -31,6 +31,7 @@ export class BMOView extends ItemView {
     constructor(leaf: WorkspaceLeaf, settings: BMOSettings) {
         super(leaf);
         this.settings = settings;
+        this.icon = 'bot';
     }
 
     getViewType() {
@@ -38,7 +39,7 @@ export class BMOView extends ItemView {
     }
 
     getDisplayText() {
-        return "BMO";
+        return "Chatbot";
     }
 
     async onOpen() {
