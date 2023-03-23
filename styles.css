@@ -119,3 +119,13 @@ If your plugin does not need CSS, delete this file.
     border-color: gray;
   }
 
+#loading {
+  color: white;
+  background-color: gray;
+  padding: 0px 5px 12px 5px;
+  border-radius: 5px;
+  display: none;
+  line-height: 10px;
+  font-size: 25px;
+  font-weight: bolder;
+}

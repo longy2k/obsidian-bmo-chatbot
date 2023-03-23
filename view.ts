@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, App } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, View } from "obsidian";
 
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
@@ -31,6 +31,7 @@ export class BMOView extends ItemView {
     constructor(leaf: WorkspaceLeaf, settings: BMOSettings) {
         super(leaf);
         this.settings = settings;
+        this.icon = 'bot';
     }
 
     getViewType() {
@@ -38,7 +39,7 @@ export class BMOView extends ItemView {
     }
 
     getDisplayText() {
-        return "BMO";
+        return "Chatbot";
     }
 
     async onOpen() {
@@ -76,6 +77,13 @@ export class BMOView extends ItemView {
             placeholder: "Start typing...",
         }
     });
+
+    const loadingEl = bmoContainer.createEl("div", {
+        attr: {
+            id: "loading",
+        },
+        text: "..."
+    });
     
     const chatboxElement = chatbox as HTMLTextAreaElement;
     
@@ -88,7 +96,7 @@ export class BMOView extends ItemView {
             }
 
             messageHistory += input + "\n";
-            this.BMOchatbot(input);
+            // this.BMOchatbot(input);
             console.log(messageHistory);
 
             // Create a new paragraph element for each message
@@ -110,7 +118,59 @@ export class BMOView extends ItemView {
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {
                 messageContainer.appendChild(userMessage);
+            
+                const botMessage = document.createElement("div"); // create div element
+                botMessage.classList.add("botMessage"); // add class "botMessage" to the div element
+                botMessage.style.display = "inline-block"; // set display style to "inline-block"
+                messageContainer.appendChild(botMessage); // add botMessage to messageContainer
+            
+                const botNameSpan = document.createElement("span"); // create span element
+                botNameSpan.innerText = this.settings.botName || DEFAULT_SETTINGS.botName;
+                botNameSpan.setAttribute("id", "botName"); // set the id of the span element
+                botNameSpan.style.display = "block"; // set display style to "inline-block"
+                botMessage.appendChild(botNameSpan); // add botNameSpan to botMessage
+            
+                const loadingEl = document.createElement("span"); // create span element
+                loadingEl.setAttribute("id", "loading"); // set the id of the span element
+                loadingEl.style.display = "inline-block"; // set display style to "inline-block"
+                loadingEl.textContent = "..."; // set the text of the span element to "..."
+                botMessage.appendChild(loadingEl); // add loadingEl to botMessage
+
+                // Define a function to update the loading animation
+                const updateLoadingAnimation = () => {
+                    // Add a dot to the loading animation
+                    loadingEl.textContent += ".";
+                    // If the loading animation has reached three dots, reset it to one dot
+                    if (loadingEl.textContent.length > 3) {
+                        loadingEl.textContent = ".";
+                    }
+                };
+
+                // Call the updateLoadingAnimation function every 500 milliseconds
+                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+
+                // Call the chatbot function with the user's input
+                this.BMOchatbot(input)
+                    .then(response => {
+                        // Stop the loading animation and update the bot message with the response
+                        clearInterval(loadingAnimationIntervalId);
+                        
+                        // Scroll to the bottom of the message container
+                        messageContainer.scrollTo(0, document.body.scrollHeight);
+                    })
+                    .catch(error => {
+                        // Stop the loading animation and update the bot message with an error message
+                        clearInterval(loadingAnimationIntervalId);
+                        loadingEl.textContent = "";
+                        const botParagraph = document.createElement("p");
+                        botParagraph.innerText = "Oops, something went wrong. Please try again.";
+                        botMessage.appendChild(botParagraph);
+                        
+                        // Scroll to the bottom of the message container
+                        messageContainer.scrollTo(0, document.body.scrollHeight);
+                    });
             }
+            
 
             messageContainer.scrollTo(0, document.body.scrollHeight);
     
@@ -166,29 +226,27 @@ export class BMOView extends ItemView {
         const message = data.choices[0].message.content;
         messageHistory += message + "\n";
 
+
         // Append the bmoMessage element to the messageContainer div
         const messageContainerEl = document.getElementById("messageContainer");
+
         if (messageContainerEl) {
-            const messageEl = document.createElement("div");
-            messageEl.classList.add("botMessage");
-            messageEl.style.display = "inline-block";
+            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            const lastBotMessage = botMessages[botMessages.length - 1];
+            const loadingEl = lastBotMessage.querySelector("#loading");
             
-            const botNameSpan = document.createElement("span"); // create span element
-            botNameSpan.innerText = "BMO";
-            botNameSpan.setAttribute("id", "botName"); // set the id of the span element
-            messageEl.appendChild(botNameSpan);
-            
+            if (loadingEl) {
+              lastBotMessage.removeChild(loadingEl); // Remove loading message
+            }
+          
             const messageParagraph = document.createElement("p");
             messageParagraph.textContent = message;
             
-            messageEl.appendChild(messageParagraph);
-            messageContainerEl.appendChild(messageEl);
-          }
-        
-    
-        } catch (error) {
-        	new Notice('Error occurred while fetching completion: ' + error.message);
+            lastBotMessage.appendChild(messageParagraph);
         }
+    } catch (error) {
+        new Notice('Error occurred while fetching completion: ' + error.message);
+    }
 }
 
   async onClose() {
