@@ -13,6 +13,7 @@ If your plugin does not need CSS, delete this file.
     position: relative;
     border-radius: 5px;
     border: 1px solid gray;
+    word-break: break-word;
 }
 
 #bmoHeading {
