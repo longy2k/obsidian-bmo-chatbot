@@ -129,3 +129,15 @@ If your plugin does not need CSS, delete this file.
   font-size: 25px;
   font-weight: bolder;
 }
+
+table {
+  border: 1px solid gray;
+  border-collapse: collapse;
+  margin: 5px 0px;
+}
+
+th,
+td {
+  border: 1px solid gray;
+}
+

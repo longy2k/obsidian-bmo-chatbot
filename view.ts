@@ -1,4 +1,5 @@
 import { ItemView, WorkspaceLeaf, Notice, View } from "obsidian";
+import { marked } from "marked";
 
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
@@ -111,7 +112,8 @@ export class BMOView extends ItemView {
             
             const userParagraph = document.createElement("p");
             userParagraph.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
-            
+            userParagraph.innerHTML = marked(input);
+
             userMessage.appendChild(userParagraph);
 
             // Append the new message to the message container
@@ -239,6 +241,7 @@ export class BMOView extends ItemView {
           
             const messageParagraph = document.createElement("p");
             messageParagraph.textContent = message;
+            messageParagraph.innerHTML = marked(message);
             
             lastBotMessage.appendChild(messageParagraph);
         }
