@@ -82,7 +82,7 @@ export class BMOView extends ItemView {
         attr: {
             id: "loading",
         },
-        text: "Loading..."
+        text: "..."
     });
     
     const chatboxElement = chatbox as HTMLTextAreaElement;
@@ -118,12 +118,25 @@ export class BMOView extends ItemView {
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {
                 messageContainer.appendChild(userMessage);
-                // const loadingEl = document.createElement("div");
-                // loadingEl.classList.add("botMessage");
-                loadingEl.style.display = "inline-block";
-                // loadingEl.textContent = "Loading...";
-                messageContainer.appendChild(loadingEl);
+            
+                const botMessage = document.createElement("div"); // create div element
+                botMessage.classList.add("botMessage"); // add class "botMessage" to the div element
+                botMessage.style.display = "inline-block"; // set display style to "inline-block"
+                messageContainer.appendChild(botMessage); // add botMessage to messageContainer
+            
+                const botNameSpan = document.createElement("span"); // create span element
+                botNameSpan.innerText = this.settings.botName || DEFAULT_SETTINGS.botName;
+                botNameSpan.setAttribute("id", "botName"); // set the id of the span element
+                botNameSpan.style.display = "block"; // set display style to "inline-block"
+                botMessage.appendChild(botNameSpan); // add botNameSpan to botMessage
+            
+                const loadingEl = document.createElement("span"); // create span element
+                loadingEl.setAttribute("id", "loading"); // set the id of the span element
+                loadingEl.style.display = "inline-block"; // set display style to "inline-block"
+                loadingEl.textContent = "..."; // set the text of the span element to "..."
+                botMessage.appendChild(loadingEl); // add loadingEl to botMessage
             }
+            
 
             messageContainer.scrollTo(0, document.body.scrollHeight);
     
@@ -182,27 +195,20 @@ export class BMOView extends ItemView {
 
         // Append the bmoMessage element to the messageContainer div
         const messageContainerEl = document.getElementById("messageContainer");
-        const loadingEl = document.getElementById("loading");
 
-        // Remove loading message
         if (messageContainerEl) {
-            messageContainerEl.removeChild(loadingEl);
-        }
-        if (messageContainerEl) {
-            const messageEl = document.createElement("div");
-            messageEl.classList.add("botMessage");
-            messageEl.style.display = "inline-block";
+            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            const lastBotMessage = botMessages[botMessages.length - 1];
+            const loadingEl = lastBotMessage.querySelector("#loading");
             
-            const botNameSpan = document.createElement("span"); // create span element
-            botNameSpan.innerText = this.settings.botName || DEFAULT_SETTINGS.botName;
-            botNameSpan.setAttribute("id", "botName"); // set the id of the span element
-            messageEl.appendChild(botNameSpan);
-            
+            if (loadingEl) {
+              lastBotMessage.removeChild(loadingEl); // Remove loading message
+            }
+          
             const messageParagraph = document.createElement("p");
             messageParagraph.textContent = message;
             
-            messageEl.appendChild(messageParagraph);
-            messageContainerEl.appendChild(messageEl);
+            lastBotMessage.appendChild(messageParagraph);
           }
         
     
