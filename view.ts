@@ -80,22 +80,23 @@ export class BMOView extends ItemView {
             userMessage.classList.add("userMessage");
             userMessage.style.display = "inline-block";
             
-            const userName = document.createElement("p");
-            const userNameSpan = document.createElement("span"); // create span element
-            userNameSpan.innerText = "User"; // add text to span element
-            userName.appendChild(userNameSpan); // add span element to paragraph element
-            userMessage.appendChild(userName);
+            const userNameSpan = document.createElement("span"); 
+            userNameSpan.innerText = "USER"; 
+            userNameSpan.setAttribute("id", "userName"); 
+            userMessage.appendChild(userNameSpan);
             
             const userParagraph = document.createElement("p");
             userParagraph.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
             
             userMessage.appendChild(userParagraph);
-            
+
             // Append the new message to the message container
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {
                 messageContainer.appendChild(userMessage);
             }
+
+            messageContainer.scrollTo(0, document.body.scrollHeight);
     
             chatboxElement.value = "";
             setTimeout(() => {
@@ -105,7 +106,6 @@ export class BMOView extends ItemView {
             }, 0);
         }
     });
-    
 
     chatboxElement.addEventListener("input", (event) => {
         chatboxElement.style.height = "36px";
@@ -157,11 +157,10 @@ export class BMOView extends ItemView {
             messageEl.classList.add("botMessage");
             messageEl.style.display = "inline-block";
             
-            const botName = document.createElement("p");
             const botNameSpan = document.createElement("span"); // create span element
-            botNameSpan.innerText = "BMO"; // add text to span element
-            botName.appendChild(botNameSpan); // add span element to paragraph element
-            messageEl.appendChild(botName);
+            botNameSpan.innerText = "BMO";
+            botNameSpan.setAttribute("id", "botName"); // set the id of the span element
+            messageEl.appendChild(botNameSpan);
             
             const messageParagraph = document.createElement("p");
             messageParagraph.textContent = message;

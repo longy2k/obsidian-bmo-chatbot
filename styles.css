@@ -32,9 +32,9 @@ If your plugin does not need CSS, delete this file.
 }
 
 #messageContainer {
-  height: 72%;
+  height: 81%;
   overflow-y: auto;
-  background-color: red;;
+  /* background-color: red; */
 }
 
 #messageContainer::-webkit-scrollbar {
@@ -42,19 +42,24 @@ If your plugin does not need CSS, delete this file.
 }
 
 #messageContainer::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
   border-radius: 5px;
 }
 
 #messageContainer::-webkit-scrollbar-track {
-  background-color: rgba(0, 0, 0, 0.1);
   border-radius: 5px;
+}
+
+
+#userName {
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
 }
 
 .userMessage {
   margin: 0;
-  padding: 3px 5px;
-  background-color: blue;
+  padding: 10px;
+  background-color: #262d2d;
   width: 100%;
 }
 
@@ -62,10 +67,16 @@ If your plugin does not need CSS, delete this file.
   margin: 0;
 }
 
+#botName {
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
 .botMessage {
   margin: 0;
-  padding: 3px 5px;
-  background-color: green;
+  padding: 10px;
+  /* background-color: green; */
   width: 100%;
 }
 
@@ -103,7 +114,8 @@ If your plugin does not need CSS, delete this file.
 
 #chatbox {
     background-color: #498867;
-    width: 90%;
+    width: 93%;
+    margin-left: -6px;
     height: 36px;
     min-height: 36px;
     max-height: 15%;
