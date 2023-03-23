@@ -119,22 +119,22 @@ export class BMOView extends ItemView {
             if (messageContainer) {
                 messageContainer.appendChild(userMessage);
             
-                const botMessage = document.createElement("div"); // create div element
-                botMessage.classList.add("botMessage"); // add class "botMessage" to the div element
-                botMessage.style.display = "inline-block"; // set display style to "inline-block"
-                messageContainer.appendChild(botMessage); // add botMessage to messageContainer
+                const botMessage = document.createElement("div");
+                botMessage.classList.add("botMessage"); 
+                botMessage.style.display = "inline-block"; 
+                messageContainer.appendChild(botMessage);
             
-                const botNameSpan = document.createElement("span"); // create span element
+                const botNameSpan = document.createElement("span"); 
                 botNameSpan.innerText = this.settings.botName || DEFAULT_SETTINGS.botName;
-                botNameSpan.setAttribute("id", "botName"); // set the id of the span element
-                botNameSpan.style.display = "block"; // set display style to "inline-block"
-                botMessage.appendChild(botNameSpan); // add botNameSpan to botMessage
+                botNameSpan.setAttribute("id", "botName"); 
+                botNameSpan.style.display = "block"; 
+                botMessage.appendChild(botNameSpan); 
             
-                const loadingEl = document.createElement("span"); // create span element
-                loadingEl.setAttribute("id", "loading"); // set the id of the span element
-                loadingEl.style.display = "inline-block"; // set display style to "inline-block"
-                loadingEl.textContent = "..."; // set the text of the span element to "..."
-                botMessage.appendChild(loadingEl); // add loadingEl to botMessage
+                const loadingEl = document.createElement("span");
+                loadingEl.setAttribute("id", "loading"); 
+                loadingEl.style.display = "inline-block"; 
+                loadingEl.textContent = "..."; 
+                botMessage.appendChild(loadingEl);
 
                 // Define a function to update the loading animation
                 const updateLoadingAnimation = () => {
@@ -196,9 +196,7 @@ export class BMOView extends ItemView {
     }
 
     console.log("BMO settings:", this.settings);
-    // console.log("system_role:", this.settings.system_role);
     
-
     try {
     	const maxTokens = parseInt(this.settings.max_tokens);
     	const temperature = parseInt(this.settings.temperature);
