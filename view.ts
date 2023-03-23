@@ -13,6 +13,15 @@ interface BMOSettings {
 	max_tokens: number;
 	system_role: string;
 	temperature: number;
+    botName: string;
+}
+
+const DEFAULT_SETTINGS: BMOSettings = {
+	apiKey: '',
+	max_tokens: 4096,
+	system_role: 'You are a helpful assistant.',
+	temperature: 1,
+	botName: "BOT",
 }
 
 export class BMOView extends ItemView {
@@ -42,7 +51,7 @@ export class BMOView extends ItemView {
         });
 
     bmoContainer.createEl("h1", { 
-        text: "BMO",
+        text: this.settings.botName || DEFAULT_SETTINGS.botName,
         attr: {
           id: "bmoHeading"
         }
@@ -57,7 +66,7 @@ export class BMOView extends ItemView {
 
     bmoContainer.createEl("div", {
         attr: {
-            id: "messageContainer"
+            id: "messageContainer",
         }
     });
     

@@ -13,6 +13,7 @@ If your plugin does not need CSS, delete this file.
     position: relative;
     border-radius: 5px;
     border: 1px solid gray;
+    word-break: break-word;
 }
 
 #bmoHeading {
@@ -34,6 +35,7 @@ If your plugin does not need CSS, delete this file.
 #messageContainer {
   height: 81%;
   overflow-y: auto;
+  user-select: text;
   /* background-color: red; */
 }
 
@@ -84,33 +86,6 @@ If your plugin does not need CSS, delete this file.
   margin: 0;
 }
 
-/* #messageContainer p{
-    display: none;
-    float: right;
-    background-color: #498867;
-    color: white;
-    padding: 5px 10px;
-    max-width: 100%;
-    margin: 0;
-} */
-
-/* #botMessage {
-  margin: 0;
-  background-color: red;
-} */
-  
-  /* .bmoStyle {
-    display: none;
-    float: left;
-    background-color: #498867;
-    color: white;
-    padding: 5px 10px;
-    margin: 5px;
-    border-radius: 20px;
-    max-width: 60%;
-    clear: both;
-  } */
-
 
 #chatbox {
     background-color: var(--interactive-accent); /* #498867; */
@@ -134,7 +109,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 #chatbox::placeholder {
-    color: rgb(199, 199, 199);
+    color: white;
     font-weight: 500;
   }
 
