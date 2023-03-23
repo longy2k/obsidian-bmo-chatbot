@@ -4,6 +4,10 @@ export const VIEW_TYPE_EXAMPLE = "example-view";
 
 let messageHistory = "";
 
+export function setMessageHistory(newMessageHistory: string) {
+    messageHistory = newMessageHistory;
+}
+
 interface BMOSettings {
 	apiKey: string;
 	max_tokens: number;

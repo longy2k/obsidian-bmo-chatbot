@@ -1,6 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, ItemView } from 'obsidian';
 import { Configuration, OpenAIApi } from "openai";
-import { BMOView, VIEW_TYPE_EXAMPLE } from "./view";
+import { BMOView, VIEW_TYPE_EXAMPLE, setMessageHistory } from "./view";
 
 // Remember to rename these classes and interfaces!
 interface BMOSettings {
@@ -21,6 +21,10 @@ export default class BMOGPT extends Plugin {
 	settings: BMOSettings;
 	openai: OpenAIApi;
 
+	resetMessageHistory() {
+		setMessageHistory("");
+	  }
+
 	async onload() {
 		await this.loadSettings();
 		this.registerView(
@@ -37,6 +41,7 @@ export default class BMOGPT extends Plugin {
 
 		this.addRibbonIcon("dice", "Activate view", () => {
 			console.log("Ribbon pressed!");
+			this.resetMessageHistory();
 		    this.activateView();
 		});
 
