@@ -16,7 +16,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 #bmoHeading {
-    color:  #498867;
+    color:  var(--interactive-accent); /* #498867; */
     text-align: center;
     margin-top: 0;
     margin-bottom: 0;
@@ -27,7 +27,7 @@ If your plugin does not need CSS, delete this file.
 #modelName {
     margin-top: 0;
     text-align: center;
-    color:  #498867;
+    color: var(--interactive-accent); /* #498867; */
     font-size: 16px;
 }
 
@@ -110,10 +110,10 @@ If your plugin does not need CSS, delete this file.
     max-width: 60%;
     clear: both;
   } */
-  
+
 
 #chatbox {
-    background-color: #498867;
+    background-color: var(--interactive-accent); /* #498867; */
     width: 93%;
     margin-left: -6px;
     height: 36px;

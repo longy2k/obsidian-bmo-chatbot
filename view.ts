@@ -2,6 +2,7 @@ import { ItemView, WorkspaceLeaf, Notice, App } from "obsidian";
 
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
+let messageHistory = "";
 
 interface BMOSettings {
 	apiKey: string;
@@ -73,7 +74,9 @@ export class BMOView extends ItemView {
                 return;
             }
 
+            messageHistory += input + "\n";
             this.BMOchatbot(input);
+            console.log(messageHistory);
 
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
@@ -137,7 +140,7 @@ export class BMOView extends ItemView {
     			model: 'gpt-3.5-turbo',
     			messages: [
     				{ role: 'system', content: this.settings.system_role },
-    				{ role: 'user', content: input }
+    				{ role: 'user', content: messageHistory }
     			],
     			max_tokens: maxTokens,
     			temperature: temperature,
@@ -148,7 +151,7 @@ export class BMOView extends ItemView {
         // console.log(data);
 
         const message = data.choices[0].message.content;
-        console.log(message);
+        messageHistory += message + "\n";
 
         // Append the bmoMessage element to the messageContainer div
         const messageContainerEl = document.getElementById("messageContainer");
