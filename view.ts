@@ -79,10 +79,16 @@ export class BMOView extends ItemView {
             const userMessage = document.createElement("div");
             userMessage.classList.add("userMessage");
             userMessage.style.display = "inline-block";
-
+            
+            const userName = document.createElement("p");
+            const userNameSpan = document.createElement("span"); // create span element
+            userNameSpan.innerText = "User"; // add text to span element
+            userName.appendChild(userNameSpan); // add span element to paragraph element
+            userMessage.appendChild(userName);
+            
             const userParagraph = document.createElement("p");
             userParagraph.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
-
+            
             userMessage.appendChild(userParagraph);
             
             // Append the new message to the message container
@@ -150,6 +156,12 @@ export class BMOView extends ItemView {
             const messageEl = document.createElement("div");
             messageEl.classList.add("botMessage");
             messageEl.style.display = "inline-block";
+            
+            const botName = document.createElement("p");
+            const botNameSpan = document.createElement("span"); // create span element
+            botNameSpan.innerText = "BMO"; // add text to span element
+            botName.appendChild(botNameSpan); // add span element to paragraph element
+            messageEl.appendChild(botName);
             
             const messageParagraph = document.createElement("p");
             messageParagraph.textContent = message;
