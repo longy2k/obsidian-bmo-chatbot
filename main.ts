@@ -8,6 +8,7 @@ interface BMOSettings {
 	max_tokens: number;
 	system_role: string;
 	temperature: number;
+	botName: string;
 }
 
 const DEFAULT_SETTINGS: BMOSettings = {
@@ -15,6 +16,7 @@ const DEFAULT_SETTINGS: BMOSettings = {
 	max_tokens: 4096,
 	system_role: 'You are a helpful assistant.',
 	temperature: 1,
+	botName: "BOT",
 }
 
 export default class BMOGPT extends Plugin {
@@ -192,6 +194,22 @@ class BMOSettingTab extends PluginSettingTab {
 					this.plugin.settings.apiKey = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+		.setName('Bot Name')
+		.setDesc('Name your bot')
+		.addText(text => text
+			.setPlaceholder('Enter bot name')
+			.setValue(this.plugin.settings.botName || DEFAULT_SETTINGS.botName)
+			.onChange(async (value) => {
+				this.plugin.settings.botName = value || DEFAULT_SETTINGS.botName;
+				await this.plugin.saveSettings();
+				const bmoHeading = document.querySelector('#bmoHeading') as HTMLHeadingElement;
+				if (bmoHeading) {
+					bmoHeading.textContent = this.plugin.settings.botName;
+				}
+			})
+		);
 
 		new Setting(containerEl)
 			.setName('Model')
