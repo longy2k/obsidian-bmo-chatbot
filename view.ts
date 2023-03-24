@@ -89,7 +89,7 @@ export class BMOView extends ItemView {
     const chatboxElement = chatbox as HTMLTextAreaElement;
     
     chatboxElement.addEventListener("keyup", (event) => {
-        if (event.key === "Enter" && !event.shiftKey) {
+        if (!event.shiftKey && event.key === "Enter") {
             event.preventDefault(); // prevent submission
             const input = chatboxElement.value.trim();
             if (input.length === 0) { // check if input is empty or just whitespace
@@ -111,8 +111,8 @@ export class BMOView extends ItemView {
             userMessage.appendChild(userNameSpan);
             
             const userParagraph = document.createElement("p");
-            userParagraph.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
             userParagraph.innerHTML = marked(input);
+            userParagraph.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
 
             userMessage.appendChild(userParagraph);
 
@@ -172,6 +172,7 @@ export class BMOView extends ItemView {
                         messageContainer.scrollTo(0, document.body.scrollHeight);
                     });
             }
+            
 
             messageContainer.scrollTo(0, document.body.scrollHeight);
     
@@ -182,18 +183,17 @@ export class BMOView extends ItemView {
                 chatboxElement.setSelectionRange(0, 0);
             }, 0);
         }
+
     });
 
     chatboxElement.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") { // check if enter key was pressed
+        if (event.key === "Enter" && !event.shiftKey) { // check if enter key was pressed
           event.preventDefault(); // prevent default behavior
         }
       });
       
       chatboxElement.addEventListener("input", (event) => {
-        if (event.target.value.slice(-1) !== "\n") { // check if enter key was not pressed
-          chatboxElement.style.height = `${chatboxElement.scrollHeight}px`;
-        }
+        chatboxElement.style.height = `${chatboxElement.scrollHeight}px`;
       });
   }
 
