@@ -12,7 +12,7 @@ If your plugin does not need CSS, delete this file.
     max-height: 96%;
     position: relative;
     border-radius: 5px;
-    border: 1px solid gray;
+    border: 1px solid var(--background-modifier-border);
     word-break: break-word;
 }
 
