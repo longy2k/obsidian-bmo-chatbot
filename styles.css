@@ -8,12 +8,14 @@ If your plugin does not need CSS, delete this file.
 */
 
 #bmoContainer {
-    height: 100%;
-    max-height: 96%;
-    position: relative;
-    border-radius: 5px;
-    border: 1px solid var(--background-modifier-border);
-    word-break: break-word;
+  height: 100%;
+  max-height: 96%;
+  position: relative;
+  border-radius: 5px;
+  border: 1px solid var(--background-modifier-border);
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
 }
 
 #bmoHeading {
@@ -33,12 +35,13 @@ If your plugin does not need CSS, delete this file.
 }
 
 #messageContainer {
-  position: relative;
-  height: 81%;
+  flex-grow: 1;
   overflow-y: auto;
   user-select: text;
-  /* background-color: red; */
+  max-height: calc(100% - 180px); /* subtract the height of chatbox and 100px */
 }
+
+
 
 #messageContainer::-webkit-scrollbar {
   width: 5px;
@@ -126,7 +129,7 @@ If your plugin does not need CSS, delete this file.
 #chatbox::placeholder {
     color: white;
     font-weight: 500;
-  }
+}
 
 #chatbox:focus {
     outline: none;
