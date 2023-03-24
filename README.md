@@ -12,6 +12,9 @@ To get started, enable the plugin in your settings menu and add your OpenAPI key
 Once you've completed these steps, you'll be able to see the bot icon in your left sidebar, 
 which you can click on to access the bot panel and start interacting with it.
 
+## Important Note
+When you open the chatbot, clicking on the bot icon again will clear the history.
+
 ## Features
 - **Chat from any MD note:** Easily initiate a conversation from any Markdown note.
 - **Chatbot responds in Markdown:** Receive formatted responses in Markdown for consistency.
