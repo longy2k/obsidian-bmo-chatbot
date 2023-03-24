@@ -1,4 +1,4 @@
-# BMO-Obsidian-GPT
+# Obsidian Chatbot
 A work in progress Obsidian plugin that utilizes the Openai API "gpt-3.5-turbo" model.
 
 ![Screenshot-1](README_images/Screenshot-1.png)
