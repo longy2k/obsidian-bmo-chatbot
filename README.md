@@ -16,7 +16,7 @@ which you can click on to access the bot panel and start interacting with it.
 When you open the chatbot, clicking on the bot icon again will clear the history.
 
 ## Features
-- **Chat from any MD note:** Easily initiate a conversation from any Markdown note.
+- **Chat from anywhere in Obsidian:** Chat with your bot from anywhere in your vault.
 - **Chatbot responds in Markdown:** Receive formatted responses in Markdown for consistency.
 - **Customizable bot name:** Personalize the chatbot's name.
 - **System role prompt:** Configure the chatbot to prompt for user roles before responding to messages.
