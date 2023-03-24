@@ -2,7 +2,10 @@
 A work in progress Obsidian plugin that utilizes the Openai API "gpt-3.5-turbo" model.
 
 ![Screenshot-1](README_images/Screenshot-1.png)
-![Screenshot-2](README_images/Screenshot-2.png)
+<p align="center">
+  <img src="README_images/Screenshot-2.png" alt="Description of image">
+</p>
+
 
 ## Getting Started
 To get started, enable the plugin in your settings menu and add your OpenAPI key to the plugin. 
