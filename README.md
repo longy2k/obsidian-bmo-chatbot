@@ -1,6 +1,24 @@
 # BMO-Obsidian-GPT
 A work in progress Obsidian plugin that utilizes the Openai API "gpt-3.5-turbo" model.
 
-"BMO" is just a tag name for the project :)
+![Screenshot-1](README_images/Screenshot-1.png)
+![Screenshot-2](README_images/Screenshot-2.png)
 
-![Screenshot-1](Screenshot-1.png)
+## Getting Started
+To get started, enable the plugin in your settings menu and add your OpenAPI key to the plugin. 
+Once you've completed these steps, you'll be able to see the bot icon in your left sidebar, 
+which you can click on to access the bot panel and start interacting with it.
+
+## Features
+- **Chat from any MD note:** Easily initiate a conversation from any Markdown note.
+- **Chatbot responds in Markdown:** Receive formatted responses in Markdown for consistency.
+- **Customizable bot name:** Personalize the chatbot's name.
+- **System role prompt:** Configure the chatbot to prompt for user roles before responding to messages.
+- **Set Max Tokens and Temperature:** Customize the length and randomness of the chatbot's responses with Max Tokens and Temperature settings.
+- **System theme color accents:** Seamlessly matches the chatbot's interface with your system's color scheme.
+
+### Command Palette
+- **Execute Prompt (within current note):** Your entire note will be processed through the API and output right back into the note.
+
+## Contributing
+Feel free to improve the plugin!
