@@ -111,8 +111,13 @@ export default class BMOGPT extends Plugin {
 										{ role: 'system', content: this.settings.system_role},
 										{ role: 'user', content: `${filename}\n\n${editor.getValue()}` }
 									],
+<<<<<<< HEAD
 									max_tokens: parseInt(this.settings.max_tokens.toString()),
 									temperature: parseInt(this.settings.temperature.toString()),
+=======
+									max_tokens: this.settings.max_tokens,
+									temperature: this.settings.temperature,
+>>>>>>> fix_typescript
 	            }),
 	        });
 
@@ -227,7 +232,11 @@ class BMOSettingTab extends PluginSettingTab {
 			.setDesc(descLink('When you chat with an AI, this setting controls the maximum length of the response it can generate. The response is broken down into small units called "tokens," and the maximum number of these tokens is limited to a specific number. (Max Token: 4096)', 'https://platform.openai.com/tokenizer'))
 			.addText(text => text
 				.setPlaceholder('4096')
+<<<<<<< HEAD
 				.setValue(this.plugin.settings.max_tokens.toString())
+=======
+				.setValue(`${this.plugin.settings.max_tokens}`)
+>>>>>>> fix_typescript
 				.onChange(async (value) => {
 					this.plugin.settings.max_tokens = parseInt(value);
 					await this.plugin.saveSettings();
@@ -239,9 +248,15 @@ class BMOSettingTab extends PluginSettingTab {
 			.setDesc('Temperature is a setting in AI language models that controls how predictable or random the generated text is. Lower values (closer to 0) produce more predictable text, while higher values (closer to 2) result in more creative and unpredictable outputs.')
 			.addText(text => text
 				.setPlaceholder('1')
+<<<<<<< HEAD
 				.setValue(this.plugin.settings.temperature.toString())
 				.onChange(async (value) => {
 					this.plugin.settings.temperature = parseInt(value);
+=======
+				.setValue(`${this.plugin.settings.temperature}`)
+				.onChange(async (value) => {
+					this.plugin.settings.temperature = parseFloat(value);
+>>>>>>> fix_typescript
 					await this.plugin.saveSettings();
 				})
 		);
