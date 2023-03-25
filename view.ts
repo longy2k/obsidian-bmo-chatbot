@@ -239,11 +239,7 @@ export class BMOView extends ItemView {
     		}),
     	});
 
-        console.log('Messages:', JSON.stringify([{ role: 'system', content: this.settings.system_role }, { role: 'user', content: messageHistory }]));
-        console.log('Completion:', response);
-
         const data = await response.json();
-        console.log("BMO settings:", this.settings);
         console.log(data);
 
         const message = data.choices[0].message.content;
@@ -270,7 +266,10 @@ export class BMOView extends ItemView {
         }
     } catch (error) {
         new Notice('Error occurred while fetching completion: ' + error.message);
+        console.log(error.message);
+        console.log("messageHistory: " + messageHistory);
     }
+    console.log("BMO settings:", this.settings);
 }
 
   async onClose() {
