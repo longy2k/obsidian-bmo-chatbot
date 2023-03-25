@@ -235,7 +235,7 @@ export class BMOView extends ItemView {
     				{ role: 'user', content: messageHistory }
     			],
     			max_tokens: parseInt(maxTokens),
-    			temperature: parseInt(temperature),
+    			temperature: parseFloat(temperature),
     		}),
     	});
 
