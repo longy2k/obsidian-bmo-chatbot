@@ -15,6 +15,9 @@ which you can click on to access the bot panel and start interacting with it.
 ## Important Note
 When you open the chatbot, clicking on the bot icon again will clear the history.
 
+This plugin has not been submitted to the official community plugins yet.
+You need to type `npm install` and `npm run build` in the plugin's folder.
+
 ## Features
 - **Chat from anywhere in Obsidian:** Chat with your bot wherever you are!
 - **Chatbot responds in Markdown:** Receive formatted responses in Markdown for consistency.
