@@ -219,8 +219,8 @@ export class BMOView extends ItemView {
     }
     
     try {
-    	const maxTokens = parseInt(this.settings.max_tokens.toString());
-    	const temperature = parseInt(this.settings.temperature.toString());
+    	const maxTokens = this.settings.max_tokens.toString();
+    	const temperature = this.settings.temperature.toString();
 
     	const response = await fetch('https://api.openai.com/v1/chat/completions', {
     		method: 'POST',
@@ -234,8 +234,8 @@ export class BMOView extends ItemView {
     				{ role: 'system', content: this.settings.system_role },
     				{ role: 'user', content: messageHistory }
     			],
-    			max_tokens: maxTokens,
-    			temperature: temperature,
+    			max_tokens: parseInt(maxTokens),
+    			temperature: parseInt(temperature),
     		}),
     	});
 
