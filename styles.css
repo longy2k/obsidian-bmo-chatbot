@@ -56,18 +56,6 @@ If your plugin does not need CSS, delete this file.
   border-radius: 5px;
 }
 
-#messageContainer table {
-  border: 1px solid gray;
-  border-collapse: collapse;
-  margin: 5px 0px;
-}
-
-#messageContainer th, td {
-  border: 1px solid gray;
-}
-
-
-
 
 #userName {
   font-size: 12px;
@@ -97,6 +85,26 @@ If your plugin does not need CSS, delete this file.
   padding: 10px;
   /* background-color: green; */
   width: 100%;
+}
+
+/* TABLES */
+
+.userMessage table {
+  border: 1px solid gray;
+  border-collapse: collapse;
+  margin: 5px 0px;
+}
+.userMessage th, .userMessage td {
+  border: 1px solid gray;
+}
+
+.botMessage table {
+  border: 1px solid gray;
+  border-collapse: collapse;
+  margin: 5px 0px;
+}
+.botMessage th, .botMessage td {
+  border: 1px solid gray;
 }
 
 .botMessage p{

@@ -111,8 +111,8 @@ export default class BMOGPT extends Plugin {
 										{ role: 'system', content: this.settings.system_role},
 										{ role: 'user', content: `${filename}\n\n${editor.getValue()}` }
 									],
-									max_tokens: parseInt(this.settings.max_tokens),
-									temperature: parseInt(this.settings.temperature),
+									max_tokens: parseInt(this.settings.max_tokens.toString()),
+									temperature: parseInt(this.settings.temperature.toString()),
 	            }),
 	        });
 
@@ -214,7 +214,7 @@ class BMOSettingTab extends PluginSettingTab {
 			.setName('System')
 			.setDesc('System role prompt')
 			.addTextArea(text => text
-				.setPlaceholder('')
+				.setPlaceholder('You are a helpful assistant.')
 				.setValue(this.plugin.settings.system_role)
 				.onChange(async (value) => {
 					this.plugin.settings.system_role = value;
@@ -227,9 +227,9 @@ class BMOSettingTab extends PluginSettingTab {
 			.setDesc(descLink('When you chat with an AI, this setting controls the maximum length of the response it can generate. The response is broken down into small units called "tokens," and the maximum number of these tokens is limited to a specific number. (Max Token: 4096)', 'https://platform.openai.com/tokenizer'))
 			.addText(text => text
 				.setPlaceholder('4096')
-				.setValue(this.plugin.settings.max_tokens)
+				.setValue(this.plugin.settings.max_tokens.toString())
 				.onChange(async (value) => {
-					this.plugin.settings.max_tokens = value;
+					this.plugin.settings.max_tokens = parseInt(value);
 					await this.plugin.saveSettings();
 				})
 		);
@@ -239,9 +239,9 @@ class BMOSettingTab extends PluginSettingTab {
 			.setDesc('Temperature is a setting in AI language models that controls how predictable or random the generated text is. Lower values (closer to 0) produce more predictable text, while higher values (closer to 2) result in more creative and unpredictable outputs.')
 			.addText(text => text
 				.setPlaceholder('1')
-				.setValue(this.plugin.settings.temperature)
+				.setValue(this.plugin.settings.temperature.toString())
 				.onChange(async (value) => {
-					this.plugin.settings.temperature = value;
+					this.plugin.settings.temperature = parseInt(value);
 					await this.plugin.saveSettings();
 				})
 		);

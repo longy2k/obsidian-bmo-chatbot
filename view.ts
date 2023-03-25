@@ -140,13 +140,20 @@ export class BMOView extends ItemView {
 
                 // Define a function to update the loading animation
                 const updateLoadingAnimation = () => {
+                    // Access the loadingEl element with optional chaining
+                    const loadingEl = document.querySelector('#loading');
+                    // If loadingEl is null or undefined, return early
+                    if (!loadingEl) {
+                        return;
+                    }
                     // Add a dot to the loading animation
                     loadingEl.textContent += ".";
                     // If the loading animation has reached three dots, reset it to one dot
-                    if (loadingEl.textContent.length > 3) {
+                    if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
                         loadingEl.textContent = ".";
                     }
                 };
+                
 
                 // Call the updateLoadingAnimation function every 500 milliseconds
                 const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
@@ -174,7 +181,7 @@ export class BMOView extends ItemView {
             }
             
 
-            messageContainer.scrollTo(0, document.body.scrollHeight);
+            messageContainer?.scrollTo(0, document.body?.scrollHeight);
     
             setTimeout(() => {
                 chatboxElement.value = "";
@@ -210,12 +217,10 @@ export class BMOView extends ItemView {
     	new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
     	return;
     }
-
-    console.log("BMO settings:", this.settings);
     
     try {
-    	const maxTokens = parseInt(this.settings.max_tokens);
-    	const temperature = parseInt(this.settings.temperature);
+    	const maxTokens = parseInt(this.settings.max_tokens.toString());
+    	const temperature = parseInt(this.settings.temperature.toString());
 
     	const response = await fetch('https://api.openai.com/v1/chat/completions', {
     		method: 'POST',
@@ -235,7 +240,8 @@ export class BMOView extends ItemView {
     	});
 
         const data = await response.json();
-        // console.log(data);
+        console.log("BMO settings:", this.settings);
+        console.log(data);
 
         const message = data.choices[0].message.content;
         messageHistory += message + "\n";
