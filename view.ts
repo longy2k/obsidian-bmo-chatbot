@@ -11,17 +11,17 @@ export function setMessageHistory(newMessageHistory: string) {
 
 interface BMOSettings {
 	apiKey: string;
-	max_tokens: number;
+	max_tokens: string;
 	system_role: string;
-	temperature: number;
+	temperature: string;
     botName: string;
 }
 
 const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
-	max_tokens: 3950,
+	max_tokens: "3950",
 	system_role: 'You are a helpful assistant.',
-	temperature: 1,
+	temperature: "1",
 	botName: "BOT",
 }
 
@@ -219,8 +219,8 @@ export class BMOView extends ItemView {
     }
     
     try {
-    	const maxTokens = this.settings.max_tokens.toString();
-    	const temperature = this.settings.temperature.toString();
+    	const maxTokens = this.settings.max_tokens;
+    	const temperature = this.settings.temperature;
 
     	const response = await fetch('https://api.openai.com/v1/chat/completions', {
     		method: 'POST',
@@ -238,6 +238,9 @@ export class BMOView extends ItemView {
     			temperature: parseFloat(temperature),
     		}),
     	});
+
+        console.log('Messages:', JSON.stringify([{ role: 'system', content: this.settings.system_role }, { role: 'user', content: messageHistory }]));
+        console.log('Completion:', response);
 
         const data = await response.json();
         console.log("BMO settings:", this.settings);
