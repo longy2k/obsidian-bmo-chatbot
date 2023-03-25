@@ -19,7 +19,7 @@ interface BMOSettings {
 
 const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
-	max_tokens: 4080,
+	max_tokens: 3950,
 	system_role: 'You are a helpful assistant.',
 	temperature: 1,
 	botName: "BOT",
