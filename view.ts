@@ -192,15 +192,17 @@ export class BMOView extends ItemView {
         }
       });
       
-      chatboxElement.addEventListener("input", (event) => {
-        chatboxElement.style.height = `${chatboxElement.scrollHeight}px`;
-      });
-
-      chatboxElement.addEventListener("blur", (event) => {
-        if (!chatboxElement.value) {
+    chatboxElement.addEventListener("input", (event) => {
+        if (chatboxElement.value.indexOf('\n') === -1) {
             chatboxElement.style.height = "36px";
         }
+        chatboxElement.style.height = `${chatboxElement.scrollHeight}px`;
     });
+
+    chatboxElement.addEventListener("blur", (event) => {
+    if (!chatboxElement.value) {
+        chatboxElement.style.height = "36px";
+    }});
   }
 
   async BMOchatbot(input: string) {

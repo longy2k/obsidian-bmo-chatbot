@@ -39,6 +39,7 @@ If your plugin does not need CSS, delete this file.
   overflow-y: auto;
   user-select: text;
   max-height: calc(100% - 180px); /* subtract the height of chatbox and 100px */
+  word-wrap: break-word;
 }
 
 
