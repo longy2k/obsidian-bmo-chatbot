@@ -1,6 +1,6 @@
 {
 	"id": "obsidian-chatbot-plugin",
-	"name": "obsidian-chatbot",
+	"name": "Obsidian-Chatbot",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Obsidian built-in GPT called BMO.",
