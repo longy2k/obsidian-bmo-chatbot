@@ -13,10 +13,10 @@ interface BMOSettings {
 
 const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
-	max_tokens: "",
+	max_tokens: '',
 	system_role: 'You are a helpful assistant.',
-	temperature: "1",
-	botName: "BOT",
+	temperature: '',
+	botName: 'BOT',
 }
 
 export default class BMOGPT extends Plugin {

@@ -87,6 +87,7 @@ export class BMOView extends ItemView {
     });
     
     const chatboxElement = chatbox as HTMLTextAreaElement;
+      
     
     chatboxElement.addEventListener("keyup", (event) => {
         if (!event.shiftKey && event.key === "Enter") {
@@ -151,8 +152,9 @@ export class BMOView extends ItemView {
                     // If the loading animation has reached three dots, reset it to one dot
                     if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
                         loadingEl.textContent = ".";
-                    }
-                };
+                }
+            };
+            
                 
 
                 // Call the updateLoadingAnimation function every 500 milliseconds
@@ -160,28 +162,21 @@ export class BMOView extends ItemView {
 
                 // Call the chatbot function with the user's input
                 this.BMOchatbot(input)
-                    .then(response => {
+                    .then(() => {
                         // Stop the loading animation and update the bot message with the response
                         clearInterval(loadingAnimationIntervalId);
-                        
-                        // Scroll to the bottom of the message container
-                        messageContainer.scrollTo(0, document.body.scrollHeight);
                     })
-                    .catch(error => {
+                    .catch(() => {
                         // Stop the loading animation and update the bot message with an error message
                         clearInterval(loadingAnimationIntervalId);
                         loadingEl.textContent = "";
                         const botParagraph = document.createElement("p");
                         botParagraph.innerText = "Oops, something went wrong. Please try again.";
                         botMessage.appendChild(botParagraph);
-                        
-                        // Scroll to the bottom of the message container
-                        messageContainer.scrollTo(0, document.body.scrollHeight);
                     });
             }
             
 
-            messageContainer?.scrollTo(0, document.body?.scrollHeight);
     
             setTimeout(() => {
                 chatboxElement.value = "";
@@ -231,7 +226,7 @@ export class BMOView extends ItemView {
     		body: JSON.stringify({
     			model: 'gpt-3.5-turbo',
     			messages: [
-    				{ role: 'system', content: this.settings.system_role },
+    				{ role: 'system', content: this.settings.system_role},
     				{ role: 'user', content: messageHistory }
     			],
     			max_tokens: parseInt(maxTokens),
@@ -255,12 +250,13 @@ export class BMOView extends ItemView {
             const loadingEl = lastBotMessage.querySelector("#loading");
             
             if (loadingEl) {
-              lastBotMessage.removeChild(loadingEl); // Remove loading message
+                lastBotMessage.removeChild(loadingEl); // Remove loading message
             }
           
             const messageParagraph = document.createElement("p");
             messageParagraph.textContent = message;
             messageParagraph.innerHTML = marked(message);
+            messageParagraph.setAttribute("id", "messageParagraph");
             
             lastBotMessage.appendChild(messageParagraph);
         }

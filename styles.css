@@ -61,6 +61,7 @@ If your plugin does not need CSS, delete this file.
   font-size: 12px;
   font-weight: bold;
   color: white;
+  margin: 0 10px;
 }
 
 .userMessage {
@@ -71,13 +72,14 @@ If your plugin does not need CSS, delete this file.
 }
 
 .userMessage p{
-  margin: 0;
+  margin: 0 10px;
 }
 
 #botName {
   font-size: 12px;
   font-weight: bold;
   color: white;
+  margin: 0 10px;
 }
 
 .botMessage {
@@ -86,6 +88,15 @@ If your plugin does not need CSS, delete this file.
   /* background-color: green; */
   width: 100%;
 }
+
+#messageParagraph {
+  margin: 0 10px;
+}
+
+.botMessage p{
+  margin: 0;
+}
+
 
 /* TABLES */
 
@@ -107,9 +118,6 @@ If your plugin does not need CSS, delete this file.
   border: 1px solid gray;
 }
 
-.botMessage p{
-  margin: 0;
-}
 
 
 #chatbox {
@@ -155,4 +163,5 @@ If your plugin does not need CSS, delete this file.
   line-height: 10px;
   font-size: 25px;
   font-weight: bolder;
+  margin: 0 10px;
 }
