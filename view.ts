@@ -142,6 +142,7 @@ export class BMOView extends ItemView {
                 const updateLoadingAnimation = () => {
                     // Access the loadingEl element with optional chaining
                     const loadingEl = document.querySelector('#loading');
+                    loadingEl?.scrollIntoView();
                     // If loadingEl is null or undefined, return early
                     if (!loadingEl) {
                         return;
@@ -160,14 +161,14 @@ export class BMOView extends ItemView {
 
                 // Call the chatbot function with the user's input
                 this.BMOchatbot(input)
-                    .then(response => {
+                    .then(() => {
                         // Stop the loading animation and update the bot message with the response
                         clearInterval(loadingAnimationIntervalId);
                         
                         // Scroll to the bottom of the message container
-                        messageContainer.scrollTo(0, document.body.scrollHeight);
+                        // messageContainer.scrollTo(0, document.body.scrollHeight);
                     })
-                    .catch(error => {
+                    .catch(() => {
                         // Stop the loading animation and update the bot message with an error message
                         clearInterval(loadingAnimationIntervalId);
                         loadingEl.textContent = "";
@@ -176,12 +177,12 @@ export class BMOView extends ItemView {
                         botMessage.appendChild(botParagraph);
                         
                         // Scroll to the bottom of the message container
-                        messageContainer.scrollTo(0, document.body.scrollHeight);
-                    });
+                        // messageContainer.scrollTo(0, document.body.scrollHeight);
+                    });                
             }
             
 
-            messageContainer?.scrollTo(0, document.body?.scrollHeight);
+            // messageContainer?.scrollTo(0, document.body?.scrollHeight);
     
             setTimeout(() => {
                 chatboxElement.value = "";
@@ -190,7 +191,6 @@ export class BMOView extends ItemView {
                 chatboxElement.setSelectionRange(0, 0);
             }, 0);
         }
-
     });
 
     chatboxElement.addEventListener("keydown", (event) => {
@@ -255,7 +255,8 @@ export class BMOView extends ItemView {
             const loadingEl = lastBotMessage.querySelector("#loading");
             
             if (loadingEl) {
-              lastBotMessage.removeChild(loadingEl); // Remove loading message
+                loadingEl.scrollIntoView();
+                lastBotMessage.removeChild(loadingEl); // Remove loading message
             }
           
             const messageParagraph = document.createElement("p");
