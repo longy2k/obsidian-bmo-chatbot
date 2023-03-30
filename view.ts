@@ -138,12 +138,12 @@ export class BMOView extends ItemView {
                 loadingEl.style.display = "inline-block"; 
                 loadingEl.textContent = "..."; 
                 botMessage.appendChild(loadingEl);
+                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
                 // Define a function to update the loading animation
                 const updateLoadingAnimation = () => {
                     // Access the loadingEl element with optional chaining
                     const loadingEl = document.querySelector('#loading');
-                    loadingEl?.scrollIntoView();
                     // If loadingEl is null or undefined, return early
                     if (!loadingEl) {
                         return;
@@ -154,27 +154,25 @@ export class BMOView extends ItemView {
                     if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
                         loadingEl.textContent = ".";
                 }
-            };
-            
-                
+            };                
 
-                // Call the updateLoadingAnimation function every 500 milliseconds
-                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+            // Call the updateLoadingAnimation function every 500 milliseconds
+            const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
-                // Call the chatbot function with the user's input
-                this.BMOchatbot(input)
-                    .then(() => {
-                        // Stop the loading animation and update the bot message with the response
-                        clearInterval(loadingAnimationIntervalId);
-                    })
-                    .catch(() => {
-                        // Stop the loading animation and update the bot message with an error message
-                        clearInterval(loadingAnimationIntervalId);
-                        loadingEl.textContent = "";
-                        const botParagraph = document.createElement("p");
-                        botParagraph.innerText = "Oops, something went wrong. Please try again.";
-                        botMessage.appendChild(botParagraph);
-                    });
+            // Call the chatbot function with the user's input
+            this.BMOchatbot(input)
+                .then(response => {
+                    // Stop the loading animation and update the bot message with the response
+                    clearInterval(loadingAnimationIntervalId);
+                })
+                .catch(error => {
+                    // Stop the loading animation and update the bot message with an error message
+                    clearInterval(loadingAnimationIntervalId);
+                    loadingEl.textContent = "";
+                    const botParagraph = document.createElement("p");
+                    botParagraph.innerText = "Oops, something went wrong. Please try again.";
+                    botMessage.appendChild(botParagraph);
+                });
             }
 
             setTimeout(() => {
@@ -248,7 +246,7 @@ export class BMOView extends ItemView {
             const loadingEl = lastBotMessage.querySelector("#loading");
             
             if (loadingEl) {
-                loadingEl.scrollIntoView();
+                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 lastBotMessage.removeChild(loadingEl); // Remove loading message
             }
           
