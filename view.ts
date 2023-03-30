@@ -256,6 +256,7 @@ export class BMOView extends ItemView {
             messageParagraph.setAttribute("id", "messageParagraph");
             
             lastBotMessage.appendChild(messageParagraph);
+            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     } catch (error) {
         new Notice('Error occurred while fetching completion: ' + error.message);
