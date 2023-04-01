@@ -91,6 +91,7 @@ If your plugin does not need CSS, delete this file.
 
 #messageParagraph {
   margin: 0 10px;
+  overflow-wrap: break-word;
 }
 
 .botMessage p{
