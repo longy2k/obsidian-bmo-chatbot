@@ -3,9 +3,9 @@
 	"name": "Obsidian-Chatbot",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Obsidian built-in GPT called BMO.",
+	"description": "Obsidian built-in GPT using OpenAI API.",
 	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
+	"authorUrl": "https://github.com/longy2k",
 	"fundingUrl": "https://obsidian.md/pricing",
 	"isDesktopOnly": false
 }
