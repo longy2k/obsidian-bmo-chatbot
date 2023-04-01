@@ -1,5 +1,6 @@
 import { ItemView, WorkspaceLeaf, Notice, View } from "obsidian";
 import { marked } from "marked";
+import {DEFAULT_SETTINGS, BMOSettings} from './main';
 
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
@@ -7,22 +8,6 @@ let messageHistory = "";
 
 export function setMessageHistory(newMessageHistory: string) {
     messageHistory = newMessageHistory;
-}
-
-interface BMOSettings {
-	apiKey: string;
-	max_tokens: string;
-	system_role: string;
-	temperature: string;
-    botName: string;
-}
-
-const DEFAULT_SETTINGS: BMOSettings = {
-	apiKey: '',
-	max_tokens: "",
-	system_role: 'You are a helpful assistant.',
-	temperature: "1",
-	botName: "BOT",
 }
 
 export class BMOView extends ItemView {
