@@ -114,7 +114,7 @@ export class BMOView extends ItemView {
             
                 const botNameSpan = document.createElement("span"); 
                 botNameSpan.innerText = this.settings.botName || DEFAULT_SETTINGS.botName;
-                botNameSpan.setAttribute("id", "botName"); 
+                botNameSpan.classList.add("botName")
                 botNameSpan.style.display = "block"; 
                 botMessage.appendChild(botNameSpan); 
             

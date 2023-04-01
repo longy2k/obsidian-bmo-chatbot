@@ -75,7 +75,7 @@ If your plugin does not need CSS, delete this file.
   margin: 0 10px;
 }
 
-#botName {
+.botName {
   font-size: 12px;
   font-weight: bold;
   color: white;
