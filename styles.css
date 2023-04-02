@@ -189,3 +189,6 @@ pre, code {
   color: red;
   padding: 0px 10px 12px 10px;
 }
+.disabled {
+  pointer-events: none;
+}

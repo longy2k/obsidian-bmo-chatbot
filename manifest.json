@@ -2,7 +2,7 @@
 	"id": "obsidian-chatbot-plugin",
 	"name": "Obsidian-Chatbot",
 	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
+	"minAppVersion": "1.0.0",
 	"description": "Obsidian built-in GPT using OpenAI API.",
 	"author": "Obsidian",
 	"authorUrl": "https://github.com/longy2k",

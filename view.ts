@@ -193,17 +193,16 @@ export class BMOView extends ItemView {
         const botName = document.querySelector('.botName');
         const botMessage = document.querySelector('.botMessage');
         const removeLoading = document.querySelector('#loading') as HTMLDivElement;
+        const disableChatbox = document.getElementById('chatbox');
+        (disableChatbox as HTMLTextAreaElement).disabled = true;
         new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
         if (botName){
-            botName.innerHTML = "Error ";
+            botName.innerHTML = "ERROR";
         }
-
         if (removeLoading) {
             removeLoading.innerHTML = '';
             removeLoading.style.cssText = '';
           }
-          
-
         if (botMessage){
             const newMessage = document.createElement('p');
             newMessage.textContent = "API key not found. Please add your OpenAI API key in the plugin settings.";
