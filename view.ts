@@ -190,9 +190,28 @@ export class BMOView extends ItemView {
 
   async BMOchatbot(input: string) {
     if (!this.settings.apiKey) {
-    	new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
-    	return;
-    }
+        const botName = document.querySelector('.botName');
+        const botMessage = document.querySelector('.botMessage');
+        const removeLoading = document.querySelector('#loading') as HTMLDivElement;
+        new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
+        if (botName){
+            botName.innerHTML = "Error ";
+        }
+
+        if (removeLoading) {
+            removeLoading.innerHTML = '';
+            removeLoading.style.cssText = '';
+          }
+          
+
+        if (botMessage){
+            const newMessage = document.createElement('p');
+            newMessage.textContent = "API key not found. Please add your OpenAI API key in the plugin settings.";
+            newMessage.classList.add('errorMessage');
+            botMessage.appendChild(newMessage);
+        }
+        return;
+      }
     
     try {
     	const maxTokens = this.settings.max_tokens;

@@ -16,6 +16,8 @@ If your plugin does not need CSS, delete this file.
   word-break: break-word;
   display: flex;
   flex-direction: column;
+  max-width: 800px;
+  margin: auto;
 }
 
 #bmoHeading {
@@ -34,6 +36,8 @@ If your plugin does not need CSS, delete this file.
     font-size: 16px;
 }
 
+/* messageContainer */
+
 #messageContainer {
   flex-grow: 1;
   overflow-y: auto;
@@ -41,8 +45,6 @@ If your plugin does not need CSS, delete this file.
   max-height: calc(100% - 180px); /* subtract the height of chatbox and 100px */
   word-wrap: break-word;
 }
-
-
 
 #messageContainer::-webkit-scrollbar {
   width: 5px;
@@ -56,6 +58,7 @@ If your plugin does not need CSS, delete this file.
   border-radius: 5px;
 }
 
+/* Username */
 
 #userName {
   font-size: 12px;
@@ -66,7 +69,7 @@ If your plugin does not need CSS, delete this file.
 
 .userMessage {
   margin: 0;
-  padding: 10px;
+  padding: 10px 3.5%;;
   background-color: #262d2d;
   width: 100%;
 }
@@ -74,6 +77,8 @@ If your plugin does not need CSS, delete this file.
 .userMessage p{
   margin: 0 10px;
 }
+
+/* botName and botMessage */
 
 .botName {
   font-size: 12px;
@@ -84,12 +89,16 @@ If your plugin does not need CSS, delete this file.
 
 .botMessage {
   margin: 0;
-  padding: 10px;
+  padding: 10px 3.5%;
   /* background-color: green; */
   width: 100%;
 }
 
-#messageParagraph, pre, code{
+.botMessage p{
+  margin: 0;
+}
+
+#messageParagraph{
   margin: 0 10px;
   overflow-wrap: break-word;
 }
@@ -102,10 +111,11 @@ If your plugin does not need CSS, delete this file.
   margin-bottom: 0px;
 }
 
-.botMessage p{
-  margin: 0;
-}
 
+pre, code {
+  white-space: pre-wrap; 
+  overflow-wrap: break-word; 
+}
 
 /* TABLES */
 
@@ -127,12 +137,11 @@ If your plugin does not need CSS, delete this file.
   border: 1px solid gray;
 }
 
-
+/* chatbox - textarea */
 
 #chatbox {
   background-color: var(--interactive-accent); /* #498867; */
   width: calc(100% - 10%);
-  /* changed the value of the left property to 50% */
   left: 50%;
   height: 36px;
   min-height: 36px;
@@ -140,7 +149,6 @@ If your plugin does not need CSS, delete this file.
   resize: none;
   position: absolute;
   bottom: 20px;
-  /* changed the value of the transform property to translateX(-50%) */
   transform: translateX(-50%);
   border: 1px solid gray;
   line-height: 1.5;
@@ -163,6 +171,8 @@ If your plugin does not need CSS, delete this file.
     border-color: gray;
   }
 
+/* Loading */
+
 #loading {
   color: white;
   background-color: gray;
@@ -173,4 +183,9 @@ If your plugin does not need CSS, delete this file.
   font-size: 25px;
   font-weight: bolder;
   margin: 5px 10px;
+}
+
+.errorMessage {
+  color: red;
+  padding: 0px 10px 12px 10px;
 }
