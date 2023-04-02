@@ -93,7 +93,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Max Tokens')
-			.setDesc(descLink('When you chat with an AI, this setting controls the maximum length of the response it can generate. The response is broken down into small units called "tokens," and the maximum number of these tokens is limited to a specific number. (Max Token: 4096)', 'https://platform.openai.com/tokenizer'))
+			.setDesc(descLink('The maximum number of tokens, or words, that the model is allowed to generate in its output. The maximum number of these tokens is limited to a specific number. (Max Token: 4096)', 'https://platform.openai.com/tokenizer'))
 			.addText(text => text
 				.setPlaceholder('4096')
 				.setValue(this.plugin.settings.max_tokens)
@@ -105,7 +105,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Temperature')
-			.setDesc('Temperature is a setting in AI language models that controls how predictable or random the generated text is. Lower values (closer to 0) produce more predictable text, while higher values (closer to 2) result in more creative and unpredictable outputs.')
+			.setDesc('Temperature in language models controls the level of randomness in the generated output. Lower values (closer to 0) produce more predictable text, while higher values (closer to 2) result in more creative and unpredictable outputs.')
 			.addText(text => text
 				.setPlaceholder('1')
 				.setValue(this.plugin.settings.temperature || DEFAULT_SETTINGS.temperature)

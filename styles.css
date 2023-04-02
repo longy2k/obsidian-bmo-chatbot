@@ -89,9 +89,17 @@ If your plugin does not need CSS, delete this file.
   width: 100%;
 }
 
-#messageParagraph {
+#messageParagraph, pre, code{
   margin: 0 10px;
   overflow-wrap: break-word;
+}
+
+#messageParagraph p{
+  margin-bottom: 10px;
+}
+
+#messageParagraph p:last-child{
+  margin-bottom: 0px;
 }
 
 .botMessage p{
