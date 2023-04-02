@@ -19,10 +19,10 @@ This plugin has not been submitted to the official Obsidian's community plugins 
 
 To activate the plugin, please follow these steps:
 
-    Navigate to the plugin's folder in your terminal.
-    Run `npm install` to install any necessary dependencies for the plugin.
-    Once the dependencies have been installed, run `npm run build` to build the plugin.
-    Once the plugin has been built, it should be ready to activate.
+  1. Navigate to the plugin's folder in your terminal.
+  2. Run `npm install` to install any necessary dependencies for the plugin.
+  3. Once the dependencies have been installed, run `npm run build` to build the plugin.
+  4. Once the plugin has been built, it should be ready to activate.
 
 ## Features
 - **Chat from anywhere in Obsidian:** Chat with your bot wherever you are!
