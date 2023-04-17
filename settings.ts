@@ -93,7 +93,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Max Tokens')
-			.setDesc(descLink('The maximum number of tokens, or words, that the model is allowed to generate in its output. The maximum number of these tokens is limited to a specific number. (Max Token: 4096)', 'https://platform.openai.com/tokenizer'))
+			.setDesc(descLink('The maximum number of tokens, or words, that the model is allowed to generate in its output (Max Token: 4096).', 'https://platform.openai.com/tokenizer'))
 			.addText(text => text
 				.setPlaceholder('4096')
 				.setValue(this.plugin.settings.max_tokens)
