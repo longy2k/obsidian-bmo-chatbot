@@ -7,7 +7,7 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-#bmoContainer {
+.chatbotContainer {
   height: 100%;
   max-height: 96%;
   position: relative;
@@ -20,7 +20,7 @@ If your plugin does not need CSS, delete this file.
   margin: auto;
 }
 
-#bmoHeading {
+#chatbotName {
     color:  var(--interactive-accent); /* #498867; */
     text-align: center;
     margin-top: 0;
@@ -30,7 +30,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 #modelName {
-    margin-top: 0;
+    margin: 0;
     text-align: center;
     color: var(--interactive-accent); /* #498867; */
     font-size: 16px;
@@ -39,10 +39,11 @@ If your plugin does not need CSS, delete this file.
 /* messageContainer */
 
 #messageContainer {
+  margin-top: 10px;
   flex-grow: 1;
   overflow-y: auto;
   user-select: text;
-  max-height: calc(100% - 180px); /* subtract the height of chatbox and 100px */
+  max-height: calc(100% - 160px); /* subtract the height of chatbox and 100px */
   word-wrap: break-word;
 }
 
@@ -58,102 +59,88 @@ If your plugin does not need CSS, delete this file.
   border-radius: 5px;
 }
 
-/* Username */
+/* User & Bot Messages */
 
-#userName {
+#userName, #botName {
+  display: block;
   font-size: 12px;
   font-weight: bold;
   color: white;
-  margin: 0 10px;
+  margin: 0;
+}
+
+.userMessage, .botMessage {
+  margin: 0;
+  padding: 10px 3.5%;
+  width: 100%;
 }
 
 .userMessage {
-  margin: 0;
-  padding: 10px 3.5%;;
-  background-color: #262d2d;
-  width: 100%;
+  background-color: var(--color-base-25);;
 }
 
-.userMessage p{
-  margin: 0 10px;
-}
-
-/* botName and botMessage */
-
-.botName {
-  font-size: 12px;
-  font-weight: bold;
-  color: white;
-  margin: 0 10px;
-}
-
-.botMessage {
-  margin: 0;
-  padding: 10px 3.5%;
-  /* background-color: green; */
-  width: 100%;
-}
-
-.botMessage p{
+.userMessage p, .botMessage p{
   margin: 0;
 }
 
-#messageParagraph{
-  margin: 0 10px;
+.messageBlock{
+  margin: 0;
   overflow-wrap: break-word;
 }
 
-#messageParagraph p{
+/* .messageBlock p{
   margin-bottom: 10px;
-}
+} */
 
-#messageParagraph p:last-child{
+/* .messageBlock p:last-child{
   margin-bottom: 0px;
+} */
+
+/* messageBlock style */
+
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  background-color: #282c34;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  line-height: 1.5;
+  color: #abb2bf;
 }
 
-
-pre, code {
-  white-space: pre-wrap; 
-  overflow-wrap: break-word; 
+pre code {
+  padding: 5px;
 }
 
-/* TABLES */
+code {
+  font-weight: bold;
+  color: bisque;
+}
 
-.userMessage table {
+/* Tables */
+
+.messageBlock table {
   border: 1px solid gray;
   border-collapse: collapse;
   margin: 5px 0px;
 }
-.userMessage th, .userMessage td {
-  border: 1px solid gray;
-}
-
-.botMessage table {
-  border: 1px solid gray;
-  border-collapse: collapse;
-  margin: 5px 0px;
-}
-.botMessage th, .botMessage td {
+.messageBlock th, .messageBlock td {
   border: 1px solid gray;
 }
 
 /* chatbox - textarea */
 
 #chatbox {
-  background-color: var(--interactive-accent); /* #498867; */
-  width: calc(100% - 10%);
-  left: 50%;
+  background-color: var(--interactive-accent);
+  margin: 10px 3.5%;
   height: 36px;
   min-height: 36px;
-  max-height: 15%;
+  max-height: 160px;
   resize: none;
-  position: absolute;
-  bottom: 20px;
-  transform: translateX(-50%);
-  border: 1px solid gray;
-  line-height: 1.5;
-  padding-top: 0.3em;
-  padding-bottom: 0.50em;
+  padding: 6px 8px;
 }
 
 #chatbox input, textarea {
@@ -182,7 +169,7 @@ pre, code {
   line-height: 10px;
   font-size: 25px;
   font-weight: bolder;
-  margin: 5px 10px;
+  margin: 5px 0px;
 }
 
 .errorMessage {

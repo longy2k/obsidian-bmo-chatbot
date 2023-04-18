@@ -31,40 +31,41 @@ export class BMOView extends ItemView {
     async onOpen() {
         const container = this.containerEl.children[1];
         container.empty();
-        const bmoContainer = container.createEl("div", {
+        const chatbotContainer = container.createEl("div", {
             attr: {
-            id: "bmoContainer",
+                class: "chatbotContainer",
             }
         });
 
-    bmoContainer.createEl("h1", { 
+    chatbotContainer.createEl("h1", { 
         text: this.settings.botName || DEFAULT_SETTINGS.botName,
         attr: {
-          id: "bmoHeading"
+          id: "chatbotName"
         }
     });
 
-    bmoContainer.createEl("p", {
+    chatbotContainer.createEl("p", {
         text: "Model: GPT-3.5-Turbo",
         attr: {
             id: "modelName"
           }
     });
 
-    bmoContainer.createEl("div", {
+    chatbotContainer.createEl("div", {
         attr: {
             id: "messageContainer",
         }
     });
     
-    const chatbox = bmoContainer.createEl("textarea", {
+    const chatbox = chatbotContainer.createEl("textarea", {
         attr: {
             id: "chatbox",
+            editableContent: true,
             placeholder: "Start typing...",
         }
     });
 
-    const loadingEl = bmoContainer.createEl("div", {
+    const loadingEl = chatbotContainer.createEl("div", {
         attr: {
             id: "loading",
         },
@@ -114,8 +115,8 @@ export class BMOView extends ItemView {
             
                 const botNameSpan = document.createElement("span"); 
                 botNameSpan.innerText = this.settings.botName || DEFAULT_SETTINGS.botName;
-                botNameSpan.classList.add("botName")
-                botNameSpan.style.display = "block"; 
+                botNameSpan.setAttribute("id", "botName")
+                // botNameSpan.style.display = "block"; 
                 botMessage.appendChild(botNameSpan); 
             
                 const loadingEl = document.createElement("span");
@@ -253,12 +254,12 @@ export class BMOView extends ItemView {
                 lastBotMessage.removeChild(loadingEl); // Remove loading message
             }
           
-            const messageParagraph = document.createElement("p");
-            messageParagraph.textContent = message;
-            messageParagraph.innerHTML = marked(message);
-            messageParagraph.setAttribute("id", "messageParagraph");
+            const messageBlock = document.createElement("p");
+            messageBlock.textContent = message;
+            messageBlock.innerHTML = marked(message);
+            messageBlock.classList.add("messageBlock");
             
-            lastBotMessage.appendChild(messageParagraph);
+            lastBotMessage.appendChild(messageBlock);
             lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     } catch (error) {
