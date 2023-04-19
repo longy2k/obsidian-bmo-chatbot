@@ -105,7 +105,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Temperature')
-			.setDesc('Temperature in language models controls the level of randomness in the generated output. Lower values (closer to 0) produce more predictable text, while higher values (closer to 2) result in more creative and unpredictable outputs.')
+			.setDesc('Temperature controls how random the generated output is. Lower values (closer to 0) make the text more predictable, while higher values (closer to 1) make it more creative and unpredictable.')
 			.addText(text => text
 				.setPlaceholder('1')
 				.setValue(this.plugin.settings.temperature || DEFAULT_SETTINGS.temperature)
