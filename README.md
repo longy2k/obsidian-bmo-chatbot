@@ -41,6 +41,9 @@ When you open the chatbot, clicking on the left ribbon bar bot icon again will c
 - **Set Max Tokens and Temperature:** Customize the length and randomness of the chatbot's responses with Max Tokens and Temperature settings.
 - **System theme color accents:** Seamlessly matches the chatbot's interface with your system's color scheme.
 
+## Other Notes
+"BMO" is just a tag name for the project.
+
 ## Contributing
 Feel free to improve the plugin!
 If you have any improvements, questions, or concerns, just let me know!
