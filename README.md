@@ -10,8 +10,8 @@ A chatbot Obsidian plugin that integrates Large Language Models (LLMs) such as O
 Two methods:
 
 - Obsidian Community plugins (currently in review):
-  1. Search for "Obsidian-Chatbot" in the Obsidian Community plugins.
-  2. Enable "Obsidian-Chatbot"
+  1. Search for "BMO Chatbot" in the Obsidian Community plugins.
+  2. Enable "BMO Chatbot" in the settings.
 
 - To activate the plugin from this repo, please follow these steps:
 
@@ -43,4 +43,4 @@ When you open the chatbot, clicking on the left ribbon bar bot icon again will c
 
 ## Contributing
 Feel free to improve the plugin!
-If you have any improvements, questions or concerns, just let me know!
+If you have any improvements, questions, or concerns, just let me know!
