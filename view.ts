@@ -106,15 +106,22 @@ export class BMOView extends ItemView {
             userMessage.classList.add("userMessage");
             userMessage.style.display = "inline-block";
             
-            const userNameSpan = document.createElement("span"); 
-            userNameSpan.innerText = "USER"; 
-            userNameSpan.setAttribute("id", "userName"); 
+            const userNameSpan = document.createElement("span");
+            userNameSpan.textContent = "USER";
+            userNameSpan.setAttribute("id", "userName");
             userMessage.appendChild(userNameSpan);
             
             const userParagraph = document.createElement("p");
-            userParagraph.innerHTML = marked(input);
-            userParagraph.innerHTML = input.replace(/\n/g, "<br>"); //save the newlines
-
+            const markdownContent = marked(input);
+            userParagraph.innerHTML = markdownContent;
+            
+            const sanitizedInput = input.split("\n").map(line => {
+                const sanitizedLine = document.createTextNode(line).textContent;
+                return sanitizedLine ? sanitizedLine + "<br>" : "<br>";
+            }).join('');
+            
+            userParagraph.innerHTML = sanitizedInput;
+            
             userMessage.appendChild(userParagraph);
 
             // Append the new message to the message container
@@ -128,9 +135,8 @@ export class BMOView extends ItemView {
                 messageContainer.appendChild(botMessage);
             
                 const botNameSpan = document.createElement("span"); 
-                botNameSpan.innerText = this.settings.botName || DEFAULT_SETTINGS.botName;
+                botNameSpan.textContent = this.settings.botName || DEFAULT_SETTINGS.botName;
                 botNameSpan.setAttribute("id", "botName")
-                // botNameSpan.style.display = "block"; 
                 botMessage.appendChild(botNameSpan); 
             
                 const loadingEl = document.createElement("span");
@@ -170,7 +176,7 @@ export class BMOView extends ItemView {
                     clearInterval(loadingAnimationIntervalId);
                     loadingEl.textContent = "";
                     const botParagraph = document.createElement("p");
-                    botParagraph.innerText = "Oops, something went wrong. Please try again.";
+                    botParagraph.textContent = "Oops, something went wrong. Please try again.";
                     botMessage.appendChild(botParagraph);
                 });
             }
@@ -227,10 +233,10 @@ export class BMOView extends ItemView {
         (disableChatbox as HTMLTextAreaElement).disabled = true;
         new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
         if (botName){
-            botName.innerHTML = "ERROR";
+            botName.textContent = "ERROR";
         }
         if (removeLoading) {
-            removeLoading.innerHTML = '';
+            removeLoading.textContent = '';
             removeLoading.style.cssText = '';
           }
         if (botMessage){
@@ -285,7 +291,8 @@ export class BMOView extends ItemView {
           
             const messageBlock = document.createElement("p");
             messageBlock.textContent = message;
-            messageBlock.innerHTML = marked(message);
+            const markdownContent = marked(message);
+            messageBlock.innerHTML = markdownContent;
             messageBlock.classList.add("messageBlock");
             
             lastBotMessage.appendChild(messageBlock);
