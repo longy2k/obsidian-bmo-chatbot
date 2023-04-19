@@ -134,29 +134,40 @@ code {
 /* chatbox - textarea */
 
 #chatbox {
-  background-color: var(--interactive-accent);
   margin: 10px 3.5%;
-  height: 36px;
-  min-height: 36px;
-  max-height: 160px;
+  background-color: var(--interactive-accent);
+  padding: 5px 0px 0px 0px;
+  border-radius: 5px;
+}
+
+#chatbox textarea{
+  width: 96%;
+  margin: 0px 2%;
+  background-color: var(--interactive-accent);
+  height: 25px;
+  min-height: 25px;
+  max-height: 145px;
+  box-sizing: border-box;
   resize: none;
-  padding: 6px 8px;
+  padding: 0 5px 0 0;
+  font-size: 16px;
+  border: none;
 }
 
-#chatbox input, textarea {
-    font-size: 16px;
-}
-
-#chatbox::placeholder {
+#chatbox textarea::placeholder {
     color: white;
     font-weight: 500;
 }
 
-#chatbox:focus {
+#chatbox textarea:focus {
     outline: none;
     box-shadow: none;
     border-color: gray;
   }
+::selection {
+  background-color: blue;
+  color: white;
+}
 
 /* Loading */
 

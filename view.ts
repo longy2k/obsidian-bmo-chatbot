@@ -57,13 +57,16 @@ export class BMOView extends ItemView {
         }
     });
     
-    const chatbox = chatbotContainer.createEl("textarea", {
+    const chatbox = chatbotContainer.createEl("div", {
         attr: {
             id: "chatbox",
-            editableContent: true,
-            placeholder: "Start typing...",
         }
     });
+    const textarea = document.createElement("textarea");
+    textarea.setAttribute("contenteditable", true.toString());
+    textarea.setAttribute("placeholder", "Start typing...");
+    chatbox.appendChild(textarea);
+
 
     const loadingEl = chatbotContainer.createEl("div", {
         attr: {
@@ -72,13 +75,13 @@ export class BMOView extends ItemView {
         text: "..."
     });
     
-    const chatboxElement = chatbox as HTMLTextAreaElement;
+    const textareaElement = textarea as HTMLTextAreaElement;
       
     
-    chatboxElement.addEventListener("keyup", (event) => {
+    textareaElement.addEventListener("keyup", (event) => {
         if (!event.shiftKey && event.key === "Enter") {
             event.preventDefault(); // prevent submission
-            const input = chatboxElement.value.trim();
+            const input = textareaElement.value.trim();
             if (input.length === 0) { // check if input is empty or just whitespace
                 return;
             }
@@ -162,30 +165,30 @@ export class BMOView extends ItemView {
             }
 
             setTimeout(() => {
-                chatboxElement.value = "";
-                chatboxElement.style.height = "36px";
-                chatboxElement.value = chatboxElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
-                chatboxElement.setSelectionRange(0, 0);
+                textareaElement.value = "";
+                textareaElement.style.height = "25px";
+                textareaElement.value = textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
+                textareaElement.setSelectionRange(0, 0);
             }, 0);
         }
     });
 
-    chatboxElement.addEventListener("keydown", (event) => {
+    textareaElement.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && !event.shiftKey) { // check if enter key was pressed
           event.preventDefault(); // prevent default behavior
         }
       });
       
-    chatboxElement.addEventListener("input", (event) => {
-        if (chatboxElement.value.indexOf('\n') === -1) {
-            chatboxElement.style.height = "36px";
+      textareaElement.addEventListener("input", (event) => {
+        if (textareaElement.value.indexOf('\n') === -1) {
+            textareaElement.style.height = "25px";
         }
-        chatboxElement.style.height = `${chatboxElement.scrollHeight}px`;
+        textareaElement.style.height = `${textareaElement.scrollHeight}px`;
     });
 
-    chatboxElement.addEventListener("blur", (event) => {
-    if (!chatboxElement.value) {
-        chatboxElement.style.height = "36px";
+    textareaElement.addEventListener("blur", (event) => {
+    if (!textareaElement.value) {
+        textareaElement.style.height = "25px";
     }});
   }
 
