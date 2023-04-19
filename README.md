@@ -1,5 +1,5 @@
 # Obsidian Chatbot
-A chatbot UI Obsidian plugin that integrates Large Language Models (LLMs) such as OpenAI's "gpt-3.5-turbo" and "gpt-4".
+A chatbot Obsidian plugin that integrates Large Language Models (LLMs) such as OpenAI's "gpt-3.5-turbo" and "gpt-4".
 
 ![Screenshot-1](README_images/Screenshot-1.png)
 <p align="center">
