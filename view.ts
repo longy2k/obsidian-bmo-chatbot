@@ -136,7 +136,7 @@ export class BMOView extends ItemView {
             
                 const botNameSpan = document.createElement("span"); 
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                botNameSpan.setAttribute("id", "botName")
+                botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan); 
             
                 const loadingEl = document.createElement("span");
@@ -226,7 +226,7 @@ export class BMOView extends ItemView {
 
   async BMOchatbot(input: string) {
     if (!this.settings.apiKey) {
-        const botName = document.querySelector('.botName');
+        const botName = document.querySelector('#chatbotName');
         const botMessage = document.querySelector('.botMessage');
         const removeLoading = document.querySelector('#loading') as HTMLDivElement;
         const disableChatbox = document.getElementById('chatbox');

@@ -61,7 +61,7 @@ If your plugin does not need CSS, delete this file.
 
 /* User & Bot Messages */
 
-#userName, #botName {
+#userName, #chatbotName {
   display: block;
   font-size: 12px;
   font-weight: bold;

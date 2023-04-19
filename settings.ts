@@ -60,13 +60,13 @@ export class BMOSettingTab extends PluginSettingTab {
             .onChange(async (value) => {
             this.plugin.settings.chatbotName = value || DEFAULT_SETTINGS.chatbotName;
             await this.plugin.saveSettings();
-            const chatbotName = document.querySelector('#chatbotNameHeading') as HTMLHeadingElement;
-            const botNames = document.querySelectorAll('#botName') as NodeListOf<HTMLHeadingElement>;
-            if (chatbotName) {
-                chatbotName.textContent = this.plugin.settings.chatbotName;
+            const chatbotNameHeading = document.querySelector('#chatbotNameHeading') as HTMLHeadingElement;
+            const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+            if (chatbotNameHeading) {
+                chatbotNameHeading.textContent = this.plugin.settings.chatbotName;
             }
-            botNames.forEach(botName => {
-                botName.textContent = this.plugin.settings.chatbotName;
+            chatbotNames.forEach(chatbotName => {
+                chatbotName.textContent = this.plugin.settings.chatbotName;
             });
             })
         );
