@@ -1,5 +1,5 @@
 # Obsidian Chatbot
-A chatbot Obsidian plugin that integrates Large Language Models (LLMs) such as OpenAI's "gpt-3.5-turbo" and "gpt-4".
+A chatbot Obsidian plugin that integrates Large Language Models (LLMs) such as OpenAI's "gpt-3.5-turbo".
 
 ![Screenshot-1](README_images/Screenshot-1.png)
 <p align="center">
@@ -22,7 +22,7 @@ Two methods:
 
 ## OpenAI API
 In order to use this plugin, you will need to have an OpenAI account and API access. 
-Please note that GPT-4 can only be used if you have access to the API. 
+<!-- Please note that GPT-4 can only be used if you have access to the API.  -->
 If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview).
 Once you have your account, you can access your API key and enter it into the plugin settings to start using the chatbot.
 

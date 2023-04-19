@@ -35,7 +35,7 @@ export default class BMOGPT extends Plugin {
 			(leaf) => new BMOView(leaf, this.settings)
 		);
 
-		this.addRibbonIcon("bot", "Chatbot (Clear chat)", () => {
+		this.addRibbonIcon("bot", "Chatbot (Clear Conversation)", () => {
 			this.resetMessageHistory();
 		    this.activateView();
 		});
