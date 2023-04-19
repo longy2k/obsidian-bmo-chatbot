@@ -20,7 +20,7 @@ If your plugin does not need CSS, delete this file.
   margin: auto;
 }
 
-#chatbotName {
+#chatbotNameHeading {
     color:  var(--interactive-accent); /* #498867; */
     text-align: center;
     margin-top: 0;

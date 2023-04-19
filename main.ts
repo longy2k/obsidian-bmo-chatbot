@@ -9,7 +9,7 @@ export interface BMOSettings {
 	max_tokens: string;
 	system_role: string;
 	temperature: string;
-	botName: string;
+	chatbotName: string;
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -17,7 +17,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	max_tokens: '',
 	system_role: 'You are a helpful assistant who responds in markdown.',
 	temperature: '',
-	botName: 'BOT',
+	chatbotName: 'BOT',
 }
 
 export default class BMOGPT extends Plugin {

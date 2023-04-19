@@ -40,9 +40,9 @@ export class BMOView extends ItemView {
         });
 
         chatbotContainer.createEl("h1", { 
-            text: this.settings.botName || DEFAULT_SETTINGS.botName,
+            text: this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName,
             attr: {
-            id: "chatbotName"
+            id: "chatbotNameHeading"
             }
         });
 
@@ -135,7 +135,7 @@ export class BMOView extends ItemView {
                 messageContainer.appendChild(botMessage);
             
                 const botNameSpan = document.createElement("span"); 
-                botNameSpan.textContent = this.settings.botName || DEFAULT_SETTINGS.botName;
+                botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
                 botNameSpan.setAttribute("id", "botName")
                 botMessage.appendChild(botNameSpan); 
             
