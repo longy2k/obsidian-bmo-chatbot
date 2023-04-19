@@ -51,13 +51,16 @@ export default class BMOGPT extends Plugin {
 	}
 
 	async onunload() {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE);
-		const configuration = new Configuration({
-			apiKey: this.settings.apiKey,
+		this.app.workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE).forEach((leaf) => {
+		  const bmoView = leaf.view as BMOView;
+	  
+		  if (bmoView) {
+			bmoView.cleanup();
+		  }
 		});
-		this.openai = new OpenAIApi(configuration);
-
-	}
+	  
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE);
+	  }
 
 	async activateView() {
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE);

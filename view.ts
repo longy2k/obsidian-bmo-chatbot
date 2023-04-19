@@ -13,6 +13,8 @@ export function setMessageHistory(newMessageHistory: string) {
 export class BMOView extends ItemView {
     private messageEl: HTMLElement;
     private settings: BMOSettings;
+    private textareaElement: HTMLTextAreaElement;
+    private loadingAnimationIntervalId: number;
 
     constructor(leaf: WorkspaceLeaf, settings: BMOSettings) {
         super(leaf);
@@ -37,51 +39,60 @@ export class BMOView extends ItemView {
             }
         });
 
-    chatbotContainer.createEl("h1", { 
-        text: this.settings.botName || DEFAULT_SETTINGS.botName,
-        attr: {
-          id: "chatbotName"
-        }
-    });
+        chatbotContainer.createEl("h1", { 
+            text: this.settings.botName || DEFAULT_SETTINGS.botName,
+            attr: {
+            id: "chatbotName"
+            }
+        });
 
-    chatbotContainer.createEl("p", {
-        text: "Model: GPT-3.5-Turbo",
-        attr: {
-            id: "modelName"
-          }
-    });
+        chatbotContainer.createEl("p", {
+            text: "Model: GPT-3.5-Turbo",
+            attr: {
+                id: "modelName"
+            }
+        });
 
-    chatbotContainer.createEl("div", {
-        attr: {
-            id: "messageContainer",
-        }
-    });
+        chatbotContainer.createEl("div", {
+            attr: {
+                id: "messageContainer",
+            }
+        });
+        
+        const chatbox = chatbotContainer.createEl("div", {
+            attr: {
+                id: "chatbox",
+            }
+        });
+        const textarea = document.createElement("textarea");
+        textarea.setAttribute("contenteditable", true.toString());
+        textarea.setAttribute("placeholder", "Start typing...");
+        chatbox.appendChild(textarea);
+
+
+        const loadingEl = chatbotContainer.createEl("div", {
+            attr: {
+                id: "loading",
+            },
+            text: "..."
+        });
+        
+        this.textareaElement = textarea as HTMLTextAreaElement;
+        this.addEventListeners();
+    }
+
+    addEventListeners() {
+        this.textareaElement.addEventListener("keyup", this.handleKeyup.bind(this));
+        this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
+        this.textareaElement.addEventListener("input", this.handleInput.bind(this));
+        this.textareaElement.addEventListener("blur", this.handleBlur.bind(this));
+    }
     
-    const chatbox = chatbotContainer.createEl("div", {
-        attr: {
-            id: "chatbox",
-        }
-    });
-    const textarea = document.createElement("textarea");
-    textarea.setAttribute("contenteditable", true.toString());
-    textarea.setAttribute("placeholder", "Start typing...");
-    chatbox.appendChild(textarea);
-
-
-    const loadingEl = chatbotContainer.createEl("div", {
-        attr: {
-            id: "loading",
-        },
-        text: "..."
-    });
-    
-    const textareaElement = textarea as HTMLTextAreaElement;
-      
-    
-    textareaElement.addEventListener("keyup", (event) => {
+    // Event handler methods
+    handleKeyup(event: KeyboardEvent) {
         if (!event.shiftKey && event.key === "Enter") {
             event.preventDefault(); // prevent submission
-            const input = textareaElement.value.trim();
+            const input = this.textareaElement.value.trim();
             if (input.length === 0) { // check if input is empty or just whitespace
                 return;
             }
@@ -165,32 +176,47 @@ export class BMOView extends ItemView {
             }
 
             setTimeout(() => {
-                textareaElement.value = "";
-                textareaElement.style.height = "25px";
-                textareaElement.value = textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
-                textareaElement.setSelectionRange(0, 0);
+                this.textareaElement.value = "";
+                this.textareaElement.style.height = "25px";
+                this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
+                this.textareaElement.setSelectionRange(0, 0);
             }, 0);
         }
-    });
+    }
 
-    textareaElement.addEventListener("keydown", (event) => {
+    handleKeydown(event: KeyboardEvent) {
         if (event.key === "Enter" && !event.shiftKey) { // check if enter key was pressed
-          event.preventDefault(); // prevent default behavior
+            event.preventDefault(); // prevent default behavior
         }
-      });
-      
-      textareaElement.addEventListener("input", (event) => {
-        if (textareaElement.value.indexOf('\n') === -1) {
-            textareaElement.style.height = "25px";
-        }
-        textareaElement.style.height = `${textareaElement.scrollHeight}px`;
-    });
+    }
 
-    textareaElement.addEventListener("blur", (event) => {
-    if (!textareaElement.value) {
-        textareaElement.style.height = "25px";
-    }});
-  }
+    handleInput(event: Event) {
+        if (this.textareaElement.value.indexOf('\n') === -1) {
+            this.textareaElement.style.height = "25px";
+        }
+        this.textareaElement.style.height = `${this.textareaElement.scrollHeight}px`;
+    }
+
+    handleBlur(event: Event) {
+        if (!this.textareaElement.value) {
+            this.textareaElement.style.height = "25px";
+        }
+    }
+    
+    cleanup() {
+        // Remove event listeners and other resources created by this.view
+        this.textareaElement.removeEventListener("keyup", this.handleKeyup.bind(this));
+        this.textareaElement.removeEventListener("keydown", this.handleKeydown.bind(this));
+        this.textareaElement.removeEventListener("input", this.handleInput.bind(this));
+        this.textareaElement.removeEventListener("blur", this.handleBlur.bind(this));
+
+        // Clear the loading animation interval if it's active
+        if (this.loadingAnimationIntervalId) {
+            clearInterval(this.loadingAnimationIntervalId);
+        }
+
+        // Add more cleanup code here, if needed
+    }
 
   async BMOchatbot(input: string) {
     if (!this.settings.apiKey) {
