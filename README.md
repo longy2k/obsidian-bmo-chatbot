@@ -10,17 +10,17 @@ A chatbot Obsidian plugin that integrates Large Language Models (LLMs) such as O
 Two methods:
 
 - Obsidian Community plugins (currently in review):
-  1. Search for "BMO Chatbot" in the Obsidian Community plugins.
-  2. Enable "BMO Chatbot" in the settings.
+1. Search for "BMO Chatbot" in the Obsidian Community plugins.
+2. Enable "BMO Chatbot" in the settings.
 
 - To activate the plugin from this repo, please follow these steps:
+1. Navigate to the plugin's folder in your terminal.
+2. Run `npm install` to install any necessary dependencies for the plugin.
+3. Once the dependencies have been installed, run `npm run build` to build the plugin.
+4. Once the plugin has been built, it should be ready to activate.
 
-  1. Navigate to the plugin's folder in your terminal.
-  2. Run `npm install` to install any necessary dependencies for the plugin.
-  3. Once the dependencies have been installed, run `npm run build` to build the plugin.
-  4. Once the plugin has been built, it should be ready to activate.
-
-## OpenAI API
+## Requirements
+### OpenAI API
 In order to use this plugin, you will need to have an OpenAI account and API access. 
 <!-- Please note that GPT-4 can only be used if you have access to the API.  -->
 If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview).
