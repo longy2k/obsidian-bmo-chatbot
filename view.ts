@@ -201,6 +201,7 @@ export class BMOView extends ItemView {
             this.textareaElement.style.height = "25px";
         }
         this.textareaElement.style.height = `${this.textareaElement.scrollHeight}px`;
+        this.textareaElement.scrollTop = this.textareaElement.scrollHeight;
     }
 
     handleBlur(event: Event) {

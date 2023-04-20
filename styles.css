@@ -98,7 +98,7 @@ If your plugin does not need CSS, delete this file.
 
 /* messageBlock style */
 
-pre {
+.messageBlock pre {
   white-space: pre-wrap;
   overflow-wrap: break-word;
   font-family: "Courier New", Courier, monospace;
@@ -108,14 +108,14 @@ pre {
   border-radius: 5px;
   border: 1px solid #ccc;
   line-height: 1.5;
-  color: #abb2bf;
 }
 
-pre code {
+.messageBlock pre code {
   padding: 5px;
+  color: #ced4df;
 }
 
-code {
+.messageBlock code {
   font-weight: bold;
   color: bisque;
 }
@@ -149,10 +149,10 @@ code {
   max-height: 145px;
   box-sizing: border-box;
   resize: none;
-  padding: 0 5px 0 0;
+  padding: 0 5px 5px 0;
   font-size: 16px;
   border: none;
-  vertical-align: sub;
+  vertical-align: text-top;
 }
 
 #chatbox textarea::placeholder {
