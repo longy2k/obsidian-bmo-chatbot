@@ -182,7 +182,7 @@ export class BMOView extends ItemView {
 
             setTimeout(() => {
                 this.textareaElement.value = "";
-                this.textareaElement.style.height = "30px";
+                this.textareaElement.style.height = "29px";
                 this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
                 this.textareaElement.setSelectionRange(0, 0);
             }, 0);
@@ -191,13 +191,13 @@ export class BMOView extends ItemView {
 
     // Chatbox height increase
     handleInput(event: Event) {
-        this.textareaElement.style.height = "30px";
+        this.textareaElement.style.height = "29px";
         this.textareaElement.style.height = this.textareaElement.scrollHeight + "px";
     }
 
     handleBlur(event: Event) {
         if (!this.textareaElement.value) {
-            this.textareaElement.style.height = "30px";
+            this.textareaElement.style.height = "29px";
         }
     }
     

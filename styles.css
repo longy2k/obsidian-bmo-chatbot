@@ -133,42 +133,11 @@ If your plugin does not need CSS, delete this file.
 
 /* chatbox - textarea */
 
-/* #chatbox {
-  margin: 10px 3.5%;
-  background-color: var(--interactive-accent);
-  padding: 5px 0px 0px 0px;
-  border-radius: 5px;
-}
-
-#chatbox textarea{
-  width: 96%;
-  margin: 0px 2%;
-  background-color: var(--interactive-accent);
-  height: 25px;
-  min-height: 25px;
-  max-height: 145px;
-  box-sizing: border-box;
-  resize: none;
-  padding: 0 5px 5px 0;
-  font-size: 16px;
-  border: none;
-  vertical-align: text-top;
-}
-
-#chatbox textarea::placeholder {
-    color: white;
-    font-weight: 500;
-}
-::selection {
-  background-color: blue;
-  color: white;
-} */
-
 #chatbox{
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 5px 3.5%;
+  margin: 13px 3.5%;
   padding: 5px;
   background-color: var(--interactive-accent);
   border-radius: 5px;
@@ -177,18 +146,28 @@ If your plugin does not need CSS, delete this file.
 #chatbox textarea {
   background-color: var(--interactive-accent);
   width: 100%;
-  height: 30px;
+  height: 29px;
   max-height: 150px;
   resize: none;
   font-size: 16px;
   overflow-y: auto;
-  border: none;
+  border-color: var(--interactive-accent);
 }
 
 #chatbox textarea:focus {
   outline: none;
   box-shadow: none;
-  border: none;
+}
+
+#chatbox textarea::placeholder {
+  color: white;
+  font-weight: 500;
+}
+
+/* Some themes don't have selction so I added this just in case */
+::selection {
+  background-color: blue;
+  color: white;
 }
 
 /* Loading */
