@@ -1,5 +1,5 @@
-# obsidian-bmo-chatbot
-A chatbot Obsidian plugin that integrates Large Language Models (LLMs) such as OpenAI's "gpt-3.5-turbo".
+# BMO Chatbot
+An Obsidian chatbot plugin that integrates Large Language Models (LLMs) such as OpenAI's "gpt-3.5-turbo".
 
 ![Screenshot-1](README_images/Screenshot-1.png)
 <p align="center">
