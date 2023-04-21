@@ -138,7 +138,7 @@ If your plugin does not need CSS, delete this file.
   align-items: center;
   justify-content: center;
   margin: 13px 3.5%;
-  padding: 5px;
+  padding: 3px;
   background-color: var(--interactive-accent);
   border-radius: 5px;
 }
