@@ -83,7 +83,7 @@ export class BMOView extends ItemView {
 
     addEventListeners() {
         this.textareaElement.addEventListener("keyup", this.handleKeyup.bind(this));
-        this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
+        // this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
         this.textareaElement.addEventListener("input", this.handleInput.bind(this));
         this.textareaElement.addEventListener("blur", this.handleBlur.bind(this));
     }
@@ -190,19 +190,19 @@ export class BMOView extends ItemView {
         }
     }
 
-    handleKeydown(event: KeyboardEvent) {
-        if (event.key === "Enter" && !event.shiftKey) { // check if enter key was pressed
-            event.preventDefault(); // prevent default behavior
-        }
-    }
+    // handleKeydown(event: KeyboardEvent) {
+    //     if (event.key === "Enter" && !event.shiftKey) { // check if enter key was pressed
+    //         event.preventDefault(); // prevent default behavior
+    //     }
+    // }
 
     handleInput(event: Event) {
-        if (this.textareaElement.value.indexOf('\n') === -1) {
-            this.textareaElement.style.height = "25px";
-        }
-        this.textareaElement.style.height = `${this.textareaElement.scrollHeight}px`;
-        this.textareaElement.scrollTop = this.textareaElement.scrollHeight;
+        this.textareaElement.style.height = "25px";
+        this.textareaElement.style.height = this.textareaElement.scrollHeight + "px";
     }
+      
+      
+    
 
     handleBlur(event: Event) {
         if (!this.textareaElement.value) {
@@ -213,7 +213,7 @@ export class BMOView extends ItemView {
     cleanup() {
         // Remove event listeners and other resources created by this.view
         this.textareaElement.removeEventListener("keyup", this.handleKeyup.bind(this));
-        this.textareaElement.removeEventListener("keydown", this.handleKeydown.bind(this));
+        // this.textareaElement.removeEventListener("keydown", this.handleKeydown.bind(this));
         this.textareaElement.removeEventListener("input", this.handleInput.bind(this));
         this.textareaElement.removeEventListener("blur", this.handleBlur.bind(this));
 
