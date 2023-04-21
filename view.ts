@@ -15,6 +15,7 @@ export class BMOView extends ItemView {
     private settings: BMOSettings;
     private textareaElement: HTMLTextAreaElement;
     private loadingAnimationIntervalId: number;
+    private preventEnter = false;
 
     constructor(leaf: WorkspaceLeaf, settings: BMOSettings) {
         super(leaf);
@@ -90,7 +91,7 @@ export class BMOView extends ItemView {
     
     // Event handler methods
     handleKeyup(event: KeyboardEvent) {
-        if (!event.shiftKey && event.key === "Enter") {
+        if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {
             event.preventDefault(); // prevent submission
             const input = this.textareaElement.value.trim();
             if (input.length === 0) { // check if input is empty or just whitespace
@@ -98,7 +99,6 @@ export class BMOView extends ItemView {
             }
 
             messageHistory += input + "\n";
-            // this.BMOchatbot(input);
             console.log(messageHistory);
 
             // Create a new paragraph element for each message
@@ -148,6 +148,7 @@ export class BMOView extends ItemView {
 
                 // Define a function to update the loading animation
                 const updateLoadingAnimation = () => {
+                    this.preventEnter = true; // Prevent user from pressing enter when message is loading.
                     // Access the loadingEl element with optional chaining
                     const loadingEl = document.querySelector('#loading');
                     // If loadingEl is null or undefined, return early
@@ -159,26 +160,29 @@ export class BMOView extends ItemView {
                     // If the loading animation has reached three dots, reset it to one dot
                     if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
                         loadingEl.textContent = ".";
-                }
-            };                
+                    }
+                };                
 
-            // Call the updateLoadingAnimation function every 500 milliseconds
-            const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+                // Call the updateLoadingAnimation function every 500 milliseconds
+                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+                this.preventEnter = true; // Allow user to respond after the bot responded.
 
-            // Call the chatbot function with the user's input
-            this.BMOchatbot(input)
-                .then(response => {
-                    // Stop the loading animation and update the bot message with the response
-                    clearInterval(loadingAnimationIntervalId);
-                })
-                .catch(error => {
-                    // Stop the loading animation and update the bot message with an error message
-                    clearInterval(loadingAnimationIntervalId);
-                    loadingEl.textContent = "";
-                    const botParagraph = document.createElement("p");
-                    botParagraph.textContent = "Oops, something went wrong. Please try again.";
-                    botMessage.appendChild(botParagraph);
-                });
+                // Call the chatbot function with the user's input
+                this.BMOchatbot(input)
+                    .then(() => {
+                        // Stop the loading animation and update the bot message with the response
+                        clearInterval(loadingAnimationIntervalId);
+                        this.preventEnter = false; // Allow user to respond after the bot responded.
+                    })
+                    .catch(() => {
+                        // Stop the loading animation and update the bot message with an error message
+                        clearInterval(loadingAnimationIntervalId);
+                        loadingEl.textContent = "";
+                        const botParagraph = document.createElement("p");
+                        botParagraph.textContent = "Oops, something went wrong. Please try again.";
+                        botMessage.appendChild(botParagraph);
+                    });
+            
             }
 
             setTimeout(() => {
@@ -224,90 +228,93 @@ export class BMOView extends ItemView {
         // Add more cleanup code here, if needed
     }
 
-  async BMOchatbot(input: string) {
-    if (!this.settings.apiKey) {
-        const botName = document.querySelector('#chatbotName');
-        const botMessage = document.querySelector('.botMessage');
-        const removeLoading = document.querySelector('#loading') as HTMLDivElement;
-        const disableChatbox = document.getElementById('chatbox');
-        (disableChatbox as HTMLTextAreaElement).disabled = true;
-        new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
-        if (botName){
-            botName.textContent = "ERROR";
-        }
-        if (removeLoading) {
-            removeLoading.textContent = '';
-            removeLoading.style.cssText = '';
-          }
-        if (botMessage){
-            const newMessage = document.createElement('p');
-            newMessage.textContent = "API key not found. Please add your OpenAI API key in the plugin settings.";
-            newMessage.classList.add('errorMessage');
-            botMessage.appendChild(newMessage);
-        }
-        return;
-      }
-    
-    try {
-    	const maxTokens = this.settings.max_tokens;
-    	const temperature = this.settings.temperature;
-
-    	const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    		method: 'POST',
-    		headers: {
-    			'Content-Type': 'application/json',
-    			'Authorization': `Bearer ${this.settings.apiKey}`
-    		},
-    		body: JSON.stringify({
-    			model: 'gpt-3.5-turbo',
-    			messages: [
-    				{ role: 'system', content: this.settings.system_role},
-    				{ role: 'user', content: messageHistory }
-    			],
-    			max_tokens: parseInt(maxTokens),
-    			temperature: parseFloat(temperature),
-    		}),
-    	});
-
-        const data = await response.json();
-        console.log(data);
-
-        const message = data.choices[0].message.content;
-        messageHistory += message + "\n";
-
-
-        // Append the bmoMessage element to the messageContainer div
-        const messageContainerEl = document.getElementById("messageContainer");
-
-        if (messageContainerEl) {
-            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-            const lastBotMessage = botMessages[botMessages.length - 1];
-            const loadingEl = lastBotMessage.querySelector("#loading");
-            
-            if (loadingEl) {
-                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                lastBotMessage.removeChild(loadingEl); // Remove loading message
+    async BMOchatbot(input: string) {
+        if (!this.settings.apiKey) {
+            const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
+            const messageContainer = document.querySelector('#messageContainer');
+            const removeLoading = document.querySelector('#loading') as HTMLDivElement;
+            const chatbox = document.querySelector('#chatbox textarea') as HTMLTextAreaElement;
+            new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
+            if (chatbotNameHeading){
+                chatbotNameHeading.textContent = "ERROR";
             }
-          
-            const messageBlock = document.createElement("p");
-            messageBlock.textContent = message;
-            const markdownContent = marked(message);
-            messageBlock.innerHTML = markdownContent;
-            messageBlock.classList.add("messageBlock");
-            
-            lastBotMessage.appendChild(messageBlock);
-            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    } catch (error) {
-        new Notice('Error occurred while fetching completion: ' + error.message);
-        console.log(error.message);
-        console.log("messageHistory: " + messageHistory);
-    }
-    console.log("BMO settings:", this.settings);
-}
+            if (removeLoading) {
+                removeLoading.textContent = '';
+                removeLoading.style.cssText = '';
+            }
 
-  async onClose() {
-    // Nothing to clean up.
-  }
+            const lastDiv = messageContainer?.lastElementChild as HTMLDivElement;
+            const errorMessage = document.createElement('p');
+            errorMessage.textContent = "API key not found. Please add your OpenAI API key in the plugin settings.";
+            errorMessage.classList.add('errorMessage');
+            const chatbotNameError = lastDiv.querySelector('#chatbotName') as HTMLDivElement;
+            chatbotNameError.textContent = "ERROR";
+            lastDiv.appendChild(errorMessage);
+            chatbox.disabled = true;
+            return;
+        }
+        
+        try {
+            const maxTokens = this.settings.max_tokens;
+            const temperature = this.settings.temperature;
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.settings.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-3.5-turbo',
+                    messages: [
+                        { role: 'system', content: this.settings.system_role},
+                        { role: 'user', content: messageHistory }
+                    ],
+                    max_tokens: parseInt(maxTokens),
+                    temperature: parseFloat(temperature),
+                }),
+            });
+
+            const data = await response.json();
+            console.log(data);
+
+            const message = data.choices[0].message.content;
+            messageHistory += message + "\n";
+
+
+            // Append the bmoMessage element to the messageContainer div
+            const messageContainerEl = document.getElementById("messageContainer");
+
+            if (messageContainerEl) {
+                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                const lastBotMessage = botMessages[botMessages.length - 1];
+                const loadingEl = lastBotMessage.querySelector("#loading");
+                
+                if (loadingEl) {
+                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    lastBotMessage.removeChild(loadingEl); // Remove loading message
+                }
+            
+                const messageBlock = document.createElement("p");
+                messageBlock.textContent = message;
+                const markdownContent = marked(message);
+                messageBlock.innerHTML = markdownContent;
+                messageBlock.classList.add("messageBlock");
+                
+                lastBotMessage.appendChild(messageBlock);
+                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } 
+        catch (error) {
+            new Notice('Error occurred while fetching completion: ' + error.message);
+            console.log(error.message);
+            console.log("messageHistory: " + messageHistory);
+        }
+            console.log("BMO settings:", this.settings);
+    }
+
+    async onClose() {
+        // Nothing to clean up.
+    }
 
 }

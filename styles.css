@@ -186,7 +186,6 @@ If your plugin does not need CSS, delete this file.
 
 .errorMessage {
   color: red;
-  padding: 0px 10px 12px 10px;
 }
 .disabled {
   pointer-events: none;
