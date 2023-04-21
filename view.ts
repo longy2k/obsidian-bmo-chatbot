@@ -83,7 +83,6 @@ export class BMOView extends ItemView {
 
     addEventListeners() {
         this.textareaElement.addEventListener("keyup", this.handleKeyup.bind(this));
-        // this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
         this.textareaElement.addEventListener("input", this.handleInput.bind(this));
         this.textareaElement.addEventListener("blur", this.handleBlur.bind(this));
     }
@@ -183,37 +182,28 @@ export class BMOView extends ItemView {
 
             setTimeout(() => {
                 this.textareaElement.value = "";
-                this.textareaElement.style.height = "25px";
+                this.textareaElement.style.height = "30px";
                 this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
                 this.textareaElement.setSelectionRange(0, 0);
             }, 0);
         }
     }
 
-    // handleKeydown(event: KeyboardEvent) {
-    //     if (event.key === "Enter" && !event.shiftKey) { // check if enter key was pressed
-    //         event.preventDefault(); // prevent default behavior
-    //     }
-    // }
-
+    // Chatbox height increase
     handleInput(event: Event) {
-        this.textareaElement.style.height = "25px";
+        this.textareaElement.style.height = "30px";
         this.textareaElement.style.height = this.textareaElement.scrollHeight + "px";
     }
-      
-      
-    
 
     handleBlur(event: Event) {
         if (!this.textareaElement.value) {
-            this.textareaElement.style.height = "25px";
+            this.textareaElement.style.height = "30px";
         }
     }
     
     cleanup() {
         // Remove event listeners and other resources created by this.view
         this.textareaElement.removeEventListener("keyup", this.handleKeyup.bind(this));
-        // this.textareaElement.removeEventListener("keydown", this.handleKeydown.bind(this));
         this.textareaElement.removeEventListener("input", this.handleInput.bind(this));
         this.textareaElement.removeEventListener("blur", this.handleBlur.bind(this));
 
