@@ -72,13 +72,22 @@ export class BMOSettingTab extends PluginSettingTab {
         );
 
 		new Setting(containerEl)
-			.setName('Model')
-			.setDesc('Snapshot of gpt-3.5-turbo from March 1st 2023. Unlike gpt-3.5-turbo, this model will not receive updates, and will only be supported for a three month period ending on June 1st 2023. (Training Data: Up to Sep 2021)')
-			.addText(text => text
-				.setValue('gpt-3.5-turbo-0301')
-				.setDisabled(true)
+		.setName('Model')
+		.setDesc('Choose a GPT model. (Keep in mind that access to GPT-4 depends on your API key.)')
+		.addDropdown(dropdown => dropdown
+		  .addOption('gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0301')
+		  .addOption('gpt-4-0314', 'gpt-4-0314')
+		  .setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
+		  .onChange(async (value) => {
+			this.plugin.settings.model = value;
+			await this.plugin.saveSettings();
+			const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
+			if (modelName) {
+                modelName.textContent = 'Model: ' + this.plugin.settings.model.replace(/[gpt]/g, letter => letter.toUpperCase());
+            }
+		})
 		);
-
+	  
 		new Setting(containerEl)
 			.setName('System')
 			.setDesc('System role prompt')

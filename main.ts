@@ -7,6 +7,7 @@ import { BMOSettingTab } from './settings';
 export interface BMOSettings {
 	apiKey: string;
 	max_tokens: string;
+	model: string;
 	system_role: string;
 	temperature: string;
 	chatbotName: string;
@@ -15,6 +16,7 @@ export interface BMOSettings {
 export const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
 	max_tokens: '',
+	model: 'gpt-3.5-turbo-0301',
 	system_role: 'You are a helpful assistant who responds in markdown.',
 	temperature: '',
 	chatbotName: 'BOT',

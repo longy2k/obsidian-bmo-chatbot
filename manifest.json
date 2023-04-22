@@ -3,7 +3,7 @@
 	"name": "BMO Chatbot",
 	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
-	"description": "A chatbot Obsidian plugin that integrates Large Language Models (LLMs) such as OpenAI's 'gpt-3.5-turbo'.",
+	"description": "A chatbot Obsidian plugin that integrates Large Language Models (LLMs) such as OpenAI's 'gpt-3.5-turbo' and 'gpt-4'.",
 	"author": "Longy2k",
 	"authorUrl": "https://github.com/longy2k",
 	"isDesktopOnly": false

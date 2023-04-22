@@ -48,12 +48,12 @@ export class BMOView extends ItemView {
         });
 
         chatbotContainer.createEl("p", {
-            text: "Model: GPT-3.5-Turbo",
+            text: "Model: " + this.settings.model.replace(/[gpt]/g, letter => letter.toUpperCase()) || DEFAULT_SETTINGS.model.replace(/[gpt]/g, letter => letter.toUpperCase()),
             attr: {
                 id: "modelName"
             }
         });
-
+        
         chatbotContainer.createEl("div", {
             attr: {
                 id: "messageContainer",
@@ -265,7 +265,7 @@ export class BMOView extends ItemView {
                     'Authorization': `Bearer ${this.settings.apiKey}`
                 },
                 body: JSON.stringify({
-                    model: 'gpt-3.5-turbo',
+                    model: this.settings.model,
                     messages: [
                         { role: 'system', content: this.settings.system_role},
                         { role: 'user', content: messageHistory }
@@ -325,10 +325,6 @@ export class BMOView extends ItemView {
                     }
                   });
                 });
-                
-                
-                
-                                              
                 
                 lastBotMessage.appendChild(messageBlock);
                 lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
