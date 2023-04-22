@@ -9,7 +9,7 @@ If your plugin does not need CSS, delete this file.
 
 .chatbotContainer {
   height: 100%;
-  max-height: 98%;
+  max-height: 96%;
   position: relative;
   border-radius: 5px;
   border: 1px solid var(--background-modifier-border);
@@ -115,10 +115,29 @@ If your plugin does not need CSS, delete this file.
   color: #ced4df;
 }
 
-.messageBlock code {
+.messageBlock pre code {
   font-weight: bold;
   color: bisque;
 }
+
+.messageBlock pre {
+  position: relative;
+}
+
+.copy-button {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  color: var(--text-muted)
+}
+
+.copy-button:hover {
+  color: white;
+}
+
 
 /* Tables */
 
@@ -190,3 +209,4 @@ If your plugin does not need CSS, delete this file.
 .disabled {
   pointer-events: none;
 }
+

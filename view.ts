@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, View } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, setIcon } from "obsidian";
 import { marked } from "marked";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 
@@ -300,6 +300,35 @@ export class BMOView extends ItemView {
                 const markdownContent = marked(message);
                 messageBlock.innerHTML = markdownContent;
                 messageBlock.classList.add("messageBlock");
+
+                // Copy button for code blocks
+                const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
+
+                codeBlocks.forEach((codeElement) => {
+                  const copyButton = document.createElement("button");
+                  copyButton.textContent = "copy";
+                  setIcon(copyButton, "copy");
+                  copyButton.classList.add("copy-button");
+                  copyButton.title = "copy";
+                  if (codeElement.parentNode) {
+                    codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
+                  }
+                
+                  copyButton.addEventListener("click", () => {
+                    const codeText = codeElement.textContent;
+                    if (codeText) {
+                      navigator.clipboard.writeText(codeText).then(() => {
+                        new Notice('Copied to your clipboard');
+                      }, (err) => {
+                        console.error("Failed to copy code: ", err);
+                      });
+                    }
+                  });
+                });
+                
+                
+                
+                                              
                 
                 lastBotMessage.appendChild(messageBlock);
                 lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
