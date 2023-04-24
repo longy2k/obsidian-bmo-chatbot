@@ -112,29 +112,25 @@ If your plugin does not need CSS, delete this file.
 
 .messageBlock pre code {
   padding: 5px;
-  color: #ced4df;
-}
-
-.messageBlock pre code {
   font-weight: bold;
-  color: bisque;
+  color: #ced4df;
 }
 
 .messageBlock pre {
   position: relative;
 }
 
-.copy-button {
+.messageBlock pre .copy-button {
   background-color: transparent !important;
   box-shadow: none !important;
   border: none;
   position: absolute;
-  top: 1px;
-  right: 1px;
+  top: 0px;
+  right: 0px;
   color: var(--text-muted)
 }
 
-.copy-button:hover {
+.messageBlock pre .copy-button:hover {
   color: white;
 }
 
