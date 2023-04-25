@@ -181,12 +181,6 @@ If your plugin does not need CSS, delete this file.
   font-weight: 500;
 }
 
-/* Some themes don't have selction so I added this just in case */
-::selection {
-  background-color: blue;
-  color: white;
-}
-
 /* Loading */
 
 #loading {
