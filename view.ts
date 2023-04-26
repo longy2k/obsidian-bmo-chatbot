@@ -1,8 +1,7 @@
 import { ItemView, WorkspaceLeaf, Notice, setIcon } from "obsidian";
 import { marked } from "marked";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
-import { loadPrism } from 'obsidian';
-import * as Prism from 'prismjs';
+import { loadPrism } from "obsidian";
 
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
@@ -83,6 +82,7 @@ export class BMOView extends ItemView {
         
         this.textareaElement = textarea as HTMLTextAreaElement;
         this.addEventListeners();
+        
     }
 
     addEventListeners() {
@@ -304,12 +304,25 @@ export class BMOView extends ItemView {
                 messageBlock.innerHTML = markdownContent;
                 messageBlock.classList.add("messageBlock");
 
+                // Wait for Prism.js to load
+                loadPrism().then((Prism) => {
+                    // Select all code blocks
+                    const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
+                    
+                    // Apply syntax highlighting to each code block
+                    codeBlocks.forEach((codeBlock) => {
+                    const language = codeBlock.className.replace("language-", "");
+                    const code = codeBlock.textContent;
+                    const highlightedCode = Prism.highlight(code, Prism.languages[language]);
+                    codeBlock.innerHTML = highlightedCode;
+                    });
+                });
+
                 // Copy button for code blocks
                 const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
 
                 codeBlocks.forEach(async (codeElement) => {
-                  await loadPrism();
-                  Prism.highlightElement(codeElement);
+                  console.log(codeElement);
                   const copyButton = document.createElement("button");
                   copyButton.textContent = "copy";
                   setIcon(copyButton, "copy");
