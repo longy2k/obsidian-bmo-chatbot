@@ -42,7 +42,13 @@ If your plugin does not need CSS, delete this file.
   margin-top: 10px;
   flex-grow: 1;
   overflow-y: auto;
-  user-select: text;
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+   -khtml-user-select: text;
+     -moz-user-select: text;
+      -ms-user-select: text;
+       -o-user-select: text;
+          user-select: text;
   max-height: calc(100% - 160px); /* subtract the height of chatbox and 100px */
   word-wrap: break-word;
 }

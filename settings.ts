@@ -44,7 +44,7 @@ export class BMOSettingTab extends PluginSettingTab {
 			.setName('OpenAI API Key')
 			.setDesc('Insert API Key from OpenAI')
 			.addText(text => text
-				.setPlaceholder('OpenAI-api-key')
+				.setPlaceholder('insert-api-key')
 				.setValue(this.plugin.settings.apiKey)
 				.onChange(async (value) => {
 					this.plugin.settings.apiKey = value;
