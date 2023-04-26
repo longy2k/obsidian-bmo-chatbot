@@ -9,31 +9,26 @@ An Obsidian chatbot plugin that integrates Large Language Models (LLMs) such as 
 ## How to activate the plugin
 Two methods:
 
-- Obsidian Community plugins (currently in review):
+Obsidian Community plugins (currently in review):
   1. Search for "BMO Chatbot" in the Obsidian Community plugins.
   2. Enable "BMO Chatbot" in the settings.
 
-- To activate the plugin from this repo, please follow these steps:
+To activate the plugin from this repo, please follow these steps:
   1. Navigate to the plugin's folder in your terminal.
   2. Run `npm install` to install any necessary dependencies for the plugin.
   3. Once the dependencies have been installed, run `npm run build` to build the plugin.
   4. Once the plugin has been built, it should be ready to activate.
 
 ## Requirements
-### OpenAI API
-In order to use this plugin, you will need to have an OpenAI account and API access. 
 
-If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview).
-Once you have your account, you can access your API key and enter it into the plugin settings to start using the chatbot.
-
-*Please note that GPT-4 can only be used if you have access to the API.* 
+To use this plugin, you need an OpenAI account with API access. If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview). Please note that access to GPT-4 is only available if you have been granted access by OpenAI.
 
 ## Getting Started
-To get started, enable the plugin in your settings menu and add your OpenAPI key to the plugin. 
-Once you've completed these steps, you'll be able to see the bot icon in your left sidebar, 
-which you can click on to access the bot panel and start interacting with it.
 
-When you open the chatbot, clicking on the left ribbon bar bot icon again will clear the history.
+To start using the plugin, enable it in your settings menu and enter your OpenAPI key. After completing these steps, you can access the bot panel by clicking on the bot icon in the left sidebar.
+
+If you want to clear the chat history, simply click on the bot icon again in the left ribbon bar.
+
 
 ## Features
 - **Chat from anywhere in Obsidian:** Chat with your bot wherever you are!
@@ -44,7 +39,7 @@ When you open the chatbot, clicking on the left ribbon bar bot icon again will c
 - **System theme color accents:** Seamlessly matches the chatbot's interface with your system's color scheme.
 
 ## Other Notes
-"BMO" is just a tag name for the project.
+"BMO" is a tag name for this project, inspired by the character BMO from the animated TV show Adventure Time.
 
 ## Contributing
 Feel free to improve the plugin!
