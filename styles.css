@@ -86,19 +86,13 @@ If your plugin does not need CSS, delete this file.
 .messageBlock{
   margin: 0;
   overflow-wrap: break-word;
+  position: relative;
 }
-
-/* .messageBlock p{
-  margin-bottom: 10px;
-} */
-
-/* .messageBlock p:last-child{
-  margin-bottom: 0px;
-} */
 
 /* messageBlock style */
 
 .messageBlock pre {
+  position: relative;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   font-family: "Courier New", Courier, monospace;
@@ -116,12 +110,8 @@ If your plugin does not need CSS, delete this file.
   color: #ced4df;
 }
 
-.messageBlock pre {
-  position: relative;
-}
-
 .messageBlock pre button.copy-button {
-  padding: 6px;
+  padding: 0 4px;
   background-color: transparent !important;
   box-shadow: none !important;
   border: none;
@@ -130,7 +120,9 @@ If your plugin does not need CSS, delete this file.
   right: 0px;
   color: var(--text-muted);
   display: inline-block;
+  max-width: 30px;
 }
+
 
 .messageBlock pre .copy-button:hover {
   color: white;
