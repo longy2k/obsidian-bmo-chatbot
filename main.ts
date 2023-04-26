@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, ItemView } from 'obsidian';
+import { App, Editor, MarkdownView, MarkdownPostProcessorContext, Modal, Notice, Plugin, PluginSettingTab, Setting, ItemView } from 'obsidian';
 import { Configuration, OpenAIApi } from "openai";
 import { BMOView, VIEW_TYPE_EXAMPLE, setMessageHistory } from "./view";
 import { BMOSettingTab } from './settings';
@@ -32,6 +32,7 @@ export default class BMOGPT extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+
 		this.registerView(
 			VIEW_TYPE_EXAMPLE,
 			(leaf) => new BMOView(leaf, this.settings)

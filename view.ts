@@ -1,6 +1,8 @@
 import { ItemView, WorkspaceLeaf, Notice, setIcon } from "obsidian";
 import { marked } from "marked";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
+import { loadPrism } from 'obsidian';
+import * as Prism from 'prismjs';
 
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
@@ -31,7 +33,8 @@ export class BMOView extends ItemView {
         return "Chatbot";
     }
 
-    async onOpen() {
+    async onOpen(): Promise<void> {
+
         const container = this.containerEl.children[1];
         container.empty();
         const chatbotContainer = container.createEl("div", {
@@ -59,7 +62,7 @@ export class BMOView extends ItemView {
                 id: "messageContainer",
             }
         });
-        
+
         const chatbox = chatbotContainer.createEl("div", {
             attr: {
                 id: "chatbox",
@@ -304,7 +307,9 @@ export class BMOView extends ItemView {
                 // Copy button for code blocks
                 const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
 
-                codeBlocks.forEach((codeElement) => {
+                codeBlocks.forEach(async (codeElement) => {
+                  await loadPrism();
+                  Prism.highlightElement(codeElement);
                   const copyButton = document.createElement("button");
                   copyButton.textContent = "copy";
                   setIcon(copyButton, "copy");
