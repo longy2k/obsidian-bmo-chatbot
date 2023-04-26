@@ -117,10 +117,10 @@ export class BMOView extends ItemView {
             
             const sanitizedInput = input.split("\n").map(line => {
                 const sanitizedLine = document.createTextNode(line).textContent;
-                return sanitizedLine ? sanitizedLine + "<br>" : "<br>";
+                return sanitizedLine ? sanitizedLine + "\n" : "\n";
             }).join('');
             
-            userParagraph.innerHTML = sanitizedInput;
+            userParagraph.innerText = sanitizedInput;
             
             userMessage.appendChild(userParagraph);
 
