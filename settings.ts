@@ -58,16 +58,16 @@ export class BMOSettingTab extends PluginSettingTab {
             .setPlaceholder('Enter chatbot name')
             .setValue(this.plugin.settings.chatbotName || DEFAULT_SETTINGS.chatbotName)
             .onChange(async (value) => {
-			this.plugin.settings.chatbotName = value ? value.toUpperCase() : DEFAULT_SETTINGS.chatbotName;
-            await this.plugin.saveSettings();
-            const chatbotNameHeading = document.querySelector('#chatbotNameHeading') as HTMLHeadingElement;
-            const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
-            if (chatbotNameHeading) {
-                chatbotNameHeading.textContent = this.plugin.settings.chatbotName;
-            }
-            chatbotNames.forEach(chatbotName => {
-                chatbotName.textContent = this.plugin.settings.chatbotName;
-            });
+				this.plugin.settings.chatbotName = value ? value.toUpperCase() : DEFAULT_SETTINGS.chatbotName;
+				await this.plugin.saveSettings();
+				const chatbotNameHeading = document.querySelector('#chatbotNameHeading') as HTMLHeadingElement;
+				const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+				if (chatbotNameHeading) {
+					chatbotNameHeading.textContent = this.plugin.settings.chatbotName;
+				}
+				chatbotNames.forEach(chatbotName => {
+					chatbotName.textContent = this.plugin.settings.chatbotName;
+				});
             })
         );
 
