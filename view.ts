@@ -303,20 +303,26 @@ export class BMOView extends ItemView {
                 const markdownContent = marked(message);
                 messageBlock.innerHTML = markdownContent;
                 messageBlock.classList.add("messageBlock");
+                
+                const paragraphs = messageBlock.querySelectorAll("p");
 
-                // // Check if any <p> element is a direct sibling of another <p> element
-                // const paragraphs = messageBlock.querySelectorAll("p");
-                // paragraphs.forEach((p) => {
-                // // Add a <br> element after the <p> element if it is a direct sibling of another <p> element
-                // const nextSibling = p.nextSibling;
-                // if (nextSibling && nextSibling.nodeName === "P") {
-                //     const br = document.createElement("br");
-                //     const parent = p.parentNode;
-                //     if (parent) {
-                //     parent.insertBefore(br, nextSibling);
-                //     }
-                // }
-                // });
+                for (let i = 0; i < paragraphs.length; i++) {
+                  const p = paragraphs[i];
+                
+                  // Check if the current <p> element has a sibling <p> element
+                  const nextSibling = p.nextElementSibling;
+                  if (nextSibling && nextSibling.nodeName === "P") {
+                
+                    // Create a <br> element and insert it after the current <p> element
+                    const br = document.createElement("br");
+                    const parent = p.parentNode;
+                    if (parent) {
+                      parent.insertBefore(br, nextSibling);
+                    }
+                  }
+                }
+                
+
 
 
                 // Wait for Prism.js to load

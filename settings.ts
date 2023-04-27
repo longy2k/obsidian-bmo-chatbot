@@ -59,6 +59,7 @@ export class BMOSettingTab extends PluginSettingTab {
             .setValue(this.plugin.settings.chatbotName || DEFAULT_SETTINGS.chatbotName)
             .onChange(async (value) => {
 				this.plugin.settings.chatbotName = value ? value.toUpperCase() : DEFAULT_SETTINGS.chatbotName;
+				text.inputEl.maxLength = 30;
 				await this.plugin.saveSettings();
 				const chatbotNameHeading = document.querySelector('#chatbotNameHeading') as HTMLHeadingElement;
 				const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
