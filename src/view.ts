@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, setIcon } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, setIcon, requestUrl } from "obsidian";
 import { marked } from "marked";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import { loadPrism } from "obsidian";
@@ -258,8 +258,9 @@ export class BMOView extends ItemView {
         try {
             const maxTokens = this.settings.max_tokens;
             const temperature = this.settings.temperature;
-
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            
+            const response = await requestUrl({
+                url: 'https://api.openai.com/v1/chat/completions',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -275,11 +276,10 @@ export class BMOView extends ItemView {
                     temperature: parseFloat(temperature),
                 }),
             });
-
-            const data = await response.json();
-            console.log(data);
-
-            const message = data.choices[0].message.content;
+            
+            console.log(response.json);
+        
+            const message = response.json.choices[0].message.content;
             messageHistory += message + "\n";
 
 
