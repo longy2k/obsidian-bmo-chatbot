@@ -372,7 +372,7 @@ export class BMOView extends ItemView {
             console.log(error.message);
             console.log("messageHistory: " + messageHistory);
         }
-            console.log("BMO settings:", this.settings);
+        console.log("BMO settings:", this.settings);
     }
 
     async onClose() {
