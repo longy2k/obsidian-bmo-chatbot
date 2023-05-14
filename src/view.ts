@@ -3,7 +3,7 @@ import { marked } from "marked";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import { loadPrism } from "obsidian";
 
-export const VIEW_TYPE_EXAMPLE = "example-view";
+export const VIEW_TYPE_CHATBOT = "chatbot-view";
 
 let messageHistory = "";
 
@@ -25,7 +25,7 @@ export class BMOView extends ItemView {
     }
 
     getViewType() {
-        return VIEW_TYPE_EXAMPLE;
+        return VIEW_TYPE_CHATBOT;
     }
 
     getDisplayText() {
@@ -107,7 +107,6 @@ export class BMOView extends ItemView {
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
             userMessage.classList.add("userMessage");
-            userMessage.style.display = "inline-block";
             
             const userNameSpan = document.createElement("span");
             userNameSpan.textContent = "USER";
@@ -134,7 +133,6 @@ export class BMOView extends ItemView {
             
                 const botMessage = document.createElement("div");
                 botMessage.classList.add("botMessage"); 
-                botMessage.style.display = "inline-block"; 
                 messageContainer.appendChild(botMessage);
             
                 const botNameSpan = document.createElement("span"); 

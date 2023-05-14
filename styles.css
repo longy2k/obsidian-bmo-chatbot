@@ -81,6 +81,7 @@ If your plugin does not need CSS, delete this file.
   margin: 0;
   padding: 10px 3.5%;
   width: 100%;
+  display: inline-block;
 }
 
 .userMessage {

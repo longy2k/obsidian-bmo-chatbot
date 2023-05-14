@@ -1,6 +1,6 @@
 import { App, Editor, MarkdownView, MarkdownPostProcessorContext, Modal, Notice, Plugin, PluginSettingTab, Setting, ItemView } from 'obsidian';
 import { Configuration, OpenAIApi } from "openai";
-import { BMOView, VIEW_TYPE_EXAMPLE, setMessageHistory } from "./view";
+import { BMOView, VIEW_TYPE_CHATBOT, setMessageHistory } from "./view";
 import { BMOSettingTab } from './settings';
 
 // Remember to rename these classes and interfaces!
@@ -34,7 +34,7 @@ export default class BMOGPT extends Plugin {
 		await this.loadSettings();
 
 		this.registerView(
-			VIEW_TYPE_EXAMPLE,
+			VIEW_TYPE_CHATBOT,
 			(leaf) => new BMOView(leaf, this.settings)
 		);
 
@@ -54,27 +54,25 @@ export default class BMOGPT extends Plugin {
 	}
 
 	async onunload() {
-		this.app.workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE).forEach((leaf) => {
+		this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT).forEach((leaf) => {
 		  const bmoView = leaf.view as BMOView;
 	  
 		  if (bmoView) {
 			bmoView.cleanup();
 		  }
 		});
-	  
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE);
-	  }
+	}
 
 	async activateView() {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE);
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_CHATBOT);
 	
 		await this.app.workspace.getRightLeaf(false).setViewState({
-		  type: VIEW_TYPE_EXAMPLE,
+		  type: VIEW_TYPE_CHATBOT,
 		  active: true,
 		});
 	
 		this.app.workspace.revealLeaf(
-		  this.app.workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE)[0]
+		  this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT)[0]
 		);
 	}
 
