@@ -259,8 +259,13 @@ export class BMOView extends ItemView {
             const maxTokens = this.settings.max_tokens;
             const temperature = this.settings.temperature;
             
-            const response = await requestUrl({
-                url: 'https://api.openai.com/v1/chat/completions',
+            // Initialize messageHistory here
+            // let messageHistory = '';
+        
+            const controller = new AbortController();
+            const signal = controller.signal;
+        
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -269,23 +274,63 @@ export class BMOView extends ItemView {
                 body: JSON.stringify({
                     model: this.settings.model,
                     messages: [
-                        { role: 'system', content: this.settings.system_role},
+                        { role: 'system', content: this.settings.system_role },
                         { role: 'user', content: messageHistory }
                     ],
                     max_tokens: parseInt(maxTokens),
                     temperature: parseFloat(temperature),
+                    stream: true,
                 }),
+                signal: signal
             });
-            
-            console.log(response.json);
         
-            const message = response.json.choices[0].message.content;
+            const reader = response.body ? response.body.getReader() : null;
+            let message = '';
+            
+            if (reader) {
+                let jsonData = '';
+            
+                while (true) {
+                    const { done, value } = await reader.read();
+            
+                    if (done) {
+                        console.log('[DONE]');
+                        break;
+                    }
+            
+                    // const chunk = new TextDecoder('utf-8').decode(value);
+                    // console.log(chunk);
+
+                    const chunk = new TextDecoder('utf-8').decode(value);
+                    const regex = /data:\s*(\{.*\})/g;
+                    let match;
+                    
+                    while ((match = regex.exec(chunk)) !== null) {
+                      try {
+                        const data = JSON.parse(match[1]);
+                        if (data.choices && data.choices.length > 0) {
+                          const content = data.choices[0].delta.content;
+                          if (content !== undefined) {
+                            console.log(content);
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                      }
+                    }
+ 
+                }
+            }
+            
+            
+            
+            
+            
             messageHistory += message + "\n";
-
-
+            
             // Append the bmoMessage element to the messageContainer div
             const messageContainerEl = document.getElementById("messageContainer");
-
+            
             if (messageContainerEl) {
                 const botMessages = messageContainerEl.querySelectorAll(".botMessage");
                 const lastBotMessage = botMessages[botMessages.length - 1];
