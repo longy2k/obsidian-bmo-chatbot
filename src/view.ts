@@ -130,6 +130,14 @@ export class BMOView extends ItemView {
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
                 botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan); 
+
+                // Create a spacer element for scrolling most recent userMessage/botMessage to
+                const spacer = document.createElement("div");
+                spacer.style.height = "100vh";
+                spacer.setAttribute("id", "spacer");
+                messageContainer.appendChild(spacer);
+
+                userMessage.scrollIntoView({ behavior: "smooth", block: "start" });
             
                 this.preventEnter = true; // Allow user to respond after the bot responded.
 
@@ -137,13 +145,18 @@ export class BMOView extends ItemView {
                 this.BMOchatbot(input)
                     .then(() => {
                         this.preventEnter = false; // Allow user to respond after the bot responded.
+
+                        // Select the spacer and remove it
+                        const spacer = document.querySelector("#spacer");
+                        if (spacer) {
+                            spacer.remove();
+                        }
                     })
                     .catch(() => {
                         const botParagraph = document.createElement("p");
                         botParagraph.textContent = "Oops, something went wrong. Please try again.";
                         botMessage.appendChild(botParagraph);
                     });
-            
             }
 
             setTimeout(() => {
