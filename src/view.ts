@@ -230,6 +230,7 @@ export class BMOView extends ItemView {
     }
 
     async BMOchatbot(input: string) {
+        // If apiKey does not exist.
         if (!this.settings.apiKey) {
             const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
             const messageContainer = document.querySelector('#messageContainer');
@@ -285,10 +286,12 @@ export class BMOView extends ItemView {
             });
         
             const reader = response.body ? response.body.getReader() : null;
+            
             let message = '';
             
             if (reader) {
-                let jsonData = '';
+                // let message = '';
+                let messageBlock;
             
                 while (true) {
                     const { done, value } = await reader.read();
@@ -298,113 +301,135 @@ export class BMOView extends ItemView {
                         break;
                     }
             
-                    // const chunk = new TextDecoder('utf-8').decode(value);
-                    // console.log(chunk);
-
                     const chunk = new TextDecoder('utf-8').decode(value);
                     const regex = /data:\s*(\{.*\})/g;
                     let match;
-                    
+            
                     while ((match = regex.exec(chunk)) !== null) {
-                      try {
-                        const data = JSON.parse(match[1]);
-                        if (data.choices && data.choices.length > 0) {
-                          const content = data.choices[0].delta.content;
-                          if (content !== undefined) {
-                            message += content;
-                            console.log(content);
-                          }
+                        try {
+                            const data = JSON.parse(match[1]);
+                            if (data.choices && data.choices.length > 0) {
+                                const content = data.choices[0].delta.content;
+                                if (content !== undefined) {
+                                    message += content;
+                                    console.log(content);
+            
+                                    const messageContainerEl = document.getElementById("messageContainer");
+                                    if (messageContainerEl) {
+                                        const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                                        const lastBotMessage = botMessages[botMessages.length - 1];
+            
+                                        // If messageBlock exists, update its content. Otherwise, create a new one.
+                                        if (messageBlock) {
+                                            const markdownContent = marked(message);
+                                            messageBlock.innerHTML = markdownContent;
+                                        } else {
+                                            messageBlock = document.createElement("p");
+                                            messageBlock.textContent = message;
+                                            const markdownContent = marked(message);
+                                            messageBlock.innerHTML = markdownContent;
+                                            messageBlock.classList.add("messageBlock");
+            
+                                            // ... the rest of your code for creating the message block ...
+            
+                                            lastBotMessage.appendChild(messageBlock);
+                                            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error parsing JSON:', error);
                         }
-                      } catch (error) {
-                        console.error('Error parsing JSON:', error);
-                      }
                     }
- 
                 }
             }
-            
+
             messageHistory += message + "\n";
             
+            
             // Append the bmoMessage element to the messageContainer div
-            const messageContainerEl = document.getElementById("messageContainer");
+            // const messageContainerEl = document.getElementById("messageContainer");
             
-            if (messageContainerEl) {
-                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                const lastBotMessage = botMessages[botMessages.length - 1];
-                // const loadingEl = lastBotMessage.querySelector("#loading");
+            // if (messageContainerEl) {
+            //     const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            //     const lastBotMessage = botMessages[botMessages.length - 1];
+            //     // const loadingEl = lastBotMessage.querySelector("#loading");
                 
-                // if (loadingEl) {
-                //     loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                //     lastBotMessage.removeChild(loadingEl); // Remove loading message
-                // }
+            //     // if (loadingEl) {
+            //     //     loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            //     //     lastBotMessage.removeChild(loadingEl); // Remove loading message
+            //     // }
             
-                const messageBlock = document.createElement("p");
-                messageBlock.textContent = message;
-                const markdownContent = marked(message);
-                messageBlock.innerHTML = markdownContent;
-                messageBlock.classList.add("messageBlock");
+            //     const messageBlock = document.createElement("p");
+            //     messageBlock.textContent = message;
+            //     const markdownContent = marked(message);
+            //     messageBlock.innerHTML = markdownContent;
+            //     messageBlock.classList.add("messageBlock");
                 
-                const paragraphs = messageBlock.querySelectorAll("p");
+            //     const paragraphs = messageBlock.querySelectorAll("p");
 
-                for (let i = 0; i < paragraphs.length; i++) {
-                  const p = paragraphs[i];
+            //     for (let i = 0; i < paragraphs.length; i++) {
+            //       const p = paragraphs[i];
                 
-                  // Check if the current <p> element has a sibling <p> element
-                  const nextSibling = p.nextElementSibling;
-                  if (nextSibling && nextSibling.nodeName === "P") {
+            //       // Check if the current <p> element has a sibling <p> element
+            //       const nextSibling = p.nextElementSibling;
+            //       if (nextSibling && nextSibling.nodeName === "P") {
                 
-                    // Create a <br> element and insert it after the current <p> element
-                    const br = document.createElement("br");
-                    const parent = p.parentNode;
-                    if (parent) {
-                      parent.insertBefore(br, nextSibling);
-                    }
-                  }
-                }
+            //         // Create a <br> element and insert it after the current <p> element
+            //         const br = document.createElement("br");
+            //         const parent = p.parentNode;
+            //         if (parent) {
+            //           parent.insertBefore(br, nextSibling);
+            //         }
+            //       }
+            //     }
 
-                // Wait for Prism.js to load
-                loadPrism().then((Prism) => {
-                    // Select all code blocks
-                    const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
+            //     // Wait for Prism.js to load
+            //     loadPrism().then((Prism) => {
+            //         // Select all code blocks
+            //         const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
                     
-                    // Apply syntax highlighting to each code block
-                    codeBlocks.forEach((codeBlock) => {
-                    const language = codeBlock.className.replace("language-", "");
-                    const code = codeBlock.textContent;
-                    const highlightedCode = Prism.highlight(code, Prism.languages[language]);
-                    codeBlock.innerHTML = highlightedCode;
-                    });
-                });
+            //         // Apply syntax highlighting to each code block
+            //         codeBlocks.forEach((codeBlock) => {
+            //         const language = codeBlock.className.replace("language-", "");
+            //         const code = codeBlock.textContent;
+            //         const highlightedCode = Prism.highlight(code, Prism.languages[language]);
+            //         codeBlock.innerHTML = highlightedCode;
+            //         });
+            //     });
 
-                // Copy button for code blocks
-                const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
+            //     // Copy button for code blocks
+            //     const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
 
-                codeBlocks.forEach(async (codeElement) => {
-                  console.log(codeElement);
-                  const copyButton = document.createElement("button");
-                  copyButton.textContent = "copy";
-                  setIcon(copyButton, "copy");
-                  copyButton.classList.add("copy-button");
-                  copyButton.title = "copy";
-                  if (codeElement.parentNode) {
-                    codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
-                  }
+            //     codeBlocks.forEach(async (codeElement) => {
+            //       console.log(codeElement);
+            //       const copyButton = document.createElement("button");
+            //       copyButton.textContent = "copy";
+            //       setIcon(copyButton, "copy");
+            //       copyButton.classList.add("copy-button");
+            //       copyButton.title = "copy";
+            //       if (codeElement.parentNode) {
+            //         codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
+            //       }
                 
-                  copyButton.addEventListener("click", () => {
-                    const codeText = codeElement.textContent;
-                    if (codeText) {
-                      navigator.clipboard.writeText(codeText).then(() => {
-                        new Notice('Copied to your clipboard');
-                      }, (err) => {
-                        console.error("Failed to copy code: ", err);
-                      });
-                    }
-                  });
-                });
+            //       copyButton.addEventListener("click", () => {
+            //         const codeText = codeElement.textContent;
+            //         if (codeText) {
+            //           navigator.clipboard.writeText(codeText).then(() => {
+            //             new Notice('Copied to your clipboard');
+            //           }, (err) => {
+            //             console.error("Failed to copy code: ", err);
+            //           });
+            //         }
+            //       });
+            //     });
                 
-                lastBotMessage.appendChild(messageBlock);
-                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            //     lastBotMessage.appendChild(messageBlock);
+            //     lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            //     messageHistory += message + "\n";
+            // }
         } 
         catch (error) {
             new Notice('Error occurred while fetching completion: ' + error.message);
