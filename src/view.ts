@@ -133,7 +133,7 @@ export class BMOView extends ItemView {
 
                 // Create a spacer element for scrolling most recent userMessage/botMessage to
                 const spacer = document.createElement("div");
-                spacer.style.height = "100vh";
+                spacer.style.height = "60vh";
                 spacer.setAttribute("id", "spacer");
                 messageContainer.appendChild(spacer);
 
@@ -147,7 +147,7 @@ export class BMOView extends ItemView {
                         this.preventEnter = false; // Allow user to respond after the bot responded.
 
                         // Select the spacer and remove it
-                        const spacer = document.querySelector("#spacer");
+                        const spacer = messageContainer.querySelector("#spacer");
                         if (spacer) {
                             spacer.remove();
                         }
@@ -157,6 +157,7 @@ export class BMOView extends ItemView {
                         botParagraph.textContent = "Oops, something went wrong. Please try again.";
                         botMessage.appendChild(botParagraph);
                     });
+                    
             }
 
             setTimeout(() => {
