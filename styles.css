@@ -172,6 +172,10 @@ If your plugin does not need CSS, delete this file.
   border-color: var(--interactive-accent);
 }
 
+.theme-light #chatbox textarea {
+  color: white;
+}
+
 #chatbox textarea:focus {
   outline: none;
   box-shadow: none;
