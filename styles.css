@@ -73,7 +73,7 @@ If your plugin does not need CSS, delete this file.
   display: block;
   font-size: 12px;
   font-weight: bold;
-  color: white;
+  color: var(--interactive-accent);
   margin: 0;
 }
 
@@ -91,6 +91,7 @@ If your plugin does not need CSS, delete this file.
 .userMessage p, .botMessage p{
   margin: 0;
 }
+
 
 .messageBlock{
   margin: 0;
