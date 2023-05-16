@@ -28,7 +28,7 @@ If your plugin does not need CSS, delete this file.
     margin-top: 0;
     margin-bottom: 0;
     padding: 10px 0px 0px 0px;
-    font-size: 300%;
+    font-size: 225%;
 }
 
 #modelName {
@@ -51,7 +51,7 @@ If your plugin does not need CSS, delete this file.
       -ms-user-select: text;
        -o-user-select: text;
           user-select: text;
-  max-height: calc(100% - 160px); /* subtract the height of chatbox and 100px */
+  max-height: calc(100% - 140px);
   word-wrap: break-word;
 }
 
