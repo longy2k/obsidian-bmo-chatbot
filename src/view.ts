@@ -93,7 +93,7 @@ export class BMOView extends ItemView {
             }
 
             messageHistory += input + "\n";
-            console.log(messageHistory);
+            // console.log(messageHistory);
 
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
@@ -299,21 +299,25 @@ export class BMOView extends ItemView {
                                         loadPrism().then((Prism) => {
                                             // Select all code blocks
                                             const codeBlocks = messageBlock?.querySelectorAll('.messageBlock pre code');
-                                            
+
                                             // Apply syntax highlighting to each code block
                                             codeBlocks?.forEach((codeBlock) => {
-                                            const language = codeBlock.className.replace("language-", "");
-                                            const code = codeBlock.textContent;
-                                            const highlightedCode = Prism.highlight(code, Prism.languages[language]);
-                                            codeBlock.innerHTML = highlightedCode;
+                                                const language = codeBlock.className.replace("language-", "");
+                                                const code = codeBlock.textContent;
+                                                
+                                                if (language && Prism.languages[language]) {
+                                                    const highlightedCode = Prism.highlight(code, Prism.languages[language]);
+                                                    codeBlock.innerHTML = highlightedCode;
+                                                }
                                             });
                                         });
+
 
                                         // Copy button for code blocks
                                         const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
 
                                         codeBlocks.forEach(async (codeElement) => {
-                                          console.log(codeElement);
+                                        //   console.log(codeElement);
                                           const copyButton = document.createElement("button");
                                           copyButton.textContent = "copy";
                                           setIcon(copyButton, "copy");
@@ -349,7 +353,7 @@ export class BMOView extends ItemView {
         catch (error) {
             new Notice('Error occurred while fetching completion: ' + error.message);
             console.log(error.message);
-            console.log("messageHistory: " + messageHistory);
+            // console.log("messageHistory: " + messageHistory);
         }
         console.log("BMO settings:", this.settings);
     }
