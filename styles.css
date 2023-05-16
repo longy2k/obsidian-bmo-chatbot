@@ -85,7 +85,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .userMessage {
-  background-color: var(--color-base-25);;
+  background-color: var(--color-base-00);
 }
 
 .userMessage p, .botMessage p{
@@ -179,20 +179,6 @@ If your plugin does not need CSS, delete this file.
 #chatbox textarea::placeholder {
   color: white;
   font-weight: 500;
-}
-
-/* Loading */
-
-#loading {
-  color: white;
-  background-color: gray;
-  padding: 0px 5px 12px 5px;
-  border-radius: 5px;
-  display: none;
-  line-height: 10px;
-  font-size: 25px;
-  font-weight: bolder;
-  margin: 5px 0px;
 }
 
 .errorMessage {
