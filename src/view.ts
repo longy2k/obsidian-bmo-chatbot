@@ -133,7 +133,6 @@ export class BMOView extends ItemView {
 
                 // Create a spacer element for scrolling most recent userMessage/botMessage to
                 const spacer = document.createElement("div");
-                spacer.style.height = "60vh";
                 spacer.setAttribute("id", "spacer");
                 messageContainer.appendChild(spacer);
 
