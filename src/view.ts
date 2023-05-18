@@ -129,7 +129,7 @@ export class BMOView extends ItemView {
                 const botNameSpan = document.createElement("span"); 
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
                 botNameSpan.setAttribute("id", "chatbotName")
-                botMessage.appendChild(botNameSpan); 
+                botMessage.appendChild(botNameSpan);
 
                 // Create a spacer element for scrolling most recent userMessage/botMessage to
                 const spacer = document.createElement("div");
