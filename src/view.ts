@@ -38,8 +38,11 @@ export class BMOView extends ItemView {
         const chatbotContainer = container.createEl("div", {
             attr: {
                 class: "chatbotContainer",
-            }
+            },
         });
+        
+        chatbotContainer.style.backgroundColor = this.settings.chatbotContainerBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
+        
 
         chatbotContainer.createEl("h1", { 
             text: this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName,
@@ -124,7 +127,8 @@ export class BMOView extends ItemView {
                 messageContainer.appendChild(userMessage);
             
                 const botMessage = document.createElement("div");
-                botMessage.classList.add("botMessage"); 
+                botMessage.classList.add("botMessage");
+                botMessage.style.backgroundColor = this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
                 messageContainer.appendChild(botMessage);
             
                 const botNameSpan = document.createElement("span"); 

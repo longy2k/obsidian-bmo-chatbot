@@ -12,7 +12,9 @@ export interface BMOSettings {
 	temperature: string;
 	userName: string;
 	chatbotName: string;
+	chatbotContainerBackgroundColor: string;
 	userMessageBackgroundColor: string;
+	botMessageBackgroundColor: string;
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -23,7 +25,9 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	temperature: '',
 	userName: 'USER',
 	chatbotName: 'BOT',
+	chatbotContainerBackgroundColor: '--background-secondary',
 	userMessageBackgroundColor: '--background-primary',
+	botMessageBackgroundColor: '--background-secondary',
 }
 
 export default class BMOGPT extends Plugin {

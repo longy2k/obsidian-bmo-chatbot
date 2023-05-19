@@ -160,8 +160,51 @@ export class BMOSettingTab extends PluginSettingTab {
             })
         );
 
-
 		let colorPicker: ColorComponent;
+
+		new Setting(containerEl)
+		.setName('Change background color for chatbotContainer')
+		.setDesc('Modify the background color of the chatbotContainer element')
+		.addButton(button => button
+			.setButtonText("Restore Default")
+			.setCta()
+			.onClick(async () => {
+				// Obtain the default value
+				const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
+				
+				// Apply the default value to the color picker
+				colorPicker.setValue(defaultValue);
+				
+				// Apply the default value to the chatbotContainer element
+				const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
+				if (chatbotContainer) {
+					chatbotContainer.style.backgroundColor = defaultValue;
+				}
+				
+				// Save the updated settings
+				this.plugin.settings.chatbotContainerBackgroundColor = defaultValue;
+				await this.plugin.saveSettings();
+			})
+		)
+		.addColorPicker((color) => {
+			colorPicker = color;
+			color.setValue(this.plugin.settings.chatbotContainerBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim())
+				.onChange(async (value) => {
+					this.plugin.settings.chatbotContainerBackgroundColor = value;
+					const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
+					if (chatbotContainer) {
+						chatbotContainer.style.backgroundColor = value;
+					}
+					await this.plugin.saveSettings();
+				});
+		});
+	
+			
+			
+
+
+
+		let colorPicker1: ColorComponent;
 
 		new Setting(containerEl)
 			.setName('Change background color for userMessage')
@@ -174,7 +217,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
 					
 					// Apply the default value to the color picker
-					colorPicker.setValue(defaultValue);
+					colorPicker1.setValue(defaultValue);
 					
 					// Apply the default value to the userMessage elements
 					const messageContainer = document.querySelector('#messageContainer');
@@ -189,7 +232,7 @@ export class BMOSettingTab extends PluginSettingTab {
 				})
 			)
 			.addColorPicker((color) => {
-				colorPicker = color;
+				colorPicker1 = color;
 				color.setValue(this.plugin.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim())
 				.onChange(async (value) => {
 					this.plugin.settings.userMessageBackgroundColor = value;
@@ -207,6 +250,66 @@ export class BMOSettingTab extends PluginSettingTab {
 								if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
 									mutation.addedNodes.forEach((node) => {
 										if ((node as HTMLElement).classList.contains('userMessage')) {
+											(node as HTMLElement).style.backgroundColor = value;
+										}
+									});
+								}
+							});
+						});
+			
+						// Starting to observe the messageContainer
+						observer.observe(messageContainer, { childList: true });
+					}
+					await this.plugin.saveSettings();
+				});
+			});
+
+
+		let colorPicker2: ColorComponent;
+		new Setting(containerEl)
+			.setName('Change background color for botMessage')
+			.setDesc('Modify the background color of the botMessage element')
+			.addButton(button => button
+				.setButtonText("Restore Default")
+				.setCta()
+				.onClick(async () => {
+					// Obtain the default value
+					const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+					
+					// Apply the default value to the color picker
+					colorPicker2.setValue(defaultValue);
+					
+					// Apply the default value to the userMessage elements
+					const messageContainer = document.querySelector('#messageContainer');
+					if (messageContainer) {
+						const botMessages = messageContainer.querySelectorAll('.botMessage');
+						botMessages.forEach((botMessage) => {
+							const element = botMessage as HTMLElement;
+							element.style.backgroundColor = defaultValue;
+						});
+						await this.plugin.saveSettings();
+					}
+				})
+			)
+			.addColorPicker((color) => {
+				colorPicker2 = color;
+				color.setValue(this.plugin.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim())
+				.onChange(async (value) => {
+					this.plugin.settings.botMessageBackgroundColor = value;
+					const messageContainer = document.querySelector('#messageContainer');
+					if (messageContainer) {
+						const botMessages = messageContainer.querySelectorAll('.botMessage');
+						botMessages.forEach((botMessage) => {
+							const element = botMessage as HTMLElement;
+							element.style.backgroundColor = value;
+						});
+		
+						// Setting up a MutationObserver
+						const observer = new MutationObserver((mutations) => {
+							mutations.forEach((mutation) => {
+								if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+									mutation.addedNodes.forEach((node) => {
+										if ((node as HTMLElement).classList.contains('botMessage')) {
 											(node as HTMLElement).style.backgroundColor = value;
 										}
 									});
