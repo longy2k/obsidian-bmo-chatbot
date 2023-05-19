@@ -167,7 +167,8 @@ export class BMOSettingTab extends PluginSettingTab {
 		.setDesc('Modify the background color of the chatbotContainer element')
 		.addButton(button => button
 			.setButtonText("Restore Default")
-			.setCta()
+			.setIcon("rotate-cw")
+			.setClass("clickable-icon")
 			.onClick(async () => {
 				// Obtain the default value
 				const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
@@ -211,7 +212,8 @@ export class BMOSettingTab extends PluginSettingTab {
 			.setDesc('Modify the background color of the userMessage element')
 			.addButton(button => button
 				.setButtonText("Restore Default")
-				.setCta()
+				.setIcon("rotate-cw")
+				.setClass("clickable-icon")
 				.onClick(async () => {
 					// Obtain the default value
 					const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
@@ -271,7 +273,8 @@ export class BMOSettingTab extends PluginSettingTab {
 			.setDesc('Modify the background color of the botMessage element')
 			.addButton(button => button
 				.setButtonText("Restore Default")
-				.setCta()
+				.setIcon("rotate-cw")
+				.setClass("clickable-icon")
 				.onClick(async () => {
 					// Obtain the default value
 					const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
