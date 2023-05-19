@@ -15,7 +15,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Settings for obsidian-bmo-chatbot'});
+		containerEl.createEl('h2', {text: 'Settings for BMO Chatbot'});
 
 		const usageText = containerEl.createEl("p", {
 		    text: "Check usage: ",

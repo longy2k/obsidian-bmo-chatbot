@@ -28,7 +28,7 @@ If your plugin does not need CSS, delete this file.
     margin-top: 0;
     margin-bottom: 0;
     padding: 10px 0px 0px 0px;
-    font-size: 300%;
+    font-size: 225%;
 }
 
 #modelName {
@@ -51,7 +51,7 @@ If your plugin does not need CSS, delete this file.
       -ms-user-select: text;
        -o-user-select: text;
           user-select: text;
-  max-height: calc(100% - 160px); /* subtract the height of chatbox and 100px */
+  max-height: calc(100% - 140px);
   word-wrap: break-word;
 }
 
@@ -73,7 +73,7 @@ If your plugin does not need CSS, delete this file.
   display: block;
   font-size: 12px;
   font-weight: bold;
-  color: white;
+  color: var(--interactive-accent);
   margin: 0;
 }
 
@@ -81,15 +81,17 @@ If your plugin does not need CSS, delete this file.
   margin: 0;
   padding: 10px 3.5%;
   width: 100%;
+  display: inline-block;
 }
 
 .userMessage {
-  background-color: var(--color-base-25);;
+  background-color: var(--color-base-00);
 }
 
 .userMessage p, .botMessage p{
   margin: 0;
 }
+
 
 .messageBlock{
   margin: 0;
@@ -170,6 +172,10 @@ If your plugin does not need CSS, delete this file.
   border-color: var(--interactive-accent);
 }
 
+.theme-light #chatbox textarea {
+  color: white;
+}
+
 #chatbox textarea:focus {
   outline: none;
   box-shadow: none;
@@ -180,24 +186,14 @@ If your plugin does not need CSS, delete this file.
   font-weight: 500;
 }
 
-/* Loading */
-
-#loading {
-  color: white;
-  background-color: gray;
-  padding: 0px 5px 12px 5px;
-  border-radius: 5px;
-  display: none;
-  line-height: 10px;
-  font-size: 25px;
-  font-weight: bolder;
-  margin: 5px 0px;
-}
-
 .errorMessage {
   color: red;
 }
 .disabled {
   pointer-events: none;
+}
+
+#spacer {
+  height: 8vh;
 }
 
