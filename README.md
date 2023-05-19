@@ -9,14 +9,15 @@ Improve your knowledge management with a chatbot that understands context and re
 ## How to activate the plugin
 Three methods:
 
-**Recommended** Beta Reviewers Auto-update Tester ([BRAT](https://github.com/TfTHacker/obsidian42-brat)) - [Quick guide for using BRAT](https://tfthacker.com/Obsidian+Plugins+by+TfTHacker/BRAT+-+Beta+Reviewer's+Auto-update+Tool/Quick+guide+for+using+BRAT)
-	1. Search for "Obsidian42 - BRAT" in the Obsidian Community plugins.
-	2. Open the command palette and run the command BRAT: Add a beta plugin for testing (If you want the plugin version to be frozen, use the command BRAT: Add a beta plugin with frozen version based on a release tag.)
-	3. Paste "https://github.com/longy2k/obsidian-bmo-chatbot" into the modal.
-	4. Click on "Add Plugin"
-	5. After BRAT confirms the installation, in Settings go to the Community plugins tab.
-	6. Refresh the list of plugins
-	7. Find the beta plugin you just installed and Enable it.
+(**Recommended**) Beta Reviewers Auto-update Tester ([BRAT](https://github.com/TfTHacker/obsidian42-brat)) - [Quick guide for using BRAT](https://tfthacker.com/Obsidian+Plugins+by+TfTHacker/BRAT+-+Beta+Reviewer's+Auto-update+Tool/Quick+guide+for+using+BRAT)
+
+1. Search for "Obsidian42 - BRAT" in the Obsidian Community plugins.
+2. Open the command palette and run the command BRAT: Add a beta plugin for testing (If you want the plugin version to be frozen, use the command BRAT: Add a beta plugin with frozen version based on a release tag.)
+3. Paste "https://github.com/longy2k/obsidian-bmo-chatbot" into the modal.
+4. Click on "Add Plugin"
+5. After BRAT confirms the installation, in Settings go to the Community plugins tab.
+6. Refresh the list of plugins
+7. Find the beta plugin you just installed and Enable it.
 
 Obsidian Community plugins (currently in review):
   1. Search for "BMO Chatbot" in the Obsidian Community plugins.
