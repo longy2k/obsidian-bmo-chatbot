@@ -1,5 +1,5 @@
-# BMO Chatbot
-An Obsidian chatbot plugin that integrates Large Language Models (LLMs) such as OpenAI's "gpt-3.5-turbo" and "gpt-4".
+# BMO Chatbot for Obsidian
+Improve your knowledge management with a chatbot that understands context and retrieves relevant information using Large Language Models (LLMs) such as OpenAI's "gpt-3.5-turbo" and "gpt-4" for Obsidian.
 
 ![Screenshot-1](README_images/Screenshot-1.png)
 <p align="center">
@@ -7,7 +7,16 @@ An Obsidian chatbot plugin that integrates Large Language Models (LLMs) such as 
 </p>
 
 ## How to activate the plugin
-Two methods:
+Three methods:
+
+**Recommended** Beta Reviewers Auto-update Tester ([BRAT](https://github.com/TfTHacker/obsidian42-brat)) - [Quick guide for using BRAT](https://tfthacker.com/Obsidian+Plugins+by+TfTHacker/BRAT+-+Beta+Reviewer's+Auto-update+Tool/Quick+guide+for+using+BRAT)
+	1. Search for "Obsidian42 - BRAT" in the Obsidian Community plugins.
+	2. Open the command palette and run the command BRAT: Add a beta plugin for testing (If you want the plugin version to be frozen, use the command BRAT: Add a beta plugin with frozen version based on a release tag.)
+	3. Paste "https://github.com/longy2k/obsidian-bmo-chatbot" into the modal.
+	4. Click on "Add Plugin"
+	5. After BRAT confirms the installation, in Settings go to the Community plugins tab.
+	6. Refresh the list of plugins
+	7. Find the beta plugin you just installed and Enable it.
 
 Obsidian Community plugins (currently in review):
   1. Search for "BMO Chatbot" in the Obsidian Community plugins.
