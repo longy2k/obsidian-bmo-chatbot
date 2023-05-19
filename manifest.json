@@ -1,7 +1,7 @@
 {
 	"id": "bmo-chatbot",
 	"name": "BMO Chatbot",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"minAppVersion": "1.0.0",
 	"description": "Improve your knowledge management with a chatbot that understands context and retrieves relevant information using Large Language Models (LLMs).",
 	"author": "Longy2k",
