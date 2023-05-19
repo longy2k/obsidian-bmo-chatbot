@@ -85,7 +85,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .userMessage {
-  background-color: var(--color-base-00);
+  background-color: var(--background-primary);
 }
 
 .userMessage p, .botMessage p{

@@ -10,7 +10,9 @@ export interface BMOSettings {
 	model: string;
 	system_role: string;
 	temperature: string;
+	userName: string;
 	chatbotName: string;
+	userMessageBackgroundColor: string;
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -19,7 +21,9 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	model: 'gpt-3.5-turbo-0301',
 	system_role: 'You are a helpful assistant who responds in markdown.',
 	temperature: '',
+	userName: 'USER',
 	chatbotName: 'BOT',
+	userMessageBackgroundColor: '--background-primary',
 }
 
 export default class BMOGPT extends Plugin {

@@ -98,9 +98,10 @@ export class BMOView extends ItemView {
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
             userMessage.classList.add("userMessage");
+            userMessage.style.backgroundColor = this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
             
             const userNameSpan = document.createElement("span");
-            userNameSpan.textContent = "USER";
+            userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
             userNameSpan.setAttribute("id", "userName");
             userMessage.appendChild(userNameSpan);
             
