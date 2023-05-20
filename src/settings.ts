@@ -1,6 +1,7 @@
 import { App, Notice, PluginSettingTab, Setting, ColorComponent } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from './main';
 import BMOGPT from './main';
+import { clearInterval } from 'timers';
 
 export class BMOSettingTab extends PluginSettingTab {
 	plugin: BMOGPT;
@@ -162,80 +163,80 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		let colorPicker: ColorComponent;
 
-		new Setting(containerEl)
-		.setName('Change background color for chatbotContainer')
-		.setDesc('Modify the background color of the chatbotContainer element')
-		.addButton(button => button
-			.setButtonText("Restore Default")
-			.setIcon("rotate-cw")
-			.setClass("clickable-icon")
-			.onClick(async () => {
-				// Obtain the default value
-				const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
-				
-				// Apply the default value to the color picker
-				colorPicker.setValue(defaultValue);
-				
-				// Apply the default value to the chatbotContainer element
-				const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
-				if (chatbotContainer) {
-					chatbotContainer.style.backgroundColor = defaultValue;
-				}
-				
-				// Save the updated settings
-				this.plugin.settings.chatbotContainerBackgroundColor = defaultValue;
-				await this.plugin.saveSettings();
-			})
-		)
-		.addColorPicker((color) => {
-			colorPicker = color;
-			color.setValue(this.plugin.settings.chatbotContainerBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim())
-				.onChange(async (value) => {
-					this.plugin.settings.chatbotContainerBackgroundColor = value;
-					const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
-					if (chatbotContainer) {
-						chatbotContainer.style.backgroundColor = value;
-					}
-					await this.plugin.saveSettings();
-				});
-		});
-	
-			
-			
-
-
-
-		let colorPicker1: ColorComponent;
+		let pollingInterval: string | number | NodeJS.Timer | undefined;
 
 		new Setting(containerEl)
-			.setName('Change background color for userMessage')
-			.setDesc('Modify the background color of the userMessage element')
+			.setName('Change background color for chatbotContainer')
+			.setDesc('Modify the background color of the chatbotContainer element')
 			.addButton(button => button
 				.setButtonText("Restore Default")
 				.setIcon("rotate-cw")
 				.setClass("clickable-icon")
 				.onClick(async () => {
-					// Obtain the default value
-					const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
-					
-					// Apply the default value to the color picker
-					colorPicker1.setValue(defaultValue);
-					
-					// Apply the default value to the userMessage elements
-					const messageContainer = document.querySelector('#messageContainer');
-					if (messageContainer) {
-						const userMessages = messageContainer.querySelectorAll('.userMessage');
-						userMessages.forEach((userMessage) => {
-							const element = userMessage as HTMLElement;
-							element.style.backgroundColor = defaultValue;
-						});
-						await this.plugin.saveSettings();
+					const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
+					colorPicker.setValue(defaultValue);
+		
+					const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
+					if (chatbotContainer) {
+						chatbotContainer.style.backgroundColor = defaultValue;
 					}
+		
+					this.plugin.settings.chatbotContainerBackgroundColor = defaultValue;
+					await this.plugin.saveSettings();
 				})
 			)
 			.addColorPicker((color) => {
-				colorPicker1 = color;
-				color.setValue(this.plugin.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim())
+				colorPicker = color;
+				color.setValue(this.plugin.settings.chatbotContainerBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim())
+					.onChange(async (value) => {
+						this.plugin.settings.chatbotContainerBackgroundColor = value;
+						const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
+						if (chatbotContainer) {
+							chatbotContainer.style.backgroundColor = value;
+						}
+						await this.plugin.saveSettings();
+					});
+		
+				// Start polling when color picker is added
+				let previousDefaultColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
+				pollingInterval = setInterval(() => {
+					const currentDefaultColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
+					if (currentDefaultColor !== previousDefaultColor) {
+						// If the default color has changed (i.e., the theme has changed), reset the color picker
+						colorPicker.setValue(currentDefaultColor);
+						previousDefaultColor = currentDefaultColor;
+					}
+				}, 1000); // Poll every second
+			});
+
+		let colorPicker1: ColorComponent;
+		let pollingInterval1: string | number | NodeJS.Timer | undefined;
+
+		new Setting(containerEl)
+		.setName('Change background color for userMessage')
+		.setDesc('Modify the background color of the userMessage element')
+		.addButton(button => button
+			.setButtonText("Restore Default")
+			.setIcon("rotate-cw")
+			.setClass("clickable-icon")
+			.onClick(async () => {
+				const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
+				colorPicker1.setValue(defaultValue);
+	
+				const messageContainer = document.querySelector('#messageContainer');
+				if (messageContainer) {
+					const userMessages = messageContainer.querySelectorAll('.userMessage');
+					userMessages.forEach((userMessage) => {
+						const element = userMessage as HTMLElement;
+						element.style.backgroundColor = defaultValue;
+					});
+					await this.plugin.saveSettings();
+				}
+			})
+		)
+		.addColorPicker((color) => {
+			colorPicker1 = color;
+			color.setValue(this.plugin.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim())
 				.onChange(async (value) => {
 					this.plugin.settings.userMessageBackgroundColor = value;
 					const messageContainer = document.querySelector('#messageContainer');
@@ -245,8 +246,7 @@ export class BMOSettingTab extends PluginSettingTab {
 							const element = userMessage as HTMLElement;
 							element.style.backgroundColor = value;
 						});
-		
-						// Setting up a MutationObserver
+	
 						const observer = new MutationObserver((mutations) => {
 							mutations.forEach((mutation) => {
 								if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -258,16 +258,27 @@ export class BMOSettingTab extends PluginSettingTab {
 								}
 							});
 						});
-			
-						// Starting to observe the messageContainer
+	
 						observer.observe(messageContainer, { childList: true });
 					}
 					await this.plugin.saveSettings();
 				});
-			});
+	
+			let previousDefaultColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
+			pollingInterval1 = setInterval(() => {
+				const currentDefaultColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
+				if (currentDefaultColor !== previousDefaultColor) {
+					// If the default color has changed (i.e., the theme has changed), reset the color picker
+					colorPicker1.setValue(currentDefaultColor);
+					previousDefaultColor = currentDefaultColor;
+				}
+			}, 1000); // Poll every second
+		});
 
 
 		let colorPicker2: ColorComponent;
+		let pollingInterval2: string | number | NodeJS.Timer | undefined;
+
 		new Setting(containerEl)
 			.setName('Change background color for botMessage')
 			.setDesc('Modify the background color of the botMessage element')
@@ -276,13 +287,9 @@ export class BMOSettingTab extends PluginSettingTab {
 				.setIcon("rotate-cw")
 				.setClass("clickable-icon")
 				.onClick(async () => {
-					// Obtain the default value
 					const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
-					
-					// Apply the default value to the color picker
 					colorPicker2.setValue(defaultValue);
-					
-					// Apply the default value to the userMessage elements
+		
 					const messageContainer = document.querySelector('#messageContainer');
 					if (messageContainer) {
 						const botMessages = messageContainer.querySelectorAll('.botMessage');
@@ -297,40 +304,50 @@ export class BMOSettingTab extends PluginSettingTab {
 			.addColorPicker((color) => {
 				colorPicker2 = color;
 				color.setValue(this.plugin.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim())
-				.onChange(async (value) => {
-					this.plugin.settings.botMessageBackgroundColor = value;
-					const messageContainer = document.querySelector('#messageContainer');
-					if (messageContainer) {
-						const botMessages = messageContainer.querySelectorAll('.botMessage');
-						botMessages.forEach((botMessage) => {
-							const element = botMessage as HTMLElement;
-							element.style.backgroundColor = value;
-						});
-		
-						// Setting up a MutationObserver
-						const observer = new MutationObserver((mutations) => {
-							mutations.forEach((mutation) => {
-								if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-									mutation.addedNodes.forEach((node) => {
-										if ((node as HTMLElement).classList.contains('botMessage')) {
-											(node as HTMLElement).style.backgroundColor = value;
-										}
-									});
-								}
+					.onChange(async (value) => {
+						this.plugin.settings.botMessageBackgroundColor = value;
+						const messageContainer = document.querySelector('#messageContainer');
+						if (messageContainer) {
+							const botMessages = messageContainer.querySelectorAll('.botMessage');
+							botMessages.forEach((botMessage) => {
+								const element = botMessage as HTMLElement;
+								element.style.backgroundColor = value;
 							});
-						});
-			
-						// Starting to observe the messageContainer
-						observer.observe(messageContainer, { childList: true });
-					}
-					await this.plugin.saveSettings();
-				});
-			});
 		
-	
-	
-	  
-	  
+							const observer = new MutationObserver((mutations) => {
+								mutations.forEach((mutation) => {
+									if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+										mutation.addedNodes.forEach((node) => {
+											if ((node as HTMLElement).classList.contains('botMessage')) {
+												(node as HTMLElement).style.backgroundColor = value;
+											}
+										});
+									}
+								});
+							});
+		
+							observer.observe(messageContainer, { childList: true });
+						}
+						await this.plugin.saveSettings();
+					});
+		
+				let previousDefaultColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+				pollingInterval2 = setInterval(() => {
+					const currentDefaultColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+					if (currentDefaultColor !== previousDefaultColor) {
+						// If the default color has changed (i.e., the theme has changed), reset the color picker
+						colorPicker2.setValue(currentDefaultColor);
+						previousDefaultColor = currentDefaultColor;
+					}
+				}, 1000); // Poll every second
+			});
+
+		// Be sure to clear the interval when the settings pane is closed to avoid memory leaks
+		onunload = () => {
+			clearInterval(pollingInterval);
+			clearInterval(pollingInterval1);
+			clearInterval(pollingInterval2);
+		}
 
 		containerEl.createEl('h2', {text: 'Advanced'});
 	}

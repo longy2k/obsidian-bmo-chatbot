@@ -226,9 +226,6 @@ export class BMOView extends ItemView {
             const maxTokens = this.settings.max_tokens;
             const temperature = this.settings.temperature;
         
-            const controller = new AbortController();
-            const signal = controller.signal;
-        
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -245,7 +242,6 @@ export class BMOView extends ItemView {
                     temperature: parseFloat(temperature),
                     stream: true,
                 }),
-                signal: signal
             });
         
             const reader = response.body ? response.body.getReader() : null;
