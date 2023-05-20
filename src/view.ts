@@ -15,6 +15,7 @@ export class BMOView extends ItemView {
     private messageEl: HTMLElement;
     private settings: BMOSettings;
     private textareaElement: HTMLTextAreaElement;
+    private loadingAnimationIntervalId: number;
     private preventEnter = false;
 
     constructor(leaf: WorkspaceLeaf, settings: BMOSettings) {
@@ -73,6 +74,13 @@ export class BMOView extends ItemView {
         textarea.setAttribute("contenteditable", true.toString());
         textarea.setAttribute("placeholder", "Start typing...");
         chatbox.appendChild(textarea);
+
+        const loadingEl = chatbotContainer.createEl("div", {
+            attr: {
+                id: "loading",
+            },
+            text: "..."
+        });
         
         this.textareaElement = textarea as HTMLTextAreaElement;
         this.addEventListeners();
@@ -136,6 +144,34 @@ export class BMOView extends ItemView {
                 botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan);
 
+                const loadingEl = document.createElement("span");
+                loadingEl.setAttribute("id", "loading"); 
+                loadingEl.style.display = "inline-block"; 
+                loadingEl.textContent = "..."; 
+                botMessage.appendChild(loadingEl);
+                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+                // Define a function to update the loading animation
+                const updateLoadingAnimation = () => {
+                    this.preventEnter = true; // Prevent user from pressing enter when message is loading.
+                    // Access the loadingEl element with optional chaining
+                    const loadingEl = document.querySelector('#loading');
+                    // If loadingEl is null or undefined, return early
+                    if (!loadingEl) {
+                        return;
+                    }
+                    // Add a dot to the loading animation
+                    loadingEl.textContent += ".";
+                    // If the loading animation has reached three dots, reset it to one dot
+                    if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+                        loadingEl.textContent = ".";
+                    }
+                };                
+
+                // Call the updateLoadingAnimation function every 500 milliseconds
+                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+                this.preventEnter = true; // Allow user to respond after the bot responded.
+
                 // Create a spacer element for scrolling most recent userMessage/botMessage to
                 const spacer = document.createElement("div");
                 spacer.setAttribute("id", "spacer");
@@ -148,6 +184,7 @@ export class BMOView extends ItemView {
                 // Call the chatbot function with the user's input
                 this.BMOchatbot(input)
                     .then(() => {
+                        clearInterval(loadingAnimationIntervalId);
                         this.preventEnter = false; // Allow user to respond after the bot responded.
 
                         // Select the spacer and remove it
@@ -157,6 +194,9 @@ export class BMOView extends ItemView {
                         }
                     })
                     .catch(() => {
+                        // Stop the loading animation and update the bot message with an error message
+                        clearInterval(loadingAnimationIntervalId);
+                        loadingEl.textContent = "";
                         const botParagraph = document.createElement("p");
                         botParagraph.textContent = "Oops, something went wrong. Please try again.";
                         botMessage.appendChild(botParagraph);
@@ -198,6 +238,11 @@ export class BMOView extends ItemView {
         this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
         this.textareaElement.removeEventListener("input", this.handleInput.bind(this));
         this.textareaElement.removeEventListener("blur", this.handleBlur.bind(this));
+
+        // Clear the loading animation interval if it's active
+        if (this.loadingAnimationIntervalId) {
+            clearInterval(this.loadingAnimationIntervalId);
+        }
     }
 
     async BMOchatbot(input: string) {
@@ -223,7 +268,126 @@ export class BMOView extends ItemView {
         }
 
         if (this.settings.restAPIUrl !== '') {
-            console.log("true");
+            const url = 'https://api.openai.com/v1/chat/completions';
+            const updatedUrl = url.replace('https://api.openai.com', this.settings.restAPIUrl);
+
+            try {
+                const maxTokens = this.settings.max_tokens;
+                const temperature = this.settings.temperature;
+                
+                const response = await requestUrl({
+                    url: updatedUrl,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.settings.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: this.settings.model,
+                        messages: [
+                            { role: 'system', content: this.settings.system_role},
+                            { role: 'user', content: messageHistory }
+                        ],
+                        max_tokens: parseInt(maxTokens),
+                        temperature: parseFloat(temperature),
+                    }),
+                });
+                
+                console.log(response.json);
+            
+                const message = response.json.choices[0].message.content;
+                messageHistory += message + "\n";
+    
+    
+                // Append the bmoMessage element to the messageContainer div
+                const messageContainerEl = document.getElementById("messageContainer");
+    
+                if (messageContainerEl) {
+                    const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                    const lastBotMessage = botMessages[botMessages.length - 1];
+                    const loadingEl = lastBotMessage.querySelector("#loading");
+                    
+                    if (loadingEl) {
+                        loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        lastBotMessage.removeChild(loadingEl); // Remove loading message
+                    }
+                
+                    const messageBlock = document.createElement("p");
+                    messageBlock.textContent = message;
+                    const markdownContent = marked(message);
+                    messageBlock.innerHTML = markdownContent;
+                    messageBlock.classList.add("messageBlock");
+                    
+                    const paragraphs = messageBlock.querySelectorAll("p");
+    
+                    for (let i = 0; i < paragraphs.length; i++) {
+                      const p = paragraphs[i];
+                    
+                      // Check if the current <p> element has a sibling <p> element
+                      const nextSibling = p.nextElementSibling;
+                      if (nextSibling && nextSibling.nodeName === "P") {
+                    
+                        // Create a <br> element and insert it after the current <p> element
+                        const br = document.createElement("br");
+                        const parent = p.parentNode;
+                        if (parent) {
+                          parent.insertBefore(br, nextSibling);
+                        }
+                      }
+                    }
+                    
+    
+    
+    
+                    // Wait for Prism.js to load
+                    loadPrism().then((Prism) => {
+                        // Select all code blocks
+                        const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
+                        
+                        // Apply syntax highlighting to each code block
+                        codeBlocks.forEach((codeBlock) => {
+                        const language = codeBlock.className.replace("language-", "");
+                        const code = codeBlock.textContent;
+                        const highlightedCode = Prism.highlight(code, Prism.languages[language]);
+                        codeBlock.innerHTML = highlightedCode;
+                        });
+                    });
+    
+                    // Copy button for code blocks
+                    const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
+    
+                    codeBlocks.forEach(async (codeElement) => {
+                      console.log(codeElement);
+                      const copyButton = document.createElement("button");
+                      copyButton.textContent = "copy";
+                      setIcon(copyButton, "copy");
+                      copyButton.classList.add("copy-button");
+                      copyButton.title = "copy";
+                      if (codeElement.parentNode) {
+                        codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
+                      }
+                    
+                      copyButton.addEventListener("click", () => {
+                        const codeText = codeElement.textContent;
+                        if (codeText) {
+                          navigator.clipboard.writeText(codeText).then(() => {
+                            new Notice('Copied to your clipboard');
+                          }, (err) => {
+                            console.error("Failed to copy code: ", err);
+                          });
+                        }
+                      });
+                    });
+                    
+                    lastBotMessage.appendChild(messageBlock);
+                    lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } 
+            catch (error) {
+                new Notice('Error occurred while fetching completion: ' + error.message);
+                console.log(error.message);
+                console.log("messageHistory: " + messageHistory);
+            }
         }
         else {
         
