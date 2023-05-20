@@ -15,6 +15,7 @@ export interface BMOSettings {
 	chatbotContainerBackgroundColor: string;
 	userMessageBackgroundColor: string;
 	botMessageBackgroundColor: string;
+	restAPIUrl: string;
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -28,6 +29,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	chatbotContainerBackgroundColor: '--background-secondary',
 	userMessageBackgroundColor: '--background-primary',
 	botMessageBackgroundColor: '--background-secondary',
+	restAPIUrl: '',
 }
 
 export default class BMOGPT extends Plugin {

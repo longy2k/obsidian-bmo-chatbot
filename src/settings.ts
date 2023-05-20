@@ -54,10 +54,10 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName('Model')
-		.setDesc('Choose a GPT model. (Keep in mind that access to GPT-4 depends on your API key.)')
+		.setDesc('Choose a model.')
 		.addDropdown(dropdown => dropdown
 		  .addOption('gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0301')
-		  .addOption('gpt-4-0314', 'gpt-4-0314')
+		  .addOption('gpt-4-0314', 'gpt-4-0314 (Access depends on your API key.)')
 		  .setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
 		  .onChange(async (value) => {
 			this.plugin.settings.model = value;
@@ -350,5 +350,42 @@ export class BMOSettingTab extends PluginSettingTab {
 		}
 
 		containerEl.createEl('h2', {text: 'Advanced'});
+
+		new Setting(containerEl)
+		.setName('REST API URL')
+		.setDesc(descLink1('Enter your REST API URL from a self-hosted API like', 'https://github.com/go-skynet/LocalAI', ''))
+		.addText(text => text
+		  .setPlaceholder('http://localhost:8080')
+		  .setValue(this.plugin.settings.restAPIUrl || DEFAULT_SETTINGS.restAPIUrl)
+		  .onChange(async (value) => {
+			this.plugin.settings.restAPIUrl = value ? value : DEFAULT_SETTINGS.restAPIUrl;
+			await this.plugin.saveSettings();
+		  })
+		);
+
+
+		function descLink1(text: string, link: string, extraWords: string): DocumentFragment {
+			const frag = new DocumentFragment();
+			const desc = document.createElement('span');
+			desc.innerText = text + ' ';
+			frag.appendChild(desc);
+		  
+			const anchor = document.createElement('a');
+			anchor.href = link;
+			anchor.target = '_blank';
+			anchor.rel = 'noopener noreferrer';
+			anchor.innerText = 'LocalAI';
+			frag.appendChild(anchor);
+		  
+			const extra = document.createElement('span');
+			extra.innerText = ' ' + extraWords;
+			frag.appendChild(extra);
+		  
+			return frag;
+		  };
+		  
+	  
+	  
+
 	}
 }
