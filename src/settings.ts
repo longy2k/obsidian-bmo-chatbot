@@ -43,7 +43,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('OpenAI API Key')
-			.setDesc('Insert API Key from OpenAI')
+			.setDesc('Insert API Key from OpenAI.')
 			.addText(text => text
 				.setPlaceholder('insert-api-key')
 				.setValue(this.plugin.settings.apiKey ? `${this.plugin.settings.apiKey.slice(0, 2)}-...${this.plugin.settings.apiKey.slice(-4)}` : "")
@@ -72,7 +72,7 @@ export class BMOSettingTab extends PluginSettingTab {
 	  
 		new Setting(containerEl)
 			.setName('System')
-			.setDesc('System role prompt')
+			.setDesc('System role prompt.')
 			.addTextArea(text => text
 				.setPlaceholder('You are a helpful assistant.')
 				.setValue(this.plugin.settings.system_role || DEFAULT_SETTINGS.system_role)
@@ -84,7 +84,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Max Tokens')
-			.setDesc(descLink('The maximum number of tokens, or words, that the model is allowed to generate in its output (Max Token: 4096).', 'https://platform.openai.com/tokenizer'))
+			.setDesc(descLink('The maximum number of tokens, or words, that the model is allowed to generate in its output (Max Token: 4096)', 'https://platform.openai.com/tokenizer'))
 			.addText(text => text
 				.setPlaceholder('4096')
 				.setValue(this.plugin.settings.max_tokens)
@@ -122,11 +122,11 @@ export class BMOSettingTab extends PluginSettingTab {
 				return frag;
 		};
 
-		containerEl.createEl('h2', {text: 'Customizations'});
+		containerEl.createEl('h2', {text: 'Appearance'});
 
 		new Setting(containerEl)
         .setName('User Name')
-        .setDesc('Create a username')
+        .setDesc('Create a username.')
         .addText(text => text
             .setPlaceholder('Enter user name')
             .setValue(this.plugin.settings.userName || DEFAULT_SETTINGS.userName)
@@ -143,7 +143,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
         .setName('Chatbot Name')
-        .setDesc('Name your chatbot')
+        .setDesc('Name your chatbot.')
         .addText(text => text
             .setPlaceholder('Enter chatbot name')
             .setValue(this.plugin.settings.chatbotName || DEFAULT_SETTINGS.chatbotName)
@@ -162,13 +162,25 @@ export class BMOSettingTab extends PluginSettingTab {
             })
         );
 
+		// function convertToHex(defaultValue) {
+		// 	if (defaultValue.startsWith('rgb')) {
+		// 	  const rgbValues = defaultValue.match(/\d+/g);
+		// 	  const hexString = `#${rgbValues.map(value => parseInt(value).toString(16).padStart(2, '0')).join('')}`;
+		// 	  return hexString;
+		// 	} else {
+		// 	  return defaultValue;
+		// 	}
+		//   }
+		  
+		  
+
 		let colorPicker: ColorComponent;
 
 		let pollingInterval: string | number | NodeJS.Timer | undefined;
 
 		new Setting(containerEl)
 			.setName('Change background color for chatbotContainer')
-			.setDesc('Modify the background color of the chatbotContainer element')
+			.setDesc('Modify the background color of the chatbotContainer element.')
 			.addButton(button => button
 				.setButtonText("Restore Default")
 				.setIcon("rotate-cw")
@@ -215,7 +227,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName('Change background color for userMessage')
-		.setDesc('Modify the background color of the userMessage element')
+		.setDesc('Modify the background color of the userMessage element.')
 		.addButton(button => button
 			.setButtonText("Restore Default")
 			.setIcon("rotate-cw")
@@ -282,7 +294,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Change background color for botMessage')
-			.setDesc('Modify the background color of the botMessage element')
+			.setDesc('Modify the background color of the botMessage element.')
 			.addButton(button => button
 				.setButtonText("Restore Default")
 				.setIcon("rotate-cw")

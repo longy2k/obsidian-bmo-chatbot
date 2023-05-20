@@ -74,13 +74,6 @@ export class BMOView extends ItemView {
         textarea.setAttribute("contenteditable", true.toString());
         textarea.setAttribute("placeholder", "Start typing...");
         chatbox.appendChild(textarea);
-
-        const loadingEl = chatbotContainer.createEl("div", {
-            attr: {
-                id: "loading",
-            },
-            text: "..."
-        });
         
         this.textareaElement = textarea as HTMLTextAreaElement;
         this.addEventListeners();
@@ -144,33 +137,35 @@ export class BMOView extends ItemView {
                 botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan);
 
-                const loadingEl = document.createElement("span");
-                loadingEl.setAttribute("id", "loading"); 
-                loadingEl.style.display = "inline-block"; 
-                loadingEl.textContent = "..."; 
-                botMessage.appendChild(loadingEl);
-                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                let loadingAnimationIntervalId: string | number | NodeJS.Timeout | null | undefined = null;
 
-                // Define a function to update the loading animation
-                const updateLoadingAnimation = () => {
-                    this.preventEnter = true; // Prevent user from pressing enter when message is loading.
-                    // Access the loadingEl element with optional chaining
-                    const loadingEl = document.querySelector('#loading');
-                    // If loadingEl is null or undefined, return early
-                    if (!loadingEl) {
-                        return;
-                    }
-                    // Add a dot to the loading animation
-                    loadingEl.textContent += ".";
-                    // If the loading animation has reached three dots, reset it to one dot
-                    if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
-                        loadingEl.textContent = ".";
-                    }
-                };                
+                if (this.settings.model !== "gpt-3.5-turbo-0301" && this.settings.model !== "gpt-4-0314") {
+                    const loadingEl = document.createElement("span");
+                    loadingEl.setAttribute("id", "loading"); 
+                    loadingEl.style.display = "inline-block"; 
+                    loadingEl.textContent = "..."; 
+                    botMessage.appendChild(loadingEl);
+                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
-                // Call the updateLoadingAnimation function every 500 milliseconds
-                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
-                this.preventEnter = true; // Allow user to respond after the bot responded.
+                    // Define a function to update the loading animation
+                    const updateLoadingAnimation = () => {
+                        // Access the loadingEl element with optional chaining
+                        const loadingEl = document.querySelector('#loading');
+                        // If loadingEl is null or undefined, return early
+                        if (!loadingEl) {
+                            return;
+                        }
+                        // Add a dot to the loading animation
+                        loadingEl.textContent += ".";
+                        // If the loading animation has reached three dots, reset it to one dot
+                        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+                            loadingEl.textContent = ".";
+                        }
+                    };                
+
+                    // Call the updateLoadingAnimation function every 500 milliseconds
+                    loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+                }
 
                 // Create a spacer element for scrolling most recent userMessage/botMessage to
                 const spacer = document.createElement("div");
@@ -184,8 +179,8 @@ export class BMOView extends ItemView {
                 // Call the chatbot function with the user's input
                 this.BMOchatbot(input)
                     .then(() => {
-                        clearInterval(loadingAnimationIntervalId);
                         this.preventEnter = false; // Allow user to respond after the bot responded.
+                        clearInterval(this.loadingAnimationIntervalId);
 
                         // Select the spacer and remove it
                         const spacer = messageContainer.querySelector("#spacer");
@@ -195,12 +190,12 @@ export class BMOView extends ItemView {
                     })
                     .catch(() => {
                         // Stop the loading animation and update the bot message with an error message
-                        clearInterval(loadingAnimationIntervalId);
-                        loadingEl.textContent = "";
+                        clearInterval(this.loadingAnimationIntervalId);
                         const botParagraph = document.createElement("p");
                         botParagraph.textContent = "Oops, something went wrong. Please try again.";
                         botMessage.appendChild(botParagraph);
                     });
+                    console.log(this.preventEnter);
                     
             }
 
@@ -267,7 +262,7 @@ export class BMOView extends ItemView {
             return;
         }
 
-        if (this.settings.restAPIUrl !== '') {
+        if (this.settings.model !== "gpt-3.5-turbo-0301" && this.settings.model !== "gpt-4-0314") {
             const url = 'https://api.openai.com/v1/chat/completions';
             const updatedUrl = url.replace('https://api.openai.com', this.settings.restAPIUrl);
 
