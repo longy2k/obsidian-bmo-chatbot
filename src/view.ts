@@ -221,153 +221,159 @@ export class BMOView extends ItemView {
             chatbox.disabled = true;
             return;
         }
-        
-        try {
-            const maxTokens = this.settings.max_tokens;
-            const temperature = this.settings.temperature;
-        
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.settings.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: this.settings.model,
-                    messages: [
-                        { role: 'system', content: this.settings.system_role },
-                        { role: 'user', content: messageHistory }
-                    ],
-                    max_tokens: parseInt(maxTokens),
-                    temperature: parseFloat(temperature),
-                    stream: true,
-                }),
-            });
-        
-            const reader = response.body ? response.body.getReader() : null;
-            
-            let message = '';
-            
-            if (reader) {
-                let messageBlock: HTMLParagraphElement | null = null;
-            
-                while (true) {
-                    const { done, value } = await reader.read();
-            
-                    if (done) {
-                        console.log('[DONE]');
-                        break;
-                    }
-            
-                    const chunk = new TextDecoder('utf-8').decode(value);
-                    const regex = /data:\s*(\{.*\})/g;
-                    let match;
-            
-                    while ((match = regex.exec(chunk)) !== null) {
-                        try {
-                            const data = JSON.parse(match[1]);
-                            if (data.choices && data.choices.length > 0) {
-                                const content = data.choices[0].delta.content;
-                                if (content !== undefined) {
-                                    message += content;
-                                    // console.log(content);
-            
-                                    const messageContainerEl = document.getElementById("messageContainer");
-                                    if (messageContainerEl) {
-                                        const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                                        const lastBotMessage = botMessages[botMessages.length - 1];
-            
-                                        // If messageBlock exists, update its content. Otherwise, create a new one.
-                                        if (messageBlock) {
-                                            const markdownContent = marked(message);
-                                            messageBlock.innerHTML = markdownContent;
-                                        } else {
-                                            messageBlock = document.createElement("p");
-                                            messageBlock.textContent = message;
-                                            const markdownContent = marked(message);
-                                            messageBlock.innerHTML = markdownContent;
-                                            messageBlock.classList.add("messageBlock");
-            
-                                            lastBotMessage.appendChild(messageBlock);
-                                        }
 
-                                        const paragraphs = messageBlock.querySelectorAll("p");
-
-                                        for (let i = 0; i < paragraphs.length; i++) {
-                                            const p = paragraphs[i];
-                                        
-                                            // Check if the current <p> element has a sibling <p> element
-                                            const nextSibling = p.nextElementSibling;
-                                            if (nextSibling && nextSibling.nodeName === "P") {
-                                        
-                                            // Create a <br> element and insert it after the current <p> element
-                                            const br = document.createElement("br");
-                                            const parent = p.parentNode;
-                                            if (parent) {
-                                                parent.insertBefore(br, nextSibling);
+        if (this.settings.restAPIUrl !== '') {
+            console.log("true");
+        }
+        else {
+        
+            try {
+                const maxTokens = this.settings.max_tokens;
+                const temperature = this.settings.temperature;
+            
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.settings.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: this.settings.model,
+                        messages: [
+                            { role: 'system', content: this.settings.system_role },
+                            { role: 'user', content: messageHistory }
+                        ],
+                        max_tokens: parseInt(maxTokens),
+                        temperature: parseFloat(temperature),
+                        stream: true,
+                    }),
+                });
+            
+                const reader = response.body ? response.body.getReader() : null;
+                
+                let message = '';
+                
+                if (reader) {
+                    let messageBlock: HTMLParagraphElement | null = null;
+                
+                    while (true) {
+                        const { done, value } = await reader.read();
+                
+                        if (done) {
+                            console.log('[DONE]');
+                            break;
+                        }
+                
+                        const chunk = new TextDecoder('utf-8').decode(value);
+                        const regex = /data:\s*(\{.*\})/g;
+                        let match;
+                
+                        while ((match = regex.exec(chunk)) !== null) {
+                            try {
+                                const data = JSON.parse(match[1]);
+                                if (data.choices && data.choices.length > 0) {
+                                    const content = data.choices[0].delta.content;
+                                    if (content !== undefined) {
+                                        message += content;
+                                        // console.log(content);
+                
+                                        const messageContainerEl = document.getElementById("messageContainer");
+                                        if (messageContainerEl) {
+                                            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                                            const lastBotMessage = botMessages[botMessages.length - 1];
+                
+                                            // If messageBlock exists, update its content. Otherwise, create a new one.
+                                            if (messageBlock) {
+                                                const markdownContent = marked(message);
+                                                messageBlock.innerHTML = markdownContent;
+                                            } else {
+                                                messageBlock = document.createElement("p");
+                                                messageBlock.textContent = message;
+                                                const markdownContent = marked(message);
+                                                messageBlock.innerHTML = markdownContent;
+                                                messageBlock.classList.add("messageBlock");
+                
+                                                lastBotMessage.appendChild(messageBlock);
                                             }
+
+                                            const paragraphs = messageBlock.querySelectorAll("p");
+
+                                            for (let i = 0; i < paragraphs.length; i++) {
+                                                const p = paragraphs[i];
+                                            
+                                                // Check if the current <p> element has a sibling <p> element
+                                                const nextSibling = p.nextElementSibling;
+                                                if (nextSibling && nextSibling.nodeName === "P") {
+                                            
+                                                // Create a <br> element and insert it after the current <p> element
+                                                const br = document.createElement("br");
+                                                const parent = p.parentNode;
+                                                if (parent) {
+                                                    parent.insertBefore(br, nextSibling);
+                                                }
+                                                }
                                             }
-                                        }
 
-                                        // Wait for Prism.js to load
-                                        loadPrism().then((Prism) => {
-                                            // Select all code blocks
-                                            const codeBlocks = messageBlock?.querySelectorAll('.messageBlock pre code');
+                                            // Wait for Prism.js to load
+                                            loadPrism().then((Prism) => {
+                                                // Select all code blocks
+                                                const codeBlocks = messageBlock?.querySelectorAll('.messageBlock pre code');
 
-                                            // Apply syntax highlighting to each code block
-                                            codeBlocks?.forEach((codeBlock) => {
-                                                const language = codeBlock.className.replace("language-", "");
-                                                const code = codeBlock.textContent;
-                                                
-                                                if (language && Prism.languages[language]) {
-                                                    const highlightedCode = Prism.highlight(code, Prism.languages[language]);
-                                                    codeBlock.innerHTML = highlightedCode;
+                                                // Apply syntax highlighting to each code block
+                                                codeBlocks?.forEach((codeBlock) => {
+                                                    const language = codeBlock.className.replace("language-", "");
+                                                    const code = codeBlock.textContent;
+                                                    
+                                                    if (language && Prism.languages[language]) {
+                                                        const highlightedCode = Prism.highlight(code, Prism.languages[language]);
+                                                        codeBlock.innerHTML = highlightedCode;
+                                                    }
+                                                });
+                                            });
+
+
+                                            // Copy button for code blocks
+                                            const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
+
+                                            codeBlocks.forEach(async (codeElement) => {
+                                            //   console.log(codeElement);
+                                            const copyButton = document.createElement("button");
+                                            copyButton.textContent = "copy";
+                                            setIcon(copyButton, "copy");
+                                            copyButton.classList.add("copy-button");
+                                            copyButton.title = "copy";
+                                            if (codeElement.parentNode) {
+                                                codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
+                                            }
+                                            
+                                            copyButton.addEventListener("click", () => {
+                                                const codeText = codeElement.textContent;
+                                                if (codeText) {
+                                                navigator.clipboard.writeText(codeText).then(() => {
+                                                    new Notice('Copied to your clipboard');
+                                                }, (err) => {
+                                                    console.error("Failed to copy code: ", err);
+                                                });
                                                 }
                                             });
-                                        });
-
-
-                                        // Copy button for code blocks
-                                        const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
-
-                                        codeBlocks.forEach(async (codeElement) => {
-                                        //   console.log(codeElement);
-                                          const copyButton = document.createElement("button");
-                                          copyButton.textContent = "copy";
-                                          setIcon(copyButton, "copy");
-                                          copyButton.classList.add("copy-button");
-                                          copyButton.title = "copy";
-                                          if (codeElement.parentNode) {
-                                            codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
-                                          }
-                                        
-                                          copyButton.addEventListener("click", () => {
-                                            const codeText = codeElement.textContent;
-                                            if (codeText) {
-                                              navigator.clipboard.writeText(codeText).then(() => {
-                                                new Notice('Copied to your clipboard');
-                                              }, (err) => {
-                                                console.error("Failed to copy code: ", err);
-                                              });
-                                            }
-                                          });
-                                        });
+                                            });
+                                        }
                                     }
                                 }
+                            } catch (error) {
+                                console.error('Error parsing JSON:', error);
                             }
-                        } catch (error) {
-                            console.error('Error parsing JSON:', error);
                         }
                     }
                 }
-            }
 
-            messageHistory += message + "\n";
-        } 
-        catch (error) {
-            new Notice('Error occurred while fetching completion: ' + error.message);
-            console.log(error.message);
-            // console.log("messageHistory: " + messageHistory);
+                messageHistory += message + "\n";
+            } 
+            catch (error) {
+                new Notice('Error occurred while fetching completion: ' + error.message);
+                console.log(error.message);
+                // console.log("messageHistory: " + messageHistory);
+            }
         }
         console.log("BMO settings:", this.settings);
     }

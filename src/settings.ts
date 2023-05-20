@@ -16,7 +16,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h1', {text: 'Settings for BMO Chatbot'});
+		containerEl.createEl('h1', {text: 'BMO Chatbot Settings'});
 
 		const usageText = containerEl.createEl("p", {
 		    text: "Check usage: ",
@@ -58,6 +58,7 @@ export class BMOSettingTab extends PluginSettingTab {
 		.addDropdown(dropdown => dropdown
 		  .addOption('gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0301')
 		  .addOption('gpt-4-0314', 'gpt-4-0314 (Access depends on your API key.)')
+		  .addOption('ggml-gpt4all-j.bin', 'ggml-gpt4all-j.bin')
 		  .setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
 		  .onChange(async (value) => {
 			this.plugin.settings.model = value;
