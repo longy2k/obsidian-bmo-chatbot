@@ -137,35 +137,34 @@ export class BMOView extends ItemView {
                 botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan);
 
-                let loadingAnimationIntervalId: string | number | NodeJS.Timeout | null | undefined = null;
+                const loadingEl = document.createElement("span");
+                loadingEl.setAttribute("id", "loading"); 
+                loadingEl.style.display = "inline-block"; 
+                loadingEl.textContent = "..."; 
+
+                // Define a function to update the loading animation
+                const updateLoadingAnimation = () => {
+                    // Access the loadingEl element with optional chaining
+                    const loadingEl = document.querySelector('#loading');
+                    // If loadingEl is null or undefined, return early
+                    if (!loadingEl) {
+                        return;
+                    }
+                    // Add a dot to the loading animation
+                    loadingEl.textContent += ".";
+                    // If the loading animation has reached three dots, reset it to one dot
+                    if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+                        loadingEl.textContent = ".";
+                    }
+                };  
 
                 if (this.settings.model !== "gpt-3.5-turbo-0301" && this.settings.model !== "gpt-4-0314") {
-                    const loadingEl = document.createElement("span");
-                    loadingEl.setAttribute("id", "loading"); 
-                    loadingEl.style.display = "inline-block"; 
-                    loadingEl.textContent = "..."; 
                     botMessage.appendChild(loadingEl);
                     loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-
-                    // Define a function to update the loading animation
-                    const updateLoadingAnimation = () => {
-                        // Access the loadingEl element with optional chaining
-                        const loadingEl = document.querySelector('#loading');
-                        // If loadingEl is null or undefined, return early
-                        if (!loadingEl) {
-                            return;
-                        }
-                        // Add a dot to the loading animation
-                        loadingEl.textContent += ".";
-                        // If the loading animation has reached three dots, reset it to one dot
-                        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
-                            loadingEl.textContent = ".";
-                        }
-                    };                
-
-                    // Call the updateLoadingAnimation function every 500 milliseconds
-                    loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
                 }
+
+                // Call the updateLoadingAnimation function every 500 milliseconds
+                let loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
                 // Create a spacer element for scrolling most recent userMessage/botMessage to
                 const spacer = document.createElement("div");
@@ -180,7 +179,7 @@ export class BMOView extends ItemView {
                 this.BMOchatbot(input)
                     .then(() => {
                         this.preventEnter = false; // Allow user to respond after the bot responded.
-                        clearInterval(this.loadingAnimationIntervalId);
+                        clearInterval(loadingAnimationIntervalId);
 
                         // Select the spacer and remove it
                         const spacer = messageContainer.querySelector("#spacer");
@@ -190,7 +189,7 @@ export class BMOView extends ItemView {
                     })
                     .catch(() => {
                         // Stop the loading animation and update the bot message with an error message
-                        clearInterval(this.loadingAnimationIntervalId);
+                        clearInterval(loadingAnimationIntervalId);
                         const botParagraph = document.createElement("p");
                         botParagraph.textContent = "Oops, something went wrong. Please try again.";
                         botMessage.appendChild(botParagraph);
@@ -330,9 +329,6 @@ export class BMOView extends ItemView {
                         }
                       }
                     }
-                    
-    
-    
     
                     // Wait for Prism.js to load
                     loadPrism().then((Prism) => {

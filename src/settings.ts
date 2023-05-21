@@ -1,4 +1,4 @@
-import { App, Notice, PluginSettingTab, Setting, ColorComponent } from 'obsidian';
+import { App, Notice, PluginSettingTab, Setting, ColorComponent, requestUrl } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from './main';
 import BMOGPT from './main';
 import { clearInterval } from 'timers';
@@ -11,7 +11,38 @@ export class BMOSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	display(): void {
+	async fetchData() {
+		const url = 'http://localhost:8080/v1/models';
+	
+		try {
+			const response = await requestUrl({
+				url: url,
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+	
+			const jsonData = response.json;
+	
+			const models = jsonData.data.map((model: { id: any; }) => model.id);
+	
+			// Store models array in your plugin settings or state
+			this.plugin.settings.models = models;  
+	
+			return models;
+	
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	}
+	
+	
+	
+
+	async display(): Promise<void> {
+		const models = await this.fetchData();
+
 		const {containerEl} = this;
 
 		containerEl.empty();
@@ -53,22 +84,25 @@ export class BMOSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-		.setName('Model')
-		.setDesc('Choose a model.')
-		.addDropdown(dropdown => dropdown
-		  .addOption('gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0301')
-		  .addOption('gpt-4-0314', 'gpt-4-0314 (Access depends on your API key.)')
-		  .addOption('ggml-gpt4all-j.bin', 'ggml-gpt4all-j.bin')
-		  .setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
-		  .onChange(async (value) => {
-			this.plugin.settings.model = value;
-			await this.plugin.saveSettings();
-			const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
-			if (modelName) {
-                modelName.textContent = 'Model: ' + this.plugin.settings.model.replace(/[gpt]/g, letter => letter.toUpperCase());
-            }
-		})
-		);
+			.setName('Model')
+			.setDesc('Choose a model.')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0301')
+					.addOption('gpt-4-0314', 'gpt-4-0314 (Access depends on your API key.)')
+				models.forEach((model: string) => {
+					dropdown.addOption(model, model);
+				});
+				dropdown.setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
+				.onChange(async (value) => {
+					this.plugin.settings.model = value;
+					await this.plugin.saveSettings();
+					const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
+					if (modelName) {
+						modelName.textContent = 'Model: ' + this.plugin.settings.model.replace(/[gpt]/g, letter => letter.toUpperCase());
+					}
+				});
+			});
 	  
 		new Setting(containerEl)
 			.setName('System')

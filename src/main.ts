@@ -5,6 +5,7 @@ import { BMOSettingTab } from './settings';
 
 // Remember to rename these classes and interfaces!
 export interface BMOSettings {
+	models: any;
 	apiKey: string;
 	max_tokens: string;
 	model: string;
@@ -30,6 +31,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	userMessageBackgroundColor: '--background-primary',
 	botMessageBackgroundColor: '--background-secondary',
 	restAPIUrl: '',
+	models: undefined,
 }
 
 export default class BMOGPT extends Plugin {
