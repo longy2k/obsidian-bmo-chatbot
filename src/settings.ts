@@ -90,9 +90,11 @@ export class BMOSettingTab extends PluginSettingTab {
 				dropdown
 					.addOption('gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0301')
 					.addOption('gpt-4-0314', 'gpt-4-0314 (Access depends on your API key.)')
-				models.forEach((model: string) => {
-					dropdown.addOption(model, model);
-				});
+					if (models && models.length > 0) {
+						models.forEach((model: string) => {
+						  dropdown.addOption(model, model);
+						});
+					}
 				dropdown.setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
 				.onChange(async (value) => {
 					this.plugin.settings.model = value;
@@ -101,7 +103,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					if (modelName) {
 						modelName.textContent = 'Model: ' + this.plugin.settings.model.replace(/[gpt]/g, letter => letter.toUpperCase());
 					}
-				});
+				})
 			});
 	  
 		new Setting(containerEl)
