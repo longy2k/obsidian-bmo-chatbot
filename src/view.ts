@@ -11,29 +11,62 @@ export function setMessageHistory(newMessageHistory: string) {
     messageHistory = newMessageHistory;
 }
 
-function rgbToHex(rgb: string): string {
-    if (!rgb.startsWith('rgb')) {
-        return rgb; // return the input as it is if it's not an rgb color
-    }
-    
-    // Choose correct separator
-    let sep = rgb.indexOf(",") > -1 ? "," : " ";
-    // Turn "rgb(r, g, b)" into [r, g, b]
-    let rgbArray = rgb.substr(4).split(")")[0].split(sep);
+function colorToHex(colorValue: string): string {
+    if (colorValue.startsWith("hsl")) {
+      // Convert HSL to HEX
+      var match = colorValue.match(/(\d+(\.\d+)?)%?/g);
+      if (match === null || match.length < 3) {
+		throw new Error("Invalid HSL value");
+	  }
+      var h = parseInt(match[0]) / 360;
+      var s = parseInt(match[1]) / 100;
+      var l = parseInt(match[2]) / 100;
   
-    let r = (+rgbArray[0]).toString(16),
+      function hue2rgb(p: number, q: number, t: number) {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      }
+  
+      var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      var p = 2 * l - q;
+      var r = hue2rgb(p, q, h + 1 / 3);
+      var g = hue2rgb(p, q, h);
+      var b = hue2rgb(p, q, h - 1 / 3);
+  
+      var toHex = function (c: number) {
+        var hex = Math.round(c * 255).toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+      };
+  
+      var hex = "#" + toHex(r) + toHex(g) + toHex(b);
+      return hex;
+    } else if (colorValue.startsWith("rgb")) {
+      // Convert RGB to HEX
+      let sep = colorValue.indexOf(",") > -1 ? "," : " ";
+      let rgbArray = colorValue.substr(4).split(")")[0].split(sep);
+  
+      let r = (+rgbArray[0]).toString(16),
         g = (+rgbArray[1]).toString(16),
         b = (+rgbArray[2]).toString(16);
   
-    if (r.length == 1)
-      r = "0" + r;
-    if (g.length == 1)
-      g = "0" + g;
-    if (b.length == 1)
-      b = "0" + b;
+      if (r.length == 1)
+        r = "0" + r;
+      if (g.length == 1)
+        g = "0" + g;
+      if (b.length == 1)
+        b = "0" + b;
   
-    return "#" + r + g + b;
-}
+      return "#" + r + g + b;
+    } else {
+      // If the colorValue is neither RGB nor HSL, return the input
+      return colorValue;
+    }
+  }
+
 
 export class BMOView extends ItemView {
     private messageEl: HTMLElement;
@@ -68,7 +101,7 @@ export class BMOView extends ItemView {
             },
         });
         
-        chatbotContainer.style.backgroundColor = rgbToHex(this.settings.chatbotContainerBackgroundColor) || rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
+        chatbotContainer.style.backgroundColor = colorToHex(this.settings.chatbotContainerBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
         
 
         chatbotContainer.createEl("h1", { 
@@ -128,7 +161,7 @@ export class BMOView extends ItemView {
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
             userMessage.classList.add("userMessage");
-            userMessage.style.backgroundColor = rgbToHex(this.settings.userMessageBackgroundColor) || rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+            userMessage.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
             
             const userNameSpan = document.createElement("span");
             userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
@@ -155,7 +188,7 @@ export class BMOView extends ItemView {
             
                 const botMessage = document.createElement("div");
                 botMessage.classList.add("botMessage");
-                botMessage.style.backgroundColor = rgbToHex(this.settings.botMessageBackgroundColor) || rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+                botMessage.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
                 messageContainer.appendChild(botMessage);
             
                 const botNameSpan = document.createElement("span"); 

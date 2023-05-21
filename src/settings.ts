@@ -197,30 +197,63 @@ export class BMOSettingTab extends PluginSettingTab {
 				});
             })
         );
-
-		function rgbToHex(rgb: string): string {
-			if (!rgb.startsWith('rgb')) {
-				return rgb; // return the input as it is if it's not an rgb color
-			}
-			
-			// Choose correct separator
-			let sep = rgb.indexOf(",") > -1 ? "," : " ";
-			// Turn "rgb(r, g, b)" into [r, g, b]
-			let rgbArray = rgb.substr(4).split(")")[0].split(sep);
+		
+		function colorToHex(colorValue: string): string {
+			if (colorValue.startsWith("hsl")) {
+			  // Convert HSL to HEX
+			  var match = colorValue.match(/(\d+(\.\d+)?)%?/g);
+			  if (match === null || match.length < 3) {
+				throw new Error("Invalid HSL value");
+			  }
+			  var h = parseInt(match[0]) / 360;
+			  var s = parseInt(match[1]) / 100;
+			  var l = parseInt(match[2]) / 100;
 		  
-			let r = (+rgbArray[0]).toString(16),
+			  function hue2rgb(p: number, q: number, t: number) {
+				if (t < 0) t += 1;
+				if (t > 1) t -= 1;
+				if (t < 1 / 6) return p + (q - p) * 6 * t;
+				if (t < 1 / 2) return q;
+				if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+				return p;
+			  }
+		  
+			  var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+			  var p = 2 * l - q;
+			  var r = hue2rgb(p, q, h + 1 / 3);
+			  var g = hue2rgb(p, q, h);
+			  var b = hue2rgb(p, q, h - 1 / 3);
+		  
+			  var toHex = function (c: number) {
+				var hex = Math.round(c * 255).toString(16);
+				return hex.length === 1 ? "0" + hex : hex;
+			  };
+		  
+			  var hex = "#" + toHex(r) + toHex(g) + toHex(b);
+			  return hex;
+			} else if (colorValue.startsWith("rgb")) {
+			  // Convert RGB to HEX
+			  let sep = colorValue.indexOf(",") > -1 ? "," : " ";
+			  let rgbArray = colorValue.substr(4).split(")")[0].split(sep);
+		  
+			  let r = (+rgbArray[0]).toString(16),
 				g = (+rgbArray[1]).toString(16),
 				b = (+rgbArray[2]).toString(16);
 		  
-			if (r.length == 1)
-			  r = "0" + r;
-			if (g.length == 1)
-			  g = "0" + g;
-			if (b.length == 1)
-			  b = "0" + b;
+			  if (r.length == 1)
+				r = "0" + r;
+			  if (g.length == 1)
+				g = "0" + g;
+			  if (b.length == 1)
+				b = "0" + b;
 		  
-			return "#" + r + g + b;
-		}
+			  return "#" + r + g + b;
+			} else {
+			  // If the colorValue is neither RGB nor HSL, return the input
+			  return colorValue;
+			}
+		  }		
+		  
 
 		
 		// Your existing code starts here...
@@ -235,9 +268,7 @@ export class BMOSettingTab extends PluginSettingTab {
 				.setIcon("rotate-cw")
 				.setClass("clickable-icon")
 				.onClick(async () => {
-					let defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
-					
-					defaultValue = rgbToHex(defaultValue);
+					let defaultValue = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
 					colorPicker.setValue(defaultValue);
 		
 					const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
@@ -251,20 +282,20 @@ export class BMOSettingTab extends PluginSettingTab {
 			)
 			.addColorPicker((color) => {
 				colorPicker = color;
-				color.setValue(rgbToHex(this.plugin.settings.chatbotContainerBackgroundColor) || rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim()))
+				color.setValue(colorToHex(this.plugin.settings.chatbotContainerBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim()))
 					.onChange(async (value) => {
-						this.plugin.settings.chatbotContainerBackgroundColor = rgbToHex(value);
+						this.plugin.settings.chatbotContainerBackgroundColor = colorToHex(value);
 						const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
 						if (chatbotContainer) {
-							chatbotContainer.style.backgroundColor = rgbToHex(value);
+							chatbotContainer.style.backgroundColor = colorToHex(value);
 						}
 						await this.plugin.saveSettings();
 					});
 		
 				// Start polling when color picker is added
-				let previousDefaultColor = rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
+				let previousDefaultColor = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
 				pollingInterval = setInterval(() => {
-					const currentDefaultColor = rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
+					const currentDefaultColor = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
 					if (currentDefaultColor !== previousDefaultColor) {
 						// If the default color has changed (i.e., the theme has changed), reset the color picker
 						colorPicker.setValue(currentDefaultColor);
@@ -284,9 +315,8 @@ export class BMOSettingTab extends PluginSettingTab {
 					.setIcon("rotate-cw")
 					.setClass("clickable-icon")
 					.onClick(async () => {
-						const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
-						const defaultHexValue = rgbToHex(defaultValue);
-						colorPicker1.setValue(defaultHexValue);
+						const defaultValue = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+						colorPicker1.setValue(defaultValue);
 			
 						const messageContainer = document.querySelector('#messageContainer');
 						if (messageContainer) {
@@ -301,11 +331,10 @@ export class BMOSettingTab extends PluginSettingTab {
 				)
 				.addColorPicker((color) => {
 					colorPicker1 = color;
-					const defaultValue = this.plugin.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
-					const defaultHexValue = rgbToHex(defaultValue);
-					color.setValue(defaultHexValue)
+					const defaultValue = colorToHex(this.plugin.settings.userMessageBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+					color.setValue(defaultValue)
 						.onChange(async (value) => {
-							const hexValue = rgbToHex(value);
+							const hexValue = colorToHex(value);
 							this.plugin.settings.userMessageBackgroundColor = hexValue;
 							const messageContainer = document.querySelector('#messageContainer');
 							if (messageContainer) {
@@ -332,9 +361,9 @@ export class BMOSettingTab extends PluginSettingTab {
 							await this.plugin.saveSettings();
 						});
 			
-					let previousDefaultColor = rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+					let previousDefaultColor = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
 					pollingInterval1 = setInterval(() => {
-						const currentDefaultColor = rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+						const currentDefaultColor = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
 						if (currentDefaultColor !== previousDefaultColor) {
 							// If the default color has changed (i.e., the theme has changed), reset the color picker
 							colorPicker1.setValue(currentDefaultColor);
@@ -354,9 +383,8 @@ export class BMOSettingTab extends PluginSettingTab {
 					.setIcon("rotate-cw")
 					.setClass("clickable-icon")
 					.onClick(async () => {
-						const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
-						const defaultHexValue = rgbToHex(defaultValue);
-						colorPicker2.setValue(defaultHexValue);
+						const defaultValue = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+						colorPicker2.setValue(defaultValue);
 			
 						const messageContainer = document.querySelector('#messageContainer');
 						if (messageContainer) {
@@ -371,11 +399,10 @@ export class BMOSettingTab extends PluginSettingTab {
 				)
 				.addColorPicker((color) => {
 					colorPicker2 = color;
-					const defaultValue = this.plugin.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
-					const defaultHexValue = rgbToHex(defaultValue);
-					color.setValue(defaultHexValue)
+					const defaultValue = colorToHex(this.plugin.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+					color.setValue(defaultValue)
 						.onChange(async (value) => {
-							const hexValue = rgbToHex(value);
+							const hexValue = colorToHex(value);
 							this.plugin.settings.botMessageBackgroundColor = hexValue;
 							const messageContainer = document.querySelector('#messageContainer');
 							if (messageContainer) {
@@ -402,9 +429,9 @@ export class BMOSettingTab extends PluginSettingTab {
 							await this.plugin.saveSettings();
 						});
 			
-					let previousDefaultColor = rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+					let previousDefaultColor = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
 					pollingInterval2 = setInterval(() => {
-						const currentDefaultColor = rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+						const currentDefaultColor = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
 						if (currentDefaultColor !== previousDefaultColor) {
 							// If the default color has changed (i.e., the theme has changed), reset the color picker
 							colorPicker2.setValue(currentDefaultColor);
@@ -455,9 +482,5 @@ export class BMOSettingTab extends PluginSettingTab {
 		  
 			return frag;
 		  };
-		  
-	  
-	  
-
 	}
 }
