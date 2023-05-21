@@ -11,6 +11,30 @@ export function setMessageHistory(newMessageHistory: string) {
     messageHistory = newMessageHistory;
 }
 
+function rgbToHex(rgb: string): string {
+    if (!rgb.startsWith('rgb')) {
+        return rgb; // return the input as it is if it's not an rgb color
+    }
+    
+    // Choose correct separator
+    let sep = rgb.indexOf(",") > -1 ? "," : " ";
+    // Turn "rgb(r, g, b)" into [r, g, b]
+    let rgbArray = rgb.substr(4).split(")")[0].split(sep);
+  
+    let r = (+rgbArray[0]).toString(16),
+        g = (+rgbArray[1]).toString(16),
+        b = (+rgbArray[2]).toString(16);
+  
+    if (r.length == 1)
+      r = "0" + r;
+    if (g.length == 1)
+      g = "0" + g;
+    if (b.length == 1)
+      b = "0" + b;
+  
+    return "#" + r + g + b;
+}
+
 export class BMOView extends ItemView {
     private messageEl: HTMLElement;
     private settings: BMOSettings;
@@ -32,6 +56,8 @@ export class BMOView extends ItemView {
         return "Chatbot";
     }
 
+    
+
     async onOpen(): Promise<void> {
 
         const container = this.containerEl.children[1];
@@ -42,7 +68,7 @@ export class BMOView extends ItemView {
             },
         });
         
-        chatbotContainer.style.backgroundColor = this.settings.chatbotContainerBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
+        chatbotContainer.style.backgroundColor = rgbToHex(this.settings.chatbotContainerBackgroundColor) || rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
         
 
         chatbotContainer.createEl("h1", { 
@@ -102,7 +128,7 @@ export class BMOView extends ItemView {
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
             userMessage.classList.add("userMessage");
-            userMessage.style.backgroundColor = this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
+            userMessage.style.backgroundColor = rgbToHex(this.settings.userMessageBackgroundColor) || rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
             
             const userNameSpan = document.createElement("span");
             userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
@@ -129,7 +155,7 @@ export class BMOView extends ItemView {
             
                 const botMessage = document.createElement("div");
                 botMessage.classList.add("botMessage");
-                botMessage.style.backgroundColor = this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+                botMessage.style.backgroundColor = rgbToHex(this.settings.botMessageBackgroundColor) || rgbToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
                 messageContainer.appendChild(botMessage);
             
                 const botNameSpan = document.createElement("span"); 
