@@ -11,7 +11,7 @@ export function setMessageHistory(newMessageHistory: string) {
     messageHistory = newMessageHistory;
 }
 
-function colorToHex(colorValue: string): string {
+export function colorToHex(colorValue: string): string {
     if (colorValue.startsWith("hsl")) {
       // Convert HSL to HEX
       var match = colorValue.match(/(\d+(\.\d+)?)%?/g);

@@ -1,5 +1,6 @@
 import { App, Notice, PluginSettingTab, Setting, ColorComponent, requestUrl } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from './main';
+import { colorToHex } from "./view";
 import BMOGPT from './main';
 import { clearInterval } from 'timers';
 
@@ -36,9 +37,6 @@ export class BMOSettingTab extends PluginSettingTab {
 			console.error('Error:', error);
 		}
 	}
-	
-	
-	
 
 	async display(): Promise<void> {
 		const models = await this.fetchData();
@@ -57,7 +55,6 @@ export class BMOSettingTab extends PluginSettingTab {
 		    text: "Check status: ",
 		});
 		
-
 		const usageLink = containerEl.createEl("a", {
 				text: "https://platform.openai.com/account/usage",
 				href: "https://platform.openai.com/account/usage",
@@ -67,7 +64,6 @@ export class BMOSettingTab extends PluginSettingTab {
 			text: "https://status.openai.com/",
 			href: "https://status.openai.com/",
 		});
-
 
 		usageText.appendChild(usageLink);
 		statusText.appendChild(statusLink);
@@ -103,22 +99,22 @@ export class BMOSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 					const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
 					if (modelName) {
-						modelName.textContent = 'Model: ' + this.plugin.settings.model.replace(/[gpt]/g, letter => letter.toUpperCase());
+						modelName.textContent = 'Model: ' + this.plugin.settings.model.toLowerCase();
 					}
 				})
 			});
 	  
-		new Setting(containerEl)
+			new Setting(containerEl)
 			.setName('System')
 			.setDesc('System role prompt.')
 			.addTextArea(text => text
 				.setPlaceholder('You are a helpful assistant.')
-				.setValue(this.plugin.settings.system_role || DEFAULT_SETTINGS.system_role)
+				.setValue(this.plugin.settings.system_role !== undefined ? this.plugin.settings.system_role : "You are a helpful assistant who responds in markdown.")
 				.onChange(async (value) => {
-					this.plugin.settings.system_role = value || DEFAULT_SETTINGS.system_role;
+					this.plugin.settings.system_role = value !== undefined ? value : DEFAULT_SETTINGS.system_role;
 					await this.plugin.saveSettings();
 				})
-		);
+			);
 
 		new Setting(containerEl)
 			.setName('Max Tokens')
@@ -198,65 +194,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					chatbotName.textContent = this.plugin.settings.chatbotName;
 				});
             })
-        );
-		
-		function colorToHex(colorValue: string): string {
-			if (colorValue.startsWith("hsl")) {
-			  // Convert HSL to HEX
-			  var match = colorValue.match(/(\d+(\.\d+)?)%?/g);
-			  if (match === null || match.length < 3) {
-				throw new Error("Invalid HSL value");
-			  }
-			  var h = parseInt(match[0]) / 360;
-			  var s = parseInt(match[1]) / 100;
-			  var l = parseInt(match[2]) / 100;
-		  
-			  function hue2rgb(p: number, q: number, t: number) {
-				if (t < 0) t += 1;
-				if (t > 1) t -= 1;
-				if (t < 1 / 6) return p + (q - p) * 6 * t;
-				if (t < 1 / 2) return q;
-				if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-				return p;
-			  }
-		  
-			  var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-			  var p = 2 * l - q;
-			  var r = hue2rgb(p, q, h + 1 / 3);
-			  var g = hue2rgb(p, q, h);
-			  var b = hue2rgb(p, q, h - 1 / 3);
-		  
-			  var toHex = function (c: number) {
-				var hex = Math.round(c * 255).toString(16);
-				return hex.length === 1 ? "0" + hex : hex;
-			  };
-		  
-			  var hex = "#" + toHex(r) + toHex(g) + toHex(b);
-			  return hex;
-			} else if (colorValue.startsWith("rgb")) {
-			  // Convert RGB to HEX
-			  let sep = colorValue.indexOf(",") > -1 ? "," : " ";
-			  let rgbArray = colorValue.substr(4).split(")")[0].split(sep);
-		  
-			  let r = (+rgbArray[0]).toString(16),
-				g = (+rgbArray[1]).toString(16),
-				b = (+rgbArray[2]).toString(16);
-		  
-			  if (r.length == 1)
-				r = "0" + r;
-			  if (g.length == 1)
-				g = "0" + g;
-			  if (b.length == 1)
-				b = "0" + b;
-		  
-			  return "#" + r + g + b;
-			} else {
-			  // If the colorValue is neither RGB nor HSL, return the input
-			  return colorValue;
-			}
-		  }		
-		  
-
+        );		
 		
 		// Your existing code starts here...
 		let colorPicker: ColorComponent;

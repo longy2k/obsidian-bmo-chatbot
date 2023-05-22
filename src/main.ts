@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, MarkdownPostProcessorContext, Modal, Notice, Plugin, PluginSettingTab, Setting, ItemView } from 'obsidian';
+import { Plugin } from 'obsidian';
 import { Configuration, OpenAIApi } from "openai";
 import { BMOView, VIEW_TYPE_CHATBOT, setMessageHistory } from "./view";
 import { BMOSettingTab } from './settings';
@@ -23,7 +23,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
 	max_tokens: '',
 	model: 'gpt-3.5-turbo-0301',
-	system_role: 'You are a helpful assistant who responds in markdown.',
+	system_role: '',
 	temperature: '',
 	userName: 'USER',
 	chatbotName: 'BOT',
@@ -40,7 +40,7 @@ export default class BMOGPT extends Plugin {
 
 	resetMessageHistory() {
 		setMessageHistory("");
-	  }
+	}
 
 	async onload() {
 		await this.loadSettings();
@@ -58,11 +58,11 @@ export default class BMOGPT extends Plugin {
 		const configuration = new Configuration({
 			apiKey: this.settings.apiKey,
 		});
+
 		this.openai = new OpenAIApi(configuration);
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new BMOSettingTab(this.app, this));
-
 	}
 
 	async onunload() {
@@ -72,6 +72,7 @@ export default class BMOGPT extends Plugin {
 		  if (bmoView) {
 			bmoView.cleanup();
 		  }
+		  
 		});
 	}
 
