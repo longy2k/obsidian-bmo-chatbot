@@ -104,17 +104,17 @@ export class BMOSettingTab extends PluginSettingTab {
 				})
 			});
 	  
-			new Setting(containerEl)
-			.setName('System')
-			.setDesc('System role prompt.')
-			.addTextArea(text => text
-				.setPlaceholder('You are a helpful assistant.')
-				.setValue(this.plugin.settings.system_role !== undefined ? this.plugin.settings.system_role : "You are a helpful assistant who responds in markdown.")
-				.onChange(async (value) => {
-					this.plugin.settings.system_role = value !== undefined ? value : DEFAULT_SETTINGS.system_role;
-					await this.plugin.saveSettings();
-				})
-			);
+		new Setting(containerEl)
+		.setName('System')
+		.setDesc('System role prompt.')
+		.addTextArea(text => text
+			.setPlaceholder('You are a helpful assistant.')
+			.setValue(this.plugin.settings.system_role !== undefined ? this.plugin.settings.system_role : "You are a helpful assistant who responds in markdown.")
+			.onChange(async (value) => {
+				this.plugin.settings.system_role = value !== undefined ? value : DEFAULT_SETTINGS.system_role;
+				await this.plugin.saveSettings();
+			})
+		);
 
 		new Setting(containerEl)
 			.setName('Max Tokens')
@@ -196,7 +196,6 @@ export class BMOSettingTab extends PluginSettingTab {
             })
         );		
 		
-		// Your existing code starts here...
 		let colorPicker: ColorComponent;
 		let pollingInterval: string | number | NodeJS.Timer | undefined;
 		
@@ -232,7 +231,6 @@ export class BMOSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 		
-				// Start polling when color picker is added
 				let previousDefaultColor = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
 				pollingInterval = setInterval(() => {
 					const currentDefaultColor = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
@@ -380,7 +378,6 @@ export class BMOSettingTab extends PluginSettingTab {
 					}, 1000); // Poll every second
 				});
 				
-
 		// Be sure to clear the interval when the settings pane is closed to avoid memory leaks
 		onunload = () => {
 			clearInterval(pollingInterval);
@@ -394,33 +391,32 @@ export class BMOSettingTab extends PluginSettingTab {
 		.setName('REST API URL')
 		.setDesc(descLink1('Enter your REST API URL from a self-hosted API like', 'https://github.com/go-skynet/LocalAI', ''))
 		.addText(text => text
-		  .setPlaceholder('http://localhost:8080')
-		  .setValue(this.plugin.settings.restAPIUrl || DEFAULT_SETTINGS.restAPIUrl)
-		  .onChange(async (value) => {
+		.setPlaceholder('http://localhost:8080')
+		.setValue(this.plugin.settings.restAPIUrl || DEFAULT_SETTINGS.restAPIUrl)
+		.onChange(async (value) => {
 			this.plugin.settings.restAPIUrl = value ? value : DEFAULT_SETTINGS.restAPIUrl;
 			await this.plugin.saveSettings();
-		  })
+		})
 		);
-
 
 		function descLink1(text: string, link: string, extraWords: string): DocumentFragment {
 			const frag = new DocumentFragment();
 			const desc = document.createElement('span');
 			desc.innerText = text + ' ';
 			frag.appendChild(desc);
-		  
+		
 			const anchor = document.createElement('a');
 			anchor.href = link;
 			anchor.target = '_blank';
 			anchor.rel = 'noopener noreferrer';
 			anchor.innerText = 'LocalAI';
 			frag.appendChild(anchor);
-		  
+		
 			const extra = document.createElement('span');
 			extra.innerText = ' ' + extraWords;
 			frag.appendChild(extra);
-		  
+		
 			return frag;
-		  };
+		};
 	}
 }
