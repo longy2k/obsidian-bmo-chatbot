@@ -253,7 +253,6 @@ export class BMOView extends ItemView {
                         botParagraph.textContent = "Oops, something went wrong. Please try again.";
                         botMessage.appendChild(botParagraph);
                     });
-                    console.log(this.preventEnter);
                     
             }
 
@@ -474,7 +473,7 @@ export class BMOView extends ItemView {
                         const { done, value } = await reader.read();
                 
                         if (done) {
-                            console.log('[DONE]');
+                            // console.log('[DONE]');
                             break;
                         }
                 
