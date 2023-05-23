@@ -203,6 +203,16 @@ export class BMOView extends ItemView {
                 botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan);
 
+                if (await this.checkFile(input)){
+                    const fileContent = await this.checkFile(input);
+                    if (fileContent) {
+                        const parsedMarkdown = marked(fileContent);
+                        const markdownContainer = document.createElement('div');
+                        markdownContainer.innerHTML = parsedMarkdown;
+                        botMessage.appendChild(markdownContainer);
+                    }                 
+                }
+
                 const loadingEl = document.createElement("span");
                 loadingEl.setAttribute("id", "loading"); 
                 loadingEl.style.display = "inline-block"; 
@@ -304,21 +314,22 @@ export class BMOView extends ItemView {
         }
     }
 
-    async checkFile(fileName: string) {
+    async checkFile(fileName: string): Promise<string | null> {
         const markdownFiles = this.app.vault.getMarkdownFiles();
-    
+      
         fileName = fileName.toLowerCase();
-        
+      
         for (const file of markdownFiles) {
-            const baseNameLowerCase = file.basename.toLowerCase();
-            console.log(`Checking file ${baseNameLowerCase}`);
-            if (baseNameLowerCase === fileName) {
-                return true;
-            }
+          const baseNameLowerCase = file.basename.toLowerCase();
+          console.log(`Checking file ${baseNameLowerCase}`);
+          if (baseNameLowerCase === fileName) {
+            const fileContent = await this.app.vault.read(file);
+            return fileContent;
+          }
         }
-    
-        return false;
-    } 
+      
+        return null;
+    }
 
     async BMOchatbot(input: string) {
         // If apiKey does not exist.
