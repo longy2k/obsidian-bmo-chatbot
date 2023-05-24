@@ -321,7 +321,7 @@ export class BMOView extends ItemView {
       
         for (const file of markdownFiles) {
           const baseNameLowerCase = file.basename.toLowerCase();
-          console.log(`Checking file ${baseNameLowerCase}`);
+        //   console.log(`Checking file ${baseNameLowerCase}`);
           if (baseNameLowerCase === fileName) {
             const fileContent = await this.app.vault.read(file);
             return fileContent;
