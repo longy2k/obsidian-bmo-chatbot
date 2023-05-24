@@ -203,16 +203,27 @@ export class BMOView extends ItemView {
                 botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan);
 
-                if (await this.checkFile(input)){
+                if (await this.checkFile(input)) {
                     const fileContent = await this.checkFile(input);
                     if (fileContent) {
+                        const renderer = new marked.Renderer();
+                
+                        renderer.paragraph = text => text;  // override the paragraph rendering
+                
+                        renderer.code = (code, language) => {  // override the code block rendering
+                            return `<pre><code class="${language}">${code}</code></pre>`;
+                        };
+                
+                        marked.setOptions({ renderer });  // apply the custom renderer
+                
                         const parsedMarkdown = marked(fileContent);
                         const markdownContainer = document.createElement('div');
+                        markdownContainer.classList.add('messageBlock');  // add the class
                         markdownContainer.innerHTML = parsedMarkdown;
                         botMessage.appendChild(markdownContainer);
-                    }                 
-                }
-
+                    }
+                }                
+                
                 const loadingEl = document.createElement("span");
                 loadingEl.setAttribute("id", "loading"); 
                 loadingEl.style.display = "inline-block"; 
@@ -333,25 +344,25 @@ export class BMOView extends ItemView {
 
     async BMOchatbot(input: string) {
         // If apiKey does not exist.
-        if (!this.settings.apiKey) {
-            const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
-            const messageContainer = document.querySelector('#messageContainer');
-            const chatbox = document.querySelector('#chatbox textarea') as HTMLTextAreaElement;
-            new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
-            if (chatbotNameHeading){
-                chatbotNameHeading.textContent = "ERROR";
-            }
+        // if (!this.settings.apiKey) {
+        //     const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
+        //     const messageContainer = document.querySelector('#messageContainer');
+        //     const chatbox = document.querySelector('#chatbox textarea') as HTMLTextAreaElement;
+        //     new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
+        //     if (chatbotNameHeading){
+        //         chatbotNameHeading.textContent = "ERROR";
+        //     }
 
-            const lastDiv = messageContainer?.lastElementChild as HTMLDivElement;
-            const errorMessage = document.createElement('p');
-            errorMessage.textContent = "API key not found. Please add your OpenAI API key in the plugin settings.";
-            errorMessage.classList.add('errorMessage');
-            const chatbotNameError = lastDiv.querySelector('#chatbotName') as HTMLDivElement;
-            chatbotNameError.textContent = "ERROR";
-            lastDiv.appendChild(errorMessage);
-            chatbox.disabled = true;
-            return;
-        }
+        //     const lastDiv = messageContainer?.lastElementChild as HTMLDivElement;
+        //     const errorMessage = document.createElement('p');
+        //     errorMessage.textContent = "API key not found. Please add your OpenAI API key in the plugin settings.";
+        //     errorMessage.classList.add('errorMessage');
+        //     const chatbotNameError = lastDiv.querySelector('#chatbotName') as HTMLDivElement;
+        //     chatbotNameError.textContent = "ERROR";
+        //     lastDiv.appendChild(errorMessage);
+        //     chatbox.disabled = true;
+        //     return;
+        // }
 
         // if (this.settings.model !== "gpt-3.5-turbo-0301" && this.settings.model !== "gpt-4-0314") {
         //     const url = 'https://api.openai.com/v1/chat/completions';
