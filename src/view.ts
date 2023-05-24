@@ -214,15 +214,61 @@ export class BMOView extends ItemView {
                             return `<pre><code class="${language}">${code}</code></pre>`;
                         };
                 
-                        marked.setOptions({ renderer });  // apply the custom renderer
-                
                         const parsedMarkdown = marked(fileContent);
                         const markdownContainer = document.createElement('div');
                         markdownContainer.classList.add('messageBlock');  // add the class
                         markdownContainer.innerHTML = parsedMarkdown;
                         botMessage.appendChild(markdownContainer);
+                
+                        // Copy button for code blocks
+                        const codeBlocks = markdownContainer.querySelectorAll('pre code');
+                
+                        codeBlocks.forEach(async (codeElement) => {
+                            console.log(codeElement);
+                            const copyButton = document.createElement("button");
+                            copyButton.textContent = "copy";
+                            setIcon(copyButton, "copy");
+                            copyButton.classList.add("copy-button");
+                            copyButton.title = "copy";
+                            if (codeElement.parentNode) {
+                                codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
+                            }
+                
+                            copyButton.addEventListener("click", () => {
+                                const codeText = codeElement.textContent;
+                                if (codeText) {
+                                    navigator.clipboard.writeText(codeText).then(() => {
+                                        new Notice('Copied to your clipboard');
+                                    }, (err) => {
+                                        console.error("Failed to copy code: ", err);
+                                    });
+                                }
+                            });
+                        });
+
+                        // renderer.image = (href, title, text) => {
+                        //     // Check if href is null and return an empty img tag
+                        //     if (href === null) {
+                        //         return `<img alt="${text || 'Image'}">`;
+                        //     }
+                            
+                        //     // Extract filename from Obsidian's syntax
+                        //     const match = href.match(/\[\[(.*?)\]\]/);
+                        //     const filename = match ? match[1] : href;  // If there's no match, fallback to using href as the filename
+                        //     return `<img src="${filename}" alt="${text || 'Image'}" title="${title || ''}">`;
+                        // };
+
+                        const sourceDiv = document.createElement('div');
+                        sourceDiv.classList.add('internal-embed', 'media-embed', 'image-embed', 'is-loaded');
+                        sourceDiv.setAttribute('tabindex', "-1");
+                        sourceDiv.dataset.src = "./2.jpg";   // Storing src as a data attribute
+                        sourceDiv.dataset.alt = "./2.jpg";   // Storing alt as a data attribute
+                        sourceDiv.contentEditable = "false";
+                        sourceDiv.innerHTML = `<img alt="${sourceDiv.dataset.alt}" src="app://0a998f120b5cb9fa69c1449836cfa0d39c98/home/longy2k/Documents/playground/test-obsidian-plugin/${sourceDiv.dataset.src}?1646109343359">`;
+                        botMessage.appendChild(sourceDiv);
                     }
-                }                
+                }
+                
                 
                 const loadingEl = document.createElement("span");
                 loadingEl.setAttribute("id", "loading"); 
