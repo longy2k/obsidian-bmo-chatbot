@@ -228,21 +228,28 @@ export class BMOView extends ItemView {
                         // Grabbing all elements with .inline-title class
                         const inlineTitles = document.querySelectorAll('.inline-title');
 
-                        // Looping through all inline titles
                         inlineTitles.forEach(inlineTitle => {
                             // Check if inlineTitle's content is equivalent to input
                             if (inlineTitle.textContent === input) {
-                                // If equivalent, get the div below .inline-title
-                                const nextDiv = inlineTitle.nextElementSibling as HTMLElement;  // Type assertion here
-                                if (nextDiv && nextDiv.nodeName === 'DIV') {
-                                    // Set the padding to 0
-                                    markdownContainer.innerHTML = '';  // Clear the content
-                                    markdownContainer.innerHTML = nextDiv.innerHTML;  // Append the next div's content to the markdown container
+                                // If equivalent, get the closest div with .view-content class
+                                const parentDiv = inlineTitle.closest('.view-content') as HTMLElement;  // Type assertion here
+                                if (parentDiv && parentDiv.nodeName === 'DIV') {
+                                    // Clear the content
+                                    markdownContainer.innerHTML = '';  
+                        
+                                    // Find all markdown-reading-view within the parent div
+                                    const markdownReadingViews = parentDiv.querySelectorAll('.markdown-preview-section');
+                                    markdownReadingViews.forEach(markdownReadingView => {
+                                        // Append the markdown-reading-view content to the markdown container
+                                        markdownContainer.innerHTML += markdownReadingView.innerHTML; 
+                                    });
                                 }
                             }
                         });
+                    
 
-                        const cmContentElements = document.querySelectorAll('.cm-content');
+
+                        const cmContentElements = document.querySelectorAll('.markdown-preview-section');
 
                         cmContentElements.forEach((element: Element) => {
                             const htmlElement = element as HTMLElement;
@@ -277,6 +284,8 @@ export class BMOView extends ItemView {
                         });
                     }
                 }
+
+                
                 
                 
                 const loadingEl = document.createElement("span");
