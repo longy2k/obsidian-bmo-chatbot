@@ -203,26 +203,48 @@ export class BMOView extends ItemView {
                 botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan);
 
+                
+                
+
                 if (await this.checkFile(input)) {
                     const fileContent = await this.checkFile(input);
                     if (fileContent) {
                         const renderer = new marked.Renderer();
-                
+                    
                         renderer.paragraph = text => text;  // override the paragraph rendering
-                
+                    
                         renderer.code = (code, language) => {  // override the code block rendering
                             return `<pre><code class="${language}">${code}</code></pre>`;
                         };
-                
+                    
                         const parsedMarkdown = marked(fileContent);
                         const markdownContainer = document.createElement('div');
                         markdownContainer.classList.add('messageBlock');  // add the class
                         markdownContainer.innerHTML = parsedMarkdown;
-                        botMessage.appendChild(markdownContainer);
-                
+                    
                         // Copy button for code blocks
                         const codeBlocks = markdownContainer.querySelectorAll('pre code');
-                
+                    
+                        // Grabbing all elements with .inline-title class
+                        const inlineTitles = document.querySelectorAll('.inline-title');
+
+                        // Looping through all inline titles
+                        inlineTitles.forEach(inlineTitle => {
+                            // Check if inlineTitle's content is equivalent to input
+                            if (inlineTitle.textContent === input) {
+                                // If equivalent, get the div below .inline-title
+                                const nextDiv = inlineTitle.nextElementSibling;
+                                if (nextDiv && nextDiv.nodeName === 'DIV') {
+                                    markdownContainer.innerHTML = '';  // Clear the content
+                                    markdownContainer.innerHTML = nextDiv.innerHTML;  // Append the next div's content to the markdown container
+                                }
+                            }
+                        });
+
+                    
+                        // Appending the markdown container to the bot message
+                        botMessage.appendChild(markdownContainer);
+
                         codeBlocks.forEach(async (codeElement) => {
                             console.log(codeElement);
                             const copyButton = document.createElement("button");
@@ -245,27 +267,6 @@ export class BMOView extends ItemView {
                                 }
                             });
                         });
-
-                        // renderer.image = (href, title, text) => {
-                        //     // Check if href is null and return an empty img tag
-                        //     if (href === null) {
-                        //         return `<img alt="${text || 'Image'}">`;
-                        //     }
-                            
-                        //     // Extract filename from Obsidian's syntax
-                        //     const match = href.match(/\[\[(.*?)\]\]/);
-                        //     const filename = match ? match[1] : href;  // If there's no match, fallback to using href as the filename
-                        //     return `<img src="${filename}" alt="${text || 'Image'}" title="${title || ''}">`;
-                        // };
-
-                        const sourceDiv = document.createElement('div');
-                        sourceDiv.classList.add('internal-embed', 'media-embed', 'image-embed', 'is-loaded');
-                        sourceDiv.setAttribute('tabindex', "-1");
-                        sourceDiv.dataset.src = "./2.jpg";   // Storing src as a data attribute
-                        sourceDiv.dataset.alt = "./2.jpg";   // Storing alt as a data attribute
-                        sourceDiv.contentEditable = "false";
-                        sourceDiv.innerHTML = `<img alt="${sourceDiv.dataset.alt}" src="app://0a998f120b5cb9fa69c1449836cfa0d39c98/home/longy2k/Documents/playground/test-obsidian-plugin/${sourceDiv.dataset.src}?1646109343359">`;
-                        botMessage.appendChild(sourceDiv);
                     }
                 }
                 
