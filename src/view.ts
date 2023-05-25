@@ -233,12 +233,20 @@ export class BMOView extends ItemView {
                             // Check if inlineTitle's content is equivalent to input
                             if (inlineTitle.textContent === input) {
                                 // If equivalent, get the div below .inline-title
-                                const nextDiv = inlineTitle.nextElementSibling;
+                                const nextDiv = inlineTitle.nextElementSibling as HTMLElement;  // Type assertion here
                                 if (nextDiv && nextDiv.nodeName === 'DIV') {
+                                    // Set the padding to 0
                                     markdownContainer.innerHTML = '';  // Clear the content
                                     markdownContainer.innerHTML = nextDiv.innerHTML;  // Append the next div's content to the markdown container
                                 }
                             }
+                        });
+
+                        const cmContentElements = document.querySelectorAll('.cm-content');
+
+                        cmContentElements.forEach((element: Element) => {
+                            const htmlElement = element as HTMLElement;
+                            htmlElement.style.padding = '0';
                         });
 
                     
