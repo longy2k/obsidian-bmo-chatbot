@@ -14,13 +14,13 @@ export function setMessageHistory(newMessageHistory: string) {
 export function colorToHex(colorValue: string): string {
     if (colorValue.startsWith("hsl")) {
       // Convert HSL to HEX
-      var match = colorValue.match(/(\d+(\.\d+)?)%?/g);
+      let match = colorValue.match(/(\d+(\.\d+)?)%?/g);
       if (match === null || match.length < 3) {
 		throw new Error("Invalid HSL value");
 	  }
-      var h = parseInt(match[0]) / 360;
-      var s = parseInt(match[1]) / 100;
-      var l = parseInt(match[2]) / 100;
+      let h = parseInt(match[0]) / 360;
+      let s = parseInt(match[1]) / 100;
+      let l = parseInt(match[2]) / 100;
   
       function hue2rgb(p: number, q: number, t: number) {
         if (t < 0) t += 1;
@@ -31,18 +31,18 @@ export function colorToHex(colorValue: string): string {
         return p;
       }
   
-      var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      var p = 2 * l - q;
-      var r = hue2rgb(p, q, h + 1 / 3);
-      var g = hue2rgb(p, q, h);
-      var b = hue2rgb(p, q, h - 1 / 3);
+      let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      let p = 2 * l - q;
+      let r = hue2rgb(p, q, h + 1 / 3);
+      let g = hue2rgb(p, q, h);
+      let b = hue2rgb(p, q, h - 1 / 3);
   
-      var toHex = function (c: number) {
-        var hex = Math.round(c * 255).toString(16);
+      let toHex = function (c: number) {
+        let hex = Math.round(c * 255).toString(16);
         return hex.length === 1 ? "0" + hex : hex;
       };
   
-      var hex = "#" + toHex(r) + toHex(g) + toHex(b);
+      let hex = "#" + toHex(r) + toHex(g) + toHex(b);
       return hex;
     } else if (colorValue.startsWith("rgb")) {
       // Convert RGB to HEX
