@@ -34,7 +34,7 @@ export class BMOSettingTab extends PluginSettingTab {
 			return models;
 	
 		} catch (error) {
-			console.error('Error:', error);
+			// console.error('Error:', error);
 		}
 	}
 
@@ -84,8 +84,9 @@ export class BMOSettingTab extends PluginSettingTab {
 			.setDesc('Choose a model.')
 			.addDropdown(dropdown => {
 				dropdown
-					.addOption('gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0301')
-					.addOption('gpt-4-0314', 'gpt-4-0314 (Access depends on your API key.)')
+					.addOption('gpt-3.5-turbo', 'gpt-3.5-turbo')
+					.addOption('gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k')
+					.addOption('gpt-4', 'gpt-4')
 					if (this.plugin.settings.restAPIUrl) {
 						if (models && models.length > 0) {
 							models.forEach((model: string) => {

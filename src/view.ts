@@ -217,7 +217,7 @@ export class BMOView extends ItemView {
                     }
                 };  
 
-                if (this.settings.model !== "gpt-3.5-turbo-0301" && this.settings.model !== "gpt-4-0314") {
+                if (this.settings.model !== "gpt-3.5-turbo" && this.settings.model !== "gpt-3.5-turbo-16k" && this.settings.model !== "gpt-4") {
                     botMessage.appendChild(loadingEl);
                     loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
@@ -319,7 +319,7 @@ export class BMOView extends ItemView {
             return;
         }
 
-        if (this.settings.model !== "gpt-3.5-turbo-0301" && this.settings.model !== "gpt-4-0314") {
+        if (this.settings.model !== "gpt-3.5-turbo" && this.settings.model !== "gpt-3.5-turbo-16k" && this.settings.model !== "gpt-4") {
             const url = 'https://api.openai.com/v1/chat/completions';
             const updatedUrl = url.replace('https://api.openai.com', this.settings.restAPIUrl);
 
