@@ -17,7 +17,7 @@ Improve your knowledge management with a chatbot that understands context and re
 
 ## Requirements
 
-To use this plugin, you need an OpenAI account with API access. If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview). Please note that access to GPT-4 is only available if you have been granted access by OpenAI.
+To use this plugin, you need an OpenAI account with API access. If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview).
 
 Additionally, if you want to interact with self-hosted API LLM(s) models like [`LocalAI`](https://github.com/go-skynet/LocalAI), you will need to have the self-hosted API set up and running. You can follow the instructions provided by the self-hosted API provider to get it up and running. Once you have the REST API URL for your self-hosted API, you can use it with this plugin to interact with your models.
 
