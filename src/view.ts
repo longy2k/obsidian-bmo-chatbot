@@ -6,7 +6,11 @@ import { loadPrism } from "obsidian";
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 
 let messageHistory: string;
-let savedMessageHistory: string;
+let savedMessageHistoryHTML: string;
+
+export let filenameMessageHistory = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.txt';
+export let filenameMessageHistoryHTML = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistoryHTML.txt';
+export let filenameMessageHistoryJSON = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.json';
 
 export function colorToHex(colorValue: string): string {
     if (colorValue.startsWith("hsl")) {
@@ -118,8 +122,8 @@ export class BMOView extends ItemView {
             },
         });
 
-        if (await this.app.vault.adapter.exists('messageHistory.txt')) {
-            messageContainer.innerHTML = await this.app.vault.adapter.read('messageHistory.txt');
+        if (await this.app.vault.adapter.exists(filenameMessageHistoryHTML)) {
+            messageContainer.innerHTML = await this.app.vault.adapter.read(filenameMessageHistoryHTML);
         }
 
         const chatbox = chatbotContainer.createEl("div", {
@@ -145,14 +149,16 @@ export class BMOView extends ItemView {
     }
     
     // Event handler methods
-    handleKeyup(event: KeyboardEvent) {
+    async handleKeyup(event: KeyboardEvent) {
         if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {
             event.preventDefault(); // prevent submission
             const input = this.textareaElement.value.trim();
             if (input.length === 0) { // check if input is empty or just whitespace
                 return;
             }
-
+            if (await this.app.vault.adapter.exists(filenameMessageHistory)) {
+                messageHistory = await this.app.vault.adapter.read(filenameMessageHistory);
+            }
             messageHistory += input + "\n";
             // console.log(messageHistory);
 
@@ -579,12 +585,20 @@ export class BMOView extends ItemView {
                     }
                 }
 
-                messageHistory += message + "\n";
+                if (messageHistory.length === 0) {
+                    await this.app.vault.adapter.append(filenameMessageHistory, messageHistory);
+                }
+                else {
+                    messageHistory += message + "\n";
+                    await this.app.vault.adapter.write(filenameMessageHistory, messageHistory);
+                }
+
+
                 if (messageContainerEl) {
-                    savedMessageHistory = messageContainerEl.innerHTML;
-                    savedMessageHistory = savedMessageHistory.replace(/<div id="spacer">.*?<\/div>/gi, '');
-                    console.log(savedMessageHistory);
-                    this.saveMessageHistoryToFile(savedMessageHistory);
+                    savedMessageHistoryHTML = messageContainerEl.innerHTML;
+                    savedMessageHistoryHTML = savedMessageHistoryHTML.replace(/<div id="spacer">.*?<\/div>/gi, '');
+                    console.log(savedMessageHistoryHTML);
+                    this.saveMessageHistoryToFile(savedMessageHistoryHTML);
                 }
             } 
             catch (error) {
@@ -598,8 +612,7 @@ export class BMOView extends ItemView {
 
     async saveMessageHistoryToFile(messageHistory: string) {
         try {
-          const filename = 'messageHistory.txt';
-          await this.app.vault.adapter.write(filename, messageHistory);
+          await this.app.vault.adapter.write(filenameMessageHistoryHTML, messageHistory);
         } catch (error) {
           console.error('Error saving message history:', error);
         }

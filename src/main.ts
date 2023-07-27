@@ -1,6 +1,6 @@
 import { Plugin } from 'obsidian';
 import { Configuration, OpenAIApi } from "openai";
-import { BMOView, VIEW_TYPE_CHATBOT } from "./view";
+import { BMOView, VIEW_TYPE_CHATBOT, filenameMessageHistory, filenameMessageHistoryHTML } from "./view";
 import { BMOSettingTab } from './settings';
 
 export interface BMOSettings {
@@ -47,7 +47,8 @@ export default class BMOGPT extends Plugin {
 
 		this.addRibbonIcon("bot", "Chatbot (Clear Conversation)", () => {
 		    this.activateView();
-			this.app.vault.adapter.remove('messageHistory.txt');
+			this.app.vault.adapter.remove(filenameMessageHistoryHTML);
+			this.app.vault.adapter.write(filenameMessageHistory, '');
 		});
 
 		const configuration = new Configuration({
