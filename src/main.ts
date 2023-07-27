@@ -47,6 +47,7 @@ export default class BMOGPT extends Plugin {
 
 		this.addRibbonIcon("bot", "Chatbot (Clear Conversation)", () => {
 		    this.activateView();
+			this.app.vault.adapter.remove('messageHistory.txt');
 		});
 
 		const configuration = new Configuration({
