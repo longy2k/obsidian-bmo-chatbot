@@ -12,6 +12,37 @@ export let filenameMessageHistory = './.obsidian/plugins/obsidian-bmo-chatbot/da
 export let filenameMessageHistoryHTML = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistoryHTML.txt';
 export let filenameMessageHistoryJSON = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.json';
 
+interface Message {
+    [key: string]: string;
+}
+
+function HTMLToJSON(html: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    const messageDivs = doc.querySelectorAll("div");
+    const messages: Message[] = [];
+
+    messageDivs.forEach((div) => {
+        const className = div.getAttribute("class");
+        const paragraphs = div.querySelectorAll("p");
+        let content = "";
+        paragraphs.forEach((paragraph) => {
+            content += paragraph.textContent?.trim() + " ";
+        });
+
+        if (className && content.trim()) {
+            const message: Message = { [className]: content.trim() };
+            messages.push(message);
+        }
+    });
+
+    return JSON.stringify(messages);
+}
+
+  
+  
+
 export function colorToHex(colorValue: string): string {
     if (colorValue.startsWith("hsl")) {
       // Convert HSL to HEX
@@ -608,6 +639,9 @@ export class BMOView extends ItemView {
             }
         }
         console.log("BMO settings:", this.settings);
+        let test = await this.app.vault.adapter.read(filenameMessageHistoryHTML);
+        let test1 = HTMLToJSON(test);
+        await this.app.vault.adapter.write(filenameMessageHistoryJSON, test1);
     }
 
     async saveMessageHistoryToFile(messageHistory: string) {
