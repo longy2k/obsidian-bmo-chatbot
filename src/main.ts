@@ -1,9 +1,8 @@
 import { Plugin } from 'obsidian';
 import { Configuration, OpenAIApi } from "openai";
-import { BMOView, VIEW_TYPE_CHATBOT, setMessageHistory } from "./view";
+import { BMOView, VIEW_TYPE_CHATBOT } from "./view";
 import { BMOSettingTab } from './settings';
 
-// Remember to rename these classes and interfaces!
 export interface BMOSettings {
 	models: any;
 	apiKey: string;
@@ -38,10 +37,6 @@ export default class BMOGPT extends Plugin {
 	settings: BMOSettings;
 	openai: OpenAIApi;
 
-	resetMessageHistory() {
-		setMessageHistory("");
-	}
-
 	async onload() {
 		await this.loadSettings();
 
@@ -51,7 +46,6 @@ export default class BMOGPT extends Plugin {
 		);
 
 		this.addRibbonIcon("bot", "Chatbot (Clear Conversation)", () => {
-			this.resetMessageHistory();
 		    this.activateView();
 		});
 

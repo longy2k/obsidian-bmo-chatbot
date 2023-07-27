@@ -5,11 +5,8 @@ import { loadPrism } from "obsidian";
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 
-let messageHistory = "";
-
-export function setMessageHistory(newMessageHistory: string) {
-    messageHistory = newMessageHistory;
-}
+let messageHistory: string;
+let savedMessageHistory: string;
 
 export function colorToHex(colorValue: string): string {
     if (colorValue.startsWith("hsl")) {
@@ -69,7 +66,6 @@ export function colorToHex(colorValue: string): string {
 
 
 export class BMOView extends ItemView {
-    private messageEl: HTMLElement;
     private settings: BMOSettings;
     private textareaElement: HTMLTextAreaElement;
     private loadingAnimationIntervalId: number;
@@ -89,10 +85,7 @@ export class BMOView extends ItemView {
         return "Chatbot";
     }
 
-    
-
     async onOpen(): Promise<void> {
-
         const container = this.containerEl.children[1];
         container.empty();
         const chatbotContainer = container.createEl("div", {
@@ -118,11 +111,16 @@ export class BMOView extends ItemView {
             }
         });
         
-        chatbotContainer.createEl("div", {
+        // Create the messageContainer div element
+        const messageContainer = chatbotContainer.createEl("div", {
             attr: {
-                id: "messageContainer",
-            }
+            id: "messageContainer",
+            },
         });
+
+        if (await this.app.vault.adapter.exists('messageHistory.txt')) {
+            messageContainer.innerHTML = await this.app.vault.adapter.read('messageHistory.txt');
+        }
 
         const chatbox = chatbotContainer.createEl("div", {
             attr: {
@@ -443,6 +441,8 @@ export class BMOView extends ItemView {
             try {
                 const maxTokens = this.settings.max_tokens;
                 const temperature = this.settings.temperature;
+
+                const messageContainerEl = document.getElementById("messageContainer");
             
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
@@ -490,7 +490,6 @@ export class BMOView extends ItemView {
                                         message += content;
                                         // console.log(content);
                 
-                                        const messageContainerEl = document.getElementById("messageContainer");
                                         if (messageContainerEl) {
                                             const botMessages = messageContainerEl.querySelectorAll(".botMessage");
                                             const lastBotMessage = botMessages[botMessages.length - 1];
@@ -581,6 +580,12 @@ export class BMOView extends ItemView {
                 }
 
                 messageHistory += message + "\n";
+                if (messageContainerEl) {
+                    savedMessageHistory = messageContainerEl.innerHTML;
+                    savedMessageHistory = savedMessageHistory.replace(/<div id="spacer">.*?<\/div>/gi, '');
+                    console.log(savedMessageHistory);
+                    this.saveMessageHistoryToFile(savedMessageHistory);
+                }
             } 
             catch (error) {
                 new Notice('Error occurred while fetching completion: ' + error.message);
@@ -590,6 +595,15 @@ export class BMOView extends ItemView {
         }
         console.log("BMO settings:", this.settings);
     }
+
+    async saveMessageHistoryToFile(messageHistory: string) {
+        try {
+          const filename = 'messageHistory.txt';
+          await this.app.vault.adapter.write(filename, messageHistory);
+        } catch (error) {
+          console.error('Error saving message history:', error);
+        }
+      }    
 
     async onClose() {
         // Nothing to clean up.
