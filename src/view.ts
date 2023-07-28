@@ -8,6 +8,7 @@ export const VIEW_TYPE_CHATBOT = "chatbot-view";
 let messageHistory: string;
 let savedMessageHistoryHTML: string;
 
+
 export let filenameMessageHistory = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.txt';
 export let filenameMessageHistoryHTML = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.html';
 export let filenameMessageHistoryJSON = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.json';
@@ -128,7 +129,6 @@ export class BMOView extends ItemView {
         
         chatbotContainer.style.backgroundColor = colorToHex(this.settings.chatbotContainerBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
         
-
         chatbotContainer.createEl("h1", { 
             text: this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName,
             attr: {
@@ -151,6 +151,7 @@ export class BMOView extends ItemView {
 
         if (await this.app.vault.adapter.exists(filenameMessageHistoryHTML)) {
             messageContainer.innerHTML = await this.app.vault.adapter.read(filenameMessageHistoryHTML);
+            messageContainer.scrollTop = messageContainer.scrollHeight;
             // Copy button for code blocks
             const codeBlocks = messageContainer.querySelectorAll('.botMessage .messageBlock pre');
 
@@ -191,6 +192,12 @@ export class BMOView extends ItemView {
     
     // Event handler methods
     async handleKeyup(event: KeyboardEvent) {
+        // Create /data/ folder if does not exist.
+        if (!await this.app.vault.adapter.exists('./.obsidian/plugins/obsidian-bmo-chatbot/data/')) {
+            this.app.vault.adapter.mkdir('./.obsidian/plugins/obsidian-bmo-chatbot/data/');
+        }
+
+
         if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {
             event.preventDefault(); // prevent submission
             const input = this.textareaElement.value.trim();
@@ -467,7 +474,6 @@ export class BMOView extends ItemView {
                     const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
     
                     codeBlocks.forEach(async (codeElement) => {
-                    //   console.log(codeElement);
                       const copyButton = document.createElement("button");
                       copyButton.textContent = "copy";
                       setIcon(copyButton, "copy");
