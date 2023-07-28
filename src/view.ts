@@ -193,8 +193,8 @@ export class BMOView extends ItemView {
     // Event handler methods
     async handleKeyup(event: KeyboardEvent) {
         // Create /data/ folder if does not exist.
-        if (!await this.app.vault.adapter.exists('./.obsidian/plugins/obsidian-bmo-chatbot/data/')) {
-            this.app.vault.adapter.mkdir('./.obsidian/plugins/obsidian-bmo-chatbot/data/');
+        if (!await this.app.vault.adapter.exists('./.obsidian/plugins/bmo-chatbot/data/')) {
+            this.app.vault.adapter.mkdir('./.obsidian/plugins/bmo-chatbot/data/');
         }
 
 
