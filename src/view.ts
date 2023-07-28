@@ -9,7 +9,7 @@ let messageHistory: string;
 let savedMessageHistoryHTML: string;
 
 export let filenameMessageHistory = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.txt';
-export let filenameMessageHistoryHTML = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistoryHTML.txt';
+export let filenameMessageHistoryHTML = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.html';
 export let filenameMessageHistoryJSON = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.json';
 
 interface Message {
@@ -151,6 +151,21 @@ export class BMOView extends ItemView {
 
         if (await this.app.vault.adapter.exists(filenameMessageHistoryHTML)) {
             messageContainer.innerHTML = await this.app.vault.adapter.read(filenameMessageHistoryHTML);
+            // Copy button for code blocks
+            const codeBlocks = messageContainer.querySelectorAll('.botMessage .messageBlock pre');
+
+            codeBlocks.forEach(async (codeElement) => {
+                codeElement.addEventListener("click", () => {
+                    const codeText = codeElement.textContent;
+                    if (codeText) {
+                    navigator.clipboard.writeText(codeText).then(() => {
+                        new Notice('Copied to your clipboard');
+                    }, (err) => {
+                        console.error("Failed to copy code: ", err);
+                    });
+                    }
+                });
+            });
         }
 
         const chatbox = chatbotContainer.createEl("div", {
@@ -165,7 +180,6 @@ export class BMOView extends ItemView {
         
         this.textareaElement = textarea as HTMLTextAreaElement;
         this.addEventListeners();
-        
     }
 
     addEventListeners() {
@@ -225,6 +239,10 @@ export class BMOView extends ItemView {
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
                 botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan);
+
+                const messageBlock = document.createElement("div");
+                messageBlock.classList.add("messageBlock");
+                botMessage.appendChild(messageBlock);
 
                 const loadingEl = document.createElement("span");
                 loadingEl.setAttribute("id", "loading"); 
@@ -349,6 +367,8 @@ export class BMOView extends ItemView {
             return;
         }
 
+        const messageContainerEl = document.getElementById("messageContainer");
+
         if (this.settings.model !== "gpt-3.5-turbo" && this.settings.model !== "gpt-3.5-turbo-16k" && this.settings.model !== "gpt-4") {
             const url = 'https://api.openai.com/v1/chat/completions';
             const updatedUrl = url.replace('https://api.openai.com', this.settings.restAPIUrl);
@@ -447,7 +467,7 @@ export class BMOView extends ItemView {
                     const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
     
                     codeBlocks.forEach(async (codeElement) => {
-                      console.log(codeElement);
+                    //   console.log(codeElement);
                       const copyButton = document.createElement("button");
                       copyButton.textContent = "copy";
                       setIcon(copyButton, "copy");
@@ -515,7 +535,6 @@ export class BMOView extends ItemView {
                 let message = '';
                 
                 if (reader) {
-                    let messageBlock: HTMLParagraphElement | null = null;
                 
                     while (true) {
                         const { done, value } = await reader.read();
@@ -536,87 +555,78 @@ export class BMOView extends ItemView {
                                     const content = data.choices[0].delta.content;
                                     if (content !== undefined) {
                                         message += content;
-                                        // console.log(content);
                 
                                         if (messageContainerEl) {
                                             const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                                            const lastBotMessage = botMessages[botMessages.length - 1];
+                                            let lastBotMessage = botMessages[botMessages.length - 1];
+
+                                            let messageBlock = lastBotMessage.querySelector('.messageBlock');
                 
-                                            // If messageBlock exists, update its content. Otherwise, create a new one.
                                             if (messageBlock) {
-                                                const markdownContent = marked(message);
-                                                messageBlock.innerHTML = markdownContent;
-                                            } else {
-                                                messageBlock = document.createElement("p");
-                                                messageBlock.textContent = message;
-                                                const markdownContent = marked(message);
-                                                messageBlock.innerHTML = markdownContent;
-                                                messageBlock.classList.add("messageBlock");
-                
-                                                lastBotMessage.appendChild(messageBlock);
-                                            }
-
-                                            const paragraphs = messageBlock.querySelectorAll("p");
-
-                                            for (let i = 0; i < paragraphs.length; i++) {
-                                                const p = paragraphs[i];
+                                                messageBlock.innerHTML = marked(message);
                                             
-                                                // Check if the current <p> element has a sibling <p> element
-                                                const nextSibling = p.nextElementSibling;
-                                                if (nextSibling && nextSibling.nodeName === "P") {
-                                            
-                                                // Create a <br> element and insert it after the current <p> element
-                                                const br = document.createElement("br");
-                                                const parent = p.parentNode;
-                                                if (parent) {
-                                                    parent.insertBefore(br, nextSibling);
-                                                }
-                                                }
-                                            }
+                                                const paragraphs = messageBlock.querySelectorAll("p");
 
-                                            // Wait for Prism.js to load
-                                            loadPrism().then((Prism) => {
-                                                // Select all code blocks
-                                                const codeBlocks = messageBlock?.querySelectorAll('.messageBlock pre code');
+                                                for (let i = 0; i < paragraphs.length; i++) {
+                                                    const p = paragraphs[i];
+                                                
+                                                    // Check if the current <p> element has a sibling <p> element
+                                                    const nextSibling = p.nextElementSibling;
+                                                    if (nextSibling && nextSibling.nodeName === "P") {
+                                                
+                                                    // Create a <br> element and insert it after the current <p> element
+                                                    const br = document.createElement("br");
+                                                    const parent = p.parentNode;
+                                                    if (parent) {
+                                                        parent.insertBefore(br, nextSibling);
+                                                    }
+                                                    }
+                                                }
+                                                
 
-                                                // Apply syntax highlighting to each code block
-                                                codeBlocks?.forEach((codeBlock) => {
-                                                    const language = codeBlock.className.replace("language-", "");
-                                                    const code = codeBlock.textContent;
-                                                    
-                                                    if (language && Prism.languages[language]) {
-                                                        const highlightedCode = Prism.highlight(code, Prism.languages[language]);
-                                                        codeBlock.innerHTML = highlightedCode;
+                                                // Wait for Prism.js to load
+                                                loadPrism().then((Prism) => {
+                                                    // Select all code blocks
+                                                    const codeBlocks = messageBlock?.querySelectorAll('.messageBlock pre code');
+
+                                                    // Apply syntax highlighting to each code block
+                                                    codeBlocks?.forEach((codeBlock) => {
+                                                        const language = codeBlock.className.replace("language-", "");
+                                                        const code = codeBlock.textContent;
+                                                        
+                                                        if (language && Prism.languages[language]) {
+                                                            const highlightedCode = Prism.highlight(code, Prism.languages[language]);
+                                                            codeBlock.innerHTML = highlightedCode;
+                                                        }
+                                                    });
+                                                });
+
+
+                                                // Copy button for code blocks
+                                                const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
+
+                                                codeBlocks.forEach(async (codeElement) => {
+                                                const copyButton = document.createElement("button");
+                                                copyButton.textContent = "copy";
+                                                setIcon(copyButton, "copy");
+                                                copyButton.classList.add("copy-button");
+                                                copyButton.title = "copy";
+                                                if (codeElement.parentNode) {
+                                                    codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
+                                                }
+                                                
+                                                copyButton.addEventListener("click", () => {
+                                                    const codeText = codeElement.textContent;
+                                                    if (codeText) {
+                                                    navigator.clipboard.writeText(codeText).then(() => {
+                                                        new Notice('Copied to your clipboard');
+                                                    }, (err) => {
+                                                        console.error("Failed to copy code: ", err);
+                                                    });
                                                     }
                                                 });
-                                            });
-
-
-                                            // Copy button for code blocks
-                                            const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
-
-                                            codeBlocks.forEach(async (codeElement) => {
-                                            //   console.log(codeElement);
-                                            const copyButton = document.createElement("button");
-                                            copyButton.textContent = "copy";
-                                            setIcon(copyButton, "copy");
-                                            copyButton.classList.add("copy-button");
-                                            copyButton.title = "copy";
-                                            if (codeElement.parentNode) {
-                                                codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
-                                            }
-                                            
-                                            copyButton.addEventListener("click", () => {
-                                                const codeText = codeElement.textContent;
-                                                if (codeText) {
-                                                navigator.clipboard.writeText(codeText).then(() => {
-                                                    new Notice('Copied to your clipboard');
-                                                }, (err) => {
-                                                    console.error("Failed to copy code: ", err);
                                                 });
-                                                }
-                                            });
-                                            });
+                                            }
                                         }
                                     }
                                 }
@@ -634,20 +644,20 @@ export class BMOView extends ItemView {
                     messageHistory += message + "\n";
                     await this.app.vault.adapter.write(filenameMessageHistory, messageHistory);
                 }
-
-                if (messageContainerEl) {
-                    savedMessageHistoryHTML = messageContainerEl.innerHTML;
-                    savedMessageHistoryHTML = savedMessageHistoryHTML.replace(/<div id="spacer">.*?<\/div>/gi, '');
-                    this.saveMessageHistoryToFile(savedMessageHistoryHTML);
-                }
             } 
             catch (error) {
                 new Notice('Error occurred while fetching completion: ' + error.message);
                 console.log(error.message);
-                // console.log("messageHistory: " + messageHistory);
+                console.log("messageHistory: " + messageHistory);
             }
         }
         console.log("BMO settings:", this.settings);
+
+        if (messageContainerEl) {
+            savedMessageHistoryHTML = messageContainerEl.innerHTML;
+            savedMessageHistoryHTML = savedMessageHistoryHTML.replace(/<div id="spacer">.*?<\/div>/gi, '');
+            this.saveMessageHistoryToFile(savedMessageHistoryHTML);
+        }
         let htmlFile = await this.app.vault.adapter.read(filenameMessageHistoryHTML);
         await this.app.vault.adapter.write(filenameMessageHistoryJSON, HTMLToJSON(htmlFile));
     }
