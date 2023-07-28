@@ -9,9 +9,9 @@ let messageHistory: string;
 let savedMessageHistoryHTML: string;
 
 
-export let filenameMessageHistory = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.txt';
-export let filenameMessageHistoryHTML = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.html';
-export let filenameMessageHistoryJSON = './.obsidian/plugins/obsidian-bmo-chatbot/data/messageHistory.json';
+export let filenameMessageHistory = './.obsidian/plugins/bmo-chatbot/data/messageHistory.txt';
+export let filenameMessageHistoryHTML = './.obsidian/plugins/bmo-chatbot/data/messageHistory.html';
+export let filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 
 interface Message {
     [key: string]: string;
