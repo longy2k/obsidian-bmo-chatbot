@@ -40,9 +40,6 @@ function HTMLToJSON(html: string): string {
     return JSON.stringify(messages);
 }
 
-  
-  
-
 export function colorToHex(colorValue: string): string {
     if (colorValue.startsWith("hsl")) {
       // Convert HSL to HEX
@@ -146,7 +143,6 @@ export class BMOView extends ItemView {
             }
         });
         
-        // Create the messageContainer div element
         const messageContainer = chatbotContainer.createEl("div", {
             attr: {
             id: "messageContainer",
@@ -191,7 +187,6 @@ export class BMOView extends ItemView {
                 messageHistory = await this.app.vault.adapter.read(filenameMessageHistory);
             }
             messageHistory += input + "\n";
-            // console.log(messageHistory);
 
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
@@ -361,6 +356,8 @@ export class BMOView extends ItemView {
             try {
                 const maxTokens = this.settings.max_tokens;
                 const temperature = this.settings.temperature;
+
+                const messageContainerEl = document.getElementById("messageContainer");
                 
                 const response = await requestUrl({
                     url: updatedUrl,
@@ -383,11 +380,20 @@ export class BMOView extends ItemView {
                 console.log(response.json);
             
                 const message = response.json.choices[0].message.content;
-                messageHistory += message + "\n";
-    
-    
-                // Append the bmoMessage element to the messageContainer div
-                const messageContainerEl = document.getElementById("messageContainer");
+
+                if (messageHistory.length === 0) {
+                    await this.app.vault.adapter.append(filenameMessageHistory, messageHistory);
+                }
+                else {
+                    messageHistory += message + "\n";
+                    await this.app.vault.adapter.write(filenameMessageHistory, messageHistory);
+                }
+
+                if (messageContainerEl) {
+                    savedMessageHistoryHTML = messageContainerEl.innerHTML;
+                    savedMessageHistoryHTML = savedMessageHistoryHTML.replace(/<div id="spacer">.*?<\/div>/gi, '');
+                    this.saveMessageHistoryToFile(savedMessageHistoryHTML);
+                }
     
                 if (messageContainerEl) {
                     const botMessages = messageContainerEl.querySelectorAll(".botMessage");
@@ -465,6 +471,11 @@ export class BMOView extends ItemView {
                     
                     lastBotMessage.appendChild(messageBlock);
                     lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                if (messageContainerEl) {
+                    savedMessageHistoryHTML = messageContainerEl.innerHTML;
+                    savedMessageHistoryHTML = savedMessageHistoryHTML.replace(/<div id="spacer">.*?<\/div>/gi, '');
+                    this.saveMessageHistoryToFile(savedMessageHistoryHTML);
                 }
             } 
             catch (error) {
@@ -624,11 +635,9 @@ export class BMOView extends ItemView {
                     await this.app.vault.adapter.write(filenameMessageHistory, messageHistory);
                 }
 
-
                 if (messageContainerEl) {
                     savedMessageHistoryHTML = messageContainerEl.innerHTML;
                     savedMessageHistoryHTML = savedMessageHistoryHTML.replace(/<div id="spacer">.*?<\/div>/gi, '');
-                    console.log(savedMessageHistoryHTML);
                     this.saveMessageHistoryToFile(savedMessageHistoryHTML);
                 }
             } 
@@ -639,9 +648,8 @@ export class BMOView extends ItemView {
             }
         }
         console.log("BMO settings:", this.settings);
-        let test = await this.app.vault.adapter.read(filenameMessageHistoryHTML);
-        let test1 = HTMLToJSON(test);
-        await this.app.vault.adapter.write(filenameMessageHistoryJSON, test1);
+        let htmlFile = await this.app.vault.adapter.read(filenameMessageHistoryHTML);
+        await this.app.vault.adapter.write(filenameMessageHistoryJSON, HTMLToJSON(htmlFile));
     }
 
     async saveMessageHistoryToFile(messageHistory: string) {

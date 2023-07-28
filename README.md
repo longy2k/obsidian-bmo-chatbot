@@ -16,7 +16,6 @@ Improve your knowledge management with a chatbot that understands context and re
 - **Interact with self-hosted API LLM(s) models:** Use the REST API URL provided to interact with self-hosted API LLM(s) models like [LocalAI](https://github.com/go-skynet/LocalAI).
 
 ## Requirements
-
 To use this plugin, you need an OpenAI account with API access. If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview).
 
 Additionally, if you want to interact with self-hosted API LLM(s) models like [`LocalAI`](https://github.com/go-skynet/LocalAI), you will need to have the self-hosted API set up and running. You can follow the instructions provided by the self-hosted API provider to get it up and running. Once you have the REST API URL for your self-hosted API, you can use it with this plugin to interact with your models.
@@ -24,7 +23,11 @@ Additionally, if you want to interact with self-hosted API LLM(s) models like [`
 ## How to activate the plugin
 Three methods:
 
-(**Recommended**) Beta Reviewers Auto-update Tester ([BRAT](https://github.com/TfTHacker/obsidian42-brat)) - [Quick guide for using BRAT](https://tfthacker.com/Obsidian+Plugins+by+TfTHacker/BRAT+-+Beta+Reviewer's+Auto-update+Tool/Quick+guide+for+using+BRAT)
+Obsidian Community plugins (**Recommended**):
+  1. Search for "BMO Chatbot" in the Obsidian Community plugins.
+  2. Enable "BMO Chatbot" in the settings.
+
+Beta Reviewers Auto-update Tester ([BRAT](https://github.com/TfTHacker/obsidian42-brat)) - [Quick guide for using BRAT](https://tfthacker.com/Obsidian+Plugins+by+TfTHacker/BRAT+-+Beta+Reviewer's+Auto-update+Tool/Quick+guide+for+using+BRAT)
 
 1. Search for "Obsidian42 - BRAT" in the Obsidian Community plugins.
 2. Open the command palette and run the command BRAT: Add a beta plugin for testing (If you want the plugin version to be frozen, use the command BRAT: Add a beta plugin with frozen version based on a release tag.)
@@ -34,10 +37,6 @@ Three methods:
 6. Refresh the list of plugins.
 7. Find the beta plugin you just installed and Enable it.
 
-Obsidian Community plugins (currently in review):
-  1. Search for "BMO Chatbot" in the Obsidian Community plugins.
-  2. Enable "BMO Chatbot" in the settings.
-
 To activate the plugin from this repo, please follow these steps:
   1. Navigate to the plugin's folder in your terminal.
   2. Run `npm install` to install any necessary dependencies for the plugin.
@@ -45,7 +44,6 @@ To activate the plugin from this repo, please follow these steps:
   4. Once the plugin has been built, it should be ready to activate.
 
 ## Getting Started
-
 To start using the plugin, enable it in your settings menu and enter your OpenAPI key. After completing these steps, you can access the bot panel by clicking on the bot icon in the left sidebar.
 
 If you want to clear the chat history, simply click on the bot icon again in the left ribbon bar.
@@ -54,5 +52,5 @@ If you want to clear the chat history, simply click on the bot icon again in the
 "BMO" is a tag name for this project, inspired by the character BMO from the animated TV show Adventure Time.
 
 ## Contributing
-Feel free to improve the plugin!
-If you have any improvements, questions, or concerns, just let me know!
+Feel free to create a PR!
+If you have any improvements, questions, or concerns, please let me know!
