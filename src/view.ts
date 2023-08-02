@@ -377,17 +377,14 @@ export class BMOView extends ItemView {
         const messageContainerEl = document.getElementById("messageContainer");
 
         if (this.settings.model !== "gpt-3.5-turbo" && this.settings.model !== "gpt-3.5-turbo-16k" && this.settings.model !== "gpt-4") {
-            const url = 'https://api.openai.com/v1/chat/completions';
-            const updatedUrl = url.replace('https://api.openai.com', this.settings.restAPIUrl);
+            const completionUrl = this.settings.restAPIUrl + '/v1/chat/completions';
 
             try {
                 const maxTokens = this.settings.max_tokens;
                 const temperature = this.settings.temperature;
-
-                const messageContainerEl = document.getElementById("messageContainer");
                 
                 const response = await requestUrl({
-                    url: updatedUrl,
+                    url: completionUrl,
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -515,8 +512,6 @@ export class BMOView extends ItemView {
             try {
                 const maxTokens = this.settings.max_tokens;
                 const temperature = this.settings.temperature;
-
-                const messageContainerEl = document.getElementById("messageContainer");
             
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',

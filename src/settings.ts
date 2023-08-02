@@ -1,6 +1,6 @@
 import { App, Notice, PluginSettingTab, Setting, ColorComponent, requestUrl, TextComponent } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from './main';
-import { colorToHex } from "./view";
+import { colorToHex, filenameMessageHistoryHTML } from "./view";
 import BMOGPT from './main';
 import { clearInterval } from 'timers';
 
@@ -10,32 +10,6 @@ export class BMOSettingTab extends PluginSettingTab {
 	constructor(app: App, plugin: BMOGPT) {
 		super(app, plugin);
 		this.plugin = plugin;
-	}
-
-	async fetchData() {
-		const url = this.plugin.settings.restAPIUrl;
-	
-		try {
-			const response = await requestUrl({
-				url: url,
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			});
-	
-			const jsonData = response.json;
-	
-			const models = jsonData.data.map((model: { id: any; }) => model.id);
-	
-			// Store models array in your plugin settings or state
-			this.plugin.settings.models = models;  
-	
-			return models;
-	
-		} catch (error) {
-			// console.error('Error:', error);
-		}
 	}
 
 	async display(): Promise<void> {
@@ -213,9 +187,6 @@ export class BMOSettingTab extends PluginSettingTab {
 						chatbotContainer.style.backgroundColor = defaultValue;
 					}
 			
-					// textInput.setValue(defaultValue);
-			
-					this.plugin.settings.chatbotContainerBackgroundColor = defaultValue;
 					await this.plugin.saveSettings();
 				})
 		  	)
@@ -232,7 +203,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					});
 			});
 
-			let textInput2: TextComponent;
+			let colorPicker1: ColorComponent;
 			
 			new Setting(containerEl)
 				.setName('Background color for User Message')
@@ -243,6 +214,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					.setClass("clickable-icon")
 					.onClick(async () => {
 						const defaultValue = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+						colorPicker1.setValue(defaultValue);
 			
 						const messageContainer = document.querySelector('#messageContainer');
 						if (messageContainer) {
@@ -251,30 +223,37 @@ export class BMOSettingTab extends PluginSettingTab {
 								const element = userMessage as HTMLElement;
 								element.style.backgroundColor = defaultValue;
 							});
-							textInput2.setValue(defaultValue);
-							this.plugin.settings.userMessageBackgroundColor = defaultValue;
 							await this.plugin.saveSettings();
 						}
 					})
 				)
-				.addText(text => {
-					textInput2 = text;
-					text
-					.setPlaceholder('')
-					.setValue(this.plugin.settings.userMessageBackgroundColor)
+				.addColorPicker((color) => {
+					colorPicker1 = color;
+					const defaultValue = colorToHex(this.plugin.settings.userMessageBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+					color.setValue(defaultValue)
 					.onChange(async (value) => {
-						this.plugin.settings.userMessageBackgroundColor = value;
-						const messageContainer = document.querySelector('#messageContainer') as HTMLElement;
+						const hexValue = colorToHex(value);
+						this.plugin.settings.userMessageBackgroundColor = hexValue;
+						const messageContainer = document.querySelector('#messageContainer');
 						if (messageContainer) {
 							const userMessages = messageContainer.querySelectorAll('.userMessage');
 							userMessages.forEach((userMessage) => {
 								const element = userMessage as HTMLElement;
-								element.style.backgroundColor = value;
-							})
-							await this.plugin.saveSettings();
+								element.style.backgroundColor = hexValue;
+							});
+								// Convert the Document object to a string
+								const serializer = new XMLSerializer();
+								const tempDiv = document.createElement('div');
+								tempDiv.innerHTML = messageContainer.innerHTML;
+								const documentString = serializer.serializeToString(tempDiv);
+
+								// Write the updated document content to the file with filenameMessageHistoryHTML
+								await this.app.vault.adapter.write(filenameMessageHistoryHTML, documentString);
 						}
+
+						await this.plugin.saveSettings();
 					});
-				});
+				});		
 			
 			let colorPicker2: ColorComponent;
 
@@ -314,7 +293,14 @@ export class BMOSettingTab extends PluginSettingTab {
 									const element = botMessage as HTMLElement;
 									element.style.backgroundColor = hexValue;
 								});
-		
+								// Convert the Document object to a string
+								const serializer = new XMLSerializer();
+								const tempDiv = document.createElement('div');
+								tempDiv.innerHTML = messageContainer.innerHTML;
+								const documentString = serializer.serializeToString(tempDiv);
+
+								// Write the updated document content to the file with filenameMessageHistoryHTML
+								await this.app.vault.adapter.write(filenameMessageHistoryHTML, documentString);
 							}
 					await this.plugin.saveSettings();
 				});
@@ -327,7 +313,7 @@ export class BMOSettingTab extends PluginSettingTab {
 		.setName('REST API URL')
 		.setDesc(descLink1('Enter your REST API URL from a self-hosted API like', 'https://github.com/go-skynet/LocalAI', ''))
 		.addText(text => text
-		.setPlaceholder('http://localhost:8080/v1/models')
+		.setPlaceholder('http://localhost:8080')
 		.setValue(this.plugin.settings.restAPIUrl || DEFAULT_SETTINGS.restAPIUrl)
 		.onChange(async (value) => {
 			this.plugin.settings.restAPIUrl = value ? value : DEFAULT_SETTINGS.restAPIUrl;
@@ -354,5 +340,30 @@ export class BMOSettingTab extends PluginSettingTab {
 		
 			return frag;
 		};
+	}
+
+	async fetchData() {
+		const url = this.plugin.settings.restAPIUrl + '/v1/models';
+	
+		try {
+			const response = await requestUrl({
+				url: url,
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+	
+			const jsonData = response.json;
+	
+			const models = jsonData.data.map((model: { id: any; }) => model.id);
+
+			this.plugin.settings.models = models;  
+	
+			return models;
+	
+		} catch (error) {
+			console.error('Error:', error);
+		}
 	}
 }

@@ -7,8 +7,6 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-/* @import url('https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css'); */
-
 .chatbotContainer {
   height: 100%;
   max-height: 96%;
@@ -23,7 +21,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 #chatbotNameHeading {
-    color:  var(--interactive-accent); /* #498867; */
+    color:  var(--interactive-accent); 
     text-align: center;
     margin-top: 0;
     margin-bottom: 0;
@@ -34,7 +32,7 @@ If your plugin does not need CSS, delete this file.
 #modelName {
     margin: 0;
     text-align: center;
-    color: var(--interactive-accent); /* #498867; */
+    color: var(--interactive-accent); 
     font-size: 16px;
 }
 
