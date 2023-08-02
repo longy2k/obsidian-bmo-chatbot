@@ -13,7 +13,7 @@ export class BMOSettingTab extends PluginSettingTab {
 	}
 
 	async fetchData() {
-		const url = 'http://localhost:8080/v1/models';
+		const url = this.plugin.settings.restAPIUrl;
 	
 		try {
 			const response = await requestUrl({
@@ -87,12 +87,10 @@ export class BMOSettingTab extends PluginSettingTab {
 					.addOption('gpt-3.5-turbo', 'gpt-3.5-turbo')
 					.addOption('gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k')
 					.addOption('gpt-4', 'gpt-4')
-					if (this.plugin.settings.restAPIUrl) {
-						if (models && models.length > 0) {
-							models.forEach((model: string) => {
+					if (this.plugin.settings.restAPIUrl && models && models.length > 0) {
+						models.forEach((model: string) => {
 							dropdown.addOption(model, model);
-							});
-						}
+						});
 					}
 				dropdown.setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
 				.onChange(async (value) => {
@@ -197,8 +195,8 @@ export class BMOSettingTab extends PluginSettingTab {
             })
         );		
 		
-		let textInput: TextComponent;
-
+		let colorPicker: ColorComponent;
+		
 		new Setting(containerEl)
 			.setName('Background Color for Chatbot Container')
 			.setDesc('Modify the background color of the chatbotContainer element.')
@@ -208,31 +206,30 @@ export class BMOSettingTab extends PluginSettingTab {
 				.setClass("clickable-icon")
 				.onClick(async () => {
 					let defaultValue = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
-			
+					colorPicker.setValue(defaultValue);
+
 					const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
 					if (chatbotContainer) {
 						chatbotContainer.style.backgroundColor = defaultValue;
 					}
 			
-					textInput.setValue(defaultValue);
+					// textInput.setValue(defaultValue);
 			
 					this.plugin.settings.chatbotContainerBackgroundColor = defaultValue;
 					await this.plugin.saveSettings();
 				})
 		  	)
-			.addText(text => {
-				textInput = text;
-				text
-				.setPlaceholder('')
-				.setValue(this.plugin.settings.chatbotContainerBackgroundColor)
-				.onChange(async (value) => {
-					this.plugin.settings.chatbotContainerBackgroundColor = value;
-					const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
-					if (chatbotContainer) {
-					chatbotContainer.style.backgroundColor = value;
-					}
-					await this.plugin.saveSettings();
-				})
+			.addColorPicker((color) => {
+				colorPicker = color;
+				color.setValue(colorToHex(this.plugin.settings.chatbotContainerBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim()))
+					.onChange(async (value) => {
+						this.plugin.settings.chatbotContainerBackgroundColor = colorToHex(value);
+						const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
+						if (chatbotContainer) {
+							chatbotContainer.style.backgroundColor = colorToHex(value);
+						}
+						await this.plugin.saveSettings();
+					});
 			});
 
 			let textInput2: TextComponent;
@@ -279,7 +276,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					});
 				});
 			
-			let textInput3: TextComponent;
+			let colorPicker2: ColorComponent;
 
 			new Setting(containerEl)
 				.setName('Background color for Bot Message')
@@ -290,6 +287,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					.setClass("clickable-icon")
 					.onClick(async () => {
 						const defaultValue = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+						colorPicker2.setValue(defaultValue);
 			
 						const messageContainer = document.querySelector('#messageContainer');
 						if (messageContainer) {
@@ -297,31 +295,30 @@ export class BMOSettingTab extends PluginSettingTab {
 							botMessages.forEach((botMessage) => {
 								const element = botMessage as HTMLElement;
 								element.style.backgroundColor = defaultValue;
-							})
-							textInput3.setValue(defaultValue);
-							this.plugin.settings.botMessageBackgroundColor = defaultValue;
+							});
 							await this.plugin.saveSettings();
 						}
 					})
 				)
-				.addText(text => {
-					textInput3 = text;
-					text
-					.setPlaceholder('')
-					.setValue(this.plugin.settings.botMessageBackgroundColor)
-					.onChange(async (value) => {
-						this.plugin.settings.botMessageBackgroundColor = value;
-						const messageContainer = document.querySelector('#messageContainer') as HTMLElement;
-						if (messageContainer) {
-							const userMessages = messageContainer.querySelectorAll('.botMessage');
-							userMessages.forEach((botMessage) => {
-								const element = botMessage as HTMLElement;
-								element.style.backgroundColor = value;
-							})
-							await this.plugin.saveSettings();
-						}
-					});
+				.addColorPicker((color) => {
+					colorPicker2 = color;
+					const defaultValue = colorToHex(this.plugin.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+					color.setValue(defaultValue)
+						.onChange(async (value) => {
+							const hexValue = colorToHex(value);
+							this.plugin.settings.botMessageBackgroundColor = hexValue;
+							const messageContainer = document.querySelector('#messageContainer');
+							if (messageContainer) {
+								const botMessages = messageContainer.querySelectorAll('.botMessage');
+								botMessages.forEach((botMessage) => {
+									const element = botMessage as HTMLElement;
+									element.style.backgroundColor = hexValue;
+								});
+		
+							}
+					await this.plugin.saveSettings();
 				});
+			});
 				
 
 		containerEl.createEl('h2', {text: 'Advanced'});
@@ -330,7 +327,7 @@ export class BMOSettingTab extends PluginSettingTab {
 		.setName('REST API URL')
 		.setDesc(descLink1('Enter your REST API URL from a self-hosted API like', 'https://github.com/go-skynet/LocalAI', ''))
 		.addText(text => text
-		.setPlaceholder('http://localhost:8080')
+		.setPlaceholder('http://localhost:8080/v1/models')
 		.setValue(this.plugin.settings.restAPIUrl || DEFAULT_SETTINGS.restAPIUrl)
 		.onChange(async (value) => {
 			this.plugin.settings.restAPIUrl = value ? value : DEFAULT_SETTINGS.restAPIUrl;
