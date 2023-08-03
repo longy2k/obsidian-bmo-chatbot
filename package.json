@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-chatbot-plugin",
-	"version": "1.3.5",
-	"description": "Improve your knowledge management with a chatbot that can help you generate and brainstorm ideas during your note creations using Large Language Models (LLMs).",
+	"name": "bmo-chatbot",
+	"version": "1.3.6",
+	"description": "Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) such as OpenAI's 'gpt-3.5-turbo' and 'gpt-4.'",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

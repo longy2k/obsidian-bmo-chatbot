@@ -1,8 +1,7 @@
-import { App, Notice, PluginSettingTab, Setting, ColorComponent, requestUrl, TextComponent } from 'obsidian';
-import { BMOSettings, DEFAULT_SETTINGS } from './main';
+import { App, PluginSettingTab, Setting, ColorComponent, requestUrl, TextComponent } from 'obsidian';
+import { DEFAULT_SETTINGS } from './main';
 import { colorToHex, filenameMessageHistoryHTML } from "./view";
 import BMOGPT from './main';
-import { clearInterval } from 'timers';
 
 export class BMOSettingTab extends PluginSettingTab {
 	plugin: BMOGPT;
@@ -123,7 +122,7 @@ export class BMOSettingTab extends PluginSettingTab {
 				anchor.href = link;
 				anchor.target = '_blank';
 				anchor.rel = 'noopener noreferrer';
-				anchor.innerText = 'https://platform.openai.com/tokenizer';
+				anchor.innerText = '(https://platform.openai.com/tokenizer)';
 				frag.appendChild(anchor);
 
 				return frag;
@@ -311,7 +310,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName('REST API URL')
-		.setDesc(descLink1('Enter your REST API URL from a self-hosted API like', 'https://github.com/go-skynet/LocalAI', ''))
+		.setDesc(descLink1('Enter your REST API URL using', 'https://github.com/go-skynet/LocalAI', ''))
 		.addText(text => text
 		.setPlaceholder('http://localhost:8080')
 		.setValue(this.plugin.settings.restAPIUrl || DEFAULT_SETTINGS.restAPIUrl)

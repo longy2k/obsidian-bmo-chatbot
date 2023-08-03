@@ -1,6 +1,6 @@
 import { ItemView, WorkspaceLeaf, Notice, setIcon, requestUrl } from "obsidian";
-import { marked } from "marked";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
+import { marked } from "marked";
 import { loadPrism } from "obsidian";
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
