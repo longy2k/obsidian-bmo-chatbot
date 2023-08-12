@@ -132,20 +132,20 @@ export class BMOView extends ItemView {
         chatbotContainer.createEl("h1", { 
             text: this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName,
             attr: {
-            id: "chatbotNameHeading"
+                class: "chatbotNameHeading"
             }
         });
 
         chatbotContainer.createEl("p", {
             text: "Model: " + this.settings.model.replace(/[gpt]/g, letter => letter.toUpperCase()) || DEFAULT_SETTINGS.model.replace(/[gpt]/g, letter => letter.toUpperCase()),
             attr: {
-                id: "modelName"
+                class: "modelName"
             }
         });
         
         const messageContainer = chatbotContainer.createEl("div", {
             attr: {
-            id: "messageContainer",
+                id: "messageContainer",
             },
         });
 
@@ -171,7 +171,7 @@ export class BMOView extends ItemView {
 
         const chatbox = chatbotContainer.createEl("div", {
             attr: {
-                id: "chatbox",
+                class: "chatbox",
             }
         });
         const textarea = document.createElement("textarea");
@@ -216,7 +216,7 @@ export class BMOView extends ItemView {
             
             const userNameSpan = document.createElement("span");
             userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
-            userNameSpan.setAttribute("id", "userName");
+            userNameSpan.classList.add("userName"); // Adding a class instead of setting an ID
             userMessage.appendChild(userNameSpan);
             
             const userParagraph = document.createElement("p");
@@ -242,10 +242,11 @@ export class BMOView extends ItemView {
                 botMessage.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
                 messageContainer.appendChild(botMessage);
             
-                const botNameSpan = document.createElement("span"); 
+                const botNameSpan = document.createElement("span");
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                botNameSpan.setAttribute("id", "chatbotName")
+                botNameSpan.classList.add("chatbotName");
                 botMessage.appendChild(botNameSpan);
+                
 
                 const messageBlock = document.createElement("div");
                 messageBlock.classList.add("messageBlock");
@@ -355,9 +356,9 @@ export class BMOView extends ItemView {
     async BMOchatbot(input: string) {
         // If apiKey does not exist.
         if (!this.settings.apiKey) {
-            const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
+            const chatbotNameHeading = document.querySelector('.chatbotNameHeading');
             const messageContainer = document.querySelector('#messageContainer');
-            const chatbox = document.querySelector('#chatbox textarea') as HTMLTextAreaElement;
+            const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
             new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
             if (chatbotNameHeading){
                 chatbotNameHeading.textContent = "ERROR";

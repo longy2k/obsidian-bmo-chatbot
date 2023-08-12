@@ -9,7 +9,7 @@ If your plugin does not need CSS, delete this file.
 
 .chatbotContainer {
   height: 100%;
-  max-height: 96%;
+  max-height: 98%;
   position: relative;
   border-radius: 5px;
   border: 1px solid var(--background-modifier-border);
@@ -20,20 +20,20 @@ If your plugin does not need CSS, delete this file.
   margin: auto;
 }
 
-#chatbotNameHeading {
+.chatbotNameHeading {
     color:  var(--interactive-accent); 
     text-align: center;
     margin-top: 0;
     margin-bottom: 0;
     padding: 10px 0px 0px 0px;
-    font-size: 225%;
+    font-size: 2rem;
 }
 
-#modelName {
+.modelName {
     margin: 0;
     text-align: center;
     color: var(--interactive-accent); 
-    font-size: 16px;
+    font-size: 1rem;
 }
 
 /* messageContainer */
@@ -67,9 +67,9 @@ If your plugin does not need CSS, delete this file.
 
 /* User & Bot Messages */
 
-#userName, #chatbotName {
+.userName, .chatbotName {
   display: block;
-  font-size: 12px;
+  font-size: 0.8rem;
   font-weight: bold;
   color: var(--interactive-accent);
   margin: 0;
@@ -88,6 +88,7 @@ If your plugin does not need CSS, delete this file.
 
 .userMessage p, .botMessage p{
   margin: 0;
+  line-height: 1.6;
 }
 
 
@@ -149,7 +150,7 @@ If your plugin does not need CSS, delete this file.
 
 /* chatbox - textarea */
 
-#chatbox{
+.chatbox{
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,7 +160,7 @@ If your plugin does not need CSS, delete this file.
   border-radius: 5px;
 }
 
-#chatbox textarea {
+.chatbox textarea {
   background-color: var(--interactive-accent);
   width: 100%;
   height: 29px;
@@ -170,23 +171,26 @@ If your plugin does not need CSS, delete this file.
   border-color: var(--interactive-accent);
 }
 
-.theme-light #chatbox textarea {
-  color: white;
-}
-
-#chatbox textarea:focus {
+.chatbox textarea:focus {
   outline: none;
   box-shadow: none;
 }
 
-#chatbox textarea::placeholder {
+.chatbox textarea::placeholder {
   color: white;
   font-weight: 500;
 }
 
+.theme-light .chatbox textarea {
+  color: white;
+}
+
+/* Misc */
+
 .errorMessage {
   color: red;
 }
+
 .disabled {
   pointer-events: none;
 }
