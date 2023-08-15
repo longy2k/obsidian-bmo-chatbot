@@ -41,6 +41,8 @@ export class BMOSettingTab extends PluginSettingTab {
 		usageText.appendChild(usageLink);
 		statusText.appendChild(statusLink);
 
+		containerEl.createEl('h2', {text: 'General'});
+
 		new Setting(containerEl)
 			.setName('OpenAI API Key')
 			.setDesc('Insert API Key from OpenAI.')

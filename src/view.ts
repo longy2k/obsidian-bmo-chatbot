@@ -139,7 +139,7 @@ export class BMOView extends ItemView {
         chatbotContainer.createEl("p", {
             text: "Model: " + this.settings.model.replace(/[gpt]/g, letter => letter.toUpperCase()) || DEFAULT_SETTINGS.model.replace(/[gpt]/g, letter => letter.toUpperCase()),
             attr: {
-                class: "modelName"
+                id: "modelName"
             }
         });
         

@@ -1,9 +1,9 @@
 {
 	"id": "bmo-chatbot",
 	"name": "BMO Chatbot",
-	"version": "1.3.6",
+	"version": "1.3.7",
 	"minAppVersion": "1.0.0",
-	"description": "Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) such as OpenAI's 'gpt-3.5-turbo' and 'gpt-4.'",
+	"description": "Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) such as OpenAI's \"gpt-3.5-turbo\" and \"gpt-4.\"",
 	"author": "Longy2k",
 	"authorUrl": "https://github.com/longy2k",
 	"fundingUrl": "https://www.buymeacoffee.com/longy2k",

@@ -13,7 +13,7 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 - **System role prompt:** Configure the chatbot to prompt for user roles before responding to messages.
 - **Set Max Tokens and Temperature:** Customize the length and randomness of the chatbot's responses with Max Tokens and Temperature settings.
 - **System theme color accents:** Seamlessly matches the chatbot's interface with your system's color scheme.
-- **Interact with self-hosted API LLM(s) models:** Use the REST API URL provided to interact with self-hosted API LLM(s) models using [LocalAI](https://github.com/go-skynet/LocalAI).
+- **Interact with self-hosted Large Language Models (LLMs) using LocalAI:** Use the REST API URL provided to interact with self-hosted Large Language Models (LLMs) using [LocalAI](https://github.com/go-skynet/LocalAI).
 
 ## Requirements
 To use this plugin, you'll need an OpenAI account with API access. If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview).
@@ -23,21 +23,11 @@ Additionally, if you want to interact with self-hosted API LLM(s) models using [
 Explore some models at [GPT4ALL](https://gpt4all.io/index.html) under the "Model Explorer" section.
 
 ## How to activate the plugin
-Three methods:
+Two methods:
 
 Obsidian Community plugins (**Recommended**):
   1. Search for "BMO Chatbot" in the Obsidian Community plugins.
   2. Enable "BMO Chatbot" in the settings.
-
-Beta Reviewers Auto-update Tester ([BRAT](https://github.com/TfTHacker/obsidian42-brat)) - [Quick guide for using BRAT](https://tfthacker.com/Obsidian+Plugins+by+TfTHacker/BRAT+-+Beta+Reviewer's+Auto-update+Tool/Quick+guide+for+using+BRAT)
-
-1. Search for "Obsidian42 - BRAT" in the Obsidian Community plugins.
-2. Open the command palette and run the command BRAT: Add a beta plugin for testing (If you want the plugin version to be frozen, use the command BRAT: Add a beta plugin with frozen version based on a release tag.)
-3. Paste "https://github.com/longy2k/obsidian-bmo-chatbot".
-4. Click on "Add Plugin".
-5. After BRAT confirms the installation, in Settings go to the Community plugins tab.
-6. Refresh the list of plugins.
-7. Enable the plugin.
 
 To activate the plugin from this repo:
   1. Navigate to the plugin's folder in your terminal.

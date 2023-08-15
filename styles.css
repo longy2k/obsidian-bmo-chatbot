@@ -29,7 +29,7 @@ If your plugin does not need CSS, delete this file.
     font-size: 2rem;
 }
 
-.modelName {
+#modelName {
     margin: 0;
     text-align: center;
     color: var(--interactive-accent); 
