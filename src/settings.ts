@@ -1,6 +1,5 @@
 import { App, PluginSettingTab, Setting, ColorComponent, requestUrl, TextComponent } from 'obsidian';
 import { DEFAULT_SETTINGS } from './main';
-import { colorToHex, filenameMessageHistoryHTML } from "./view";
 import BMOGPT from './main';
 
 export class BMOSettingTab extends PluginSettingTab {
@@ -180,7 +179,7 @@ export class BMOSettingTab extends PluginSettingTab {
 				.setIcon("rotate-cw")
 				.setClass("clickable-icon")
 				.onClick(async () => {
-					let defaultValue = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
+					let defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
 					colorPicker.setValue(defaultValue);
 
 					const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
@@ -193,12 +192,12 @@ export class BMOSettingTab extends PluginSettingTab {
 		  	)
 			.addColorPicker((color) => {
 				colorPicker = color;
-				color.setValue(colorToHex(this.plugin.settings.chatbotContainerBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim()))
+				color.setValue(this.plugin.settings.chatbotContainerBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim())
 					.onChange(async (value) => {
-						this.plugin.settings.chatbotContainerBackgroundColor = colorToHex(value);
+						this.plugin.settings.chatbotContainerBackgroundColor = value;
 						const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
 						if (chatbotContainer) {
-							chatbotContainer.style.backgroundColor = colorToHex(value);
+							chatbotContainer.style.backgroundColor = value;
 						}
 						await this.plugin.saveSettings();
 					});
@@ -214,7 +213,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					.setIcon("rotate-cw")
 					.setClass("clickable-icon")
 					.onClick(async () => {
-						const defaultValue = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+						const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
 						colorPicker1.setValue(defaultValue);
 			
 						const messageContainer = document.querySelector('#messageContainer');
@@ -230,10 +229,10 @@ export class BMOSettingTab extends PluginSettingTab {
 				)
 				.addColorPicker((color) => {
 					colorPicker1 = color;
-					const defaultValue = colorToHex(this.plugin.settings.userMessageBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+					const defaultValue = this.plugin.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
 					color.setValue(defaultValue)
 					.onChange(async (value) => {
-						const hexValue = colorToHex(value);
+						const hexValue = value;
 						this.plugin.settings.userMessageBackgroundColor = hexValue;
 						const messageContainer = document.querySelector('#messageContainer');
 						if (messageContainer) {
@@ -249,7 +248,7 @@ export class BMOSettingTab extends PluginSettingTab {
 								const documentString = serializer.serializeToString(tempDiv);
 
 								// Write the updated document content to the file with filenameMessageHistoryHTML
-								await this.app.vault.adapter.write(filenameMessageHistoryHTML, documentString);
+								// await this.app.vault.adapter.write(filenameMessageHistoryHTML, documentString);
 						}
 
 						await this.plugin.saveSettings();
@@ -266,7 +265,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					.setIcon("rotate-cw")
 					.setClass("clickable-icon")
 					.onClick(async () => {
-						const defaultValue = colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+						const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
 						colorPicker2.setValue(defaultValue);
 			
 						const messageContainer = document.querySelector('#messageContainer');
@@ -282,10 +281,10 @@ export class BMOSettingTab extends PluginSettingTab {
 				)
 				.addColorPicker((color) => {
 					colorPicker2 = color;
-					const defaultValue = colorToHex(this.plugin.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+					const defaultValue = this.plugin.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
 					color.setValue(defaultValue)
 						.onChange(async (value) => {
-							const hexValue = colorToHex(value);
+							const hexValue = value;
 							this.plugin.settings.botMessageBackgroundColor = hexValue;
 							const messageContainer = document.querySelector('#messageContainer');
 							if (messageContainer) {
@@ -301,7 +300,7 @@ export class BMOSettingTab extends PluginSettingTab {
 								const documentString = serializer.serializeToString(tempDiv);
 
 								// Write the updated document content to the file with filenameMessageHistoryHTML
-								await this.app.vault.adapter.write(filenameMessageHistoryHTML, documentString);
+								// await this.app.vault.adapter.write(filenameMessageHistoryHTML, documentString);
 							}
 					await this.plugin.saveSettings();
 				});

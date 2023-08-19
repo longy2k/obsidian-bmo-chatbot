@@ -5,98 +5,56 @@ import { loadPrism } from "obsidian";
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 
-let messageHistory: string;
-let savedMessageHistoryHTML: string;
-
-
-export let filenameMessageHistory = './.obsidian/plugins/bmo-chatbot/data/messageHistory.txt';
-export let filenameMessageHistoryHTML = './.obsidian/plugins/bmo-chatbot/data/messageHistory.html';
 export let filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 
-interface Message {
-    [key: string]: string;
+export let messageHistory: { userMessage?: string; botMessage?: string; }[] = [];
+export function clearMessageHistory() {
+    messageHistory = [];
 }
 
-function HTMLToJSON(html: string): string {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-
-    const messageDivs = doc.querySelectorAll("div");
-    const messages: Message[] = [];
-
-    messageDivs.forEach((div) => {
-        const className = div.getAttribute("class");
-        const paragraphs = div.querySelectorAll("p");
-        let content = "";
-        paragraphs.forEach((paragraph) => {
-            content += paragraph.textContent?.trim() + " ";
-        });
-
-        if (className && content.trim()) {
-            const message: Message = { [className]: content.trim() };
-            messages.push(message);
-        }
-    });
-
-    return JSON.stringify(messages);
-}
-
-export function colorToHex(colorValue: string): string {
-    if (colorValue.startsWith("hsl")) {
-      // Convert HSL to HEX
-      let match = colorValue.match(/(\d+(\.\d+)?)%?/g);
-      if (match === null || match.length < 3) {
-		throw new Error("Invalid HSL value");
-	  }
-      let h = parseInt(match[0]) / 360;
-      let s = parseInt(match[1]) / 100;
-      let l = parseInt(match[2]) / 100;
-  
-      function hue2rgb(p: number, q: number, t: number) {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1 / 6) return p + (q - p) * 6 * t;
-        if (t < 1 / 2) return q;
-        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-        return p;
-      }
-  
-      let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      let p = 2 * l - q;
-      let r = hue2rgb(p, q, h + 1 / 3);
-      let g = hue2rgb(p, q, h);
-      let b = hue2rgb(p, q, h - 1 / 3);
-  
-      let toHex = function (c: number) {
-        let hex = Math.round(c * 255).toString(16);
-        return hex.length === 1 ? "0" + hex : hex;
-      };
-  
-      let hex = "#" + toHex(r) + toHex(g) + toHex(b);
-      return hex;
-    } else if (colorValue.startsWith("rgb")) {
-      // Convert RGB to HEX
-      let sep = colorValue.indexOf(",") > -1 ? "," : " ";
-      let rgbArray = colorValue.substr(4).split(")")[0].split(sep);
-  
-      let r = (+rgbArray[0]).toString(16),
-        g = (+rgbArray[1]).toString(16),
-        b = (+rgbArray[2]).toString(16);
-  
-      if (r.length == 1)
-        r = "0" + r;
-      if (g.length == 1)
-        g = "0" + g;
-      if (b.length == 1)
-        b = "0" + b;
-  
-      return "#" + r + g + b;
-    } else {
-      // If the colorValue is neither RGB nor HSL, return the input
-      return colorValue;
+// Create data folder and load JSON file
+async function loadData() {
+    if (!await this.app.vault.adapter.exists('./.obsidian/plugins/bmo-chatbot/data/')) {
+        this.app.vault.adapter.mkdir('./.obsidian/plugins/bmo-chatbot/data/');
     }
-  }
 
+    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+        try {
+            const fileContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
+
+            if (fileContent.trim() === "") {
+                messageHistory = [];
+            } else {
+                messageHistory = JSON.parse(fileContent);
+            }
+        } catch (error) {
+            console.error("Error processing message history:", error);
+        }
+    } else {
+        messageHistory = [];
+    }
+}
+
+
+// Add a new message to the messageHistory array and save it to the file
+async function addMessage(input: string, messageType: 'userMessage' | 'botMessage') {
+    let messageObj: { userMessage?: string; botMessage?: string } = {};
+
+    if (messageType === 'userMessage') {
+        messageObj.userMessage = input;
+    } else if (messageType === 'botMessage') {
+        messageObj.botMessage = input;
+    }
+
+    messageHistory.push(messageObj);
+
+    const jsonString = JSON.stringify(messageHistory, null, 4);
+    try {
+        await this.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+    } catch (error) {
+        console.error("Error writing to message history file:", error);
+    }
+}
 
 export class BMOView extends ItemView {
     private settings: BMOSettings;
@@ -127,12 +85,12 @@ export class BMOView extends ItemView {
             },
         });
         
-        chatbotContainer.style.backgroundColor = colorToHex(this.settings.chatbotContainerBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim());
+        chatbotContainer.style.backgroundColor = this.settings.chatbotContainerBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
         
         chatbotContainer.createEl("h1", { 
             text: this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName,
             attr: {
-                class: "chatbotNameHeading"
+                id: "chatbotNameHeading"
             }
         });
 
@@ -148,26 +106,118 @@ export class BMOView extends ItemView {
                 id: "messageContainer",
             },
         });
-
-        if (await this.app.vault.adapter.exists(filenameMessageHistoryHTML)) {
-            messageContainer.innerHTML = await this.app.vault.adapter.read(filenameMessageHistoryHTML);
-            messageContainer.scrollTop = messageContainer.scrollHeight;
-            // Copy button for code blocks
-            const codeBlocks = messageContainer.querySelectorAll('.botMessage .messageBlock pre');
-
-            codeBlocks.forEach(async (codeElement) => {
-                codeElement.addEventListener("click", () => {
-                    const codeText = codeElement.textContent;
-                    if (codeText) {
-                    navigator.clipboard.writeText(codeText).then(() => {
-                        new Notice('Copied to your clipboard');
-                    }, (err) => {
-                        console.error("Failed to copy code: ", err);
-                    });
+        
+        await loadData();
+        
+        messageContainer.id = "messageContainer";
+        
+        messageHistory.forEach(messageData => {
+            if (messageData.userMessage) {
+                const userMessageDiv = document.createElement("div");
+                userMessageDiv.className = "userMessage";
+                userMessageDiv.style.backgroundColor = this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
+        
+                const userNameSpan = document.createElement("span");
+                userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
+                userNameSpan.setAttribute("id", "userName");
+                userMessageDiv.appendChild(userNameSpan);
+                
+                userMessageDiv.appendChild(userNameSpan);
+        
+                const userP = document.createElement("p");
+                userP.textContent = messageData.userMessage;
+                userMessageDiv.appendChild(userP);
+        
+                messageContainer.appendChild(userMessageDiv);
+            }
+        
+            if (messageData.botMessage) {
+                const botMessageDiv = document.createElement("div");
+                botMessageDiv.className = "botMessage";
+                botMessageDiv.style.backgroundColor = this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+        
+                const botNameSpan = document.createElement("span"); 
+                botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+                botNameSpan.setAttribute("id", "chatbotName")
+                botMessageDiv.appendChild(botNameSpan);
+        
+                const messageBlockDiv = document.createElement("div");
+                messageBlockDiv.className = "messageBlock";
+        
+                const botP = document.createElement("p");
+                botP.innerHTML = marked(messageData.botMessage);
+                messageBlockDiv.appendChild(botP);
+        
+                botMessageDiv.appendChild(messageBlockDiv);
+        
+                messageContainer.appendChild(botMessageDiv);
+        
+                // Apply Prism.js syntax highlighting
+                loadPrism().then((Prism) => {
+                    const codeElement = messageBlockDiv.querySelector('pre code');
+                    if (codeElement) {
+                        const language = codeElement.className.replace("language-", "");
+                        const code = codeElement.textContent;
+        
+                        if (language && Prism.languages[language]) {
+                            const highlightedCode = Prism.highlight(code, Prism.languages[language]);
+                            codeElement.innerHTML = highlightedCode;
+                        }
                     }
                 });
-            });
-        }
+        
+                // Create copy button for code blocks
+                const copyButton = document.createElement("button");
+                copyButton.textContent = "copy";
+                setIcon(copyButton, "copy");
+                copyButton.classList.add("copy-button");
+                copyButton.title = "copy";
+        
+                // Add click event to copy button
+                copyButton.addEventListener("click", () => {
+                    const codeElement = messageBlockDiv.querySelector('pre code');
+                    if (codeElement) {
+                        const codeText = codeElement.textContent;
+                        if (codeText) {
+                            navigator.clipboard.writeText(codeText).then(() => {
+                                new Notice('Copied to your clipboard');
+                            }, (err) => {
+                                console.error("Failed to copy code: ", err);
+                            });
+                        }
+                    }
+                });
+        
+                // Add copy button to code element's parent
+                const codeElement = messageBlockDiv.querySelector('pre code');
+                if (codeElement && codeElement.parentNode) {
+                    codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
+                }
+        
+                // Add line break between consecutive <p> elements
+                const paragraphs = messageBlockDiv.querySelectorAll("p");
+                for (let i = 0; i < paragraphs.length; i++) {
+                    const p = paragraphs[i];
+                    const nextSibling = p.nextElementSibling;
+                    if (nextSibling && nextSibling.nodeName === "P") {
+                        const br = document.createElement("br");
+                        const parent = p.parentNode;
+                        if (parent) {
+                            parent.insertBefore(br, nextSibling);
+                        }
+                    }
+                }
+
+                const botMessages = messageContainer.querySelectorAll(".botMessage");
+                const lastBotMessage = botMessages[botMessages.length - 1];
+
+                lastBotMessage.appendChild(messageBlockDiv);
+                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+        
+        const parentElement = document.getElementById("parentElementId");
+        parentElement?.appendChild(messageContainer);
 
         const chatbox = chatbotContainer.createEl("div", {
             attr: {
@@ -192,43 +242,29 @@ export class BMOView extends ItemView {
     
     // Event handler methods
     async handleKeyup(event: KeyboardEvent) {
-        // Create /data/ folder if does not exist.
-        if (!await this.app.vault.adapter.exists('./.obsidian/plugins/bmo-chatbot/data/')) {
-            this.app.vault.adapter.mkdir('./.obsidian/plugins/bmo-chatbot/data/');
-        }
-
-
         if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {
-            event.preventDefault(); // prevent submission
+            loadData();
+            event.preventDefault();
             const input = this.textareaElement.value.trim();
             if (input.length === 0) { // check if input is empty or just whitespace
                 return;
             }
-            if (await this.app.vault.adapter.exists(filenameMessageHistory)) {
-                messageHistory = await this.app.vault.adapter.read(filenameMessageHistory);
-            }
-            messageHistory += input + "\n";
-
+            
+            addMessage(input, 'userMessage');
+            
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
             userMessage.classList.add("userMessage");
-            userMessage.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+            userMessage.style.backgroundColor = this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
             
             const userNameSpan = document.createElement("span");
             userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
-            userNameSpan.classList.add("userName"); // Adding a class instead of setting an ID
+            userNameSpan.setAttribute("id", "userName");
             userMessage.appendChild(userNameSpan);
             
             const userParagraph = document.createElement("p");
             const markdownContent = marked(input);
             userParagraph.innerHTML = markdownContent;
-            
-            const sanitizedInput = input.split("\n").map(line => {
-                const sanitizedLine = document.createTextNode(line).textContent;
-                return sanitizedLine ? sanitizedLine + "\n" : "\n";
-            }).join('');
-            
-            userParagraph.innerText = sanitizedInput;
             
             userMessage.appendChild(userParagraph);
 
@@ -239,14 +275,13 @@ export class BMOView extends ItemView {
             
                 const botMessage = document.createElement("div");
                 botMessage.classList.add("botMessage");
-                botMessage.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor) || colorToHex(getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+                botMessage.style.backgroundColor = this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
                 messageContainer.appendChild(botMessage);
             
-                const botNameSpan = document.createElement("span");
+                const botNameSpan = document.createElement("span"); 
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                botNameSpan.classList.add("chatbotName");
+                botNameSpan.setAttribute("id", "chatbotName")
                 botMessage.appendChild(botNameSpan);
-                
 
                 const messageBlock = document.createElement("div");
                 messageBlock.classList.add("messageBlock");
@@ -259,9 +294,7 @@ export class BMOView extends ItemView {
 
                 // Define a function to update the loading animation
                 const updateLoadingAnimation = () => {
-                    // Access the loadingEl element with optional chaining
                     const loadingEl = document.querySelector('#loading');
-                    // If loadingEl is null or undefined, return early
                     if (!loadingEl) {
                         return;
                     }
@@ -278,7 +311,6 @@ export class BMOView extends ItemView {
                     loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
 
-                // Call the updateLoadingAnimation function every 500 milliseconds
                 let loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
                 // Create a spacer element for scrolling most recent userMessage/botMessage to
@@ -353,12 +385,14 @@ export class BMOView extends ItemView {
         }
     }
 
-    async BMOchatbot(input: string) {
+    async BMOchatbot(_input: string) {
+        let messageHistoryContent = messageHistory.map(item => item.userMessage || item.botMessage).join("\n");
+
         const messageContainerEl = document.querySelector('#messageContainer');
 
         // If apiKey does not exist.
-        if (!this.settings.apiKey) {
-            const chatbotNameHeading = document.querySelector('.chatbotNameHeading');
+        if (!this.settings.apiKey && ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
+            const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
             const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
             new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
             if (chatbotNameHeading){
@@ -373,11 +407,12 @@ export class BMOView extends ItemView {
             chatbotNameError.textContent = "ERROR";
             lastDiv.appendChild(errorMessage);
             chatbox.disabled = true;
-        }
+        } 
         else {
+            // Self-hosted Models using LocalAI
             if (this.settings.model !== "gpt-3.5-turbo" && this.settings.model !== "gpt-3.5-turbo-16k" && this.settings.model !== "gpt-4") {
                 const completionUrl = this.settings.restAPIUrl + '/v1/chat/completions';
-    
+
                 try {
                     const maxTokens = this.settings.max_tokens;
                     const temperature = this.settings.temperature;
@@ -393,7 +428,7 @@ export class BMOView extends ItemView {
                             model: this.settings.model,
                             messages: [
                                 { role: 'system', content: this.settings.system_role},
-                                { role: 'user', content: messageHistory }
+                                { role: 'user', content: messageHistoryContent }
                             ],
                             max_tokens: parseInt(maxTokens),
                             temperature: parseFloat(temperature),
@@ -402,16 +437,12 @@ export class BMOView extends ItemView {
                     
                     console.log(response.json);
                 
-                    const message = response.json.choices[0].message.content;
-    
-                    if (messageHistory.length === 0) {
-                        await this.app.vault.adapter.append(filenameMessageHistory, messageHistory);
-                    }
-                    else {
-                        messageHistory += message + "\n";
-                        await this.app.vault.adapter.write(filenameMessageHistory, messageHistory);
-                    }
-    
+                    let message = response.json.choices[0].message.content;
+
+                    addMessage(message, 'botMessage');
+
+                    messageHistoryContent = messageHistory.map(item => item.userMessage + "\n" + (item.botMessage ? item.botMessage : "")).join("\n");
+
                     if (messageContainerEl) {
                         const botMessages = messageContainerEl.querySelectorAll(".botMessage");
                         const lastBotMessage = botMessages[botMessages.length - 1];
@@ -431,19 +462,19 @@ export class BMOView extends ItemView {
                         const paragraphs = messageBlock.querySelectorAll("p");
         
                         for (let i = 0; i < paragraphs.length; i++) {
-                          const p = paragraphs[i];
+                        const p = paragraphs[i];
                         
-                          // Check if the current <p> element has a sibling <p> element
-                          const nextSibling = p.nextElementSibling;
-                          if (nextSibling && nextSibling.nodeName === "P") {
+                        // Check if the current <p> element has a sibling <p> element
+                        const nextSibling = p.nextElementSibling;
+                        if (nextSibling && nextSibling.nodeName === "P") {
                         
                             // Create a <br> element and insert it after the current <p> element
                             const br = document.createElement("br");
                             const parent = p.parentNode;
                             if (parent) {
-                              parent.insertBefore(br, nextSibling);
+                            parent.insertBefore(br, nextSibling);
                             }
-                          }
+                        }
                         }
         
                         // Wait for Prism.js to load
@@ -464,25 +495,25 @@ export class BMOView extends ItemView {
                         const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
         
                         codeBlocks.forEach(async (codeElement) => {
-                          const copyButton = document.createElement("button");
-                          copyButton.textContent = "copy";
-                          setIcon(copyButton, "copy");
-                          copyButton.classList.add("copy-button");
-                          copyButton.title = "copy";
-                          if (codeElement.parentNode) {
+                        const copyButton = document.createElement("button");
+                        copyButton.textContent = "copy";
+                        setIcon(copyButton, "copy");
+                        copyButton.classList.add("copy-button");
+                        copyButton.title = "copy";
+                        if (codeElement.parentNode) {
                             codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
-                          }
+                        }
                         
-                          copyButton.addEventListener("click", () => {
+                        copyButton.addEventListener("click", () => {
                             const codeText = codeElement.textContent;
                             if (codeText) {
-                              navigator.clipboard.writeText(codeText).then(() => {
+                            navigator.clipboard.writeText(codeText).then(() => {
                                 new Notice('Copied to your clipboard');
-                              }, (err) => {
+                            }, (err) => {
                                 console.error("Failed to copy code: ", err);
-                              });
+                            });
                             }
-                          });
+                        });
                         });
                         
                         lastBotMessage.appendChild(messageBlock);
@@ -496,7 +527,7 @@ export class BMOView extends ItemView {
                 }
             }
             else {
-            
+                // OpenAI models
                 try {
                     const maxTokens = this.settings.max_tokens;
                     const temperature = this.settings.temperature;
@@ -511,7 +542,7 @@ export class BMOView extends ItemView {
                             model: this.settings.model,
                             messages: [
                                 { role: 'system', content: this.settings.system_role },
-                                { role: 'user', content: messageHistory }
+                                { role: 'user', content: messageHistoryContent }
                             ],
                             max_tokens: parseInt(maxTokens),
                             temperature: parseFloat(temperature),
@@ -529,7 +560,6 @@ export class BMOView extends ItemView {
                             const { done, value } = await reader.read();
                     
                             if (done) {
-                                // console.log('[DONE]');
                                 break;
                             }
                     
@@ -548,14 +578,14 @@ export class BMOView extends ItemView {
                                             if (messageContainerEl) {
                                                 const botMessages = messageContainerEl.querySelectorAll(".botMessage");
                                                 let lastBotMessage = botMessages[botMessages.length - 1];
-    
+
                                                 let messageBlock = lastBotMessage.querySelector('.messageBlock');
                     
                                                 if (messageBlock) {
                                                     messageBlock.innerHTML = marked(message);
                                                 
                                                     const paragraphs = messageBlock.querySelectorAll("p");
-    
+
                                                     for (let i = 0; i < paragraphs.length; i++) {
                                                         const p = paragraphs[i];
                                                     
@@ -572,12 +602,12 @@ export class BMOView extends ItemView {
                                                         }
                                                     }
                                                     
-    
+
                                                     // Wait for Prism.js to load
                                                     loadPrism().then((Prism) => {
                                                         // Select all code blocks
                                                         const codeBlocks = messageBlock?.querySelectorAll('.messageBlock pre code');
-    
+
                                                         // Apply syntax highlighting to each code block
                                                         codeBlocks?.forEach((codeBlock) => {
                                                             const language = codeBlock.className.replace("language-", "");
@@ -589,31 +619,31 @@ export class BMOView extends ItemView {
                                                             }
                                                         });
                                                     });
-    
-    
+
+
                                                     // Copy button for code blocks
                                                     const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
-    
+
                                                     codeBlocks.forEach(async (codeElement) => {
-                                                    const copyButton = document.createElement("button");
-                                                    copyButton.textContent = "copy";
-                                                    setIcon(copyButton, "copy");
-                                                    copyButton.classList.add("copy-button");
-                                                    copyButton.title = "copy";
-                                                    if (codeElement.parentNode) {
-                                                        codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
-                                                    }
-                                                    
-                                                    copyButton.addEventListener("click", () => {
-                                                        const codeText = codeElement.textContent;
-                                                        if (codeText) {
-                                                        navigator.clipboard.writeText(codeText).then(() => {
-                                                            new Notice('Copied to your clipboard');
-                                                        }, (err) => {
-                                                            console.error("Failed to copy code: ", err);
-                                                        });
+                                                        const copyButton = document.createElement("button");
+                                                        copyButton.textContent = "copy";
+                                                        setIcon(copyButton, "copy");
+                                                        copyButton.classList.add("copy-button");
+                                                        copyButton.title = "copy";
+                                                        if (codeElement.parentNode) {
+                                                            codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
                                                         }
-                                                    });
+                                                    
+                                                        copyButton.addEventListener("click", () => {
+                                                            const codeText = codeElement.textContent;
+                                                            if (codeText) {
+                                                            navigator.clipboard.writeText(codeText).then(() => {
+                                                                new Notice('Copied to your clipboard');
+                                                            }, (err) => {
+                                                                console.error("Failed to copy code: ", err);
+                                                            });
+                                                            }
+                                                        });
                                                     });
                                                 }
                                             }
@@ -625,14 +655,10 @@ export class BMOView extends ItemView {
                             }
                         }
                     }
-    
-                    if (messageHistory.length === 0) {
-                        await this.app.vault.adapter.append(filenameMessageHistory, messageHistory);
-                    }
-                    else {
-                        messageHistory += message + "\n";
-                        await this.app.vault.adapter.write(filenameMessageHistory, messageHistory);
-                    }
+
+                    addMessage(message, 'botMessage');
+
+                    messageHistoryContent = messageHistory.map(item => item.userMessage + "\n" + (item.botMessage ? item.botMessage : "")).join("\n");
                 } 
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -642,24 +668,7 @@ export class BMOView extends ItemView {
             }
         }
         console.log("BMO settings:", this.settings);
-
-        if (messageContainerEl) {
-            savedMessageHistoryHTML = messageContainerEl.innerHTML;
-            savedMessageHistoryHTML = savedMessageHistoryHTML.replace(/<div id="spacer">.*?<\/div>/gi, '');
-            this.saveMessageHistoryToFile(savedMessageHistoryHTML);
-        }
-
-        let htmlFile = await this.app.vault.adapter.read(filenameMessageHistoryHTML);
-        await this.app.vault.adapter.write(filenameMessageHistoryJSON, HTMLToJSON(htmlFile));
     }
-
-    async saveMessageHistoryToFile(messageHistory: string) {
-        try {
-          await this.app.vault.adapter.write(filenameMessageHistoryHTML, messageHistory);
-        } catch (error) {
-          console.error('Error saving message history:', error);
-        }
-    }    
 
     async onClose() {
         // Nothing to clean up.
