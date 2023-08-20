@@ -1,60 +1,17 @@
-import { ItemView, WorkspaceLeaf, Notice, setIcon, requestUrl } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, setIcon, requestUrl, loadPrism } from "obsidian";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
+import { colorToHex } from "./settings";
 import { marked } from "marked";
-import { loadPrism } from "obsidian";
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
-
 export let filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
-
 export let messageHistory: { userMessage?: string; botMessage?: string; }[] = [];
+
 export function clearMessageHistory() {
     messageHistory = [];
 }
 
-// Create data folder and load JSON file
-async function loadData() {
-    if (!await this.app.vault.adapter.exists('./.obsidian/plugins/bmo-chatbot/data/')) {
-        this.app.vault.adapter.mkdir('./.obsidian/plugins/bmo-chatbot/data/');
-    }
-
-    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
-        try {
-            const fileContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
-
-            if (fileContent.trim() === "") {
-                messageHistory = [];
-            } else {
-                messageHistory = JSON.parse(fileContent);
-            }
-        } catch (error) {
-            console.error("Error processing message history:", error);
-        }
-    } else {
-        messageHistory = [];
-    }
-}
-
-
-// Add a new message to the messageHistory array and save it to the file
-async function addMessage(input: string, messageType: 'userMessage' | 'botMessage') {
-    let messageObj: { userMessage?: string; botMessage?: string } = {};
-
-    if (messageType === 'userMessage') {
-        messageObj.userMessage = input;
-    } else if (messageType === 'botMessage') {
-        messageObj.botMessage = input;
-    }
-
-    messageHistory.push(messageObj);
-
-    const jsonString = JSON.stringify(messageHistory, null, 4);
-    try {
-        await this.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
-    } catch (error) {
-        console.error("Error writing to message history file:", error);
-    }
-}
+let messageHistoryContent = '';
 
 export class BMOView extends ItemView {
     private settings: BMOSettings;
@@ -85,8 +42,6 @@ export class BMOView extends ItemView {
             },
         });
         
-        chatbotContainer.style.backgroundColor = this.settings.chatbotContainerBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
-        
         chatbotContainer.createEl("h1", { 
             text: this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName,
             attr: {
@@ -115,7 +70,7 @@ export class BMOView extends ItemView {
             if (messageData.userMessage) {
                 const userMessageDiv = document.createElement("div");
                 userMessageDiv.className = "userMessage";
-                userMessageDiv.style.backgroundColor = this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
+                userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
         
                 const userNameSpan = document.createElement("span");
                 userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
@@ -134,7 +89,7 @@ export class BMOView extends ItemView {
             if (messageData.botMessage) {
                 const botMessageDiv = document.createElement("div");
                 botMessageDiv.className = "botMessage";
-                botMessageDiv.style.backgroundColor = this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+                botMessageDiv.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
         
                 const botNameSpan = document.createElement("span"); 
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
@@ -151,62 +106,10 @@ export class BMOView extends ItemView {
                 botMessageDiv.appendChild(messageBlockDiv);
         
                 messageContainer.appendChild(botMessageDiv);
-        
-                // Apply Prism.js syntax highlighting
-                loadPrism().then((Prism) => {
-                    const codeElement = messageBlockDiv.querySelector('pre code');
-                    if (codeElement) {
-                        const language = codeElement.className.replace("language-", "");
-                        const code = codeElement.textContent;
-        
-                        if (language && Prism.languages[language]) {
-                            const highlightedCode = Prism.highlight(code, Prism.languages[language]);
-                            codeElement.innerHTML = highlightedCode;
-                        }
-                    }
-                });
-        
-                // Create copy button for code blocks
-                const copyButton = document.createElement("button");
-                copyButton.textContent = "copy";
-                setIcon(copyButton, "copy");
-                copyButton.classList.add("copy-button");
-                copyButton.title = "copy";
-        
-                // Add click event to copy button
-                copyButton.addEventListener("click", () => {
-                    const codeElement = messageBlockDiv.querySelector('pre code');
-                    if (codeElement) {
-                        const codeText = codeElement.textContent;
-                        if (codeText) {
-                            navigator.clipboard.writeText(codeText).then(() => {
-                                new Notice('Copied to your clipboard');
-                            }, (err) => {
-                                console.error("Failed to copy code: ", err);
-                            });
-                        }
-                    }
-                });
-        
-                // Add copy button to code element's parent
-                const codeElement = messageBlockDiv.querySelector('pre code');
-                if (codeElement && codeElement.parentNode) {
-                    codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
-                }
-        
-                // Add line break between consecutive <p> elements
-                const paragraphs = messageBlockDiv.querySelectorAll("p");
-                for (let i = 0; i < paragraphs.length; i++) {
-                    const p = paragraphs[i];
-                    const nextSibling = p.nextElementSibling;
-                    if (nextSibling && nextSibling.nodeName === "P") {
-                        const br = document.createElement("br");
-                        const parent = p.parentNode;
-                        if (parent) {
-                            parent.insertBefore(br, nextSibling);
-                        }
-                    }
-                }
+
+                prismHighlighting(messageBlockDiv);
+                codeBlockCopyButton(messageBlockDiv);
+                addParagraphBreaks(messageBlockDiv);
 
                 const botMessages = messageContainer.querySelectorAll(".botMessage");
                 const lastBotMessage = botMessages[botMessages.length - 1];
@@ -240,7 +143,6 @@ export class BMOView extends ItemView {
         this.textareaElement.addEventListener("blur", this.handleBlur.bind(this));
     }
     
-    // Event handler methods
     async handleKeyup(event: KeyboardEvent) {
         if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {
             loadData();
@@ -255,7 +157,7 @@ export class BMOView extends ItemView {
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
             userMessage.classList.add("userMessage");
-            userMessage.style.backgroundColor = this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
+            userMessage.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
             
             const userNameSpan = document.createElement("span");
             userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
@@ -275,7 +177,7 @@ export class BMOView extends ItemView {
             
                 const botMessage = document.createElement("div");
                 botMessage.classList.add("botMessage");
-                botMessage.style.backgroundColor = this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+                botMessage.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
                 messageContainer.appendChild(botMessage);
             
                 const botNameSpan = document.createElement("span"); 
@@ -386,14 +288,14 @@ export class BMOView extends ItemView {
     }
 
     async BMOchatbot(_input: string) {
-        let messageHistoryContent = messageHistory.map(item => item.userMessage || item.botMessage).join("\n");
+        messageHistoryContent = messageHistory.map(item => item.userMessage || item.botMessage).join("\n");
 
         const messageContainerEl = document.querySelector('#messageContainer');
+        const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
+        const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
 
         // If apiKey does not exist.
         if (!this.settings.apiKey && ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
-            const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
-            const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
             new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
             if (chatbotNameHeading){
                 chatbotNameHeading.textContent = "ERROR";
@@ -409,39 +311,24 @@ export class BMOView extends ItemView {
             chatbox.disabled = true;
         } 
         else {
-            // Self-hosted Models using LocalAI
-            if (this.settings.model !== "gpt-3.5-turbo" && this.settings.model !== "gpt-3.5-turbo-16k" && this.settings.model !== "gpt-4") {
-                const completionUrl = this.settings.restAPIUrl + '/v1/chat/completions';
+            const maxTokens = this.settings.max_tokens;
+            const temperature = this.settings.temperature;
+            const settings = {
+                apiKey: this.settings.apiKey,
+                model: this.settings.model,
+                system_role: this.settings.system_role
+            };
 
-                try {
-                    const maxTokens = this.settings.max_tokens;
-                    const temperature = this.settings.temperature;
-                    
-                    const response = await requestUrl({
-                        url: completionUrl,
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${this.settings.apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: this.settings.model,
-                            messages: [
-                                { role: 'system', content: this.settings.system_role},
-                                { role: 'user', content: messageHistoryContent }
-                            ],
-                            max_tokens: parseInt(maxTokens),
-                            temperature: parseFloat(temperature),
-                        }),
-                    });
-                    
-                    console.log(response.json);
+            // Self-hosted Models using LocalAI
+            if (!["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
+
+                try { 
+                    const response = await requestUrlChatCompletion(this.settings.restAPIUrl, settings, messageHistoryContent, maxTokens, temperature);
+                    // console.log(response.json);
                 
                     let message = response.json.choices[0].message.content;
 
                     addMessage(message, 'botMessage');
-
-                    messageHistoryContent = messageHistory.map(item => item.userMessage + "\n" + (item.botMessage ? item.botMessage : "")).join("\n");
 
                     if (messageContainerEl) {
                         const botMessages = messageContainerEl.querySelectorAll(".botMessage");
@@ -454,67 +341,13 @@ export class BMOView extends ItemView {
                         }
                     
                         const messageBlock = document.createElement("p");
-                        messageBlock.textContent = message;
                         const markdownContent = marked(message);
                         messageBlock.innerHTML = markdownContent;
                         messageBlock.classList.add("messageBlock");
                         
-                        const paragraphs = messageBlock.querySelectorAll("p");
-        
-                        for (let i = 0; i < paragraphs.length; i++) {
-                        const p = paragraphs[i];
-                        
-                        // Check if the current <p> element has a sibling <p> element
-                        const nextSibling = p.nextElementSibling;
-                        if (nextSibling && nextSibling.nodeName === "P") {
-                        
-                            // Create a <br> element and insert it after the current <p> element
-                            const br = document.createElement("br");
-                            const parent = p.parentNode;
-                            if (parent) {
-                            parent.insertBefore(br, nextSibling);
-                            }
-                        }
-                        }
-        
-                        // Wait for Prism.js to load
-                        loadPrism().then((Prism) => {
-                            // Select all code blocks
-                            const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
-                            
-                            // Apply syntax highlighting to each code block
-                            codeBlocks.forEach((codeBlock) => {
-                            const language = codeBlock.className.replace("language-", "");
-                            const code = codeBlock.textContent;
-                            const highlightedCode = Prism.highlight(code, Prism.languages[language]);
-                            codeBlock.innerHTML = highlightedCode;
-                            });
-                        });
-        
-                        // Copy button for code blocks
-                        const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
-        
-                        codeBlocks.forEach(async (codeElement) => {
-                        const copyButton = document.createElement("button");
-                        copyButton.textContent = "copy";
-                        setIcon(copyButton, "copy");
-                        copyButton.classList.add("copy-button");
-                        copyButton.title = "copy";
-                        if (codeElement.parentNode) {
-                            codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
-                        }
-                        
-                        copyButton.addEventListener("click", () => {
-                            const codeText = codeElement.textContent;
-                            if (codeText) {
-                            navigator.clipboard.writeText(codeText).then(() => {
-                                new Notice('Copied to your clipboard');
-                            }, (err) => {
-                                console.error("Failed to copy code: ", err);
-                            });
-                            }
-                        });
-                        });
+                        addParagraphBreaks(messageBlock);
+                        prismHighlighting(messageBlock);
+                        codeBlockCopyButton(messageBlock);
                         
                         lastBotMessage.appendChild(messageBlock);
                         lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -529,30 +362,12 @@ export class BMOView extends ItemView {
             else {
                 // OpenAI models
                 try {
-                    const maxTokens = this.settings.max_tokens;
-                    const temperature = this.settings.temperature;
-                
-                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${this.settings.apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: this.settings.model,
-                            messages: [
-                                { role: 'system', content: this.settings.system_role },
-                                { role: 'user', content: messageHistoryContent }
-                            ],
-                            max_tokens: parseInt(maxTokens),
-                            temperature: parseFloat(temperature),
-                            stream: true,
-                        }),
-                    });
-                
-                    const reader = response.body ? response.body.getReader() : null;
+                    const url = 'https://api.openai.com';
+                    const response = await fetchChatCompletion(url, settings, messageHistoryContent, maxTokens, temperature);
                     
                     let message = '';
+
+                    const reader = response.body ? response.body.getReader() : null;
                     
                     if (reader) {
                     
@@ -584,67 +399,9 @@ export class BMOView extends ItemView {
                                                 if (messageBlock) {
                                                     messageBlock.innerHTML = marked(message);
                                                 
-                                                    const paragraphs = messageBlock.querySelectorAll("p");
-
-                                                    for (let i = 0; i < paragraphs.length; i++) {
-                                                        const p = paragraphs[i];
-                                                    
-                                                        // Check if the current <p> element has a sibling <p> element
-                                                        const nextSibling = p.nextElementSibling;
-                                                        if (nextSibling && nextSibling.nodeName === "P") {
-                                                    
-                                                        // Create a <br> element and insert it after the current <p> element
-                                                        const br = document.createElement("br");
-                                                        const parent = p.parentNode;
-                                                        if (parent) {
-                                                            parent.insertBefore(br, nextSibling);
-                                                        }
-                                                        }
-                                                    }
-                                                    
-
-                                                    // Wait for Prism.js to load
-                                                    loadPrism().then((Prism) => {
-                                                        // Select all code blocks
-                                                        const codeBlocks = messageBlock?.querySelectorAll('.messageBlock pre code');
-
-                                                        // Apply syntax highlighting to each code block
-                                                        codeBlocks?.forEach((codeBlock) => {
-                                                            const language = codeBlock.className.replace("language-", "");
-                                                            const code = codeBlock.textContent;
-                                                            
-                                                            if (language && Prism.languages[language]) {
-                                                                const highlightedCode = Prism.highlight(code, Prism.languages[language]);
-                                                                codeBlock.innerHTML = highlightedCode;
-                                                            }
-                                                        });
-                                                    });
-
-
-                                                    // Copy button for code blocks
-                                                    const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
-
-                                                    codeBlocks.forEach(async (codeElement) => {
-                                                        const copyButton = document.createElement("button");
-                                                        copyButton.textContent = "copy";
-                                                        setIcon(copyButton, "copy");
-                                                        copyButton.classList.add("copy-button");
-                                                        copyButton.title = "copy";
-                                                        if (codeElement.parentNode) {
-                                                            codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
-                                                        }
-                                                    
-                                                        copyButton.addEventListener("click", () => {
-                                                            const codeText = codeElement.textContent;
-                                                            if (codeText) {
-                                                            navigator.clipboard.writeText(codeText).then(() => {
-                                                                new Notice('Copied to your clipboard');
-                                                            }, (err) => {
-                                                                console.error("Failed to copy code: ", err);
-                                                            });
-                                                            }
-                                                        });
-                                                    });
+                                                    addParagraphBreaks(messageBlock);
+                                                    prismHighlighting(messageBlock);
+                                                    codeBlockCopyButton(messageBlock);
                                                 }
                                             }
                                         }
@@ -657,8 +414,6 @@ export class BMOView extends ItemView {
                     }
 
                     addMessage(message, 'botMessage');
-
-                    messageHistoryContent = messageHistory.map(item => item.userMessage + "\n" + (item.botMessage ? item.botMessage : "")).join("\n");
                 } 
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -674,4 +429,173 @@ export class BMOView extends ItemView {
         // Nothing to clean up.
     }
 
+}
+
+// Create data folder and load JSON file
+async function loadData() {
+    if (!await this.app.vault.adapter.exists('./.obsidian/plugins/bmo-chatbot/data/')) {
+        this.app.vault.adapter.mkdir('./.obsidian/plugins/bmo-chatbot/data/');
+    }
+
+    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+        try {
+            const fileContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
+
+            if (fileContent.trim() === "") {
+                messageHistory = [];
+            } else {
+                messageHistory = JSON.parse(fileContent);
+            }
+        } catch (error) {
+            console.error("Error processing message history:", error);
+        }
+    } else {
+        messageHistory = [];
+    }
+}
+
+// Add a new message to the messageHistory array and save it to the file
+async function addMessage(input: string, messageType: 'userMessage' | 'botMessage') {
+    let messageObj: { userMessage?: string; botMessage?: string } = {};
+
+    if (messageType === 'userMessage') {
+        messageObj.userMessage = input;
+    } else if (messageType === 'botMessage') {
+        messageObj.botMessage = input;
+    }
+
+    messageHistory.push(messageObj);
+
+    messageHistoryContent = messageHistory.map(item => {
+        let content = [];
+        if (item.userMessage) {
+            content.push(item.userMessage);
+        }
+        if (item.botMessage) {
+            content.push(item.botMessage);
+        }
+        return content.join("\n");
+    }).join("\n");
+
+    const jsonString = JSON.stringify(messageHistory, null, 4);
+
+    try {
+        await this.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+    } catch (error) {
+        console.error("Error writing to message history file:", error);
+    }
+}
+
+// Fetch response from OpenAI API
+async function fetchChatCompletion(url: string, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: string) {
+    const response = await fetch(
+        url + '/v1/chat/completions', 
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.apiKey}`
+        },
+        body: JSON.stringify({
+            model: settings.model,
+            messages: [
+                { role: 'system', content: settings.system_role },
+                { role: 'user', content: messageHistoryContent }
+            ],
+            max_tokens: parseInt(maxTokens),
+            temperature: parseFloat(temperature),
+            stream: true,
+        }),
+    });
+
+    return response;
+}
+
+// Request response from self-hosted models
+async function requestUrlChatCompletion(url: any, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: string) {
+    try {
+        const response = await requestUrl({
+            url: url + '/v1/chat/completions',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.apiKey}`
+            },
+            body: JSON.stringify({
+                model: settings.model,
+                messages: [
+                    { role: 'system', content: settings.system_role },
+                    { role: 'user', content: messageHistoryContent }
+                ],
+                max_tokens: parseInt(maxTokens),
+                temperature: parseFloat(temperature),
+            }),
+        });
+
+        return response;
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
+    }
+}
+
+// Handle Prisma Highlighting for code blocks
+function prismHighlighting(messageBlock: { querySelectorAll: (arg0: string) => any; }) {
+        // Wait for Prism.js to load
+        loadPrism().then((Prism) => {
+        // Select all code blocks
+        const codeBlocks = messageBlock?.querySelectorAll('.messageBlock pre code');
+
+        // Apply syntax highlighting to each code block
+        codeBlocks?.forEach((codeBlock: { className: string; textContent: any; innerHTML: any; }) => {
+            const language = codeBlock.className.replace("language-", "");
+            const code = codeBlock.textContent;
+            
+            if (language && Prism.languages[language]) {
+                const highlightedCode = Prism.highlight(code, Prism.languages[language]);
+                codeBlock.innerHTML = highlightedCode;
+            }
+        });
+    });
+}
+
+// Copy button for code blocks
+function codeBlockCopyButton(messageBlock: { querySelectorAll: (arg0: string) => any; }) {
+    const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
+    codeBlocks.forEach((codeElement: { parentNode: { insertBefore: (arg0: HTMLButtonElement, arg1: any) => void; }; nextSibling: any; textContent: any; }) => {
+        const copyButton = document.createElement("button");
+        copyButton.textContent = "copy";
+        setIcon(copyButton, "copy");
+        copyButton.classList.add("copy-button");
+        copyButton.title = "copy";
+        if (codeElement.parentNode) {
+            codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
+        }
+        copyButton.addEventListener("click", () => {
+            const codeText = codeElement.textContent;
+            if (codeText) {
+                navigator.clipboard.writeText(codeText).then(() => {
+                    new Notice('Copied to your clipboard');
+                }, (err) => {
+                    console.error("Failed to copy code: ", err);
+                });
+            }
+        });
+    });
+}
+
+// Add line break between consecutive <p> elements
+function addParagraphBreaks(messageBlock: { querySelectorAll: (arg0: string) => any; }) {
+    const paragraphs = messageBlock.querySelectorAll("p");
+    for (let i = 0; i < paragraphs.length; i++) {
+        const p = paragraphs[i];
+        const nextSibling = p.nextElementSibling;
+        if (nextSibling && nextSibling.nodeName === "P") {
+            const br = document.createElement("br");
+            const parent = p.parentNode;
+            if (parent) {
+                parent.insertBefore(br, nextSibling);
+            }
+        }
+    }
 }

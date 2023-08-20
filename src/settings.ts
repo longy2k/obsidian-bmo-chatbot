@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, ColorComponent, requestUrl, TextComponent } from 'obsidian';
+import { App, PluginSettingTab, Setting, ColorComponent, requestUrl } from 'obsidian';
 import { DEFAULT_SETTINGS } from './main';
 import BMOGPT from './main';
 
@@ -168,112 +168,69 @@ export class BMOSettingTab extends PluginSettingTab {
 				});
             })
         );		
-		
-		let colorPicker: ColorComponent;
+
+		let colorPicker1: ColorComponent;
+		const customUserMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
 		
 		new Setting(containerEl)
-			.setName('Background Color for Chatbot Container')
-			.setDesc('Modify the background color of the chatbotContainer element.')
+			.setName('Background color for User Messages')
+			.setDesc('Modify the background color of the userMessage element.')
 			.addButton(button => button
 				.setButtonText("Restore Default")
 				.setIcon("rotate-cw")
 				.setClass("clickable-icon")
 				.onClick(async () => {
-					let defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim();
-					colorPicker.setValue(defaultValue);
-
-					const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
-					if (chatbotContainer) {
-						chatbotContainer.style.backgroundColor = defaultValue;
+					colorPicker1.setValue(customUserMessageBackgroundColor);
+		
+					const messageContainer = document.querySelector('#messageContainer');
+					if (messageContainer) {
+						const userMessages = messageContainer.querySelectorAll('.userMessage');
+						userMessages.forEach((userMessage) => {
+							const element = userMessage as HTMLElement;
+							element.style.backgroundColor = customUserMessageBackgroundColor;
+						});
+						await this.plugin.saveSettings();
 					}
-			
-					await this.plugin.saveSettings();
 				})
-		  	)
+			)
 			.addColorPicker((color) => {
-				colorPicker = color;
-				color.setValue(this.plugin.settings.chatbotContainerBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.chatbotContainerBackgroundColor).trim())
-					.onChange(async (value) => {
-						this.plugin.settings.chatbotContainerBackgroundColor = value;
-						const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
-						if (chatbotContainer) {
-							chatbotContainer.style.backgroundColor = value;
-						}
-						await this.plugin.saveSettings();
-					});
-			});
+				colorPicker1 = color;
+				const defaultValue = colorToHex(this.plugin.settings.userMessageBackgroundColor || customUserMessageBackgroundColor);
+				color.setValue(defaultValue)
+				.onChange(async (value) => {
+					this.plugin.settings.userMessageBackgroundColor = colorToHex(value);
+					const messageContainer = document.querySelector('#messageContainer');
+					if (messageContainer) {
+						const userMessages = messageContainer.querySelectorAll('.userMessage');
+						userMessages.forEach((userMessage) => {
+							const element = userMessage as HTMLElement;
+							element.style.backgroundColor = colorToHex(value);
+						});
+					}
 
-			let colorPicker1: ColorComponent;
-			
-			new Setting(containerEl)
-				.setName('Background color for User Message')
-				.setDesc('Modify the background color of the userMessage element.')
-				.addButton(button => button
-					.setButtonText("Restore Default")
-					.setIcon("rotate-cw")
-					.setClass("clickable-icon")
-					.onClick(async () => {
-						const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
-						colorPicker1.setValue(defaultValue);
-			
-						const messageContainer = document.querySelector('#messageContainer');
-						if (messageContainer) {
-							const userMessages = messageContainer.querySelectorAll('.userMessage');
-							userMessages.forEach((userMessage) => {
-								const element = userMessage as HTMLElement;
-								element.style.backgroundColor = defaultValue;
-							});
-							await this.plugin.saveSettings();
-						}
-					})
-				)
-				.addColorPicker((color) => {
-					colorPicker1 = color;
-					const defaultValue = this.plugin.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
-					color.setValue(defaultValue)
-					.onChange(async (value) => {
-						const hexValue = value;
-						this.plugin.settings.userMessageBackgroundColor = hexValue;
-						const messageContainer = document.querySelector('#messageContainer');
-						if (messageContainer) {
-							const userMessages = messageContainer.querySelectorAll('.userMessage');
-							userMessages.forEach((userMessage) => {
-								const element = userMessage as HTMLElement;
-								element.style.backgroundColor = hexValue;
-							});
-								// Convert the Document object to a string
-								const serializer = new XMLSerializer();
-								const tempDiv = document.createElement('div');
-								tempDiv.innerHTML = messageContainer.innerHTML;
-								const documentString = serializer.serializeToString(tempDiv);
-
-								// Write the updated document content to the file with filenameMessageHistoryHTML
-								// await this.app.vault.adapter.write(filenameMessageHistoryHTML, documentString);
-						}
-
-						await this.plugin.saveSettings();
-					});
-				});		
+					await this.plugin.saveSettings();
+				});
+			});		
 			
 			let colorPicker2: ColorComponent;
+			const customBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
 
 			new Setting(containerEl)
-				.setName('Background color for Bot Message')
+				.setName('Background color for Bot Messages')
 				.setDesc('Modify the background color of the botMessage element.')
 				.addButton(button => button
 					.setButtonText("Restore Default")
 					.setIcon("rotate-cw")
 					.setClass("clickable-icon")
 					.onClick(async () => {
-						const defaultValue = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
-						colorPicker2.setValue(defaultValue);
+						colorPicker2.setValue(customBotMessageBackgroundColor);
 			
 						const messageContainer = document.querySelector('#messageContainer');
 						if (messageContainer) {
 							const botMessages = messageContainer.querySelectorAll('.botMessage');
 							botMessages.forEach((botMessage) => {
 								const element = botMessage as HTMLElement;
-								element.style.backgroundColor = defaultValue;
+								element.style.backgroundColor = customBotMessageBackgroundColor;
 							});
 							await this.plugin.saveSettings();
 						}
@@ -281,26 +238,17 @@ export class BMOSettingTab extends PluginSettingTab {
 				)
 				.addColorPicker((color) => {
 					colorPicker2 = color;
-					const defaultValue = this.plugin.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+					const defaultValue = colorToHex(this.plugin.settings.botMessageBackgroundColor || customBotMessageBackgroundColor);
 					color.setValue(defaultValue)
 						.onChange(async (value) => {
-							const hexValue = value;
-							this.plugin.settings.botMessageBackgroundColor = hexValue;
+							this.plugin.settings.botMessageBackgroundColor = colorToHex(value);
 							const messageContainer = document.querySelector('#messageContainer');
 							if (messageContainer) {
 								const botMessages = messageContainer.querySelectorAll('.botMessage');
 								botMessages.forEach((botMessage) => {
 									const element = botMessage as HTMLElement;
-									element.style.backgroundColor = hexValue;
+									element.style.backgroundColor = colorToHex(value);
 								});
-								// Convert the Document object to a string
-								const serializer = new XMLSerializer();
-								const tempDiv = document.createElement('div');
-								tempDiv.innerHTML = messageContainer.innerHTML;
-								const documentString = serializer.serializeToString(tempDiv);
-
-								// Write the updated document content to the file with filenameMessageHistoryHTML
-								// await this.app.vault.adapter.write(filenameMessageHistoryHTML, documentString);
 							}
 					await this.plugin.saveSettings();
 				});
@@ -313,12 +261,12 @@ export class BMOSettingTab extends PluginSettingTab {
 		.setName('REST API URL')
 		.setDesc(descLink1('Enter your REST API URL using', 'https://github.com/go-skynet/LocalAI', ''))
 		.addText(text => text
-		.setPlaceholder('http://localhost:8080')
-		.setValue(this.plugin.settings.restAPIUrl || DEFAULT_SETTINGS.restAPIUrl)
-		.onChange(async (value) => {
-			this.plugin.settings.restAPIUrl = value ? value : DEFAULT_SETTINGS.restAPIUrl;
-			await this.plugin.saveSettings();
-		})
+			.setPlaceholder('http://localhost:8080')
+			.setValue(this.plugin.settings.restAPIUrl || DEFAULT_SETTINGS.restAPIUrl)
+			.onChange(async (value) => {
+					this.plugin.settings.restAPIUrl = value ? value : DEFAULT_SETTINGS.restAPIUrl;
+					await this.plugin.saveSettings();
+				})
 		);
 
 		function descLink1(text: string, link: string, extraWords: string): DocumentFragment {
@@ -366,4 +314,60 @@ export class BMOSettingTab extends PluginSettingTab {
 			console.error('Error:', error);
 		}
 	}
+}
+
+export function colorToHex(colorValue: string): string {
+    if (colorValue.startsWith("hsl")) {
+      // Convert HSL to HEX
+      let match = colorValue.match(/(\d+(\.\d+)?)%?/g);
+      if (match === null || match.length < 3) {
+		throw new Error("Invalid HSL value");
+	  }
+      let h = parseInt(match[0]) / 360;
+      let s = parseInt(match[1]) / 100;
+      let l = parseInt(match[2]) / 100;
+  
+      function hue2rgb(p: number, q: number, t: number) {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      }
+  
+      let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      let p = 2 * l - q;
+      let r = hue2rgb(p, q, h + 1 / 3);
+      let g = hue2rgb(p, q, h);
+      let b = hue2rgb(p, q, h - 1 / 3);
+  
+      let toHex = function (c: number) {
+        let hex = Math.round(c * 255).toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+      };
+  
+      let hex = "#" + toHex(r) + toHex(g) + toHex(b);
+      return hex;
+    } else if (colorValue.startsWith("rgb")) {
+      // Convert RGB to HEX
+      let sep = colorValue.indexOf(",") > -1 ? "," : " ";
+      let rgbArray = colorValue.substr(4).split(")")[0].split(sep);
+  
+      let r = (+rgbArray[0]).toString(16),
+        g = (+rgbArray[1]).toString(16),
+        b = (+rgbArray[2]).toString(16);
+  
+      if (r.length == 1)
+        r = "0" + r;
+      if (g.length == 1)
+        g = "0" + g;
+      if (b.length == 1)
+        b = "0" + b;
+  
+      return "#" + r + g + b;
+    } else {
+      // If the colorValue is neither RGB nor HSL, return the input
+      return colorValue;
+    }
 }

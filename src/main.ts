@@ -1,7 +1,7 @@
 import { Plugin } from 'obsidian';
-import { Configuration, OpenAIApi } from "openai";
 import { BMOView, VIEW_TYPE_CHATBOT, filenameMessageHistoryJSON, clearMessageHistory} from "./view";
 import { BMOSettingTab } from './settings';
+import { Configuration, OpenAIApi } from "openai";
 
 export interface BMOSettings {
 	models: any;
