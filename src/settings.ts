@@ -129,6 +129,25 @@ export class BMOSettingTab extends PluginSettingTab {
 				return frag;
 		};
 
+		new Setting(containerEl)
+		.setName('Allow Reference Current Note')
+		.setDesc('Allow chatbot to reference current active note during conversation.')
+		.addToggle((toggle) =>
+			toggle.setValue(this.plugin.settings.referenceCurrentNote).onChange((value) => {
+				this.plugin.settings.referenceCurrentNote = value;
+				this.plugin.saveSettings();
+
+				const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');
+				if (referenceCurrentNoteElement) {
+					if (value) {
+						referenceCurrentNoteElement.style.display = 'block';
+					} else {
+						referenceCurrentNoteElement.style.display = 'none';
+					}
+				}
+			})
+		);
+
 		containerEl.createEl('h2', {text: 'Appearance'});
 
 		new Setting(containerEl)
@@ -180,14 +199,15 @@ export class BMOSettingTab extends PluginSettingTab {
 				.setIcon("rotate-cw")
 				.setClass("clickable-icon")
 				.onClick(async () => {
-					colorPicker1.setValue(customUserMessageBackgroundColor);
+					const defaultValue = colorToHex(customUserMessageBackgroundColor);
+					colorPicker1.setValue(defaultValue);
 		
 					const messageContainer = document.querySelector('#messageContainer');
 					if (messageContainer) {
 						const userMessages = messageContainer.querySelectorAll('.userMessage');
 						userMessages.forEach((userMessage) => {
 							const element = userMessage as HTMLElement;
-							element.style.backgroundColor = customUserMessageBackgroundColor;
+							element.style.backgroundColor = defaultValue;
 						});
 						await this.plugin.saveSettings();
 					}
@@ -198,13 +218,14 @@ export class BMOSettingTab extends PluginSettingTab {
 				const defaultValue = colorToHex(this.plugin.settings.userMessageBackgroundColor || customUserMessageBackgroundColor);
 				color.setValue(defaultValue)
 				.onChange(async (value) => {
-					this.plugin.settings.userMessageBackgroundColor = colorToHex(value);
+					const hexValue = colorToHex(value);
+					this.plugin.settings.userMessageBackgroundColor = hexValue;
 					const messageContainer = document.querySelector('#messageContainer');
 					if (messageContainer) {
 						const userMessages = messageContainer.querySelectorAll('.userMessage');
 						userMessages.forEach((userMessage) => {
 							const element = userMessage as HTMLElement;
-							element.style.backgroundColor = colorToHex(value);
+							element.style.backgroundColor = hexValue;
 						});
 					}
 
@@ -223,14 +244,15 @@ export class BMOSettingTab extends PluginSettingTab {
 					.setIcon("rotate-cw")
 					.setClass("clickable-icon")
 					.onClick(async () => {
-						colorPicker2.setValue(customBotMessageBackgroundColor);
+						const defaultValue = colorToHex(customBotMessageBackgroundColor);
+						colorPicker2.setValue(defaultValue);
 			
 						const messageContainer = document.querySelector('#messageContainer');
 						if (messageContainer) {
 							const botMessages = messageContainer.querySelectorAll('.botMessage');
 							botMessages.forEach((botMessage) => {
 								const element = botMessage as HTMLElement;
-								element.style.backgroundColor = customBotMessageBackgroundColor;
+								element.style.backgroundColor = defaultValue;
 							});
 							await this.plugin.saveSettings();
 						}
@@ -241,13 +263,14 @@ export class BMOSettingTab extends PluginSettingTab {
 					const defaultValue = colorToHex(this.plugin.settings.botMessageBackgroundColor || customBotMessageBackgroundColor);
 					color.setValue(defaultValue)
 						.onChange(async (value) => {
-							this.plugin.settings.botMessageBackgroundColor = colorToHex(value);
+							const hexValue = colorToHex(value);
+							this.plugin.settings.botMessageBackgroundColor = hexValue;
 							const messageContainer = document.querySelector('#messageContainer');
 							if (messageContainer) {
 								const botMessages = messageContainer.querySelectorAll('.botMessage');
 								botMessages.forEach((botMessage) => {
 									const element = botMessage as HTMLElement;
-									element.style.backgroundColor = colorToHex(value);
+									element.style.backgroundColor = hexValue;
 								});
 							}
 					await this.plugin.saveSettings();
@@ -291,7 +314,13 @@ export class BMOSettingTab extends PluginSettingTab {
 	}
 
 	async fetchData() {
-		const url = this.plugin.settings.restAPIUrl + '/v1/models';
+		const restAPIUrl = this.plugin.settings.restAPIUrl;
+
+		if (!restAPIUrl) {
+			return;
+		}
+	
+		const url = restAPIUrl + '/v1/models';
 	
 		try {
 			const response = await requestUrl({

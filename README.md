@@ -8,6 +8,7 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 
 ## Features
 - **Chat from anywhere in Obsidian:** Chat with your bot from anywhere within Obsidian.
+- **Chat with current note:** Use your chatbot to reference and engage within your current note.
 - **Chatbot responds in Markdown:** Receive formatted responses in Markdown for consistency.
 - **Customizable bot name:** Personalize the chatbot's name.
 - **System role prompt:** Configure the chatbot to prompt for user roles before responding to messages.

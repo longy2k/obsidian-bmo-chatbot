@@ -1,7 +1,8 @@
 import { Plugin } from 'obsidian';
-import { BMOView, VIEW_TYPE_CHATBOT, filenameMessageHistoryJSON, clearMessageHistory} from "./view";
+import { BMOView, VIEW_TYPE_CHATBOT, filenameMessageHistoryJSON, clearMessageHistory } from "./view";
 import { BMOSettingTab } from './settings';
 import { Configuration, OpenAIApi } from "openai";
+
 
 export interface BMOSettings {
 	models: any;
@@ -16,6 +17,7 @@ export interface BMOSettings {
 	userMessageBackgroundColor: string;
 	botMessageBackgroundColor: string;
 	restAPIUrl: string;
+	referenceCurrentNote: boolean;
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -31,6 +33,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	botMessageBackgroundColor: '--background-secondary',
 	restAPIUrl: '',
 	models: undefined,
+	referenceCurrentNote: false,
 }
 
 export default class BMOGPT extends Plugin {
@@ -49,6 +52,7 @@ export default class BMOGPT extends Plugin {
 		    this.activateView();
 			this.app.vault.adapter.write(filenameMessageHistoryJSON, '');
 			clearMessageHistory();
+
 		});
 
 		const configuration = new Configuration({
@@ -57,7 +61,6 @@ export default class BMOGPT extends Plugin {
 
 		this.openai = new OpenAIApi(configuration);
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new BMOSettingTab(this.app, this));
 	}
 

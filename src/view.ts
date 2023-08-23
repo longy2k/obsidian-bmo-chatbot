@@ -22,7 +22,7 @@ export class BMOView extends ItemView {
     constructor(leaf: WorkspaceLeaf, settings: BMOSettings) {
         super(leaf);
         this.settings = settings;
-        this.icon = 'bot';
+        this.icon = 'bot';        
     }
 
     getViewType() {
@@ -55,6 +55,22 @@ export class BMOView extends ItemView {
                 id: "modelName"
             }
         });
+
+        chatbotContainer.createEl("p", {
+            text: "Reference Current Note",
+            attr: {
+                id: "referenceCurrentNote"
+            }
+        });
+
+        const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');
+        if (referenceCurrentNoteElement) {
+            if (this.settings.referenceCurrentNote) {
+                referenceCurrentNoteElement.style.display = 'block';
+            } else {
+                referenceCurrentNoteElement.style.display = 'none';
+            }
+        }
         
         const messageContainer = chatbotContainer.createEl("div", {
             attr: {
@@ -288,6 +304,12 @@ export class BMOView extends ItemView {
     }
 
     async BMOchatbot(_input: string) {
+        let referenceCurrentNote = '';
+
+        if (this.settings.referenceCurrentNote) {
+            referenceCurrentNote = await getActiveFileContent();
+        }
+
         messageHistoryContent = messageHistory.map(item => item.userMessage || item.botMessage).join("\n");
 
         const messageContainerEl = document.querySelector('#messageContainer');
@@ -311,19 +333,25 @@ export class BMOView extends ItemView {
             chatbox.disabled = true;
         } 
         else {
+            let systemReferenceCurrentNote = '';
+
+            if (this.settings.referenceCurrentNote) {
+                systemReferenceCurrentNote = 'Reference current note. '
+            }
+
             const maxTokens = this.settings.max_tokens;
             const temperature = this.settings.temperature;
             const settings = {
                 apiKey: this.settings.apiKey,
                 model: this.settings.model,
-                system_role: this.settings.system_role
+                system_role: systemReferenceCurrentNote + this.settings.system_role
             };
 
             // Self-hosted Models using LocalAI
             if (!["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
 
                 try { 
-                    const response = await requestUrlChatCompletion(this.settings.restAPIUrl, settings, messageHistoryContent, maxTokens, temperature);
+                    const response = await requestUrlChatCompletion(this.settings.restAPIUrl, settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature);
                     // console.log(response.json);
                 
                     let message = response.json.choices[0].message.content;
@@ -363,7 +391,7 @@ export class BMOView extends ItemView {
                 // OpenAI models
                 try {
                     const url = 'https://api.openai.com';
-                    const response = await fetchChatCompletion(url, settings, messageHistoryContent, maxTokens, temperature);
+                    const response = await fetchChatCompletion(url, settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature);
                     
                     let message = '';
 
@@ -454,6 +482,19 @@ async function loadData() {
     }
 }
 
+// Reference Current Note
+async function getActiveFileContent() {
+        const activeFile = this.app.workspace.getActiveFile();
+        let currentNote = '';
+        if (activeFile) {
+            const content = await this.app.vault.read(activeFile);
+            currentNote = 'reference_current_note```' + content + '```\n';
+        } else {
+            console.log("No active file found.");
+        }
+        return currentNote;
+}
+
 // Add a new message to the messageHistory array and save it to the file
 async function addMessage(input: string, messageType: 'userMessage' | 'botMessage') {
     let messageObj: { userMessage?: string; botMessage?: string } = {};
@@ -533,6 +574,7 @@ async function requestUrlChatCompletion(url: any, settings: { apiKey: any; model
         });
 
         return response;
+
     } catch (error) {
         console.error('Error making API request:', error);
         throw error;
@@ -541,12 +583,9 @@ async function requestUrlChatCompletion(url: any, settings: { apiKey: any; model
 
 // Handle Prisma Highlighting for code blocks
 function prismHighlighting(messageBlock: { querySelectorAll: (arg0: string) => any; }) {
-        // Wait for Prism.js to load
         loadPrism().then((Prism) => {
-        // Select all code blocks
         const codeBlocks = messageBlock?.querySelectorAll('.messageBlock pre code');
 
-        // Apply syntax highlighting to each code block
         codeBlocks?.forEach((codeBlock: { className: string; textContent: any; innerHTML: any; }) => {
             const language = codeBlock.className.replace("language-", "");
             const code = codeBlock.textContent;

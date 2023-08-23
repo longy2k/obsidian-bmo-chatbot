@@ -21,19 +21,26 @@ If your plugin does not need CSS, delete this file.
 }
 
 #chatbotNameHeading {
-    color:  var(--interactive-accent); 
-    text-align: center;
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 10px 0px 0px 0px;
-    font-size: 2rem;
+  color:  var(--interactive-accent); 
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 10px 0px 0px 0px;
+  font-size: 2rem;
 }
 
 #modelName {
-    margin: 0;
-    text-align: center;
-    color: var(--interactive-accent); 
-    font-size: 1rem;
+  margin: 0;
+  text-align: center;
+  color: var(--interactive-accent); 
+  font-size: 1rem;
+}
+
+#referenceCurrentNote {
+  margin: 0;
+  text-align: center;
+  color: var(--interactive-accent); 
+  font-size: 0.8rem;
 }
 
 /* messageContainer */
