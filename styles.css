@@ -33,14 +33,14 @@ If your plugin does not need CSS, delete this file.
   margin: 0;
   text-align: center;
   color: var(--interactive-accent); 
-  font-size: 1rem;
+  font-size: 0.92rem;
 }
 
 #referenceCurrentNote {
-  margin: 0;
+  margin: 0.05rem 0 0 0;
   text-align: center;
   color: var(--interactive-accent); 
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 /* messageContainer */
@@ -216,4 +216,14 @@ If your plugin does not need CSS, delete this file.
   font-size: 25px;
   font-weight: bolder;
   margin: 5px 0px;
+}
+
+.dot {
+  display: inline-block;
+  width: 0.3rem;
+  height: 0.3rem;
+  background-color: #da2c2c;
+  border-radius: 50%;
+  margin-left: 0.25rem;
+  margin-bottom: 0.1rem;
 }

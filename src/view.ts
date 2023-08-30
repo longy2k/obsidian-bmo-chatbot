@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, setIcon, requestUrl, loadPrism } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, setIcon, requestUrl, loadPrism, TFile } from "obsidian";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import { colorToHex } from "./settings";
 import { marked } from "marked";
@@ -34,6 +34,8 @@ export class BMOView extends ItemView {
     }
 
     async onOpen(): Promise<void> {
+        this.registerEvent(this.app.workspace.on("file-open", this.handleFileOpenEvent.bind(this)));
+
         const container = this.containerEl.children[1];
         container.empty();
         const chatbotContainer = container.createEl("div", {
@@ -50,18 +52,27 @@ export class BMOView extends ItemView {
         });
 
         chatbotContainer.createEl("p", {
-            text: "Model: " + this.settings.model.replace(/[gpt]/g, letter => letter.toUpperCase()) || DEFAULT_SETTINGS.model.replace(/[gpt]/g, letter => letter.toUpperCase()),
+            text: "Model: " + this.settings.model || DEFAULT_SETTINGS.model,
             attr: {
                 id: "modelName"
             }
         });
 
-        chatbotContainer.createEl("p", {
+        const spanElement = chatbotContainer.createEl("span", {
+            attr: {
+                class: "dot",
+                id: "markDownBoolean"
+            }
+        });
+        
+        const referenceCurrentNote = chatbotContainer.createEl("p", {
             text: "Reference Current Note",
             attr: {
                 id: "referenceCurrentNote"
             }
         });
+
+        referenceCurrentNote.appendChild(spanElement);
 
         const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');
         if (referenceCurrentNoteElement) {
@@ -71,7 +82,12 @@ export class BMOView extends ItemView {
                 referenceCurrentNoteElement.style.display = 'none';
             }
         }
-        
+    
+        const activeFile = this.app.workspace.getActiveFile();
+        if (activeFile) {
+            await this.getActiveFileContent(activeFile);
+        }
+
         const messageContainer = chatbotContainer.createEl("div", {
             attr: {
                 id: "messageContainer",
@@ -157,6 +173,10 @@ export class BMOView extends ItemView {
         this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
         this.textareaElement.addEventListener("input", this.handleInput.bind(this));
         this.textareaElement.addEventListener("blur", this.handleBlur.bind(this));
+    }
+
+    async handleFileOpenEvent(file: TFile) {
+        await this.getActiveFileContent(file);
     }
     
     async handleKeyup(event: KeyboardEvent) {
@@ -306,8 +326,12 @@ export class BMOView extends ItemView {
     async BMOchatbot(_input: string) {
         let referenceCurrentNote = '';
 
-        if (this.settings.referenceCurrentNote) {
-            referenceCurrentNote = await getActiveFileContent();
+        const activeFile = this.app.workspace.getActiveFile();
+
+        if (activeFile) {
+            if (this.settings.referenceCurrentNote) {
+                referenceCurrentNote = await this.getActiveFileContent(activeFile);
+            }
         }
 
         messageHistoryContent = messageHistory.map(item => item.userMessage || item.botMessage).join("\n");
@@ -336,7 +360,7 @@ export class BMOView extends ItemView {
             let systemReferenceCurrentNote = '';
 
             if (this.settings.referenceCurrentNote) {
-                systemReferenceCurrentNote = 'Reference current note. '
+                systemReferenceCurrentNote = 'Refer to note if asked.'
             }
 
             const maxTokens = this.settings.max_tokens;
@@ -453,6 +477,27 @@ export class BMOView extends ItemView {
         console.log("BMO settings:", this.settings);
     }
 
+    // Reference Current Note
+    async getActiveFileContent(file: TFile) {
+        const activeFile = this.app.workspace.getActiveFile();
+        const dotElement = document.querySelector('.dot');
+        let currentNote = '';
+        if (activeFile?.extension === 'md') {
+            const content = await this.app.vault.read(activeFile);
+            currentNote = 'Note:```' + content + '```\n';
+            if (dotElement) {
+                (dotElement as HTMLElement).style.backgroundColor = 'green';
+            }
+        } else {
+            if (dotElement) {
+                (dotElement as HTMLElement).style.backgroundColor = '#da2c2c';
+            }
+        }
+        return currentNote;
+    }
+
+
+
     async onClose() {
         // Nothing to clean up.
     }
@@ -480,19 +525,6 @@ async function loadData() {
     } else {
         messageHistory = [];
     }
-}
-
-// Reference Current Note
-async function getActiveFileContent() {
-        const activeFile = this.app.workspace.getActiveFile();
-        let currentNote = '';
-        if (activeFile) {
-            const content = await this.app.vault.read(activeFile);
-            currentNote = 'reference_current_note```' + content + '```\n';
-        } else {
-            console.log("No active file found.");
-        }
-        return currentNote;
 }
 
 // Add a new message to the messageHistory array and save it to the file
