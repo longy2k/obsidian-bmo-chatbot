@@ -10,7 +10,7 @@ export interface BMOSettings {
 	max_tokens: string;
 	model: string;
 	system_role: string;
-	temperature: string;
+	temperature: number;
 	userName: string;
 	chatbotName: string;
 	chatbotContainerBackgroundColor: string;
@@ -25,7 +25,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	max_tokens: '',
 	model: 'gpt-3.5-turbo',
 	system_role: '',
-	temperature: '',
+	temperature: 1.00,
 	userName: 'USER',
 	chatbotName: 'BOT',
 	chatbotContainerBackgroundColor: '--background-secondary',

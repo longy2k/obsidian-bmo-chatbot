@@ -560,7 +560,7 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
 }
 
 // Fetch response from OpenAI API
-async function fetchChatCompletion(url: string, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: string) {
+async function fetchChatCompletion(url: string, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: number) {
     const response = await fetch(
         url + '/v1/chat/completions', 
         {
@@ -576,7 +576,7 @@ async function fetchChatCompletion(url: string, settings: { apiKey: any; model: 
                 { role: 'user', content: messageHistoryContent }
             ],
             max_tokens: parseInt(maxTokens),
-            temperature: parseFloat(temperature),
+            temperature: temperature,
             stream: true,
         }),
     });
@@ -585,7 +585,7 @@ async function fetchChatCompletion(url: string, settings: { apiKey: any; model: 
 }
 
 // Request response from self-hosted models
-async function requestUrlChatCompletion(url: any, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: string) {
+async function requestUrlChatCompletion(url: any, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: number) {
     try {
         const response = await requestUrl({
             url: url + '/v1/chat/completions',
@@ -601,7 +601,7 @@ async function requestUrlChatCompletion(url: any, settings: { apiKey: any; model
                     { role: 'user', content: messageHistoryContent }
                 ],
                 max_tokens: parseInt(maxTokens),
-                temperature: parseFloat(temperature),
+                temperature: temperature,
             }),
         });
 

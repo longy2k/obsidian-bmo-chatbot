@@ -102,15 +102,16 @@ export class BMOSettingTab extends PluginSettingTab {
 		);
 
 		new Setting(containerEl)
-			.setName('Temperature')
-			.setDesc('Temperature controls how random the generated output is. Lower values (closer to 0) make the text more predictable, while higher values (closer to 1) make it more creative and unpredictable.')
-			.addText(text => text
-				.setPlaceholder('1')
-				.setValue(this.plugin.settings.temperature || DEFAULT_SETTINGS.temperature)
-				.onChange(async (value) => {
-					this.plugin.settings.temperature = value;
-					await this.plugin.saveSettings();
-				})
+		.setName('Temperature')
+		.setDesc('Temperature controls how random the generated output is. Lower values make the text more predictable, while higher values make it more creative and unpredictable.')
+		.addSlider(slider => slider
+			.setLimits(0, 2, 0.05)
+			.setValue(this.plugin.settings.temperature !== undefined ? this.plugin.settings.temperature : DEFAULT_SETTINGS.temperature)
+			.setDynamicTooltip()
+			.onChange(async (value) => {
+				this.plugin.settings.temperature = value;
+				await this.plugin.saveSettings();
+			})
 		);
 
 		function descLink(text: string, link: string): DocumentFragment {
