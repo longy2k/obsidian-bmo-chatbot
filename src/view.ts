@@ -649,12 +649,12 @@ async function requestUrlAnthropicAPI(url: any, settings: { apiKey: any; model: 
   
     const requestBody = {
       model: settings.model,
-      prompt: messageHistoryContent + '\n\nAssistant:',
+      prompt: '\n\nHuman:' + settings.system_role + messageHistoryContent + '\n\nAssistant:',
       max_tokens_to_sample: parseInt(maxTokens) || 4096,
       stream: true,
     };
 
-    // console.log(messageHistoryContent);
+    console.log(messageHistoryContent);
   
     try {
       const response = await requestUrl({
