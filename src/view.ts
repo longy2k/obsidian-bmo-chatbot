@@ -654,7 +654,7 @@ async function requestUrlAnthropicAPI(url: any, settings: { apiKey: any; model: 
       stream: true,
     };
 
-    console.log(messageHistoryContent);
+    // console.log(messageHistoryContent);
   
     try {
       const response = await requestUrl({
