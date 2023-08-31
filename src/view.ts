@@ -60,7 +60,7 @@ export class BMOView extends ItemView {
 
         const spanElement = chatbotContainer.createEl("span", {
             attr: {
-                class: "dot",
+                class: "dotIndicator",
                 id: "markDownBoolean"
             }
         });
@@ -535,7 +535,7 @@ export class BMOView extends ItemView {
     // Reference Current Note
     async getActiveFileContent(file: TFile) {
         const activeFile = this.app.workspace.getActiveFile();
-        const dotElement = document.querySelector('.dot');
+        const dotElement = document.querySelector('.dotIndicator');
         let currentNote = '';
         if (activeFile?.extension === 'md') {
             const content = await this.app.vault.read(activeFile);
