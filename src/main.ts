@@ -22,7 +22,7 @@ export interface BMOSettings {
 
 export const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
-	max_tokens: '',
+	max_tokens: '4096',
 	model: 'gpt-3.5-turbo',
 	system_role: '',
 	temperature: 1.00,

@@ -43,8 +43,8 @@ export class BMOSettingTab extends PluginSettingTab {
 		containerEl.createEl('h2', {text: 'General'});
 
 		new Setting(containerEl)
-			.setName('OpenAI API Key')
-			.setDesc('Insert API Key from OpenAI.')
+			.setName('API Key')
+			.setDesc('Insert API Key from OpenAI or Anthropic.')
 			.addText(text => text
 				.setPlaceholder('insert-api-key')
 				.setValue(this.plugin.settings.apiKey ? `${this.plugin.settings.apiKey.slice(0, 2)}-...${this.plugin.settings.apiKey.slice(-4)}` : "")
@@ -57,16 +57,28 @@ export class BMOSettingTab extends PluginSettingTab {
 			.setName('Model')
 			.setDesc('Choose a model.')
 			.addDropdown(dropdown => {
-				dropdown
-					.addOption('gpt-3.5-turbo', 'gpt-3.5-turbo')
-					.addOption('gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k')
-					.addOption('gpt-4', 'gpt-4')
+				if (this.plugin.settings.apiKey) {
+					if (this.plugin.settings.apiKey.startsWith("sk-ant")) {
+						dropdown
+						.addOption('claude-instant-1.2', 'claude-instant-1.2')
+						.addOption('claude-2.0', 'claude-2.0')
+					}
+					else {
+						dropdown
+						.addOption('gpt-3.5-turbo', 'gpt-3.5-turbo')
+						.addOption('gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k')
+						.addOption('gpt-4', 'gpt-4')
+					}
+				}
+				else {
 					if (this.plugin.settings.restAPIUrl && models && models.length > 0) {
 						models.forEach((model: string) => {
 							dropdown.addOption(model, model);
 						});
 					}
-				dropdown.setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
+				}
+			dropdown
+				.setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
 				.onChange(async (value) => {
 					this.plugin.settings.model = value;
 					await this.plugin.saveSettings();
@@ -75,7 +87,7 @@ export class BMOSettingTab extends PluginSettingTab {
 						modelName.textContent = 'Model: ' + this.plugin.settings.model.toLowerCase();
 					}
 				})
-			});
+		});
 	  
 		new Setting(containerEl)
 		.setName('System')

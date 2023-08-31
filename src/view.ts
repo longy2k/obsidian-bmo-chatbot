@@ -108,13 +108,18 @@ export class BMOView extends ItemView {
                 userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
                 userNameSpan.setAttribute("id", "userName");
                 userMessageDiv.appendChild(userNameSpan);
-                
                 userMessageDiv.appendChild(userNameSpan);
         
                 const userP = document.createElement("p");
-                userP.textContent = messageData.userMessage;
+
+                if (messageData.userMessage.startsWith("\n\nHuman: ")) {
+                    userP.textContent = messageData.userMessage.substring("\n\nHuman: ".length).trim();
+                }
+                else {
+                    userP.textContent = messageData.userMessage;
+                }
+                
                 userMessageDiv.appendChild(userP);
-        
                 messageContainer.appendChild(userMessageDiv);
             }
         
@@ -132,11 +137,16 @@ export class BMOView extends ItemView {
                 messageBlockDiv.className = "messageBlock";
         
                 const botP = document.createElement("p");
-                botP.innerHTML = marked(messageData.botMessage);
+
+                if (messageData.botMessage.startsWith("\n\nAssistant: ")) {
+                    botP.innerHTML = marked(messageData.botMessage.substring("\n\nAssistant: ".length).trim());
+                }
+                else {
+                    botP.innerHTML = marked(messageData.botMessage);
+                }
+
                 messageBlockDiv.appendChild(botP);
-        
                 botMessageDiv.appendChild(messageBlockDiv);
-        
                 messageContainer.appendChild(botMessageDiv);
 
                 prismHighlighting(messageBlockDiv);
@@ -159,6 +169,7 @@ export class BMOView extends ItemView {
                 class: "chatbox",
             }
         });
+
         const textarea = document.createElement("textarea");
         textarea.setAttribute("contenteditable", true.toString());
         textarea.setAttribute("placeholder", "Start typing...");
@@ -187,8 +198,12 @@ export class BMOView extends ItemView {
             if (input.length === 0) { // check if input is empty or just whitespace
                 return;
             }
-            
-            addMessage(input, 'userMessage');
+
+            if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                addMessage('\n\nHuman: ' + input, 'userMessage');
+            } else {
+                addMessage(input, 'userMessage');
+            }
             
             // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
@@ -244,7 +259,7 @@ export class BMOView extends ItemView {
                     }
                 };  
 
-                if (this.settings.model !== "gpt-3.5-turbo" && this.settings.model !== "gpt-3.5-turbo-16k" && this.settings.model !== "gpt-4") {
+                if (!["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
                     botMessage.appendChild(loadingEl);
                     loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
@@ -291,14 +306,12 @@ export class BMOView extends ItemView {
         }
     }
 
-    // Prevent chatbox from increasing in height when "Enter" key is pressed.
     handleKeydown(event: KeyboardEvent) {
-        if (event.key === "Enter" && !event.shiftKey) { // check if enter key was pressed
-            event.preventDefault(); // prevent default behavior
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
         }
     }
 
-    // Chatbox height increase
     handleInput(event: Event) {
         this.textareaElement.style.height = "29px";
         this.textareaElement.style.height = this.textareaElement.scrollHeight + "px";
@@ -370,52 +383,11 @@ export class BMOView extends ItemView {
                 model: this.settings.model,
                 system_role: systemReferenceCurrentNote + this.settings.system_role
             };
-
-            // Self-hosted Models using LocalAI
-            if (!["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
-
-                try { 
-                    const response = await requestUrlChatCompletion(this.settings.restAPIUrl, settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature);
-                    // console.log(response.json);
-                
-                    let message = response.json.choices[0].message.content;
-
-                    addMessage(message, 'botMessage');
-
-                    if (messageContainerEl) {
-                        const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                        const lastBotMessage = botMessages[botMessages.length - 1];
-                        const loadingEl = lastBotMessage.querySelector("#loading");
-                        
-                        if (loadingEl) {
-                            loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                            lastBotMessage.removeChild(loadingEl); // Remove loading message
-                        }
-                    
-                        const messageBlock = document.createElement("p");
-                        const markdownContent = marked(message);
-                        messageBlock.innerHTML = markdownContent;
-                        messageBlock.classList.add("messageBlock");
-                        
-                        addParagraphBreaks(messageBlock);
-                        prismHighlighting(messageBlock);
-                        codeBlockCopyButton(messageBlock);
-                        
-                        lastBotMessage.appendChild(messageBlock);
-                        lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                } 
-                catch (error) {
-                    new Notice('Error occurred while fetching completion: ' + error.message);
-                    console.log(error.message);
-                    console.log("messageHistory: " + messageHistory);
-                }
-            }
-            else {
-                // OpenAI models
+            // OpenAI models
+            if (["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
                 try {
                     const url = 'https://api.openai.com';
-                    const response = await fetchChatCompletion(url, settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature);
+                    const response = await fetchOpenAIAPI(url, settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature);
                     
                     let message = '';
 
@@ -466,6 +438,89 @@ export class BMOView extends ItemView {
                     }
 
                     addMessage(message, 'botMessage');
+                }
+                catch (error) {
+                    new Notice('Error occurred while fetching completion: ' + error.message);
+                    console.log(error.message);
+                    console.log("messageHistory: " + messageHistory);
+                }
+            }
+            else if (["claude-2.0", "claude-instant-1.2"].includes(this.settings.model)) {
+                try {
+                    const url = 'https://api.anthropic.com/v1/complete';
+                    const response = await requestUrlAnthropicAPI(url, settings, referenceCurrentNote + messageHistoryContent, maxTokens);
+
+                    const message = response.text;
+                    const lines = message.split('\n');
+                    let completionText = '';
+                
+                    for (const line of lines) {
+                      if (line.startsWith('data:')) {
+                        const eventData = JSON.parse(line.slice('data:'.length));
+                        if (eventData.completion) {
+                          completionText += eventData.completion;
+                        }
+                      }
+                    }
+
+                    if (messageContainerEl) {
+                        const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                        let lastBotMessage = botMessages[botMessages.length - 1];
+                        const loadingEl = lastBotMessage.querySelector("#loading");
+                        
+                        if (loadingEl) {
+                            loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                            lastBotMessage.removeChild(loadingEl);
+                        }
+
+                        let messageBlock = lastBotMessage.querySelector('.messageBlock');
+
+                        if (messageBlock) {
+                            messageBlock.innerHTML = marked(completionText);
+                        
+                            addParagraphBreaks(messageBlock);
+                            prismHighlighting(messageBlock);
+                            codeBlockCopyButton(messageBlock);
+                        }
+                        lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+
+                    addMessage('\n\nAssistant: ' + completionText, 'botMessage');
+                }
+                catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+            else {
+                try { 
+                    const response = await requestUrlChatCompletion(this.settings.restAPIUrl, settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature);
+                
+                    let message = response.json.choices[0].message.content;
+
+                    addMessage(message, 'botMessage');
+
+                    if (messageContainerEl) {
+                        const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                        const lastBotMessage = botMessages[botMessages.length - 1];
+                        const loadingEl = lastBotMessage.querySelector("#loading");
+                        
+                        if (loadingEl) {
+                            loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                            lastBotMessage.removeChild(loadingEl); // Remove loading message
+                        }
+                    
+                        const messageBlock = document.createElement("p");
+                        const markdownContent = marked(message);
+                        messageBlock.innerHTML = markdownContent;
+                        messageBlock.classList.add("messageBlock");
+                        
+                        addParagraphBreaks(messageBlock);
+                        prismHighlighting(messageBlock);
+                        codeBlockCopyButton(messageBlock);
+                        
+                        lastBotMessage.appendChild(messageBlock);
+                        lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 } 
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -560,7 +615,7 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
 }
 
 // Fetch response from OpenAI API
-async function fetchChatCompletion(url: string, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: number) {
+async function fetchOpenAIAPI(url: string, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: number) {
     const response = await fetch(
         url + '/v1/chat/completions', 
         {
@@ -582,6 +637,39 @@ async function fetchChatCompletion(url: string, settings: { apiKey: any; model: 
     });
 
     return response;
+}
+
+// Request response from Anthropic 
+async function requestUrlAnthropicAPI(url: any, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string) {
+    const headers = {
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'x-api-key': settings.apiKey,
+    };
+  
+    const requestBody = {
+      model: settings.model,
+      prompt: messageHistoryContent + '\n\nAssistant:',
+      max_tokens_to_sample: parseInt(maxTokens) || parseInt(DEFAULT_SETTINGS.max_tokens),
+      stream: true,
+    };
+
+    // console.log(messageHistoryContent);
+  
+    try {
+      const response = await requestUrl({
+        url,
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody),
+      });
+  
+      return response;
+  
+    } catch (error) {
+      console.error('Error making API request:', error);
+      throw error;
+    }
 }
 
 // Request response from self-hosted models
@@ -670,3 +758,4 @@ function addParagraphBreaks(messageBlock: { querySelectorAll: (arg0: string) => 
         }
     }
 }
+
