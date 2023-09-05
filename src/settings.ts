@@ -70,12 +70,10 @@ export class BMOSettingTab extends PluginSettingTab {
 						.addOption('gpt-4', 'gpt-4')
 					}
 				}
-				else {
-					if (this.plugin.settings.restAPIUrl && models && models.length > 0) {
-						models.forEach((model: string) => {
-							dropdown.addOption(model, model);
-						});
-					}
+				if (this.plugin.settings.restAPIUrl && models && models.length > 0) {
+					models.forEach((model: string) => {
+						dropdown.addOption(model, model);
+					});
 				}
 			dropdown
 				.setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)

@@ -3,7 +3,6 @@ import { BMOView, VIEW_TYPE_CHATBOT, filenameMessageHistoryJSON, clearMessageHis
 import { BMOSettingTab } from './settings';
 import { Configuration, OpenAIApi } from "openai";
 
-
 export interface BMOSettings {
 	models: any;
 	apiKey: string;

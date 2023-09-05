@@ -65,16 +65,17 @@ export class BMOView extends ItemView {
             }
         });
         
-        const referenceCurrentNote = chatbotContainer.createEl("p", {
+        const referenceCurrentNoteElement = chatbotContainer.createEl("p", {
             text: "Reference Current Note",
             attr: {
                 id: "referenceCurrentNote"
             }
         });
 
-        referenceCurrentNote.appendChild(spanElement);
+        referenceCurrentNoteElement.appendChild(spanElement);
 
-        const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');
+        referenceCurrentNoteElement.style.display = 'none';
+        
         if (referenceCurrentNoteElement) {
             if (this.settings.referenceCurrentNote) {
                 referenceCurrentNoteElement.style.display = 'block';
