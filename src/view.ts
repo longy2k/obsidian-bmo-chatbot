@@ -650,7 +650,7 @@ async function requestUrlAnthropicAPI(url: any, settings: { apiKey: any; model: 
     const requestBody = {
       model: settings.model,
       prompt: '\n\nHuman:' + settings.system_role + messageHistoryContent + '\n\nAssistant:',
-      max_tokens_to_sample: parseInt(maxTokens) || 4096,
+      max_tokens_to_sample: parseInt(maxTokens) || 100000,
       stream: true,
     };
 
