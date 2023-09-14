@@ -401,7 +401,7 @@ export class BMOView extends ItemView {
             else if (["claude-2.0", "claude-instant-1.2"].includes(this.settings.model)) {
                 try {
                     const url = 'https://api.anthropic.com/v1/complete';
-                    const response = await requestUrlAnthropicAPI(url, settings, referenceCurrentNote + messageHistoryContent, maxTokens);
+                    const response = await requestUrlAnthropicAPI(url, settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
 
                     const message = response.text;
                     const lines = message.split('\n');
@@ -446,7 +446,7 @@ export class BMOView extends ItemView {
             }
             else {
                 try { 
-                    const response = await requestUrlChatCompletion(this.settings.restAPIUrl, settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature);
+                    const response = await requestUrlChatCompletion(this.settings.restAPIUrl, settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
                 
                     let message = response.json.choices[0].message.content;
 
@@ -482,7 +482,7 @@ export class BMOView extends ItemView {
                 }
             }
         }
-        console.log("BMO settings:", this.settings);
+        // console.log("BMO settings:", this.settings);
     }
 
     // Reference Current Note
@@ -570,7 +570,7 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
 
 
 async function fetchOpenAIAPI(
-    settings: { apiKey: any; model: any; system_role: any;},
+    settings: { apiKey: string; model: string; system_role: string;},
     referenceCurrentNote: string,
     messageHistoryContent: { role: string; content: string }[] = [],
     maxTokens: string,
@@ -645,21 +645,29 @@ async function fetchOpenAIAPI(
 }
 
 // Request response from Anthropic 
-async function requestUrlAnthropicAPI(url: any, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string) {
+async function requestUrlAnthropicAPI(
+    url: string,
+    settings: { apiKey: string; model: string; system_role: string; },
+    referenceCurrentNote: string,
+    messageHistoryContent: { role: string; content: string }[] = [],
+    maxTokens: string,
+    temperature: number) 
+    {
     const headers = {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
       'x-api-key': settings.apiKey,
     };
   
-    const requestBody = {
-      model: settings.model,
-      prompt: '\n\nHuman:' + settings.system_role + messageHistoryContent + '\n\nAssistant:',
-      max_tokens_to_sample: parseInt(maxTokens) || 100000,
-      stream: true,
-    };
+    const messageHistoryString = messageHistoryContent.map(entry => entry.content).join('\n');
 
-    // console.log(messageHistoryContent);
+    const requestBody = {
+        model: settings.model,
+        prompt: `Assistant:${referenceCurrentNote}\n\n${settings.system_role}\n\nHuman:${messageHistoryString}\n\nAssistant:`,
+        max_tokens_to_sample: parseInt(maxTokens) || 100000,
+        temperature: temperature,
+        stream: true,
+    };
   
     try {
       const response = await requestUrl({
@@ -678,32 +686,44 @@ async function requestUrlAnthropicAPI(url: any, settings: { apiKey: any; model: 
 }
 
 // Request response from self-hosted models
-async function requestUrlChatCompletion(url: any, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: number) {
-    try {
-        const response = await requestUrl({
-            url: url + '/v1/chat/completions',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${settings.apiKey}`
-            },
-            body: JSON.stringify({
-                model: settings.model,
-                messages: [
-                    { role: 'system', content: settings.system_role },
-                    { role: 'user', content: messageHistoryContent }
-                ],
-                max_tokens: parseInt(maxTokens),
-                temperature: temperature,
-            }),
-        });
+async function requestUrlChatCompletion(
+    url: string, 
+    settings: { apiKey: string; model: string; system_role: string; }, 
+    referenceCurrentNote: string,
+    messageHistoryContent: { role: string; content: string }[] = [],
+    maxTokens: string, 
+    temperature: number)
+    {
+        const messageHistory = messageHistoryContent.map((item: { role: string; content: string; }) => ({
+            role: item.role,
+            content: item.content,
+        }));
 
-        return response;
+        try {
+            const response = await requestUrl({
+                url: url + '/v1/chat/completions',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${settings.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: settings.model,
+                    messages: [
+                        { role: 'system', content: referenceCurrentNote + settings.system_role },
+                        ...messageHistory
+                    ],
+                    max_tokens: parseInt(maxTokens),
+                    temperature: temperature,
+                }),
+            });
 
-    } catch (error) {
-        console.error('Error making API request:', error);
-        throw error;
-    }
+            return response;
+
+        } catch (error) {
+            console.error('Error making API request:', error);
+            throw error;
+        }
 }
 
 // Handle Prisma Highlighting for code blocks
