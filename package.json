@@ -24,6 +24,6 @@
 	},
 	"dependencies": {
 		"marked": "^4.3.0",
-		"openai": "^3.2.1"
+		"openai": "^4.6.0"
 	}
 }

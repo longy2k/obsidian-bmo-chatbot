@@ -2,10 +2,12 @@ import { ItemView, WorkspaceLeaf, Notice, setIcon, requestUrl, loadPrism, TFile 
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import { colorToHex } from "./settings";
 import { marked } from "marked";
+import OpenAI from 'openai';
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export let filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 export let messageHistory: { userMessage?: string; botMessage?: string; }[] = [];
+
 
 export function clearMessageHistory() {
     messageHistory = [];
@@ -22,7 +24,7 @@ export class BMOView extends ItemView {
     constructor(leaf: WorkspaceLeaf, settings: BMOSettings) {
         super(leaf);
         this.settings = settings;
-        this.icon = 'bot';        
+        this.icon = 'bot';      
     }
 
     getViewType() {
@@ -305,6 +307,7 @@ export class BMOView extends ItemView {
                 this.textareaElement.setSelectionRange(0, 0);
             }, 0);
         }
+
     }
 
     handleKeydown(event: KeyboardEvent) {
@@ -384,61 +387,11 @@ export class BMOView extends ItemView {
                 model: this.settings.model,
                 system_role: systemReferenceCurrentNote + this.settings.system_role
             };
+
             // OpenAI models
             if (["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
                 try {
-                    const url = 'https://api.openai.com';
-                    const response = await fetchOpenAIAPI(url, settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature);
-                    
-                    let message = '';
-
-                    const reader = response.body ? response.body.getReader() : null;
-                    
-                    if (reader) {
-                    
-                        while (true) {
-                            const { done, value } = await reader.read();
-                    
-                            if (done) {
-                                break;
-                            }
-                    
-                            const chunk = new TextDecoder('utf-8').decode(value);
-                            const regex = /data:\s*(\{.*\})/g;
-                            let match;
-                    
-                            while ((match = regex.exec(chunk)) !== null) {
-                                try {
-                                    const data = JSON.parse(match[1]);
-                                    if (data.choices && data.choices.length > 0) {
-                                        const content = data.choices[0].delta.content;
-                                        if (content !== undefined) {
-                                            message += content;
-                    
-                                            if (messageContainerEl) {
-                                                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                                                let lastBotMessage = botMessages[botMessages.length - 1];
-
-                                                let messageBlock = lastBotMessage.querySelector('.messageBlock');
-                    
-                                                if (messageBlock) {
-                                                    messageBlock.innerHTML = marked(message);
-                                                
-                                                    addParagraphBreaks(messageBlock);
-                                                    prismHighlighting(messageBlock);
-                                                    codeBlockCopyButton(messageBlock);
-                                                }
-                                            }
-                                        }
-                                    }
-                                } catch (error) {
-                                    console.error('Error parsing JSON:', error);
-                                }
-                            }
-                        }
-                    }
-
-                    addMessage(message, 'botMessage');
+                    fetchOpenAIAPI(settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -615,29 +568,65 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
     }
 }
 
-// Fetch response from OpenAI API
-async function fetchOpenAIAPI(url: string, settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: any, maxTokens: string, temperature: number) {
-    const response = await fetch(
-        url + '/v1/chat/completions', 
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${settings.apiKey}`
-        },
-        body: JSON.stringify({
-            model: settings.model,
-            messages: [
-                { role: 'system', content: settings.system_role },
-                { role: 'user', content: messageHistoryContent }
-            ],
-            max_tokens: parseInt(maxTokens),
-            temperature: temperature,
-            stream: true,
-        }),
+async function fetchOpenAIAPI(settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: string, maxTokens: string, temperature: number) {
+    const openai = new OpenAI({
+        apiKey: settings.apiKey,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
-    return response;
+    try {
+        const stream = await openai.chat.completions.create({
+            model: settings.model,
+            max_tokens: parseInt(maxTokens),
+            temperature: temperature,
+            messages: [{ role: 'system', content: settings.system_role }, { role: 'user', content: messageHistoryContent }],
+            stream: true,
+        });
+
+        let message = '';
+
+        for await (const part of stream) {
+            const content = part.choices[0]?.delta?.content || '';
+
+            message += content;
+
+            const messageContainerEl = document.querySelector('#messageContainer');
+            if (messageContainerEl) {
+                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                let lastBotMessage = botMessages[botMessages.length - 1];
+
+                let messageBlock = lastBotMessage.querySelector('.messageBlock');
+
+                if (messageBlock) {
+                    messageBlock.innerHTML = marked(message);
+
+                    addParagraphBreaks(messageBlock);
+                    prismHighlighting(messageBlock);
+                    codeBlockCopyButton(messageBlock);
+                }
+            }
+        }
+
+        addMessage(message, 'botMessage');
+    } catch (error) {
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            let lastBotMessage = botMessages[botMessages.length - 1];
+
+            let messageBlock = lastBotMessage.querySelector('.messageBlock');
+
+            if (messageBlock) {
+                messageBlock.innerHTML = marked(error.response?.data?.error || error.message);
+
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                addMessage(messageBlock.innerHTML, 'botMessage');
+            }
+        }
+        throw new Error(error.response?.data?.error || error.message);
+    }
 }
 
 // Request response from Anthropic 

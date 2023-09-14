@@ -1,7 +1,6 @@
 import { Plugin } from 'obsidian';
 import { BMOView, VIEW_TYPE_CHATBOT, filenameMessageHistoryJSON, clearMessageHistory } from "./view";
 import { BMOSettingTab } from './settings';
-import { Configuration, OpenAIApi } from "openai";
 
 export interface BMOSettings {
 	models: any;
@@ -35,9 +34,9 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	referenceCurrentNote: false,
 }
 
+
 export default class BMOGPT extends Plugin {
 	settings: BMOSettings;
-	openai: OpenAIApi;
 
 	async onload() {
 		await this.loadSettings();
@@ -53,12 +52,6 @@ export default class BMOGPT extends Plugin {
 			clearMessageHistory();
 
 		});
-
-		const configuration = new Configuration({
-			apiKey: this.settings.apiKey,
-		});
-
-		this.openai = new OpenAIApi(configuration);
 
 		this.addSettingTab(new BMOSettingTab(this.app, this));
 	}
@@ -95,4 +88,3 @@ export default class BMOGPT extends Plugin {
 		await this.saveData(this.settings);
 	}
 }
-
