@@ -3,17 +3,18 @@ import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import { colorToHex } from "./settings";
 import { marked } from "marked";
 import OpenAI from 'openai';
+import { ChatCompletionMessageParam } from "openai/resources/chat";
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export let filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
-export let messageHistory: { userMessage?: string; botMessage?: string; }[] = [];
+export let messageHistory: { role: string; content: string }[] = [];
 
 
 export function clearMessageHistory() {
     messageHistory = [];
 }
 
-let messageHistoryContent = '';
+let messageHistoryContent: { role: string; content: string }[] = [];
 
 export class BMOView extends ItemView {
     private settings: BMOSettings;
@@ -102,7 +103,7 @@ export class BMOView extends ItemView {
         messageContainer.id = "messageContainer";
         
         messageHistory.forEach(messageData => {
-            if (messageData.userMessage) {
+            if (messageData.role == "user") {
                 const userMessageDiv = document.createElement("div");
                 userMessageDiv.className = "userMessage";
                 userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
@@ -115,18 +116,18 @@ export class BMOView extends ItemView {
         
                 const userP = document.createElement("p");
 
-                if (messageData.userMessage.startsWith("\n\nHuman: ")) {
-                    userP.textContent = messageData.userMessage.substring("\n\nHuman: ".length).trim();
+                if (messageData.role.startsWith("\n\nHuman: ")) {
+                    userP.textContent = messageData.content.substring("\n\nHuman: ".length).trim();
                 }
                 else {
-                    userP.textContent = messageData.userMessage;
+                    userP.textContent = messageData.content;
                 }
                 
                 userMessageDiv.appendChild(userP);
                 messageContainer.appendChild(userMessageDiv);
             }
         
-            if (messageData.botMessage) {
+            if (messageData.role == "assistant") {
                 const botMessageDiv = document.createElement("div");
                 botMessageDiv.className = "botMessage";
                 botMessageDiv.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
@@ -141,11 +142,11 @@ export class BMOView extends ItemView {
         
                 const botP = document.createElement("p");
 
-                if (messageData.botMessage.startsWith("\n\nAssistant: ")) {
-                    botP.innerHTML = marked(messageData.botMessage.substring("\n\nAssistant: ".length).trim());
+                if (messageData.role.startsWith("\n\nAssistant: ")) {
+                    botP.innerHTML = marked(messageData.role.substring("\n\nAssistant: ".length).trim());
                 }
                 else {
-                    botP.innerHTML = marked(messageData.botMessage);
+                    botP.innerHTML = marked(messageData.content);
                 }
 
                 messageBlockDiv.appendChild(botP);
@@ -351,8 +352,6 @@ export class BMOView extends ItemView {
             }
         }
 
-        messageHistoryContent = messageHistory.map(item => item.userMessage || item.botMessage).join("\n");
-
         const messageContainerEl = document.querySelector('#messageContainer');
         const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
         const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
@@ -391,7 +390,7 @@ export class BMOView extends ItemView {
             // OpenAI models
             if (["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
                 try {
-                    fetchOpenAIAPI(settings, referenceCurrentNote + messageHistoryContent, maxTokens, temperature); 
+                    fetchOpenAIAPI(settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -538,28 +537,29 @@ async function loadData() {
 
 // Add a new message to the messageHistory array and save it to the file
 async function addMessage(input: string, messageType: 'userMessage' | 'botMessage') {
-    let messageObj: { userMessage?: string; botMessage?: string } = {};
+    let messageObj: { role: string; content: string } = {
+        role: "",
+        content: ""
+    };
 
     if (messageType === 'userMessage') {
-        messageObj.userMessage = input;
+        messageObj.role = 'user';
+        messageObj.content = input;
     } else if (messageType === 'botMessage') {
-        messageObj.botMessage = input;
+        messageObj.role = 'assistant';
+        messageObj.content = input;
     }
 
     messageHistory.push(messageObj);
 
     messageHistoryContent = messageHistory.map(item => {
-        let content = [];
-        if (item.userMessage) {
-            content.push(item.userMessage);
-        }
-        if (item.botMessage) {
-            content.push(item.botMessage);
-        }
-        return content.join("\n");
-    }).join("\n");
+        return {
+            role: item.role,
+            content: item.content
+        };
+    });
 
-    const jsonString = JSON.stringify(messageHistory, null, 4);
+    const jsonString = JSON.stringify(messageHistoryContent, null, 4);
 
     try {
         await this.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
@@ -568,18 +568,33 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
     }
 }
 
-async function fetchOpenAIAPI(settings: { apiKey: any; model: any; system_role: any; }, messageHistoryContent: string, maxTokens: string, temperature: number) {
+
+async function fetchOpenAIAPI(
+    settings: { apiKey: any; model: any; system_role: any;},
+    referenceCurrentNote: string,
+    messageHistoryContent: { role: string; content: string }[] = [],
+    maxTokens: string,
+    temperature: number) 
+    {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
+
+    const messageHistory = messageHistoryContent.map(item => ({
+        role: item.role,
+        content: item.content,
+    })) as ChatCompletionMessageParam[];
 
     try {
         const stream = await openai.chat.completions.create({
             model: settings.model,
             max_tokens: parseInt(maxTokens),
             temperature: temperature,
-            messages: [{ role: 'system', content: settings.system_role }, { role: 'user', content: messageHistoryContent }],
+            messages: [
+                { role: 'system', content: referenceCurrentNote + settings.system_role },
+                ...messageHistory
+            ],
             stream: true,
         });
 
