@@ -633,10 +633,6 @@ async function fetchOpenAIAPI(
 
             if (messageBlock) {
                 messageBlock.innerHTML = marked(error.response?.data?.error || error.message);
-
-                addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
                 addMessage(messageBlock.innerHTML, 'botMessage');
             }
         }
@@ -689,10 +685,6 @@ async function requestUrlAnthropicAPI(
 
             if (messageBlock) {
                 messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages.';
-
-                addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
                 addMessage(messageBlock.innerHTML, 'botMessage');
 
                 const loadingEl = lastBotMessage.querySelector("#loading");
