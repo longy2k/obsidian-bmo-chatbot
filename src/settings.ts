@@ -44,7 +44,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('API Key')
-			.setDesc('Insert API Key from OpenAI or Anthropic.')
+			.setDesc('Insert API Key from OpenAI or Anthropic. You may need to refresh the tab after inserting.')
 			.addText(text => text
 				.setPlaceholder('insert-api-key')
 				.setValue(this.plugin.settings.apiKey ? `${this.plugin.settings.apiKey.slice(0, 2)}-...${this.plugin.settings.apiKey.slice(-4)}` : "")

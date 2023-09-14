@@ -680,6 +680,28 @@ async function requestUrlAnthropicAPI(
       return response;
   
     } catch (error) {
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            let lastBotMessage = botMessages[botMessages.length - 1];
+
+            let messageBlock = lastBotMessage.querySelector('.messageBlock');
+
+            if (messageBlock) {
+                messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages.';
+
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                addMessage(messageBlock.innerHTML, 'botMessage');
+
+                const loadingEl = lastBotMessage.querySelector("#loading");
+                if (loadingEl) {
+                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    lastBotMessage.removeChild(loadingEl);
+                }
+            }
+        }
       console.error('Error making API request:', error);
       throw error;
     }
