@@ -661,13 +661,13 @@ async function requestUrlAnthropicAPI(
 
     const requestBody = {
         model: settings.model,
-        prompt:  `\n\nHuman: ${referenceCurrentNote}\n\n${messageHistoryString}\n\n${settings.system_role}\n\nAssistant:`,
+        prompt:  `\n\nHuman: ${referenceCurrentNote}\n\n${settings.system_role}\n\n${messageHistoryString}\n\nAssistant:`,
         max_tokens_to_sample: parseInt(maxTokens) || 100000,
         temperature: temperature,
         stream: true,
     };
 
-    // console.log(requestBody.prompt);
+    console.log(requestBody.prompt);
   
     try {
       const response = await requestUrl({
