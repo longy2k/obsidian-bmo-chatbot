@@ -586,13 +586,15 @@ async function fetchOpenAIAPI(
         content: item.content,
     })) as ChatCompletionMessageParam[];
 
+    // console.log(referenceCurrentNote + settings.system_role);
+
     try {
         const stream = await openai.chat.completions.create({
             model: settings.model,
             max_tokens: parseInt(maxTokens),
             temperature: temperature,
             messages: [
-                { role: 'system', content: `${referenceCurrentNote}+ ${settings.system_role}` },
+                { role: 'system', content: referenceCurrentNote + settings.system_role },
                 ...messageHistory
             ],
             stream: true,
@@ -665,7 +667,7 @@ async function requestUrlAnthropicAPI(
         stream: true,
     };
 
-    console.log(requestBody.prompt);
+    // console.log(requestBody.prompt);
   
     try {
       const response = await requestUrl({
