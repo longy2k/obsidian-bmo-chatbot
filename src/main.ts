@@ -47,7 +47,7 @@ export default class BMOGPT extends Plugin {
 		);
 
 		this.addRibbonIcon("bot", "Chatbot (Clear Conversation)", () => {
-		    this.activateView();
+			this.activateView();
 			this.app.vault.adapter.write(filenameMessageHistoryJSON, '');
 			clearMessageHistory();
 
@@ -58,12 +58,11 @@ export default class BMOGPT extends Plugin {
 
 	async onunload() {
 		this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT).forEach((leaf) => {
-		  const bmoView = leaf.view as BMOView;
-	  
-		  if (bmoView) {
-			bmoView.cleanup();
-		  }
-		  
+			const bmoView = leaf.view as BMOView;
+	
+			if (bmoView) {
+				bmoView.cleanup();
+			} 
 		});
 	}
 
@@ -71,12 +70,12 @@ export default class BMOGPT extends Plugin {
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE_CHATBOT);
 	
 		await this.app.workspace.getRightLeaf(false).setViewState({
-		  type: VIEW_TYPE_CHATBOT,
-		  active: true,
+			type: VIEW_TYPE_CHATBOT,
+			active: true,
 		});
 	
 		this.app.workspace.revealLeaf(
-		  this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT)[0]
+			this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT)[0]
 		);
 	}
 

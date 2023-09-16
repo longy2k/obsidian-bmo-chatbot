@@ -6,7 +6,7 @@ import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
-export let filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
+export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 export let messageHistory: { role: string; content: string }[] = [];
 
 
@@ -268,7 +268,7 @@ export class BMOView extends ItemView {
                     loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
 
-                let loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
                 // Create a spacer element for scrolling most recent userMessage/botMessage to
                 const spacer = document.createElement("div");
@@ -418,7 +418,7 @@ export class BMOView extends ItemView {
 
                     if (messageContainerEl) {
                         const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                        let lastBotMessage = botMessages[botMessages.length - 1];
+                        const lastBotMessage = botMessages[botMessages.length - 1];
                         const loadingEl = lastBotMessage.querySelector("#loading");
                         
                         if (loadingEl) {
@@ -426,7 +426,7 @@ export class BMOView extends ItemView {
                             lastBotMessage.removeChild(loadingEl);
                         }
 
-                        let messageBlock = lastBotMessage.querySelector('.messageBlock');
+                        const messageBlock = lastBotMessage.querySelector('.messageBlock');
 
                         if (messageBlock) {
                             messageBlock.innerHTML = marked(completionText);
@@ -448,7 +448,7 @@ export class BMOView extends ItemView {
                 try { 
                     const response = await requestUrlChatCompletion(this.settings.restAPIUrl, settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
                 
-                    let message = response.json.choices[0].message.content;
+                    const message = response.json.choices[0].message.content;
 
                     addMessage(message, 'botMessage');
 
@@ -537,7 +537,7 @@ async function loadData() {
 
 // Add a new message to the messageHistory array and save it to the file
 async function addMessage(input: string, messageType: 'userMessage' | 'botMessage') {
-    let messageObj: { role: string; content: string } = {
+    const messageObj: { role: string; content: string } = {
         role: "",
         content: ""
     };
@@ -608,9 +608,9 @@ async function fetchOpenAIAPI(
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
                 const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                let lastBotMessage = botMessages[botMessages.length - 1];
+                const lastBotMessage = botMessages[botMessages.length - 1];
 
-                let messageBlock = lastBotMessage.querySelector('.messageBlock');
+                const messageBlock = lastBotMessage.querySelector('.messageBlock');
 
                 if (messageBlock) {
                     messageBlock.innerHTML = marked(message);
@@ -627,9 +627,9 @@ async function fetchOpenAIAPI(
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
             const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-            let lastBotMessage = botMessages[botMessages.length - 1];
+            const lastBotMessage = botMessages[botMessages.length - 1];
 
-            let messageBlock = lastBotMessage.querySelector('.messageBlock');
+            const messageBlock = lastBotMessage.querySelector('.messageBlock');
 
             if (messageBlock) {
                 messageBlock.innerHTML = marked(error.response?.data?.error || error.message);
@@ -679,9 +679,9 @@ async function requestUrlAnthropicAPI(
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
             const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-            let lastBotMessage = botMessages[botMessages.length - 1];
+            const lastBotMessage = botMessages[botMessages.length - 1];
 
-            let messageBlock = lastBotMessage.querySelector('.messageBlock');
+            const messageBlock = lastBotMessage.querySelector('.messageBlock');
 
             if (messageBlock) {
                 messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages.';

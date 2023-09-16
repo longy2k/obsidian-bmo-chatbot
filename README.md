@@ -55,6 +55,6 @@ If you want to clear the chat history, simply click on the bot icon again in the
 "BMO" is a tag name for this project, inspired by the character BMO from the animated TV show "Adventure Time."
 
 ## Contributing
-Feel free to create a PR!
+If you have any bugs, improvements, or questions please create an issue!
 
-If you have any improvements, questions, or concerns, please let me know!
+Feel free to create a PR as well :D
