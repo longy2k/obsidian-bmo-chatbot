@@ -592,7 +592,7 @@ async function fetchOpenAIAPI(
             max_tokens: parseInt(maxTokens),
             temperature: temperature,
             messages: [
-                { role: 'system', content: referenceCurrentNote + settings.system_role },
+                { role: 'system', content: `${referenceCurrentNote}+ ${settings.system_role}` },
                 ...messageHistory
             ],
             stream: true,
@@ -659,11 +659,13 @@ async function requestUrlAnthropicAPI(
 
     const requestBody = {
         model: settings.model,
-        prompt: `Assistant:${referenceCurrentNote}\n\n${settings.system_role}\n\nHuman:${messageHistoryString}\n\nAssistant:`,
+        prompt:  `\n\nHuman: ${referenceCurrentNote}\n\n${messageHistoryString}\n\n${settings.system_role}\n\nAssistant:`,
         max_tokens_to_sample: parseInt(maxTokens) || 100000,
         temperature: temperature,
         stream: true,
     };
+
+    console.log(requestBody.prompt);
   
     try {
       const response = await requestUrl({
@@ -684,7 +686,7 @@ async function requestUrlAnthropicAPI(
             const messageBlock = lastBotMessage.querySelector('.messageBlock');
 
             if (messageBlock) {
-                messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages.';
+                messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages. We recommend clearing max_tokens for best results.';
                 addMessage(messageBlock.innerHTML, 'botMessage');
 
                 const loadingEl = lastBotMessage.querySelector("#loading");
