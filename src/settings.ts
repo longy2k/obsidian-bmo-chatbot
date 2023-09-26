@@ -57,17 +57,18 @@ export class BMOSettingTab extends PluginSettingTab {
 			.setName('Model')
 			.setDesc('Choose a model.')
 			.addDropdown(dropdown => {
+
+				if (!this.plugin.settings.apiKey || !this.plugin.settings.apiKey.startsWith("sk-ant")) {
+					dropdown
+					.addOption('gpt-3.5-turbo', 'gpt-3.5-turbo')
+					.addOption('gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k')
+					.addOption('gpt-4', 'gpt-4')
+				}
 				if (this.plugin.settings.apiKey) {
 					if (this.plugin.settings.apiKey.startsWith("sk-ant")) {
 						dropdown
 						.addOption('claude-instant-1.2', 'claude-instant-1.2')
 						.addOption('claude-2.0', 'claude-2.0')
-					}
-					else {
-						dropdown
-						.addOption('gpt-3.5-turbo', 'gpt-3.5-turbo')
-						.addOption('gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k')
-						.addOption('gpt-4', 'gpt-4')
 					}
 				}
 				if (this.plugin.settings.restAPIUrl && models && models.length > 0) {

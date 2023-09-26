@@ -9,7 +9,6 @@ export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 export let messageHistory: { role: string; content: string }[] = [];
 
-
 export function clearMessageHistory() {
     messageHistory = [];
 }
@@ -35,6 +34,7 @@ export class BMOView extends ItemView {
     getDisplayText() {
         return "Chatbot";
     }
+    
 
     async onOpen(): Promise<void> {
         this.registerEvent(this.app.workspace.on("file-open", this.handleFileOpenEvent.bind(this)));
@@ -102,30 +102,105 @@ export class BMOView extends ItemView {
         
         messageContainer.id = "messageContainer";
         
-        messageHistory.forEach(messageData => {
+        messageHistory.forEach((messageData, index) => {
+
+            const dropdownOptions = document.createElement("ul");
+            dropdownOptions.setAttribute("id", "dropdownOptions");
+
+            const ellipsisLink = document.createElement("a");
+            ellipsisLink.href = "#";
+        
+            const elipsesSpan = document.createElement("span");
+            elipsesSpan.setAttribute("id", "elipses");
+            elipsesSpan.textContent = "...";
+            elipsesSpan.style.float = "right";
+              
+
             if (messageData.role == "user") {
                 const userMessageDiv = document.createElement("div");
                 userMessageDiv.className = "userMessage";
                 userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
-        
+            
                 const userNameSpan = document.createElement("span");
-                userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
                 userNameSpan.setAttribute("id", "userName");
-                userMessageDiv.appendChild(userNameSpan);
-                userMessageDiv.appendChild(userNameSpan);
-        
-                const userP = document.createElement("p");
+                userNameSpan.textContent = "USER";
 
+                const userP = document.createElement("p");
+            
+                // Add a click event listener to the ellipsis span to toggle the dropdown
+                elipsesSpan.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                    const wasOpen = dropdownOptions.classList.contains("dropdownOptionsOpen");
+                    hideAllDropdowns();
+                    if (!wasOpen) {
+                        dropdownOptions.style.display = "block";
+                        dropdownOptions.classList.add("dropdownOptionsOpen");
+                    }
+                });
+                
+            
+                // Add a click event listener to the document to hide the dropdown when clicking outside
+                document.addEventListener("click", function (event) {
+                    if (!(event.target instanceof HTMLElement && (event.target.id === "elipses" || event.target.id === "dropdownOptions" || event.target.closest("#dropdownOptions")))) {
+                        hideAllDropdowns();
+                    }
+                });
+            
                 if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
                     const fullString = messageData.content;
-                    const cleanString = fullString.split(' ').slice(1).join(' ');
-                    
+                    const cleanString = fullString.split(' ').slice(1).join(' ').trim();
                     userP.innerHTML = marked(cleanString);
                 } else {
-                    console.log(marked(messageData.content));
                     userP.innerHTML = marked(messageData.content);
                 }
-                
+
+                const option1 = document.createElement("li");
+                option1.textContent = "Copy User Message";
+                option1.addEventListener("click", function () {
+                    const messageText = userP.textContent;
+            
+                    if (messageText !== null) {
+                        copyMessageToClipboard(messageText);
+                        new Notice('User Message Copied');
+                        hideAllDropdowns();
+                    } else {
+                        console.error('Message content is null. Cannot copy.');
+                    }
+                });
+                dropdownOptions.appendChild(option1);
+
+                // Check if the next message in the history is from the assistant
+                if (index + 1 < messageHistory.length && messageHistory[index + 1].role == "assistant") {
+                    const botMessageData = messageHistory[index + 1];
+                    const botP = document.createElement("p");
+                    let messageText = botMessageData.content;
+                    if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                        const fullString = botMessageData.content;
+                        const cleanString = fullString.split(' ').slice(1).join(' ').trim();
+                        botP.innerHTML = marked(cleanString);
+                        messageText = cleanString;
+                    } else {
+                        botP.innerHTML = marked(botMessageData.content);
+                    }
+
+                    const option2 = document.createElement("li");
+                    option2.textContent = "Copy Bot Message";
+                    option2.addEventListener("click", function () {
+                        if (messageText !== null) {
+                            copyMessageToClipboard(messageText);
+                            new Notice('Bot Message Copied');
+                            hideAllDropdowns();
+                        } else {
+                            console.error('Message content is null. Cannot copy.');
+                        }
+                    });
+                    dropdownOptions.appendChild(option2);
+                }
+
+                ellipsisLink.appendChild(elipsesSpan);
+                userNameSpan.appendChild(ellipsisLink);
+                userMessageDiv.appendChild(userNameSpan);
+                userMessageDiv.appendChild(dropdownOptions);
                 userMessageDiv.appendChild(userP);
                 messageContainer.appendChild(userMessageDiv);
             }
@@ -142,8 +217,9 @@ export class BMOView extends ItemView {
         
                 const messageBlockDiv = document.createElement("div");
                 messageBlockDiv.className = "messageBlock";
-        
+
                 const botP = document.createElement("p");
+        
 
                 if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
                     const fullString = messageData.content;
@@ -151,7 +227,6 @@ export class BMOView extends ItemView {
                     
                     botP.innerHTML = marked(cleanString);
                 } else {
-                    console.log(marked(messageData.content));
                     botP.innerHTML = marked(messageData.content);
                 }
 
@@ -201,21 +276,26 @@ export class BMOView extends ItemView {
     }
     
     async handleKeyup(event: KeyboardEvent) {
+
+        const dropdownOptions = document.createElement("ul");
+        dropdownOptions.setAttribute("id", "dropdownOptions");
+
+        const ellipsisLink = document.createElement("a");
+        ellipsisLink.href = "#";
+    
+        const elipsesSpan = document.createElement("span");
+        elipsesSpan.setAttribute("id", "elipses");
+        elipsesSpan.textContent = "...";
+        elipsesSpan.style.float = "right";
+
         if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {
             loadData();
             event.preventDefault();
             const input = this.textareaElement.value.trim();
-            if (input.length === 0) { // check if input is empty or just whitespace
+            if (input.length === 0) {
                 return;
             }
-
-            if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
-                addMessage('\n\nHuman: ' + input, 'userMessage');
-            } else {
-                addMessage(input, 'userMessage');
-            }
             
-            // Create a new paragraph element for each message
             const userMessage = document.createElement("div");
             userMessage.classList.add("userMessage");
             userMessage.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
@@ -224,14 +304,51 @@ export class BMOView extends ItemView {
             userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
             userNameSpan.setAttribute("id", "userName");
             userMessage.appendChild(userNameSpan);
+            if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
+            } else {
+                addMessage(input, 'userMessage', this.settings);
+            }
             
             const userParagraph = document.createElement("p");
             const markdownContent = marked(input);
             userParagraph.innerHTML = markdownContent;
-            
-            userMessage.appendChild(userParagraph);
 
-            // Append the new message to the message container
+            const option1 = document.createElement("li");
+            option1.textContent = "Copy User Message";
+            option1.addEventListener("click", function () {
+                const messageText = input;
+        
+                if (messageText !== null) {
+                    copyMessageToClipboard(messageText);
+                    new Notice('User Message Copied');
+                    hideAllDropdowns();
+                } else {
+                    new Notice('Message content is null. Cannot copy.');
+                    console.error('Message content is null. Cannot copy.');
+                }
+            });
+            dropdownOptions.appendChild(option1);
+
+            // Add a click event listener to the ellipsis span to toggle the dropdown
+            elipsesSpan.addEventListener("click", function (event) {
+                event.stopPropagation();
+                const wasOpen = dropdownOptions.classList.contains("dropdownOptionsOpen");
+                hideAllDropdowns();
+                if (!wasOpen) {
+                    dropdownOptions.style.display = "block";
+                    dropdownOptions.classList.add("dropdownOptionsOpen");
+                }
+            });
+            
+        
+            // Add a click event listener to the document to hide the dropdown when clicking outside
+            document.addEventListener("click", function (event) {
+                if (!(event.target instanceof HTMLElement && (event.target.id === "elipses" || event.target.id === "dropdownOptions" || event.target.closest("#dropdownOptions")))) {
+                    hideAllDropdowns();
+                }
+            });
+
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {
                 messageContainer.appendChild(userMessage);
@@ -306,6 +423,12 @@ export class BMOView extends ItemView {
                     });
                     
             }
+
+            ellipsisLink.appendChild(elipsesSpan);
+            userNameSpan.appendChild(ellipsisLink);
+            userMessage.appendChild(userNameSpan);
+            userMessage.appendChild(dropdownOptions);
+            userMessage.appendChild(userParagraph);
 
             setTimeout(() => {
                 this.textareaElement.value = "";
@@ -444,7 +567,7 @@ export class BMOView extends ItemView {
                         lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
 
-                    addMessage('\n\nAssistant: ' + completionText, 'botMessage');
+                    addMessage('\n\nAssistant: ' + completionText, 'botMessage', settings);
                 }
                 catch (error) {
                     console.error('Error:', error);
@@ -456,7 +579,7 @@ export class BMOView extends ItemView {
                 
                     const message = response.json.choices[0].message.content;
 
-                    addMessage(message, 'botMessage');
+                    addMessage(message, 'botMessage', settings);
 
                     if (messageContainerEl) {
                         const botMessages = messageContainerEl.querySelectorAll(".botMessage");
@@ -542,7 +665,7 @@ async function loadData() {
 }
 
 // Add a new message to the messageHistory array and save it to the file
-async function addMessage(input: string, messageType: 'userMessage' | 'botMessage') {
+async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: { apiKey: string; model: string; system_role: string;}) {
     const messageObj: { role: string; content: string } = {
         role: "",
         content: ""
@@ -552,8 +675,38 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
         messageObj.role = 'user';
         messageObj.content = input;
     } else if (messageType === 'botMessage') {
-        messageObj.role = 'assistant';
+        messageObj.role = 'assistant';  
         messageObj.content = input;
+
+        const dropdowns = document.querySelectorAll("#dropdownOptions");
+        const dropdownOptions = dropdowns[dropdowns.length - 1];
+
+        
+
+        if (dropdowns.length > 0) {
+            const option2 = document.createElement("li");
+            option2.textContent = "Copy Bot Message";
+            option2.addEventListener("click", function () {
+                const messageText = messageObj.content;
+        
+                if (messageText !== null) {
+                    if (["claude-instant-1.2", "claude-2.0"].includes(settings.model)) {
+                        const fullString = messageText;
+                        const cleanString = fullString.split(' ').slice(1).join(' ').trim();
+                        copyMessageToClipboard(cleanString);
+                    }
+                    else {
+                        copyMessageToClipboard(messageText);
+                    }
+                    new Notice('Bot Message Copied');
+                    hideAllDropdowns();
+                } else {
+                    new Notice('Message content is null. Cannot copy.');
+                    console.error('Message content is null. Cannot copy.');
+                }
+            });
+            dropdownOptions.appendChild(option2);
+        }
     }
 
     messageHistory.push(messageObj);
@@ -592,8 +745,6 @@ async function fetchOpenAIAPI(
         content: item.content,
     })) as ChatCompletionMessageParam[];
 
-    // console.log(referenceCurrentNote + settings.system_role);
-
     try {
         const stream = await openai.chat.completions.create({
             model: settings.model,
@@ -630,7 +781,7 @@ async function fetchOpenAIAPI(
             }
         }
 
-        addMessage(message, 'botMessage');
+        addMessage(message, 'botMessage', settings);
     } catch (error) {
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
@@ -641,7 +792,7 @@ async function fetchOpenAIAPI(
 
             if (messageBlock) {
                 messageBlock.innerHTML = marked(error.response?.data?.error || error.message);
-                addMessage(messageBlock.innerHTML, 'botMessage');
+                addMessage(messageBlock.innerHTML, 'botMessage', settings);
             }
         }
         throw new Error(error.response?.data?.error || error.message);
@@ -672,8 +823,6 @@ async function requestUrlAnthropicAPI(
         temperature: temperature,
         stream: true,
     };
-
-    // console.log(requestBody.prompt);
   
     try {
       const response = await requestUrl({
@@ -695,7 +844,7 @@ async function requestUrlAnthropicAPI(
 
             if (messageBlock) {
                 messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages. We recommend clearing max_tokens for best results.';
-                addMessage(messageBlock.innerHTML, 'botMessage');
+                addMessage(messageBlock.innerHTML, 'botMessage', settings);
 
                 const loadingEl = lastBotMessage.querySelector("#loading");
                 if (loadingEl) {
@@ -806,5 +955,23 @@ function addParagraphBreaks(messageBlock: { querySelectorAll: (arg0: string) => 
             }
         }
     }
+}
+
+function copyMessageToClipboard(message: string) {
+    navigator.clipboard.writeText(message).then(function() {
+    //   console.log('Message copied to clipboard');
+    }).catch(function(err) {
+      console.error('Unable to copy message: ', err);
+    });
+  }
+
+// eslint-disable-next-line no-inner-declarations
+function hideAllDropdowns(exceptDropdown: HTMLElement | null = null) {
+const openDropdowns = document.querySelectorAll("#dropdownOptions");
+openDropdowns.forEach((dropdown) => {
+    if (dropdown !== exceptDropdown && dropdown instanceof HTMLElement) {
+        dropdown.classList.remove("dropdownOptionsOpen");
+        dropdown.style.display = "none";
+    }});
 }
 

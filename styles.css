@@ -8,222 +8,250 @@ If your plugin does not need CSS, delete this file.
 */
 
 .chatbotContainer {
-  height: 100%;
-  max-height: 98%;
-  position: relative;
-  border-radius: 5px;
-  border: 1px solid var(--background-modifier-border);
-  word-break: break-word;
-  display: flex;
-  flex-direction: column;
-  max-width: 800px;
-  margin: auto;
+	height: 100%;
+	max-height: 98%;
+	position: relative;
+	border-radius: 5px;
+	border: 1px solid var(--background-modifier-border);
+	word-break: break-word;
+	display: flex;
+	flex-direction: column;
+	max-width: 800px;
+	margin: auto;
 }
 
 #chatbotNameHeading {
-  color:  var(--interactive-accent); 
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding: 10px 0px 0px 0px;
-  font-size: 2rem;
+	color: var(--interactive-accent);
+	text-align: center;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding: 10px 0px 0px 0px;
+	font-size: 2rem;
 }
 
 #modelName {
-  margin: 0;
-  text-align: center;
-  color: var(--interactive-accent); 
-  font-size: 0.92rem;
+	margin: 0;
+	text-align: center;
+	color: var(--interactive-accent);
+	font-size: 0.92rem;
 }
 
 #referenceCurrentNote {
-  margin: 0.05rem 0 0 0;
-  text-align: center;
-  color: var(--interactive-accent); 
-  font-size: 0.75rem;
+	margin: 0.05rem 0 0 0;
+	text-align: center;
+	color: var(--interactive-accent);
+	font-size: 0.75rem;
 }
 
 /* messageContainer */
 
 #messageContainer {
-  margin-top: 10px;
-  flex-grow: 1;
-  overflow-y: auto;
-  -webkit-touch-callout: default;
-  -webkit-user-select: text;
-   -khtml-user-select: text;
-     -moz-user-select: text;
-      -ms-user-select: text;
-       -o-user-select: text;
-          user-select: text;
-  max-height: calc(100% - 140px);
-  word-wrap: break-word;
+	margin-top: 10px;
+	flex-grow: 1;
+	overflow-y: auto;
+	-webkit-touch-callout: default;
+	-webkit-user-select: text;
+	-khtml-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	-o-user-select: text;
+	user-select: text;
+	max-height: calc(100% - 140px);
+	word-wrap: break-word;
 }
 
 #messageContainer::-webkit-scrollbar {
-  width: 5px;
+	width: 5px;
 }
 
 #messageContainer::-webkit-scrollbar-thumb {
-  border-radius: 5px;
+	border-radius: 5px;
 }
 
 #messageContainer::-webkit-scrollbar-track {
-  border-radius: 5px;
+	border-radius: 5px;
 }
 
 /* User & Bot Messages */
 
-#userName, #chatbotName {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: var(--interactive-accent);
-  margin: 0;
+#userName,
+#chatbotName {
+	display: block;
+	font-size: 0.8rem;
+	font-weight: bold;
+	color: var(--interactive-accent);
+	margin: 0;
 }
 
-.userMessage, .botMessage {
-  margin: 0;
-  padding: 10px 3.5%;
-  width: 100%;
-  display: inline-block;
+.userMessage,
+.botMessage {
+	margin: 0;
+	padding: 10px 3.5%;
+	width: 100%;
+	display: inline-block;
 }
 
 .userMessage {
-  background-color: var(--background-primary);
+	background-color: var(--background-primary);
+	position: relative;
 }
 
-.userMessage p, .botMessage p{
-  margin: 0;
-  line-height: 1.6;
+.userMessage p,
+.botMessage p {
+	margin: 0;
+	line-height: 1.6;
 }
 
-
-.messageBlock{
-  margin: 0;
-  overflow-wrap: break-word;
-  position: relative;
+.messageBlock {
+	margin: 0;
+	overflow-wrap: break-word;
+	position: relative;
 }
 
 /* messageBlock style */
 
 .messageBlock pre {
-  position: relative;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  font-size: 14px;
-  background-color: #282c34;
-  padding: 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  line-height: 1.5;
+	position: relative;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+	font-size: 14px;
+	background-color: #282c34;
+	padding: 5px;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+	line-height: 1.5;
 }
 
 .messageBlock pre code {
-  padding: 5px;
-  font-weight: bold;
-  color: #ced4df;
+	padding: 5px;
+	font-weight: bold;
+	color: #ced4df;
 }
 
 .messageBlock pre button.copy-button {
-  padding: 0 4px;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  border: none;
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  color: var(--text-muted);
-  display: inline-block;
-  max-width: 30px;
+	padding: 0 4px;
+	background-color: transparent !important;
+	box-shadow: none !important;
+	border: none;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	color: var(--text-muted);
+	display: inline-block;
+	max-width: 30px;
 }
-
 
 .messageBlock pre .copy-button:hover {
-  color: white;
+	color: white;
 }
-
 
 /* Tables */
 
 .messageBlock table {
-  border: 1px solid gray;
-  border-collapse: collapse;
-  margin: 5px 0px;
+	border: 1px solid gray;
+	border-collapse: collapse;
+	margin: 5px 0px;
 }
-.messageBlock th, .messageBlock td {
-  border: 1px solid gray;
+.messageBlock th,
+.messageBlock td {
+	border: 1px solid gray;
 }
 
 /* chatbox - textarea */
 
-.chatbox{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 13px 3.5%;
-  padding: 3px;
-  background-color: var(--interactive-accent);
-  border-radius: 5px;
+.chatbox {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 13px 3.5%;
+	padding: 3px;
+	background-color: var(--interactive-accent);
+	border-radius: 5px;
 }
 
 .chatbox textarea {
-  background-color: var(--interactive-accent);
-  width: 100%;
-  height: 29px;
-  max-height: 150px;
-  resize: none;
-  font-size: 16px;
-  overflow-y: auto;
-  border-color: var(--interactive-accent);
+	background-color: var(--interactive-accent);
+	width: 100%;
+	height: 29px;
+	max-height: 150px;
+	resize: none;
+	font-size: 16px;
+	overflow-y: auto;
+	border-color: var(--interactive-accent);
 }
 
 .chatbox textarea:focus {
-  outline: none;
-  box-shadow: none;
+	outline: none;
+	box-shadow: none;
 }
 
 .chatbox textarea::placeholder {
-  color: white;
-  font-weight: 500;
+	color: white;
+	font-weight: 500;
 }
 
 .theme-light .chatbox textarea {
-  color: white;
+	color: white;
 }
 
 /* Misc */
 
 .errorMessage {
-  color: red;
+	color: red;
 }
 
 .disabled {
-  pointer-events: none;
+	pointer-events: none;
 }
 
 #spacer {
-  height: 8vh;
+	height: 8vh;
 }
 
 #loading {
-  color: white;
-  background-color: gray;
-  padding: 0px 5px 12px 5px;
-  border-radius: 5px;
-  display: none;
-  line-height: 10px;
-  font-size: 25px;
-  font-weight: bolder;
-  margin: 5px 0px;
+	color: white;
+	background-color: gray;
+	padding: 0px 5px 12px 5px;
+	border-radius: 5px;
+	display: none;
+	line-height: 10px;
+	font-size: 25px;
+	font-weight: bolder;
+	margin: 5px 0px;
 }
 
 .dotIndicator {
-  display: inline-block;
-  width: 0.3rem;
-  height: 0.3rem;
-  background-color: #da2c2c;
-  border-radius: 50%;
-  margin-left: 0.25rem;
-  margin-bottom: 0.1rem;
+	display: inline-block;
+	width: 0.3rem;
+	height: 0.3rem;
+	background-color: #da2c2c;
+	border-radius: 50%;
+	margin-left: 0.25rem;
+	margin-bottom: 0.1rem;
+}
+
+ul#dropdownOptions {
+	position: absolute;
+	top: 1rem;
+	right: 0;
+	display: none;
+	z-index: 1;
+	background-color: #282c34;
+	border: 1px solid #ccc;
+	border-radius: 0.2rem;
+	list-style: none;
+	padding: 0;
+}
+
+/* If you want to style individual list items within the dropdown */
+#dropdownOptions li {
+	padding: 0.3rem 1rem;
+	font-size: 0.8rem;
+}
+
+/* CSS for highlighting <li> elements on hover */
+ul#dropdownOptions li:hover {
+	background-color: var(--interactive-accent);
+	color: white;
+	cursor: pointer;
 }
