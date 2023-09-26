@@ -200,7 +200,7 @@ export class BMOSettingTab extends PluginSettingTab {
         );		
 
 		let colorPicker1: ColorComponent;
-		const customUserMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
+		const defaultUserMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
 		
 		new Setting(containerEl)
 			.setName('Background color for User Messages')
@@ -210,7 +210,7 @@ export class BMOSettingTab extends PluginSettingTab {
 				.setIcon("rotate-cw")
 				.setClass("clickable-icon")
 				.onClick(async () => {
-					const defaultValue = colorToHex(customUserMessageBackgroundColor);
+					const defaultValue = colorToHex(defaultUserMessageBackgroundColor);
 					colorPicker1.setValue(defaultValue);
 		
 					const messageContainer = document.querySelector('#messageContainer');
@@ -226,7 +226,13 @@ export class BMOSettingTab extends PluginSettingTab {
 			)
 			.addColorPicker((color) => {
 				colorPicker1 = color;
-				const defaultValue = colorToHex(this.plugin.settings.userMessageBackgroundColor || customUserMessageBackgroundColor);
+
+				let defaultValue = this.plugin.settings.userMessageBackgroundColor;
+
+				if (this.plugin.settings.userMessageBackgroundColor == "--background-primary") {
+					defaultValue = colorToHex(defaultUserMessageBackgroundColor);
+				}
+
 				color.setValue(defaultValue)
 				.onChange(async (value) => {
 					const hexValue = colorToHex(value);
@@ -245,7 +251,7 @@ export class BMOSettingTab extends PluginSettingTab {
 			});		
 			
 			let colorPicker2: ColorComponent;
-			const customBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+			const defaultBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
 
 			new Setting(containerEl)
 				.setName('Background color for Bot Messages')
@@ -255,7 +261,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					.setIcon("rotate-cw")
 					.setClass("clickable-icon")
 					.onClick(async () => {
-						const defaultValue = colorToHex(customBotMessageBackgroundColor);
+						const defaultValue = colorToHex(defaultBotMessageBackgroundColor);
 						colorPicker2.setValue(defaultValue);
 			
 						const messageContainer = document.querySelector('#messageContainer');
@@ -271,7 +277,13 @@ export class BMOSettingTab extends PluginSettingTab {
 				)
 				.addColorPicker((color) => {
 					colorPicker2 = color;
-					const defaultValue = colorToHex(this.plugin.settings.botMessageBackgroundColor || customBotMessageBackgroundColor);
+
+					let defaultValue = this.plugin.settings.botMessageBackgroundColor;
+	
+					if (this.plugin.settings.botMessageBackgroundColor == "--background-secondary") {
+						defaultValue = colorToHex(defaultBotMessageBackgroundColor);
+					}
+
 					color.setValue(defaultValue)
 						.onChange(async (value) => {
 							const hexValue = colorToHex(value);
