@@ -116,11 +116,14 @@ export class BMOView extends ItemView {
         
                 const userP = document.createElement("p");
 
-                if (messageData.role.startsWith("\n\nHuman: ")) {
-                    userP.textContent = messageData.content.substring("\n\nHuman: ".length).trim();
-                }
-                else {
-                    userP.textContent = messageData.content;
+                if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                    const fullString = messageData.content;
+                    const cleanString = fullString.split(' ').slice(1).join(' ');
+                    
+                    userP.innerHTML = marked(cleanString);
+                } else {
+                    console.log(marked(messageData.content));
+                    userP.innerHTML = marked(messageData.content);
                 }
                 
                 userMessageDiv.appendChild(userP);
@@ -142,10 +145,13 @@ export class BMOView extends ItemView {
         
                 const botP = document.createElement("p");
 
-                if (messageData.role.startsWith("\n\nAssistant: ")) {
-                    botP.innerHTML = marked(messageData.role.substring("\n\nAssistant: ".length).trim());
-                }
-                else {
+                if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                    const fullString = messageData.content;
+                    const cleanString = fullString.split(' ').slice(1).join(' ');
+                    
+                    botP.innerHTML = marked(cleanString);
+                } else {
+                    console.log(marked(messageData.content));
                     botP.innerHTML = marked(messageData.content);
                 }
 
@@ -667,7 +673,7 @@ async function requestUrlAnthropicAPI(
         stream: true,
     };
 
-    console.log(requestBody.prompt);
+    // console.log(requestBody.prompt);
   
     try {
       const response = await requestUrl({
