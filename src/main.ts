@@ -53,6 +53,20 @@ export default class BMOGPT extends Plugin {
 
 		});
 
+		this.addCommand({
+            id: 'open-bmo-chatbot',
+            name: 'Open BMO Chatbot',
+            callback: () => {
+                this.activateView();
+            },
+            hotkeys: [
+				{
+					modifiers: ['Mod'],
+					key: '0',
+				},
+            ],
+        });
+
 		this.addSettingTab(new BMOSettingTab(this.app, this));
 	}
 
@@ -69,7 +83,8 @@ export default class BMOGPT extends Plugin {
 	async activateView() {
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE_CHATBOT);
 	
-		await this.app.workspace.getRightLeaf(false).setViewState({
+		const rightLeaf = this.app.workspace.getRightLeaf(false);
+		await rightLeaf.setViewState({
 			type: VIEW_TYPE_CHATBOT,
 			active: true,
 		});
@@ -77,7 +92,20 @@ export default class BMOGPT extends Plugin {
 		this.app.workspace.revealLeaf(
 			this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT)[0]
 		);
+	
+		const textarea = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
+	
+		if (textarea) {
+			textarea.style.opacity = '0';
+			textarea.style.transition = 'opacity 1s ease-in-out';
+	
+			setTimeout(() => {
+				textarea.focus();
+				textarea.style.opacity = '1';
+			}, 50); 
+		}
 	}
+	
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
