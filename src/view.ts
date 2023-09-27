@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, setIcon, requestUrl, loadPrism, TFile } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, setIcon, requestUrl, loadPrism, TFile, Modal } from "obsidian";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import { colorToHex } from "./settings";
 import { marked } from "marked";
@@ -161,7 +161,7 @@ export class BMOView extends ItemView {
             
                     if (messageText !== null) {
                         copyMessageToClipboard(messageText);
-                        new Notice('User Message Copied');
+                        new Notice('Copied User Message');
                         hideAllDropdowns();
                     } else {
                         console.error('Message content is null. Cannot copy.');
@@ -188,7 +188,7 @@ export class BMOView extends ItemView {
                     option2.addEventListener("click", function () {
                         if (messageText !== null) {
                             copyMessageToClipboard(messageText);
-                            new Notice('Bot Message Copied');
+                            new Notice('Copied Bot Message');
                             hideAllDropdowns();
                         } else {
                             console.error('Message content is null. Cannot copy.');
@@ -197,6 +197,40 @@ export class BMOView extends ItemView {
                     dropdownOptions.appendChild(option2);
                 }
 
+                const modal = new Modal(this.app);
+
+                const option3 = document.createElement("li");
+                option3.innerHTML = "Delete Thread";
+                option3.addEventListener("click", function () {
+                    modal.contentEl.innerHTML = `
+                        <div class="modal-content">
+                            <h2>Delete Thread</h2>
+                            <p>Are you sure you want to delete this thread?</p>
+                            <button id="confirmDelete">Confirm Delete</button>
+                        </div>
+                    `;
+                
+                    const confirmDeleteButton = modal.contentEl.querySelector("#confirmDelete");
+                    confirmDeleteButton?.addEventListener("click", async function () {
+                        messageHistory.splice(index);
+                        const jsonString = JSON.stringify(messageHistory, null, 4);
+
+                        try {
+                            await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+                        } catch (error) {
+                            console.error('Error writing messageHistory.json', error);
+                        }
+                        removeMessageThread(index);
+                        new Notice('Thread Deleted');
+                        hideAllDropdowns();
+                        modal.close();
+                    });
+                
+                    modal.open();
+                });
+                
+                dropdownOptions.appendChild(option3);
+                
                 ellipsisLink.appendChild(elipsesSpan);
                 userNameSpan.appendChild(ellipsisLink);
                 userMessageDiv.appendChild(userNameSpan);
@@ -321,7 +355,7 @@ export class BMOView extends ItemView {
         
                 if (messageText !== null) {
                     copyMessageToClipboard(messageText);
-                    new Notice('User Message Copied');
+                    new Notice('Copied User Message');
                     hideAllDropdowns();
                 } else {
                     new Notice('Message content is null. Cannot copy.');
@@ -329,6 +363,8 @@ export class BMOView extends ItemView {
                 }
             });
             dropdownOptions.appendChild(option1);
+
+            let lastClickedElement: HTMLElement | null = null;
 
             // Add a click event listener to the ellipsis span to toggle the dropdown
             elipsesSpan.addEventListener("click", function (event) {
@@ -339,6 +375,56 @@ export class BMOView extends ItemView {
                     dropdownOptions.style.display = "block";
                     dropdownOptions.classList.add("dropdownOptionsOpen");
                 }
+                lastClickedElement = event.target as HTMLElement;
+
+                while (lastClickedElement && !lastClickedElement.classList.contains('userMessage')) {
+                    lastClickedElement = lastClickedElement.parentElement;
+                }
+
+                if (lastClickedElement) {
+                    const userMessages = Array.from(document.querySelectorAll('#messageContainer .userMessage'));
+                
+                    const index = userMessages.indexOf(lastClickedElement) * 2;
+                
+                    if (index !== -1) {
+                        const modal = new Modal(app);
+                
+                        if (!Array.from(dropdownOptions.children).find(option => option.textContent === "Delete Thread")) {
+                            const option3 = document.createElement("li");
+                            option3.innerHTML = "Delete Thread";
+                            option3.addEventListener("click", function () {
+                                modal.contentEl.innerHTML = `
+                                    <div class="modal-content">
+                                        <h2>Delete Thread</h2>
+                                        <p>Are you sure you want to delete this thread?</p>
+                                        <button id="confirmDelete">Confirm Delete</button>
+                                    </div>
+                                `;
+                
+                                const confirmDeleteButton = modal.contentEl.querySelector("#confirmDelete");
+                                confirmDeleteButton?.addEventListener("click", async function () {
+                                    messageHistory.splice(index);
+                                    const jsonString = JSON.stringify(messageHistory, null, 4);
+                
+                                    try {
+                                        await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+                                    } catch (error) {
+                                        console.error('Error writing messageHistory.json', error);
+                                    }
+                                    removeMessageThread(index);
+                                    new Notice('Thread Deleted');
+                                    hideAllDropdowns();
+                                    modal.close();
+                                });
+                
+                                modal.open();
+                            });
+                
+                            dropdownOptions.appendChild(option3);
+                        }
+                    }
+                }
+                
             });
             
         
@@ -378,7 +464,6 @@ export class BMOView extends ItemView {
                     if (!loadingEl) {
                         return;
                     }
-                    // Add a dot to the loading animation
                     loadingEl.textContent += ".";
                     // If the loading animation has reached three dots, reset it to one dot
                     if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
@@ -399,20 +484,17 @@ export class BMOView extends ItemView {
                 messageContainer.appendChild(spacer);
 
                 userMessage.scrollIntoView({ behavior: "smooth", block: "start" });
-            
-                this.preventEnter = true; // Allow user to respond after the bot responded.
 
+                this.preventEnter = true;
                 // Call the chatbot function with the user's input
                 this.BMOchatbot(input)
                     .then(() => {
-                        this.preventEnter = false; // Allow user to respond after the bot responded.
-                        clearInterval(loadingAnimationIntervalId);
-
-                        // Select the spacer and remove it
                         const spacer = messageContainer.querySelector("#spacer");
                         if (spacer) {
                             spacer.remove();
                         }
+                        this.preventEnter = false;
+                        clearInterval(loadingAnimationIntervalId);
                     })
                     .catch(() => {
                         // Stop the loading animation and update the bot message with an error message
@@ -430,14 +512,11 @@ export class BMOView extends ItemView {
             userMessage.appendChild(dropdownOptions);
             userMessage.appendChild(userParagraph);
 
-            setTimeout(() => {
-                this.textareaElement.value = "";
-                this.textareaElement.style.height = "29px";
-                this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
-                this.textareaElement.setSelectionRange(0, 0);
-            }, 0);
+            this.textareaElement.value = "";
+            this.textareaElement.style.height = "29px";
+            this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
+            this.textareaElement.setSelectionRange(0, 0);
         }
-
     }
 
     handleKeydown(event: KeyboardEvent) {
@@ -458,7 +537,6 @@ export class BMOView extends ItemView {
     }
     
     cleanup() {
-        // Remove event listeners and other resources created by this.view
         this.textareaElement.removeEventListener("keyup", this.handleKeyup.bind(this));
         this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
         this.textareaElement.removeEventListener("input", this.handleInput.bind(this));
@@ -519,7 +597,7 @@ export class BMOView extends ItemView {
             // OpenAI models
             if (["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
                 try {
-                    fetchOpenAIAPI(settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature); 
+                    await fetchOpenAIAPI(settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -588,7 +666,7 @@ export class BMOView extends ItemView {
                         
                         if (loadingEl) {
                             loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                            lastBotMessage.removeChild(loadingEl); // Remove loading message
+                            lastBotMessage.removeChild(loadingEl);
                         }
                     
                         const messageBlock = document.createElement("p");
@@ -665,7 +743,7 @@ async function loadData() {
 }
 
 // Add a new message to the messageHistory array and save it to the file
-async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: { apiKey: string; model: string; system_role: string;}) {
+async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: { apiKey: string; model: string; system_role: string;}, index?: number) {
     const messageObj: { role: string; content: string } = {
         role: "",
         content: ""
@@ -680,8 +758,6 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
 
         const dropdowns = document.querySelectorAll("#dropdownOptions");
         const dropdownOptions = dropdowns[dropdowns.length - 1];
-
-        
 
         if (dropdowns.length > 0) {
             const option2 = document.createElement("li");
@@ -698,7 +774,7 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
                     else {
                         copyMessageToClipboard(messageText);
                     }
-                    new Notice('Bot Message Copied');
+                    new Notice('Copied Bot Message');
                     hideAllDropdowns();
                 } else {
                     new Notice('Message content is null. Cannot copy.');
@@ -974,4 +1050,20 @@ openDropdowns.forEach((dropdown) => {
         dropdown.style.display = "none";
     }});
 }
+
+function removeMessageThread(index: number) {
+    const messageContainer = document.querySelector('#messageContainer');
+  
+    const divElements = messageContainer?.querySelectorAll('div.botMessage, div.userMessage');
+  
+    if (divElements && divElements.length > 0 && index >= 0 && index < divElements.length) {
+      for (let i = index; i < divElements.length; i++) {
+        messageContainer?.removeChild(divElements[i]);
+      }
+    }
+}
+
+  
+  
+  
 
