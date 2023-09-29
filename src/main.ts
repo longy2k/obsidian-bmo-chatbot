@@ -4,7 +4,7 @@ import { BMOSettingTab } from './settings';
 import './commands';
 
 export interface BMOSettings {
-	models: string;
+	models: any;
 	apiKey: string;
 	max_tokens: string;
 	model: string;
