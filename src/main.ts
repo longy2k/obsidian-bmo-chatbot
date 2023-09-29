@@ -1,9 +1,10 @@
 import { Plugin } from 'obsidian';
 import { BMOView, VIEW_TYPE_CHATBOT, filenameMessageHistoryJSON, clearMessageHistory } from "./view";
 import { BMOSettingTab } from './settings';
+import './commands';
 
 export interface BMOSettings {
-	models: any;
+	models: string;
 	apiKey: string;
 	max_tokens: string;
 	model: string;
@@ -75,6 +76,7 @@ export default class BMOGPT extends Plugin {
 			const bmoView = leaf.view as BMOView;
 	
 			if (bmoView) {
+				this.saveSettings();
 				bmoView.cleanup();
 			} 
 		});

@@ -255,3 +255,12 @@ ul#dropdownOptions li:hover {
 	color: white;
 	cursor: pointer;
 }
+
+.formattedSettings {
+	border: 1px solid #ccc;
+	background-color: #282c34;
+	padding: 10px;
+	border-radius: 5px;
+	margin: 0.5rem;
+	font-size: 0.8rem;
+}

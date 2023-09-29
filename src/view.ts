@@ -4,6 +4,7 @@ import { colorToHex } from "./settings";
 import { marked } from "marked";
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from "openai/resources/chat";
+import * as commands from './commands';
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
@@ -16,7 +17,7 @@ export function clearMessageHistory() {
 let messageHistoryContent: { role: string; content: string }[] = [];
 
 export class BMOView extends ItemView {
-    private settings: BMOSettings;
+    public settings: BMOSettings;
     private textareaElement: HTMLTextAreaElement;
     private loadingAnimationIntervalId: number;
     private preventEnter = false;
@@ -38,6 +39,7 @@ export class BMOView extends ItemView {
 
     async onOpen(): Promise<void> {
         this.registerEvent(this.app.workspace.on("file-open", this.handleFileOpenEvent.bind(this)));
+
 
         const container = this.containerEl.children[1];
         container.empty();
@@ -212,14 +214,6 @@ export class BMOView extends ItemView {
                 
                     const confirmDeleteButton = modal.contentEl.querySelector("#confirmDelete");
                     confirmDeleteButton?.addEventListener("click", async function () {
-                        messageHistory.splice(index);
-                        const jsonString = JSON.stringify(messageHistory, null, 4);
-
-                        try {
-                            await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
-                        } catch (error) {
-                            console.error('Error writing messageHistory.json', error);
-                        }
                         removeMessageThread(index);
                         new Notice('Thread Deleted');
                         hideAllDropdowns();
@@ -252,25 +246,35 @@ export class BMOView extends ItemView {
                 const messageBlockDiv = document.createElement("div");
                 messageBlockDiv.className = "messageBlock";
 
-                const botP = document.createElement("p");
-        
+                let botP = '';
 
-                if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
-                    const fullString = messageData.content;
-                    const cleanString = fullString.split(' ').slice(1).join(' ');
-                    
-                    botP.innerHTML = marked(cleanString);
-                } else {
-                    botP.innerHTML = marked(messageData.content);
-                }
+                if (messageHistory.length >= 2) {
+                    if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                        const fullString = messageData.content;
+                        const cleanString = fullString.split(' ').slice(1).join(' ').trim();
+                        botP = marked(cleanString);
+                    } else if (messageData.content.includes('div class="formattedSettings"')) {
+                        botP = messageData.content;
+                    } 
+                    else {
+                        botP = marked(messageData.content);
+                    }                      
+                        
+                  }
 
-                messageBlockDiv.appendChild(botP);
+                const newBotP = document.createElement('p');
+                newBotP.innerHTML = botP;
+
+                // Append the paragraph element to messageBlockDiv
+                messageBlockDiv.appendChild(newBotP);
                 botMessageDiv.appendChild(messageBlockDiv);
                 messageContainer.appendChild(botMessageDiv);
-
+                
                 prismHighlighting(messageBlockDiv);
                 codeBlockCopyButton(messageBlockDiv);
-                addParagraphBreaks(messageBlockDiv);
+                if (!messageData.content.includes('div class="formattedSettings"')){
+                    addParagraphBreaks(messageBlockDiv);        
+                }
 
                 const botMessages = messageContainer.querySelectorAll(".botMessage");
                 const lastBotMessage = botMessages[botMessages.length - 1];
@@ -311,17 +315,6 @@ export class BMOView extends ItemView {
     
     async handleKeyup(event: KeyboardEvent) {
 
-        const dropdownOptions = document.createElement("ul");
-        dropdownOptions.setAttribute("id", "dropdownOptions");
-
-        const ellipsisLink = document.createElement("a");
-        ellipsisLink.href = "#";
-    
-        const elipsesSpan = document.createElement("span");
-        elipsesSpan.setAttribute("id", "elipses");
-        elipsesSpan.textContent = "...";
-        elipsesSpan.style.float = "right";
-
         if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {
             loadData();
             event.preventDefault();
@@ -329,194 +322,210 @@ export class BMOView extends ItemView {
             if (input.length === 0) {
                 return;
             }
-            
-            const userMessage = document.createElement("div");
-            userMessage.classList.add("userMessage");
-            userMessage.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
-            
-            const userNameSpan = document.createElement("span");
-            userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
-            userNameSpan.setAttribute("id", "userName");
-            userMessage.appendChild(userNameSpan);
-            if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
-                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
-            } else {
-                addMessage(input, 'userMessage', this.settings);
-            }
-            
-            const userParagraph = document.createElement("p");
-            const markdownContent = marked(input);
-            userParagraph.innerHTML = markdownContent;
 
-            const option1 = document.createElement("li");
-            option1.textContent = "Copy User Message";
-            option1.addEventListener("click", function () {
-                const messageText = input;
+                const dropdownOptions = document.createElement("ul");
+                dropdownOptions.setAttribute("id", "dropdownOptions");
         
-                if (messageText !== null) {
-                    copyMessageToClipboard(messageText);
-                    new Notice('Copied User Message');
-                    hideAllDropdowns();
+                const ellipsisLink = document.createElement("a");
+                ellipsisLink.href = "#";
+            
+                const elipsesSpan = document.createElement("span");
+                elipsesSpan.setAttribute("id", "elipses");
+                elipsesSpan.textContent = "...";
+                elipsesSpan.style.float = "right";
+                
+                const userMessage = document.createElement("div");
+                userMessage.classList.add("userMessage");
+                userMessage.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+                
+                const userNameSpan = document.createElement("span");
+                userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
+                userNameSpan.setAttribute("id", "userName");
+                userMessage.appendChild(userNameSpan);
+                
+                if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                    addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
                 } else {
-                    new Notice('Message content is null. Cannot copy.');
-                    console.error('Message content is null. Cannot copy.');
-                }
-            });
-            dropdownOptions.appendChild(option1);
-
-            let lastClickedElement: HTMLElement | null = null;
-
-            // Add a click event listener to the ellipsis span to toggle the dropdown
-            elipsesSpan.addEventListener("click", function (event) {
-                event.stopPropagation();
-                const wasOpen = dropdownOptions.classList.contains("dropdownOptionsOpen");
-                hideAllDropdowns();
-                if (!wasOpen) {
-                    dropdownOptions.style.display = "block";
-                    dropdownOptions.classList.add("dropdownOptionsOpen");
-                }
-                lastClickedElement = event.target as HTMLElement;
-
-                while (lastClickedElement && !lastClickedElement.classList.contains('userMessage')) {
-                    lastClickedElement = lastClickedElement.parentElement;
-                }
-
-                if (lastClickedElement) {
-                    const userMessages = Array.from(document.querySelectorAll('#messageContainer .userMessage'));
-                
-                    const index = userMessages.indexOf(lastClickedElement) * 2;
-                
-                    if (index !== -1) {
-                        const modal = new Modal(app);
-                
-                        if (!Array.from(dropdownOptions.children).find(option => option.textContent === "Delete Thread")) {
-                            const option3 = document.createElement("li");
-                            option3.innerHTML = "Delete Thread";
-                            option3.addEventListener("click", function () {
-                                modal.contentEl.innerHTML = `
-                                    <div class="modal-content">
-                                        <h2>Delete Thread</h2>
-                                        <p>Are you sure you want to delete this thread?</p>
-                                        <button id="confirmDelete">Confirm Delete</button>
-                                    </div>
-                                `;
-                
-                                const confirmDeleteButton = modal.contentEl.querySelector("#confirmDelete");
-                                confirmDeleteButton?.addEventListener("click", async function () {
-                                    messageHistory.splice(index);
-                                    const jsonString = JSON.stringify(messageHistory, null, 4);
-                
-                                    try {
-                                        await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
-                                    } catch (error) {
-                                        console.error('Error writing messageHistory.json', error);
-                                    }
-                                    removeMessageThread(index);
-                                    new Notice('Thread Deleted');
-                                    hideAllDropdowns();
-                                    modal.close();
-                                });
-                
-                                modal.open();
-                            });
-                
-                            dropdownOptions.appendChild(option3);
-                        }
-                    }
+                    addMessage(input, 'userMessage', this.settings);
                 }
                 
-            });
+                const userParagraph = document.createElement("p");
+                const markdownContent = marked(input);
+                userParagraph.innerHTML = markdownContent;
+
+                const option1 = document.createElement("li");
+                option1.textContent = "Copy User Message";
+                option1.addEventListener("click", function () {
+                    const messageText = input;
             
-        
-            // Add a click event listener to the document to hide the dropdown when clicking outside
-            document.addEventListener("click", function (event) {
-                if (!(event.target instanceof HTMLElement && (event.target.id === "elipses" || event.target.id === "dropdownOptions" || event.target.closest("#dropdownOptions")))) {
+                    if (messageText !== null) {
+                        copyMessageToClipboard(messageText);
+                        new Notice('Copied User Message');
+                        hideAllDropdowns();
+                    } else {
+                        new Notice('Message content is null. Cannot copy.');
+                        console.error('Message content is null. Cannot copy.');
+                    }
+                });
+                dropdownOptions.appendChild(option1);
+
+                let lastClickedElement: HTMLElement | null = null;
+
+                // Add a click event listener to the ellipsis span to toggle the dropdown
+                elipsesSpan.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                    const wasOpen = dropdownOptions.classList.contains("dropdownOptionsOpen");
                     hideAllDropdowns();
-                }
-            });
-
-            const messageContainer = document.querySelector("#messageContainer");
-            if (messageContainer) {
-                messageContainer.appendChild(userMessage);
-            
-                const botMessage = document.createElement("div");
-                botMessage.classList.add("botMessage");
-                botMessage.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
-                messageContainer.appendChild(botMessage);
-            
-                const botNameSpan = document.createElement("span"); 
-                botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                botNameSpan.setAttribute("id", "chatbotName")
-                botMessage.appendChild(botNameSpan);
-
-                const messageBlock = document.createElement("div");
-                messageBlock.classList.add("messageBlock");
-                botMessage.appendChild(messageBlock);
-
-                const loadingEl = document.createElement("span");
-                loadingEl.setAttribute("id", "loading"); 
-                loadingEl.style.display = "inline-block"; 
-                loadingEl.textContent = "..."; 
-
-                // Define a function to update the loading animation
-                const updateLoadingAnimation = () => {
-                    const loadingEl = document.querySelector('#loading');
-                    if (!loadingEl) {
-                        return;
+                    if (!wasOpen) {
+                        dropdownOptions.style.display = "block";
+                        dropdownOptions.classList.add("dropdownOptionsOpen");
                     }
-                    loadingEl.textContent += ".";
-                    // If the loading animation has reached three dots, reset it to one dot
-                    if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
-                        loadingEl.textContent = ".";
+                    lastClickedElement = event.target as HTMLElement;
+
+                    while (lastClickedElement && !lastClickedElement.classList.contains('userMessage')) {
+                        lastClickedElement = lastClickedElement.parentElement;
                     }
-                };  
 
-                if (!["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
-                    botMessage.appendChild(loadingEl);
-                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                }
-
-                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
-
-                // Create a spacer element for scrolling most recent userMessage/botMessage to
-                const spacer = document.createElement("div");
-                spacer.setAttribute("id", "spacer");
-                messageContainer.appendChild(spacer);
-
-                userMessage.scrollIntoView({ behavior: "smooth", block: "start" });
-
-                this.preventEnter = true;
-                // Call the chatbot function with the user's input
-                this.BMOchatbot(input)
-                    .then(() => {
-                        const spacer = messageContainer.querySelector("#spacer");
-                        if (spacer) {
-                            spacer.remove();
-                        }
-                        this.preventEnter = false;
-                        clearInterval(loadingAnimationIntervalId);
-                    })
-                    .catch(() => {
-                        // Stop the loading animation and update the bot message with an error message
-                        clearInterval(loadingAnimationIntervalId);
-                        const botParagraph = document.createElement("p");
-                        botParagraph.textContent = "Oops, something went wrong. Please try again.";
-                        botMessage.appendChild(botParagraph);
-                    });
+                    if (lastClickedElement) {
+                        const userMessages = Array.from(document.querySelectorAll('#messageContainer .userMessage'));
                     
-            }
+                        const index = userMessages.indexOf(lastClickedElement) * 2;
+                    
+                        if (index !== -1) {
+                            const modal = new Modal(app);
+                    
+                            if (!Array.from(dropdownOptions.children).find(option => option.textContent === "Delete Thread")) {
+                                const option3 = document.createElement("li");
+                                option3.innerHTML = "Delete Thread";
+                                option3.addEventListener("click", function () {
+                                    modal.contentEl.innerHTML = `
+                                        <div class="modal-content">
+                                            <h2>Delete Thread</h2>
+                                            <p>Are you sure you want to delete this thread?</p>
+                                            <button id="confirmDelete">Confirm Delete</button>
+                                        </div>
+                                    `;
+                    
+                                    const confirmDeleteButton = modal.contentEl.querySelector("#confirmDelete");
+                                    confirmDeleteButton?.addEventListener("click", async function () {
+                                        removeMessageThread(index);
+                                        new Notice('Thread Deleted');
+                                        hideAllDropdowns();
+                                        modal.close();
+                                    });
+                    
+                                    modal.open();
+                                });
+                    
+                                dropdownOptions.appendChild(option3);
+                            }
+                        }
+                    }
+                    
+                });
+                
+            
+                // Add a click event listener to the document to hide the dropdown when clicking outside
+                document.addEventListener("click", function (event) {
+                    if (!(event.target instanceof HTMLElement && (event.target.id === "elipses" || event.target.id === "dropdownOptions" || event.target.closest("#dropdownOptions")))) {
+                        hideAllDropdowns();
+                    }
+                });
 
-            ellipsisLink.appendChild(elipsesSpan);
-            userNameSpan.appendChild(ellipsisLink);
-            userMessage.appendChild(userNameSpan);
-            userMessage.appendChild(dropdownOptions);
-            userMessage.appendChild(userParagraph);
+                const messageContainer = document.querySelector("#messageContainer");
+                if (messageContainer) {
+                    ellipsisLink.appendChild(elipsesSpan);
+                    userNameSpan.appendChild(ellipsisLink);
+                    userMessage.appendChild(userNameSpan);
+                    userMessage.appendChild(dropdownOptions);
+                    userMessage.appendChild(userParagraph);
+                    messageContainer.appendChild(userMessage);
+                    
 
-            this.textareaElement.value = "";
-            this.textareaElement.style.height = "29px";
-            this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
-            this.textareaElement.setSelectionRange(0, 0);
-        }
+                    if (input.startsWith("/")) {
+        
+                        executeCommand(input, this.settings);
+                        const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
+                        if (modelName) {
+                            modelName.textContent = 'Model: ' + this.settings.model.toLowerCase();
+                        }
+
+
+                    }   
+                    else {
+                        const botMessage = document.createElement("div");
+                        botMessage.classList.add("botMessage");
+                        botMessage.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+                        messageContainer.appendChild(botMessage);
+                    
+                        const botNameSpan = document.createElement("span"); 
+                        botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+                        botNameSpan.setAttribute("id", "chatbotName")
+                        botMessage.appendChild(botNameSpan);
+
+                        const messageBlock = document.createElement("div");
+                        messageBlock.classList.add("messageBlock");
+                        botMessage.appendChild(messageBlock);
+
+                        const loadingEl = document.createElement("span");
+                        loadingEl.setAttribute("id", "loading"); 
+                        loadingEl.style.display = "inline-block"; 
+                        loadingEl.textContent = "..."; 
+
+                        // Define a function to update the loading animation
+                        const updateLoadingAnimation = () => {
+                            const loadingEl = document.querySelector('#loading');
+                            if (!loadingEl) {
+                                return;
+                            }
+                            loadingEl.textContent += ".";
+                            // If the loading animation has reached three dots, reset it to one dot
+                            if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+                                loadingEl.textContent = ".";
+                            }
+                        };  
+
+                        if (!["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
+                            botMessage.appendChild(loadingEl);
+                            loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        }
+
+                        const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+
+                        // Create a spacer element for scrolling most recent userMessage/botMessage to
+                        const spacer = document.createElement("div");
+                        spacer.setAttribute("id", "spacer");
+                        messageContainer.appendChild(spacer);
+
+                        userMessage.scrollIntoView({ behavior: "smooth", block: "start" });
+
+                        this.preventEnter = true;
+                        // Call the chatbot function with the user's input
+                        this.BMOchatbot(input)
+                            .then(() => {
+                                const spacer = messageContainer.querySelector("#spacer");
+                                if (spacer) {
+                                    spacer.remove();
+                                }
+                                this.preventEnter = false;
+                                clearInterval(loadingAnimationIntervalId);
+                            })
+                            .catch(() => {
+                                // Stop the loading animation and update the bot message with an error message
+                                clearInterval(loadingAnimationIntervalId);
+                                const botParagraph = document.createElement("p");
+                                botParagraph.textContent = "Oops, something went wrong. Please try again.";
+                                botMessage.appendChild(botParagraph);
+                            });
+                    }
+                        
+                }
+
+                this.textareaElement.value = "";
+                this.textareaElement.style.height = "29px";
+                this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
+                this.textareaElement.setSelectionRange(0, 0);
+                }
     }
 
     handleKeydown(event: KeyboardEvent) {
@@ -534,6 +543,10 @@ export class BMOView extends ItemView {
         if (!this.textareaElement.value) {
             this.textareaElement.style.height = "29px";
         }
+    }
+
+    exportSettings() {
+        return this.settings;
     }
     
     cleanup() {
@@ -645,7 +658,7 @@ export class BMOView extends ItemView {
                         lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
 
-                    addMessage('\n\nAssistant: ' + completionText, 'botMessage', settings);
+                    addMessage('\n\nAssistant: ' + completionText, 'botMessage', this.settings);
                 }
                 catch (error) {
                     console.error('Error:', error);
@@ -657,7 +670,7 @@ export class BMOView extends ItemView {
                 
                     const message = response.json.choices[0].message.content;
 
-                    addMessage(message, 'botMessage', settings);
+                    addMessage(message, 'botMessage', this.settings);
 
                     if (messageContainerEl) {
                         const botMessages = messageContainerEl.querySelectorAll(".botMessage");
@@ -743,7 +756,7 @@ async function loadData() {
 }
 
 // Add a new message to the messageHistory array and save it to the file
-async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: { apiKey: string; model: string; system_role: string;}, index?: number) {
+export async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index?: number) {
     const messageObj: { role: string; content: string } = {
         role: "",
         content: ""
@@ -761,19 +774,12 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
 
         if (dropdowns.length > 0) {
             const option2 = document.createElement("li");
-            option2.textContent = "Copy Bot Message";
+            option2.textContent = "Copy Bot Message";   
             option2.addEventListener("click", function () {
                 const messageText = messageObj.content;
         
                 if (messageText !== null) {
-                    if (["claude-instant-1.2", "claude-2.0"].includes(settings.model)) {
-                        const fullString = messageText;
-                        const cleanString = fullString.split(' ').slice(1).join(' ').trim();
-                        copyMessageToClipboard(cleanString);
-                    }
-                    else {
-                        copyMessageToClipboard(messageText);
-                    }
+                    copyMessageToClipboard(messageText);
                     new Notice('Copied Bot Message');
                     hideAllDropdowns();
                 } else {
@@ -783,6 +789,7 @@ async function addMessage(input: string, messageType: 'userMessage' | 'botMessag
             });
             dropdownOptions.appendChild(option2);
         }
+
     }
 
     messageHistory.push(messageObj);
@@ -857,7 +864,7 @@ async function fetchOpenAIAPI(
             }
         }
 
-        addMessage(message, 'botMessage', settings);
+        addMessage(message, 'botMessage', this.settings);
     } catch (error) {
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
@@ -868,7 +875,7 @@ async function fetchOpenAIAPI(
 
             if (messageBlock) {
                 messageBlock.innerHTML = marked(error.response?.data?.error || error.message);
-                addMessage(messageBlock.innerHTML, 'botMessage', settings);
+                addMessage(messageBlock.innerHTML, 'botMessage', this.settings);
             }
         }
         throw new Error(error.response?.data?.error || error.message);
@@ -920,7 +927,7 @@ async function requestUrlAnthropicAPI(
 
             if (messageBlock) {
                 messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages. We recommend clearing max_tokens for best results.';
-                addMessage(messageBlock.innerHTML, 'botMessage', settings);
+                addMessage(messageBlock.innerHTML, 'botMessage', this.settings);
 
                 const loadingEl = lastBotMessage.querySelector("#loading");
                 if (loadingEl) {
@@ -1051,7 +1058,7 @@ openDropdowns.forEach((dropdown) => {
     }});
 }
 
-function removeMessageThread(index: number) {
+async function removeMessageThread(index: number) {
     const messageContainer = document.querySelector('#messageContainer');
   
     const divElements = messageContainer?.querySelectorAll('div.botMessage, div.userMessage');
@@ -1060,6 +1067,54 @@ function removeMessageThread(index: number) {
       for (let i = index; i < divElements.length; i++) {
         messageContainer?.removeChild(divElements[i]);
       }
+    }
+
+    messageHistory.splice(index);
+    const jsonString = JSON.stringify(messageHistory, null, 4);
+
+    try {
+        await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+    } catch (error) {
+        console.error('Error writing messageHistory.json', error);
+    }
+}
+
+function executeCommand(input: string, settings: BMOSettings) {
+    const command = input.split(' ')[0]; // Get the first word (command) from the input
+    
+    switch (command) {
+        case '/help':
+            commands.commandHelp(settings);
+            break;
+        case '/inspect':
+            commands.commandInspect(settings);
+            break;
+        case '/settings':
+            commands.commandInspect(settings);
+            break;
+        case '/model':
+            return commands.commandModel(input, settings);
+        case '/reference':
+            commands.commandReference(input, settings);
+            break;
+        case '/ref':
+            commands.commandReference(input, settings);
+            break;
+        case '/temp':
+            commands.commandTemperature(input, settings);
+            break;
+        case '/maxtokens':
+            commands.commandMaxTokens(input, settings);
+            break;
+        case '/system':
+            commands.commandSystem(input, settings);
+            break;
+        case '/clear':
+            removeMessageThread(0);
+            break;
+
+        default:
+            commands.commandFalse(settings);
     }
 }
 
