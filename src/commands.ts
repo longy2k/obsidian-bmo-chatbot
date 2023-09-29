@@ -159,29 +159,33 @@ export function commandModel(input: string, currentSettings: BMOSettings) {
       const messageBlock2 = lastBotMessage.querySelector(".messageBlock");
     
       if (messageBlock2) {
-        if (input.split(' ')[1] != undefined) {
-
-
+        if (input.split(' ')[1] !== undefined) {
           const inputModel = input.split(' ')[1].replace(/^"(.*)"$/, '$1');
-          const apiKey = currentSettings.apiKey;
-  
+        
           // Define the valid models for each API key
           const anthropicApiKeyModels = {
-            "1":"claude-instant-1.2claude-2.0", 
-            "2":"claude-2.0"
+            "1": "claude-instant-1.2",
+            "2": "claude-2.0",
           };
           const openAiApiModelAliases = {
             "1": "gpt-3.5-turbo",
             "2": "gpt-3.5-turbo-16k",
-            "3": "gpt-4"
+            "3": "gpt-4",
           };
-          
-          if (apiKey.startsWith("sk-ant")) {
-            if (anthropicApiKeyModels[inputModel as keyof typeof anthropicApiKeyModels]) {
-              currentSettings.model = anthropicApiKeyModels[inputModel as keyof typeof anthropicApiKeyModels];
+        
+          if (currentSettings.apiKey.startsWith("sk-ant")) {
+            // Check if the inputModel is in anthropicApiKeyModels
+            if (anthropicApiKeyModels[inputModel as keyof typeof anthropicApiKeyModels] || ["claude-instant-1.2", "claude-2.0"].includes(inputModel as keyof typeof anthropicApiKeyModels)) {
+
+              if (anthropicApiKeyModels[inputModel as keyof typeof anthropicApiKeyModels]) {
+                currentSettings.model = anthropicApiKeyModels[inputModel as keyof typeof anthropicApiKeyModels];
+              }
+              else {
+                currentSettings.model = inputModel as keyof typeof anthropicApiKeyModels;
+              }
               messageBlock2.innerHTML = `
                 <div class="formattedSettings">
-                  <p><strong>Updated Model to ${anthropicApiKeyModels[inputModel as keyof typeof anthropicApiKeyModels]}</strong></p>
+                  <p><strong>Updated Model to ${currentSettings.model}</strong></p>
                 </div>`;
             } else {
               // Model is not valid for "sk-ant" API key
@@ -192,16 +196,19 @@ export function commandModel(input: string, currentSettings: BMOSettings) {
             }
             addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
             return currentSettings;
-          } else if (apiKey.startsWith("sk-")) {
-            if (openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases]) {
-              // Model is valid for generic "sk-" API key
-              currentSettings.model = openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases];
+          } else if (currentSettings.apiKey.startsWith("sk-")) {
+            if (openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases] || ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(inputModel as keyof typeof openAiApiModelAliases)) {
+              if (openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases]) {
+                currentSettings.model = openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases];
+              }
+              else {
+                currentSettings.model = inputModel as keyof typeof openAiApiModelAliases;
+              }
               messageBlock2.innerHTML = `
                 <div class="formattedSettings">
-                  <p><strong>Updated Model to ${openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases]}</strong></p>
+                  <p><strong>Updated Model to ${currentSettings.model}</strong></p>
                 </div>`;
             } else {
-              // Model is not valid for generic "sk-" API key
               messageBlock2.innerHTML = `
                 <div class="formattedSettings">
                   <p><strong>Model '${inputModel}' does not exist for this API key.</strong></p>
@@ -215,70 +222,53 @@ export function commandModel(input: string, currentSettings: BMOSettings) {
               <div class="formattedSettings">
                 <p><strong>Invalid API key.</strong></p>
               </div>`;
-              addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
+            addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
           }
-
         }
         else {
+          const settingsObj = currentSettings;
 
-            // Assuming currentSettings is a JSON object
-            const settingsObj = currentSettings;
+          let formattedSettings = '';
+          if (settingsObj) {
+              formattedSettings += `
+                  <div class="formattedSettings">
+                      <p><strong>Models</strong></p>
+              `;
+          
+              settingsObj.models.forEach((model: any) => {
+                  formattedSettings += `<p>${model}</p>`;
+              });
+          
+              if (currentSettings.apiKey && ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(currentSettings.model)) {
+                  formattedSettings += `
+                      <p>gpt-3.5-turbo</p>
+                      <p>gpt-3.5-turbo-16k</p>
+                      <p>gpt-4</p>
+                  `;
+              }
+          
+              if (currentSettings.apiKey && ["claude-2.0", "claude-instant-1.2"].includes(currentSettings.model)) {
+                  formattedSettings += `
+                      <p>claude-2.0</p>
+                      <p>claude-instant-1.2</p>
+                  `;
+              }
 
-            // Convert the JSON object into a formatted string
-            let formattedSettings = '';
-            if (settingsObj) {
-            formattedSettings += `
-                <div class="formattedSettings">
-                    <p><strong>Models</strong>
-                <ul>
-            `;
+          }
 
-            // Assuming 'models' in settingsObj is an array
-            settingsObj.models.forEach((model: any) => {
-                formattedSettings += `
-                <li>${model}</li>
-                `;
-            });
+          messageBlock2.innerHTML = formattedSettings;
+          
+          addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
 
-            // Check if apiKey is not empty and add 'gpt-3' if true
-            if (currentSettings.apiKey && ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(currentSettings.model)) {
-                formattedSettings += `
-                <li>gpt-3.5-turbo</li>
-                <li>gpt-3.5-turbo-16k</li>
-                <li>gpt-4</li>
-                `;
-            }
+          const botMessages = messageContainer.querySelectorAll(".botMessage");
+          const lastBotMessage = botMessages[botMessages.length - 1];
 
-            // Check if apiKey is not empty and add 'gpt-3' if true
-            if (currentSettings.apiKey && ["claude-2.0", "claude-instant-1.2"].includes(currentSettings.model)) {
-                formattedSettings += `
-                    <li>claude-2.0</li>
-                    <li>claude-instant-1.2</li>
-                `;
-            }
-
-            formattedSettings += `
-                    </ul>
-                    </div>
-                `;
-                }
-            
-
-                // Set the formatted settings as innerHTML
-                messageBlock2.innerHTML = formattedSettings;
-                    
-                addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
-                
-
-                const botMessages = messageContainer.querySelectorAll(".botMessage");
-                const lastBotMessage = botMessages[botMessages.length - 1];
-
-                lastBotMessage.appendChild(messageBlock2);
-                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }  
+          lastBotMessage.appendChild(messageBlock2);
+          lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+      }  
     }
+}
 
 export function commandReference(input: string, currentSettings: BMOSettings) {
   const messageContainer = document.querySelector("#messageContainer");
@@ -295,7 +285,7 @@ export function commandReference(input: string, currentSettings: BMOSettings) {
       currentSettings.chatbotName || DEFAULT_SETTINGS.chatbotName;
     botNameSpan.setAttribute("id", "chatbotName");
     botMessage.appendChild(botNameSpan);
-  
+
     const messageBlock = document.createElement("div");
     messageBlock.classList.add("messageBlock");
     botMessage.appendChild(messageBlock);
