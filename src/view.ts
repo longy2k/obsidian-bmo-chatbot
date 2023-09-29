@@ -610,7 +610,7 @@ export class BMOView extends ItemView {
             // OpenAI models
             if (["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
                 try {
-                    await fetchOpenAIAPI(settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature); 
+                    await fetchOpenAIAPI(this.settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -621,7 +621,7 @@ export class BMOView extends ItemView {
             else if (["claude-2.0", "claude-instant-1.2"].includes(this.settings.model)) {
                 try {
                     const url = 'https://api.anthropic.com/v1/complete';
-                    const response = await requestUrlAnthropicAPI(url, settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
+                    const response = await requestUrlAnthropicAPI(url, this.settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
 
                     const message = response.text;
                     const lines = message.split('\n');
@@ -776,10 +776,18 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
             const option2 = document.createElement("li");
             option2.textContent = "Copy Bot Message";   
             option2.addEventListener("click", function () {
-                const messageText = messageObj.content;
+                let messageText = messageObj.content;
         
                 if (messageText !== null) {
-                    copyMessageToClipboard(messageText);
+                    if (["claude-instant-1.2", "claude-2.0"].includes(settings.model)) {
+                        const fullString = messageObj.content;
+                        const cleanString = fullString.split(' ').slice(1).join(' ').trim();
+                        messageText = cleanString;
+                        copyMessageToClipboard(messageText);
+                    }
+                    else {
+                        copyMessageToClipboard(messageText);
+                    }
                     new Notice('Copied Bot Message');
                     hideAllDropdowns();
                 } else {
@@ -812,7 +820,7 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
 
 
 async function fetchOpenAIAPI(
-    settings: { apiKey: string; model: string; system_role: string;},
+    settings: BMOSettings,
     referenceCurrentNote: string,
     messageHistoryContent: { role: string; content: string }[] = [],
     maxTokens: string,
@@ -864,7 +872,7 @@ async function fetchOpenAIAPI(
             }
         }
 
-        addMessage(message, 'botMessage', this.settings);
+        addMessage(message, 'botMessage', settings);
     } catch (error) {
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
@@ -875,7 +883,7 @@ async function fetchOpenAIAPI(
 
             if (messageBlock) {
                 messageBlock.innerHTML = marked(error.response?.data?.error || error.message);
-                addMessage(messageBlock.innerHTML, 'botMessage', this.settings);
+                addMessage(messageBlock.innerHTML, 'botMessage', settings);
             }
         }
         throw new Error(error.response?.data?.error || error.message);
@@ -885,7 +893,7 @@ async function fetchOpenAIAPI(
 // Request response from Anthropic 
 async function requestUrlAnthropicAPI(
     url: string,
-    settings: { apiKey: string; model: string; system_role: string; },
+    settings: BMOSettings,
     referenceCurrentNote: string,
     messageHistoryContent: { role: string; content: string }[] = [],
     maxTokens: string,
@@ -927,7 +935,7 @@ async function requestUrlAnthropicAPI(
 
             if (messageBlock) {
                 messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages. We recommend clearing max_tokens for best results.';
-                addMessage(messageBlock.innerHTML, 'botMessage', this.settings);
+                addMessage(messageBlock.innerHTML, 'botMessage', settings);
 
                 const loadingEl = lastBotMessage.querySelector("#loading");
                 if (loadingEl) {

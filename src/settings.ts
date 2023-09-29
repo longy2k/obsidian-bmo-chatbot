@@ -40,6 +40,8 @@ export class BMOSettingTab extends PluginSettingTab {
 		usageText.appendChild(usageLink);
 		statusText.appendChild(statusLink);
 
+		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
+
 		containerEl.createEl('h2', {text: 'General'});
 
 		new Setting(containerEl)

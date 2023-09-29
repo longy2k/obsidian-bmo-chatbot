@@ -106,6 +106,14 @@ export default class BMOGPT extends Plugin {
 				textarea.style.opacity = '1';
 			}, 50); 
 		}
+
+		const messageContainer = document.querySelector("#messageContainer");
+		if (messageContainer) {
+			messageContainer.scroll({
+				top: messageContainer.scrollHeight, 
+				behavior: 'smooth' 
+			});
+		}
 	}
 	
 

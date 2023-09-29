@@ -57,7 +57,7 @@ export async function commandInspect(currentSettings: BMOSettings) {
       // Set the formatted settings as innerHTML
       messageBlock2.innerHTML = formattedSettings;
   
-      addMessage(messageBlock.innerHTML, 'botMessage', this.settings);
+      addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
 
       const botMessages = messageContainer.querySelectorAll(".botMessage");
       const lastBotMessage = botMessages[botMessages.length - 1];
@@ -112,6 +112,7 @@ export function commandHelp(currentSettings: BMOSettings) {
               <p><strong>/maxtokens</strong> [VALUE] (Set max tokens)</p>
               <p><strong>/temp</strong> [VALUE] (Temperature range from 0 to 1)</p>
               <p><strong>/ref</strong> on | off (Allow reference current note)</p>
+              <p><strong>/clear</strong> (Clear chat conversation)</p>
             </div>
           `;
         }
@@ -119,7 +120,7 @@ export function commandHelp(currentSettings: BMOSettings) {
         // Set the formatted settings as innerHTML
         messageBlock2.innerHTML = formattedSettings;
     
-        addMessage(messageBlock.innerHTML, 'botMessage', this.settings);
+        addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
 
         const botMessages = messageContainer.querySelectorAll(".botMessage");
         const lastBotMessage = botMessages[botMessages.length - 1];
@@ -266,7 +267,7 @@ export function commandModel(input: string, currentSettings: BMOSettings) {
                 // Set the formatted settings as innerHTML
                 messageBlock2.innerHTML = formattedSettings;
                     
-                addMessage(messageBlock.innerHTML, 'botMessage', this.settings);
+                addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
                 
 
                 const botMessages = messageContainer.querySelectorAll(".botMessage");
@@ -341,7 +342,7 @@ export function commandReference(input: string, currentSettings: BMOSettings) {
           }
         }
     
-        addMessage(messageBlock2.innerHTML, 'botMessage', this.settings);
+        addMessage(messageBlock2.innerHTML, 'botMessage', currentSettings);
     
         const botMessages = messageContainer.querySelectorAll(".botMessage");
         const lastBotMessage = botMessages[botMessages.length - 1];
@@ -411,7 +412,7 @@ export function commandTemperature(input: string, currentSettings: BMOSettings) 
             messageBlock2.innerHTML = formattedSettings;
           }
     
-          addMessage(messageBlock2.innerHTML, 'botMessage', this.settings);
+          addMessage(messageBlock2.innerHTML, 'botMessage', currentSettings);
     
           const updatedBotMessages = messageContainer.querySelectorAll(".botMessage");
           const updatedLastBotMessage = updatedBotMessages[updatedBotMessages.length - 1];
@@ -466,7 +467,7 @@ export async function commandFalse(currentSettings: BMOSettings) {
       // Set the formatted settings as innerHTML
       messageBlock2.innerHTML = formattedSettings;
   
-      addMessage(messageBlock.innerHTML, 'botMessage', this.settings);
+      addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
 
       const botMessages = messageContainer.querySelectorAll(".botMessage");
       const lastBotMessage = botMessages[botMessages.length - 1];
@@ -540,7 +541,7 @@ export function commandMaxTokens(input: string, currentSettings: BMOSettings) {
       }
   
       messageBlock2.innerHTML = formattedSettings;
-      addMessage(messageBlock2.innerHTML, 'botMessage', this.settings);
+      addMessage(messageBlock2.innerHTML, 'botMessage', currentSettings);
   
       lastBotMessage.appendChild(messageBlock2);
       lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -599,7 +600,7 @@ export function commandSystem(input: string, currentSettings: BMOSettings) {
       }
   
       messageBlock2.innerHTML = formattedSettings;
-      addMessage(messageBlock2.innerHTML, 'botMessage', this.settings);
+      addMessage(messageBlock2.innerHTML, 'botMessage', currentSettings);
   
       lastBotMessage.appendChild(messageBlock2);
       lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
