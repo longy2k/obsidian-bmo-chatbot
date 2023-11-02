@@ -4,6 +4,7 @@ import { BMOSettingTab } from './settings';
 import './commands';
 
 export interface BMOSettings {
+	baseAPIUrl: any;
 	models: any;
 	apiKey: string;
 	max_tokens: string;
@@ -20,6 +21,7 @@ export interface BMOSettings {
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
+	baseAPIUrl:"https://api.openai.com/v1",
 	apiKey: '',
 	max_tokens: '',
 	model: 'gpt-3.5-turbo',

@@ -317,6 +317,17 @@ export class BMOSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 		);
+		new Setting(containerEl)
+		.setName('OpenAI API URL')
+		.setDesc('Enter your OpenAI API URL')
+		.addText(text => text
+			.setPlaceholder('https://api.openai.com/v1')
+			.setValue(this.plugin.settings.baseAPIUrl || DEFAULT_SETTINGS.baseAPIUrl)
+			.onChange(async (value) => {
+					this.plugin.settings.baseAPIUrl = value ? value : DEFAULT_SETTINGS.baseAPIUrl;
+					await this.plugin.saveSettings();
+				})
+		);
 
 		function descLink1(text: string, link: string, extraWords: string): DocumentFragment {
 			const frag = new DocumentFragment();

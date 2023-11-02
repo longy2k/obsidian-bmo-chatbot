@@ -828,6 +828,7 @@ async function fetchOpenAIAPI(
     {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
+        baseURL: settings.baseAPIUrl,
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
