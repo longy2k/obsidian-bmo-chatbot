@@ -307,6 +307,28 @@ export class BMOSettingTab extends PluginSettingTab {
 		containerEl.createEl('h2', {text: 'Advanced'});
 
 		new Setting(containerEl)
+		.setName('OPENAI BASE URL')
+		.setDesc('Enter your custom OpenAI base url.')
+		.addButton(button => button
+			.setButtonText("Restore Default")
+			.setIcon("rotate-cw")
+			.setClass("clickable-icon")
+			.onClick(async () => {
+				this.plugin.settings.openAIBaseUrl = DEFAULT_SETTINGS.openAIBaseUrl;
+				await this.plugin.saveSettings();
+				this.display();
+			})
+		)
+		.addText(text => text
+			.setPlaceholder('https://api.openai.com/v1')
+			.setValue(this.plugin.settings.openAIBaseUrl || DEFAULT_SETTINGS.openAIBaseUrl)
+			.onChange(async (value) => {
+					this.plugin.settings.openAIBaseUrl = value ? value : DEFAULT_SETTINGS.openAIBaseUrl;
+					await this.plugin.saveSettings();
+				})
+		);
+
+		new Setting(containerEl)
 		.setName('REST API URL')
 		.setDesc(descLink1('Enter your REST API URL using', 'https://github.com/go-skynet/LocalAI', ''))
 		.addText(text => text
