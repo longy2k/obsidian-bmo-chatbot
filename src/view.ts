@@ -702,7 +702,7 @@ export class BMOView extends ItemView {
                 }
             }
         }
-        // console.log("BMO settings:", this.settings);
+        console.log("BMO settings:", this.settings);
     }
 
     // Reference Current Note
@@ -1119,6 +1119,9 @@ function executeCommand(input: string, settings: BMOSettings) {
             commands.commandSystem(input, settings);
             break;
         case '/clear':
+            removeMessageThread(0);
+            break;
+        case '/c':
             removeMessageThread(0);
             break;
 
