@@ -1,7 +1,6 @@
 import { Plugin } from 'obsidian';
 import { BMOView, VIEW_TYPE_CHATBOT, filenameMessageHistoryJSON, clearMessageHistory } from "./view";
 import { BMOSettingTab } from './settings';
-import './commands';
 
 export interface BMOSettings {
 	models: any;
@@ -46,7 +45,7 @@ export default class BMOGPT extends Plugin {
 
 		this.registerView(
 			VIEW_TYPE_CHATBOT,
-			(leaf) => new BMOView(leaf, this.settings)
+			(leaf) => new BMOView(leaf, this.settings, this)
 		);
 
 		this.addRibbonIcon("bot", "Chatbot (Clear Conversation)", () => {

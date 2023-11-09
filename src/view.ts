@@ -5,6 +5,7 @@ import { marked } from "marked";
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 import * as commands from './commands';
+import BMOGPT from './main';
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
@@ -21,10 +22,12 @@ export class BMOView extends ItemView {
     private textareaElement: HTMLTextAreaElement;
     private loadingAnimationIntervalId: number;
     private preventEnter = false;
+    private plugin: BMOGPT;
 
-    constructor(leaf: WorkspaceLeaf, settings: BMOSettings) {
+    constructor(leaf: WorkspaceLeaf, settings: BMOSettings, plugin: BMOGPT) {
         super(leaf);
         this.settings = settings;
+        this.plugin = plugin;
         this.icon = 'bot';      
     }
 
@@ -444,7 +447,7 @@ export class BMOView extends ItemView {
 
                     if (input.startsWith("/")) {
         
-                        executeCommand(input, this.settings);
+                        executeCommand(input, this.settings, this.plugin);
                         const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
                         if (modelName) {
                             modelName.textContent = 'Model: ' + this.settings.model.toLowerCase();
@@ -1088,7 +1091,7 @@ async function removeMessageThread(index: number) {
     }
 }
 
-function executeCommand(input: string, settings: BMOSettings) {
+function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
     const command = input.split(' ')[0]; // Get the first word (command) from the input
     
     switch (command) {
@@ -1096,37 +1099,30 @@ function executeCommand(input: string, settings: BMOSettings) {
             commands.commandHelp(settings);
             break;
         case '/inspect':
-            commands.commandInspect(settings);
-            break;
         case '/settings':
             commands.commandInspect(settings);
             break;
         case '/model':
-            return commands.commandModel(input, settings);
+            return commands.commandModel(input, settings, plugin);
         case '/reference':
-            commands.commandReference(input, settings);
-            break;
         case '/ref':
-            commands.commandReference(input, settings);
+            commands.commandReference(input, settings, plugin);
             break;
         case '/temp':
-            commands.commandTemperature(input, settings);
+            commands.commandTemperature(input, settings, plugin);
             break;
         case '/maxtokens':
-            commands.commandMaxTokens(input, settings);
+            commands.commandMaxTokens(input, settings, plugin);
             break;
         case '/system':
-            commands.commandSystem(input, settings);
+            commands.commandSystem(input, settings, plugin);
             break;
         case '/clear':
-            removeMessageThread(0);
-            break;
         case '/c':
             removeMessageThread(0);
             break;
-
         default:
-            commands.commandFalse(settings);
+            commands.commandFalse(settings, plugin);
     }
 }
 

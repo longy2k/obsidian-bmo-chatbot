@@ -1,6 +1,8 @@
 import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
 import { addMessage } from "./view";
+import BMOGPT from './main';
+
 
 // Function to create and append a bot message
 function createBotMessage(currentSettings: BMOSettings): HTMLDivElement {
@@ -92,7 +94,7 @@ export function commandInspect(currentSettings: BMOSettings) {
 }
 
 // `/model "[VALUE]"` to change model.
-export function commandModel(input: string, currentSettings: BMOSettings) {
+export async function commandModel(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
   const messageBlock = createBotMessage(currentSettings);
 
   // Check if the user has not specified a model after the "/model" command
@@ -136,6 +138,7 @@ export function commandModel(input: string, currentSettings: BMOSettings) {
     }
 
     displayMessage(messageBlock, messageHtml, currentSettings);
+    await plugin.saveSettings();
     return currentSettings;
   } else {
     const settingsObj = currentSettings;
@@ -155,11 +158,13 @@ export function commandModel(input: string, currentSettings: BMOSettings) {
       }
     }
     displayMessage(messageBlock, formattedSettings, currentSettings);
+    await plugin.saveSettings();
   }
 }
 
 // `/ref` to turn on/off referenceCurrentNote
-export function commandReference(input: string, currentSettings: BMOSettings) {
+export async function commandReference(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
+  console.log('Plugin instance in executeCommand:', plugin);
   const messageBlock = createBotMessage(currentSettings);
 
   let formattedSettings = '';
@@ -195,10 +200,11 @@ export function commandReference(input: string, currentSettings: BMOSettings) {
   }
 
   displayMessage(messageBlock, formattedSettings, currentSettings);
+  await plugin.saveSettings();
 }
 
 // `/temp "VALUE"` to change the temperature
-export function commandTemperature(input: string, currentSettings: BMOSettings) {
+export async function commandTemperature(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
   const messageBlock = createBotMessage(currentSettings);
 
   const inputValue = input.split(' ')[1];
@@ -219,9 +225,10 @@ export function commandTemperature(input: string, currentSettings: BMOSettings) 
   `;
 
   displayMessage(messageBlock, formattedSettings, currentSettings);
+  await plugin.saveSettings();
 }
 
-export async function commandFalse(currentSettings: BMOSettings) {
+export async function commandFalse(currentSettings: BMOSettings, plugin: BMOGPT) {
   const messageBlock = createBotMessage(currentSettings);
 
   const formattedSettings = `
@@ -231,10 +238,11 @@ export async function commandFalse(currentSettings: BMOSettings) {
   `;
 
   displayMessage(messageBlock, formattedSettings, currentSettings);
+  await plugin.saveSettings();
 }
 
 // `/maxtokens` to change max_tokens
-export function commandMaxTokens(input: string, currentSettings: BMOSettings) {
+export async function commandMaxTokens(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
   const messageBlock = createBotMessage(currentSettings);
 
   let formattedSettings = '';
@@ -265,10 +273,11 @@ export function commandMaxTokens(input: string, currentSettings: BMOSettings) {
   `;
 
   displayMessage(messageBlock, formattedSettings, currentSettings);
+  await plugin.saveSettings();
 }
 
 // `/system "[VALUE]"` to change system prompt
-export function commandSystem(input: string, currentSettings: BMOSettings) {
+export async function commandSystem(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
   const messageBlock = createBotMessage(currentSettings);
 
   let formattedSettings = '';
@@ -293,4 +302,5 @@ export function commandSystem(input: string, currentSettings: BMOSettings) {
   }
 
   displayMessage(messageBlock, formattedSettings, currentSettings);
+  await plugin.saveSettings();
 }
