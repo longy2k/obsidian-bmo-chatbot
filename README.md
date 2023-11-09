@@ -58,3 +58,5 @@ If you want to clear the chat history, simply click on the bot icon again in the
 If you have any bugs, improvements, or questions please create an issue!
 
 Feel free to create a PR as well :D
+
+<a href='https://ko-fi.com/K3K8PNYT8' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
