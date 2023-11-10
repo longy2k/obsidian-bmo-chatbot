@@ -14,6 +14,7 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 - **System role prompt:** Configure the chatbot to prompt for user roles before responding to messages.
 - **Set Max Tokens and Temperature:** Customize the length and randomness of the chatbot's responses with Max Tokens and Temperature settings.
 - **System theme color accents:** Seamlessly matches the chatbot's interface with your system's color scheme.
+- **Save current chat history as markdown:** Use the `/save` command in chat to save current conversation.
 - **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URL provided to interact with self-hosted Large Language Models (LLMs) using [LocalAI](https://github.com/go-skynet/LocalAI).
 
 ## Requirements
