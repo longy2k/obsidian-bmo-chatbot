@@ -326,9 +326,32 @@ export async function commandSave(input: string) {
   try {
     let markdownContent = '';
 
+    // Retrieve model name
+    const modelNameElement = document.querySelector('#modelName') as HTMLHeadingElement;
+    let modelName = 'GPT-3.5-TURBO'; // Default model name
+    if (modelNameElement && modelNameElement.textContent) {
+        modelName = modelNameElement.textContent.replace('Model: ', '').toUpperCase();
+    }
+
+    // YAML front matter
+    markdownContent += 
+    `---
+    MODEL: ${modelName}
+---\n`;
+
     // Retrieve user and chatbot names
     const userNames = document.querySelectorAll('#userName') as NodeListOf<HTMLHeadingElement>;
-    const userNameText = userNames.length > 0 && userNames[0].textContent ? userNames[0].textContent.toUpperCase() : 'USER';
+
+    let userNameText = 'USER';
+    if (userNames.length > 0) {
+        const userNameNode = userNames[0];
+        Array.from(userNameNode.childNodes).forEach((node) => {
+            // Check if the node is a text node and its textContent is not null
+            if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+                userNameText = node.textContent.trim().toUpperCase();
+            }
+        });
+    }
 
     const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
     const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
@@ -341,7 +364,7 @@ export async function commandSave(input: string) {
 
         // Filter out messages starting with '/', and the assistant's response immediately following it
         let skipNext = false;
-        markdownContent = messages
+        markdownContent += messages
           .filter((message: { role: string; content: string; }, index: number, array: string | any[]) => {
             if (skipNext && message.role === 'assistant') {
               skipNext = false;
