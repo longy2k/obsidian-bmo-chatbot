@@ -1119,7 +1119,7 @@ function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
             commands.commandSystem(input, settings, plugin);
             break;
         case '/save':
-            commands.commandSave(input);
+            commands.commandSave(settings);
             break;
         case '/clear':
         case '/c':

@@ -292,10 +292,14 @@ export async function commandSystem(input: string, currentSettings: BMOSettings,
 }
 
 // `/save` to save current chat history to a note.
-export async function commandSave(input: string) {
-  const folderName = 'BMOChatHistory/';
+export async function commandSave(currentSettings: BMOSettings) {
+  let folderName = currentSettings.chatHistoryPath;
   const baseFileName = 'Chat History';
   const fileExtension = '.md';
+
+  if (folderName && !folderName.endsWith('/')) {
+    folderName += '/';
+  }
   
   // Create a datetime string to append to the file name
   const now = new Date();
@@ -306,6 +310,7 @@ export async function commandSave(input: string) {
                         + now.getMinutes().toString().padStart(2, '0') + "-" 
                         + now.getSeconds().toString().padStart(2, '0');
 
+                      
   const fileName = folderName + baseFileName + ' ' + dateTimeStamp + fileExtension;
 
   try {

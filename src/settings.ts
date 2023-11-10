@@ -308,6 +308,22 @@ export class BMOSettingTab extends PluginSettingTab {
 				await this.plugin.saveSettings();
 			});
 		}); 	
+
+		// ======================= CHAT HISTORY ===================
+
+		containerEl.createEl('h2', {text: 'Chat History Settings'});
+
+		new Setting(containerEl)
+		.setName('Chat History Folder Path')
+		.setDesc('Save your chat histories in a specified folder.')
+		.addText(text => text
+            .setPlaceholder('BMOChatHistory/')
+            .setValue(this.plugin.settings.chatHistoryPath || DEFAULT_SETTINGS.chatHistoryPath)
+            .onChange(async (value) => {
+				this.plugin.settings.chatHistoryPath = value ? value : DEFAULT_SETTINGS.chatHistoryPath;
+				await this.plugin.saveSettings();
+            })
+        );
 				
 		// ======================= ADVANCED =======================
 
