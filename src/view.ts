@@ -489,7 +489,7 @@ export class BMOView extends ItemView {
                             }
                         };  
 
-                        if (!["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
+                        if (!["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(this.settings.model)) {
                             botMessage.appendChild(loadingEl);
                             loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
                         }
@@ -581,7 +581,7 @@ export class BMOView extends ItemView {
         const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
 
         // If apiKey does not exist.
-        if (!this.settings.apiKey && ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
+        if (!this.settings.apiKey && ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(this.settings.model)) {
             new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
             if (chatbotNameHeading){
                 chatbotNameHeading.textContent = "ERROR";
@@ -612,7 +612,7 @@ export class BMOView extends ItemView {
             };
 
             // OpenAI models
-            if (["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(this.settings.model)) {
+            if (["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(this.settings.model)) {
                 try {
                     await fetchOpenAIAPI(this.settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature); 
                 }

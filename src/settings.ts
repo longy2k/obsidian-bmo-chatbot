@@ -65,8 +65,10 @@ export class BMOSettingTab extends PluginSettingTab {
 				if (!this.plugin.settings.apiKey || !this.plugin.settings.apiKey.startsWith("sk-ant")) {
 					dropdown
 					.addOption('gpt-3.5-turbo', 'gpt-3.5-turbo')
-					.addOption('gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k')
+					.addOption('gpt-3.5-turbo-1106', 'gpt-3.5-turbo-1106')
+					.addOption('gpt-3.5-turbo-16k-0613', 'gpt-3.5-turbo-16k-0613')
 					.addOption('gpt-4', 'gpt-4')
+					.addOption('gpt-4-1106-preview', 'gpt-4-1106-preview')
 				}
 				if (this.plugin.settings.apiKey) {
 					if (this.plugin.settings.apiKey.startsWith("sk-ant")) {

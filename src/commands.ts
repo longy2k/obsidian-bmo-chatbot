@@ -76,7 +76,7 @@ export function commandHelp(currentSettings: BMOSettings) {
       <p><strong>/model</strong> "[VALUE]" - Change model</p>
       <p><strong>/system</strong> "[VALUE]" - Change system setting</p>
       <p><strong>/maxtokens</strong> [VALUE] - Set max tokens</p>
-      <p><strong>/temp</strong> [VALUE] - Change temperature range from to 1.</p>
+      <p><strong>/temp</strong> [VALUE] - Change temperature range 0 from to 1.</p>
       <p><strong>/ref</strong> on | off - Turn on or off "reference current note".</p>
       <p><strong>/save</strong> - Save current chat history to a note.</p>
       <p><strong>/clear or /c</strong> - Clear chat history.</p>
@@ -129,8 +129,10 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
     };
     const openAiApiModelAliases = {
       "1": "gpt-3.5-turbo",
-      "2": "gpt-3.5-turbo-16k",
-      "3": "gpt-4",
+      "2": "gpt-3.5-turbo-1106",
+      "3": "gpt-3.5-turbo-16k-0613",
+      "4": "gpt-4",
+      "5": "gpt-4-1106-preview",
     };
 
     let messageHtml = "";
@@ -143,7 +145,7 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
         messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
       }
     } else if (currentSettings.apiKey.startsWith("sk-")) {
-      if (openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases] || ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(inputModel)) {
+      if (openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases] || ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(inputModel)) {
         currentSettings.model = openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases] || inputModel;
         messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${currentSettings.model}</strong></p></div>`;
       } else {
