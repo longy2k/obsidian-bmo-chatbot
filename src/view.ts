@@ -1117,6 +1117,9 @@ function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
         case '/system':
             commands.commandSystem(input, settings, plugin);
             break;
+        case '/save':
+            commands.commandSave(input);
+            break;
         case '/clear':
         case '/c':
             removeMessageThread(0);

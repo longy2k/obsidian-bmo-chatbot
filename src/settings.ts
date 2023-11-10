@@ -42,6 +42,8 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
 
+		// ======================= GENERAL =======================
+
 		containerEl.createEl('h2', {text: 'General'});
 
 		new Setting(containerEl)
@@ -162,6 +164,8 @@ export class BMOSettingTab extends PluginSettingTab {
 			})
 		);
 
+		// ======================= APPEARANCE =======================
+
 		containerEl.createEl('h2', {text: 'Appearance'});
 
 		new Setting(containerEl)
@@ -253,56 +257,64 @@ export class BMOSettingTab extends PluginSettingTab {
 				});
 			});		
 			
-			let colorPicker2: ColorComponent;
-			const defaultBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
+		let colorPicker2: ColorComponent;
+		const defaultBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
 
-			new Setting(containerEl)
-				.setName('Background color for Bot Messages')
-				.setDesc('Modify the background color of the botMessage element.')
-				.addButton(button => button
-					.setButtonText("Restore Default")
-					.setIcon("rotate-cw")
-					.setClass("clickable-icon")
-					.onClick(async () => {
-						const defaultValue = colorToHex(defaultBotMessageBackgroundColor);
-						colorPicker2.setValue(defaultValue);
-			
+		new Setting(containerEl)
+			.setName('Background color for Bot Messages')
+			.setDesc('Modify the background color of the botMessage element.')
+			.addButton(button => button
+				.setButtonText("Restore Default")
+				.setIcon("rotate-cw")
+				.setClass("clickable-icon")
+				.onClick(async () => {
+					const defaultValue = colorToHex(defaultBotMessageBackgroundColor);
+					colorPicker2.setValue(defaultValue);
+		
+					const messageContainer = document.querySelector('#messageContainer');
+					if (messageContainer) {
+						const botMessages = messageContainer.querySelectorAll('.botMessage');
+						botMessages.forEach((botMessage) => {
+							const element = botMessage as HTMLElement;
+							element.style.backgroundColor = defaultValue;
+						});
+						await this.plugin.saveSettings();
+					}
+				})
+			)
+			.addColorPicker((color) => {
+				colorPicker2 = color;
+
+				let defaultValue = this.plugin.settings.botMessageBackgroundColor;
+
+				if (this.plugin.settings.botMessageBackgroundColor == "--background-secondary") {
+					defaultValue = colorToHex(defaultBotMessageBackgroundColor);
+				}
+
+				color.setValue(defaultValue)
+					.onChange(async (value) => {
+						const hexValue = colorToHex(value);
+						this.plugin.settings.botMessageBackgroundColor = hexValue;
 						const messageContainer = document.querySelector('#messageContainer');
 						if (messageContainer) {
 							const botMessages = messageContainer.querySelectorAll('.botMessage');
 							botMessages.forEach((botMessage) => {
 								const element = botMessage as HTMLElement;
-								element.style.backgroundColor = defaultValue;
+								element.style.backgroundColor = hexValue;
 							});
-							await this.plugin.saveSettings();
 						}
-					})
-				)
-				.addColorPicker((color) => {
-					colorPicker2 = color;
-
-					let defaultValue = this.plugin.settings.botMessageBackgroundColor;
-	
-					if (this.plugin.settings.botMessageBackgroundColor == "--background-secondary") {
-						defaultValue = colorToHex(defaultBotMessageBackgroundColor);
-					}
-
-					color.setValue(defaultValue)
-						.onChange(async (value) => {
-							const hexValue = colorToHex(value);
-							this.plugin.settings.botMessageBackgroundColor = hexValue;
-							const messageContainer = document.querySelector('#messageContainer');
-							if (messageContainer) {
-								const botMessages = messageContainer.querySelectorAll('.botMessage');
-								botMessages.forEach((botMessage) => {
-									const element = botMessage as HTMLElement;
-									element.style.backgroundColor = hexValue;
-								});
-							}
-					await this.plugin.saveSettings();
-				});
+				await this.plugin.saveSettings();
 			});
+		});
+
+		const setting = new Setting(this.containerEl);
+
+		setting.setName("Template Folder Path");
+		setting.setDesc(
+			"Path to the folder where templates are stored. Used to suggest template files when configuring QuickAdd."
+		);		
 				
+		// ======================= ADVANCED =======================
 
 		containerEl.createEl('h2', {text: 'Advanced'});
 

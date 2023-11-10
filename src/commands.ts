@@ -1,6 +1,6 @@
 import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
-import { addMessage } from "./view";
+import { addMessage, filenameMessageHistoryJSON } from "./view";
 import BMOGPT from './main';
 
 
@@ -63,6 +63,7 @@ export function commandHelp(currentSettings: BMOSettings) {
       <p><strong>/maxtokens</strong> [VALUE] - Set max tokens</p>
       <p><strong>/temp</strong> [VALUE] - Temperature range from 0 to 1</p>
       <p><strong>/ref</strong> on | off - Allow reference current note</p>
+      <p><strong>/save</strong> - Save current chat history as note.</p>
       <p><strong>/clear or /c</strong> - Clear chat conversation</p>
     </div>
   `;
@@ -303,4 +304,83 @@ export async function commandSystem(input: string, currentSettings: BMOSettings,
 
   displayMessage(messageBlock, formattedSettings, currentSettings);
   await plugin.saveSettings();
+}
+
+// `/save` to save current chat history to a note.
+export async function commandSave(input: string) {
+  const folderName = 'BMOChatHistory/';
+  const baseFileName = 'Chat History';
+  const fileExtension = '.md';
+  
+  // Create a datetime string to append to the file name
+  const now = new Date();
+  const dateTimeStamp = now.getFullYear() + "-" 
+                        + (now.getMonth() + 1).toString().padStart(2, '0') + "-" 
+                        + now.getDate().toString().padStart(2, '0') + " " 
+                        + now.getHours().toString().padStart(2, '0') + "-" 
+                        + now.getMinutes().toString().padStart(2, '0') + "-" 
+                        + now.getSeconds().toString().padStart(2, '0');
+
+  const fileName = folderName + baseFileName + ' ' + dateTimeStamp + fileExtension;
+
+  try {
+    let markdownContent = '';
+
+    // Retrieve user and chatbot names
+    const userNames = document.querySelectorAll('#userName') as NodeListOf<HTMLHeadingElement>;
+    const userNameText = userNames.length > 0 && userNames[0].textContent ? userNames[0].textContent.toUpperCase() : 'USER';
+
+    const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+    const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
+
+    // Check and read the JSON file
+    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+      try {
+        const jsonContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
+        const messages = JSON.parse(jsonContent);
+
+        // Filter out messages starting with '/', and the assistant's response immediately following it
+        let skipNext = false;
+        markdownContent = messages
+          .filter((message: { role: string; content: string; }, index: number, array: string | any[]) => {
+            if (skipNext && message.role === 'assistant') {
+              skipNext = false;
+              return false;
+            }
+            if (message.content.startsWith('/')) {
+              // Check if next message is also from user and starts with '/'
+              skipNext = index + 1 < array.length && array[index + 1].role === 'assistant';
+              return false;
+            }
+            return true;
+          })
+          .map((message: { role: string; content: string; }) => {
+            let roleText = message.role.toUpperCase();
+            roleText = roleText === 'USER' ? userNameText : roleText;
+            roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
+            return `###### ${roleText}\n${message.content}`;
+          })
+          .join('\n');
+
+      } catch (error) {
+        console.error("Error processing message history:", error);
+      }
+    }
+
+    // Check if the folder exists, create it if not
+    if (!await this.app.vault.adapter.exists(folderName)) {
+      await this.app.vault.createFolder(folderName);
+    }
+
+    // Create the new note with formatted Markdown content
+    const file = await this.app.vault.create(fileName, markdownContent);
+    if (file) {
+      console.log('Note created: ' + file.path);
+
+      // Open the newly created note in a new pane
+      this.app.workspace.openLinkText(fileName, '', true, { active: true });
+    }
+  } catch (error) {
+    console.error('Failed to create note:', error);
+  }
 }
