@@ -305,14 +305,7 @@ export class BMOSettingTab extends PluginSettingTab {
 						}
 				await this.plugin.saveSettings();
 			});
-		});
-
-		const setting = new Setting(this.containerEl);
-
-		setting.setName("Template Folder Path");
-		setting.setDesc(
-			"Path to the folder where templates are stored. Used to suggest template files when configuring QuickAdd."
-		);		
+		}); 	
 				
 		// ======================= ADVANCED =======================
 

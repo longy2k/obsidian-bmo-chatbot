@@ -42,6 +42,21 @@ To start using the plugin, enable it in your settings menu and enter your OpenAP
 
 If you want to clear the chat history, simply click on the bot icon again in the left ribbon bar.
 
+## Commands
+- `/help` - Show help commands.
+- `/inspect` - Show system settings.
+- `/model` - Change model.
+	- `/model 1` or `/model "gpt-3.5-turbo"`
+ 	- `/model 2` or `/model "gpt-3.5-turbo-16k"`
+    - ...
+- `/system` - Change system prompt.
+	- `/system "WRITE IN ALL CAPS!"`
+- `/maxtokens` - Set max tokens.
+- `/temp` - Change temperature range from to 1.
+- `/ref` - Turn on or off "reference current note".
+- `/save` - Save current chat history to a note.
+- `/clear` or `/c` - Clear chat history.
+
 ## Supported Models
 - OpenAI
   - gpt-3.5-turbo

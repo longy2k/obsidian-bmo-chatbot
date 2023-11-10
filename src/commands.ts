@@ -1,3 +1,4 @@
+import { Notice } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
 import { addMessage, filenameMessageHistoryJSON } from "./view";
@@ -48,6 +49,20 @@ function displayMessage(messageBlock: HTMLDivElement, messageHtml: string, curre
   }
 }
 
+export async function commandFalse(currentSettings: BMOSettings, plugin: BMOGPT) {
+  const messageBlock = createBotMessage(currentSettings);
+
+  const formattedSettings = `
+      <div class="formattedSettings">
+          <p><strong>Command not recognized.</strong></p>
+      </div>
+  `;
+
+  displayMessage(messageBlock, formattedSettings, currentSettings);
+  await plugin.saveSettings();
+  // new Notice("Invalid command.");
+}
+
 // =================== COMMANDS ===================
 
 // `/help` for help commands
@@ -61,10 +76,10 @@ export function commandHelp(currentSettings: BMOSettings) {
       <p><strong>/model</strong> "[VALUE]" - Change model</p>
       <p><strong>/system</strong> "[VALUE]" - Change system setting</p>
       <p><strong>/maxtokens</strong> [VALUE] - Set max tokens</p>
-      <p><strong>/temp</strong> [VALUE] - Temperature range from 0 to 1</p>
-      <p><strong>/ref</strong> on | off - Allow reference current note</p>
-      <p><strong>/save</strong> - Save current chat history as note.</p>
-      <p><strong>/clear or /c</strong> - Clear chat conversation</p>
+      <p><strong>/temp</strong> [VALUE] - Change temperature range from to 1.</p>
+      <p><strong>/ref</strong> on | off - Turn on or off "reference current note".</p>
+      <p><strong>/save</strong> - Save current chat history to a note.</p>
+      <p><strong>/clear or /c</strong> - Clear chat history.</p>
     </div>
   `;
 
@@ -141,25 +156,6 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
     displayMessage(messageBlock, messageHtml, currentSettings);
     await plugin.saveSettings();
     return currentSettings;
-  } else {
-    const settingsObj = currentSettings;
-    let formattedSettings = '';
-
-    if (settingsObj) {
-      formattedSettings += `<div class="formattedSettings"><p><strong>Models</strong></p>`;
-      settingsObj.models.forEach((model: string) => {
-        formattedSettings += `<p>${model}</p>`;
-      });
-      
-      if (currentSettings.apiKey && ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"].includes(currentSettings.model)) {
-        formattedSettings += `<p>gpt-3.5-turbo</p><p>gpt-3.5-turbo-16k</p><p>gpt-4</p>`;
-      }
-      if (currentSettings.apiKey && ["claude-2.0", "claude-instant-1.2"].includes(currentSettings.model)) {
-        formattedSettings += `<p>claude-2.0</p><p>claude-instant-1.2</p>`;
-      }
-    }
-    displayMessage(messageBlock, formattedSettings, currentSettings);
-    await plugin.saveSettings();
   }
 }
 
@@ -222,19 +218,6 @@ export async function commandTemperature(input: string, currentSettings: BMOSett
   const formattedSettings = `
       <div class="formattedSettings">
         <p><strong>Temperature updated: ${temperatureSettingMessage}</strong></p>
-      </div>
-  `;
-
-  displayMessage(messageBlock, formattedSettings, currentSettings);
-  await plugin.saveSettings();
-}
-
-export async function commandFalse(currentSettings: BMOSettings, plugin: BMOGPT) {
-  const messageBlock = createBotMessage(currentSettings);
-
-  const formattedSettings = `
-      <div class="formattedSettings">
-          <p><strong>Command not recognized.</strong></p>
       </div>
   `;
 
@@ -399,6 +382,7 @@ export async function commandSave(input: string) {
     const file = await this.app.vault.create(fileName, markdownContent);
     if (file) {
       console.log('Note created: ' + file.path);
+      new Notice("Saved conversation.");
 
       // Open the newly created note in a new pane
       this.app.workspace.openLinkText(fileName, '', true, { active: true });
