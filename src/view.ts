@@ -127,8 +127,9 @@ export class BMOView extends ItemView {
                 userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
             
                 const userNameSpan = document.createElement("span");
+                userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
                 userNameSpan.setAttribute("id", "userName");
-                userNameSpan.textContent = "USER";
+                userMessageDiv.appendChild(userNameSpan);
 
                 const userP = document.createElement("p");
             
