@@ -20,6 +20,16 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('h1', {text: 'BMO Chatbot Settings'});
 
+		// Create the element
+		const changeLogLink = containerEl.createEl("a", {
+			text: "Changelog",
+			href: "https://github.com/longy2k/obsidian-bmo-chatbot/releases",
+		});
+
+		// Set the style separately
+		changeLogLink.style.fontSize = "0.8rem";  // Adjust the font size as needed
+
+
 		const usageText = containerEl.createEl("p", {
 			text: "Check usage: ",
 		});
