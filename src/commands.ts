@@ -1,8 +1,12 @@
 import { Notice } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
-import { addMessage, filenameMessageHistoryJSON, removeMessageThread } from "./view";
+import { ANTHROPIC_MODELS, OPENAI_MODELS, addMessage, filenameMessageHistoryJSON, removeMessageThread } from "./view";
 import BMOGPT from './main';
+
+type ModelObject = {
+  [key: string]: string;
+};
 
 // Commands
 export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
@@ -163,30 +167,21 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
   if (input.split(' ')[1] !== undefined) {
     const inputModel = input.split(' ')[1].replace(/^"(.*)"$/, '$1');
 
-    const anthropicApiKeyModels = {
-      "1": "claude-instant-1.2",
-      "2": "claude-2.0",
-    };
-    const openAiApiModelAliases = {
-      "1": "gpt-3.5-turbo",
-      "2": "gpt-3.5-turbo-1106",
-      "3": "gpt-3.5-turbo-16k-0613",
-      "4": "gpt-4",
-      "5": "gpt-4-1106-preview",
-    };
+    const anthropicKeyModels = createModelObject(ANTHROPIC_MODELS);
+    const openAIKeyModels = createModelObject(OPENAI_MODELS);
 
     let messageHtml = "";
 
     if (currentSettings.apiKey.startsWith("sk-ant")) {
-      if (anthropicApiKeyModels[inputModel as keyof typeof anthropicApiKeyModels] || ["claude-instant-1.2", "claude-2.0"].includes(inputModel as string)) {
-        currentSettings.model = anthropicApiKeyModels[inputModel as keyof typeof anthropicApiKeyModels] ?? inputModel;
+      if (anthropicKeyModels[inputModel as keyof typeof anthropicKeyModels] || ["claude-instant-1.2", "claude-2.0"].includes(inputModel as string)) {
+        currentSettings.model = anthropicKeyModels[inputModel as keyof typeof anthropicKeyModels] ?? inputModel;
         messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${currentSettings.model}</strong></p></div>`;
       } else {
         messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
       }
     } else if (currentSettings.apiKey.startsWith("sk-")) {
-      if (openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases] || ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(inputModel)) {
-        currentSettings.model = openAiApiModelAliases[inputModel as keyof typeof openAiApiModelAliases] || inputModel;
+      if (openAIKeyModels[inputModel as keyof typeof openAIKeyModels] || ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(inputModel)) {
+        currentSettings.model = openAIKeyModels[inputModel as keyof typeof openAIKeyModels] || inputModel;
         messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${currentSettings.model}</strong></p></div>`;
       } else {
         messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
@@ -366,7 +361,7 @@ export async function commandSave(currentSettings: BMOSettings) {
     // YAML front matter
     markdownContent += 
     `---
-    MODEL: ${modelName}
+    model: ${modelName}
 ---\n`;
 
     // Retrieve user and chatbot names
@@ -437,4 +432,13 @@ export async function commandSave(currentSettings: BMOSettings) {
   } catch (error) {
     console.error('Failed to create note:', error);
   }
+}
+
+// Function to convert an array of models into an object with numeric keys
+function createModelObject(modelsArray: string[]): ModelObject {
+  const modelObject: ModelObject = {};
+  modelsArray.forEach((model, index) => {
+    modelObject[(index + 1).toString()] = model;
+  });
+  return modelObject;
 }

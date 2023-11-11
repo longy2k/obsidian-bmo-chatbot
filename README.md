@@ -47,7 +47,7 @@ If you want to clear the chat history, simply click on the bot icon again in the
 - `/inspect` - Show system settings.
 - `/model` - Change model.
 	- `/model 1` or `/model "gpt-3.5-turbo"`
- 	- `/model 2` or `/model "gpt-3.5-turbo-16k"`
+ 	- `/model 2` or `/model "gpt-3.5-turbo-1106"`
     - ...
 - `/system` - Change system prompt.
 	- `/system "WRITE IN ALL CAPS!"`
