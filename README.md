@@ -60,8 +60,12 @@ If you want to clear the chat history, simply click on the bot icon again in the
 ## Supported Models
 - OpenAI
   - gpt-3.5-turbo
-  - gpt-3.5-turbo-16k
-  - gpt-4
+    - Will be redirected to gpt-3.5-turbo-1106 on December 11, 2023
+  - gpt-3.5-turbo-1106
+    - Newest gpt-3.5-turbo model with a context window of 16,385 tokens, replacing gpt-3.5-turbo-16k.
+    - Same pricing as gpt-3.5-turbo (Input: 0.001 per 1k tokens; Output: 0.002 per 1k tokens).
+  - gpt-4 (Context window: 8,192 tokens)
+  - gpt-4-1106-preview (Context window: 128,000 tokens)
 - Anthropic
   - claude-instant-1.2
   - claude-2.0

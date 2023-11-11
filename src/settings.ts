@@ -311,11 +311,11 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		// ======================= CHAT HISTORY ===================
 
-		containerEl.createEl('h2', {text: 'Chat History Settings'});
+		containerEl.createEl('h2', {text: 'Chat History'});
 
 		new Setting(containerEl)
 		.setName('Chat History Folder Path')
-		.setDesc('Save your chat histories in a specified folder.')
+		.setDesc('Save your chat history in a specified folder.')
 		.addText(text => text
             .setPlaceholder('BMOChatHistory/')
             .setValue(this.plugin.settings.chatHistoryPath || DEFAULT_SETTINGS.chatHistoryPath)
