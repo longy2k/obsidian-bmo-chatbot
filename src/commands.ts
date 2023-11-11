@@ -1,8 +1,48 @@
 import { Notice } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
-import { addMessage, filenameMessageHistoryJSON } from "./view";
+import { addMessage, filenameMessageHistoryJSON, removeMessageThread } from "./view";
 import BMOGPT from './main';
+
+// Commands
+export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
+  const command = input.split(' ')[0]; // Get the first word from the input
+  
+  switch (command) {
+      case '/help':
+      case '/commands':
+          commandHelp(settings);
+          break;
+      case '/inspect':
+      case '/settings':
+          commandInspect(settings);
+          break;
+      case '/model':
+          return commandModel(input, settings, plugin);
+      case '/reference':
+      case '/ref':
+          commandReference(input, settings, plugin);
+          break;
+      case '/temp':
+          commandTemperature(input, settings, plugin);
+          break;
+      case '/maxtokens':
+          commandMaxTokens(input, settings, plugin);
+          break;
+      case '/system':
+          commandSystem(input, settings, plugin);
+          break;
+      case '/save':
+          commandSave(settings);
+          break;
+      case '/clear':
+      case '/c':
+          removeMessageThread(0);
+          break;
+      default:
+          commandFalse(settings, plugin);
+  }
+}
 
 
 // Function to create and append a bot message
@@ -63,7 +103,7 @@ export async function commandFalse(currentSettings: BMOSettings, plugin: BMOGPT)
   // new Notice("Invalid command.");
 }
 
-// =================== COMMANDS ===================
+// =================== COMMAND FUNCTIONS ===================
 
 // `/help` for help commands
 export function commandHelp(currentSettings: BMOSettings) {
@@ -71,7 +111,7 @@ export function commandHelp(currentSettings: BMOSettings) {
 
   const formattedSettings = `
     <div class="formattedSettings">
-      <h2>Help</h2>
+      <h2>Commands</h2>
       <p><strong>/inspect</strong> - Show System Settings</p>
       <p><strong>/model</strong> "[VALUE]" - Change model</p>
       <p><strong>/system</strong> "[VALUE]" - Change system setting</p>

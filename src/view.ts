@@ -4,7 +4,8 @@ import { colorToHex } from "./settings";
 import { marked } from "marked";
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from "openai/resources/chat";
-import * as commands from './commands';
+// import * as commands from './commands';
+import { executeCommand } from "./commands";
 import BMOGPT from './main';
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
@@ -1071,7 +1072,7 @@ openDropdowns.forEach((dropdown) => {
     }});
 }
 
-async function removeMessageThread(index: number) {
+export async function removeMessageThread(index: number) {
     const messageContainer = document.querySelector('#messageContainer');
   
     const divElements = messageContainer?.querySelectorAll('div.botMessage, div.userMessage');
@@ -1091,46 +1092,4 @@ async function removeMessageThread(index: number) {
         console.error('Error writing messageHistory.json', error);
     }
 }
-
-function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
-    const command = input.split(' ')[0]; // Get the first word (command) from the input
-    
-    switch (command) {
-        case '/help':
-            commands.commandHelp(settings);
-            break;
-        case '/inspect':
-        case '/settings':
-            commands.commandInspect(settings);
-            break;
-        case '/model':
-            return commands.commandModel(input, settings, plugin);
-        case '/reference':
-        case '/ref':
-            commands.commandReference(input, settings, plugin);
-            break;
-        case '/temp':
-            commands.commandTemperature(input, settings, plugin);
-            break;
-        case '/maxtokens':
-            commands.commandMaxTokens(input, settings, plugin);
-            break;
-        case '/system':
-            commands.commandSystem(input, settings, plugin);
-            break;
-        case '/save':
-            commands.commandSave(settings);
-            break;
-        case '/clear':
-        case '/c':
-            removeMessageThread(0);
-            break;
-        default:
-            commands.commandFalse(settings, plugin);
-    }
-}
-
-  
-  
-  
 
