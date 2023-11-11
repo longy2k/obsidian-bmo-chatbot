@@ -336,6 +336,44 @@ export class BMOSettingTab extends PluginSettingTab {
         );
 
 		new Setting(containerEl)
+		.setName('Template File Path')
+		.setDesc('Insert your template file path.')
+		.addText(text => text
+            .setPlaceholder('templates/bmo.md')
+            .setValue(this.plugin.settings.templateFilePath || DEFAULT_SETTINGS.templateFilePath)
+            .onChange(async (value) => {
+				this.plugin.settings.templateFilePath = value ? value : DEFAULT_SETTINGS.templateFilePath;
+				if (value) {
+					// Check if the provided file path ends with '.md', if not, append it
+					if (!this.plugin.settings.templateFilePath.endsWith('.md')) {
+						this.plugin.settings.templateFilePath += '.md';
+					}
+	
+					await this.plugin.saveSettings();
+	
+					const allFiles = app.vault.getFiles(); // Retrieve all files from the vault
+	
+					// Check if the specified file path (including directories) exists in the array of files
+					const fileExists = allFiles.some(file => 
+						file.path.toLowerCase() === this.plugin.settings.templateFilePath.toLowerCase());
+					
+	
+					if (fileExists) {
+						// console.log("File exists in vault!");
+						text.inputEl.style.borderColor = "";
+					} else {
+						// console.log("File does not exist in vault.");
+						text.inputEl.style.borderColor = "red";
+					}
+				} else {
+					// If the input is empty, reset the border color
+					text.inputEl.style.borderColor = "";
+					this.plugin.settings.templateFilePath = DEFAULT_SETTINGS.templateFilePath;
+				}
+            })
+        );
+
+		new Setting(containerEl)
 		.setName('Allow Rename Note Title')
 		.setDesc('Allow model to rename the note title of saved chat history.')
 		.addToggle((toggle) =>

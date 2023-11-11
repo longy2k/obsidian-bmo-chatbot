@@ -15,6 +15,7 @@ export interface BMOSettings {
 	userMessageBackgroundColor: string;
 	botMessageBackgroundColor: string;
 	chatHistoryPath: string;
+	templateFilePath: string;
 	openAIBaseUrl: string;
 	restAPIUrl: string;
 	referenceCurrentNote: boolean;
@@ -33,6 +34,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	userMessageBackgroundColor: '--background-primary',
 	botMessageBackgroundColor: '--background-secondary',
 	chatHistoryPath: 'BMOChatHistory/',
+	templateFilePath: '',
 	openAIBaseUrl: 'https://api.openai.com/v1',
 	restAPIUrl: '',
 	models: undefined,

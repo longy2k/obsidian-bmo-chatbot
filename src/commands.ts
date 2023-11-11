@@ -350,6 +350,7 @@ export async function commandSave(currentSettings: BMOSettings) {
 
   try {
     let markdownContent = '';
+    const allFiles = app.vault.getFiles(); // Retrieve all files from the vault
 
     // Retrieve model name
     const modelNameElement = document.querySelector('#modelName') as HTMLHeadingElement;
@@ -358,11 +359,30 @@ export async function commandSave(currentSettings: BMOSettings) {
         modelName = modelNameElement.textContent.replace('Model: ', '').toUpperCase();
     }
 
-    // YAML front matter
-    markdownContent += 
-    `---
-    model: ${modelName}
+    const templateFile = allFiles.find(file => file.path.toLowerCase() === currentSettings.templateFilePath);
+
+    if (templateFile) {
+      let fileContent = await app.vault.read(templateFile);
+  
+      // Check if the file content has YAML front matter
+      if (/^---\s*[\s\S]*?---/.test(fileContent)) {
+          // Insert model name into existing front matter
+          fileContent = fileContent.replace(/^---/, `---\nmodel: ${modelName}`);
+      } else {
+          // Prepend new front matter
+          fileContent = `---
+  model: ${modelName}
+---\n` + fileContent;
+      }
+      markdownContent += fileContent;
+      console.log(fileContent); // or process the content as needed
+  } else {
+      // YAML front matter
+      markdownContent += 
+      `---
+  model: ${modelName}
 ---\n`;
+  }
 
     // Retrieve user and chatbot names
     const userNames = document.querySelectorAll('#userName') as NodeListOf<HTMLHeadingElement>;
@@ -434,8 +454,6 @@ export async function commandSave(currentSettings: BMOSettings) {
               referenceCurrentNote = await getActiveFileContent(activeFile);
           }
       }
-
-      const allFiles = app.vault.getFiles(); // Retrieve all files from the vault
 
       // Function to check if a file name already exists
       const fileNameExists = (name: string | null) => {
