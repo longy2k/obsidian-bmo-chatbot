@@ -1,8 +1,9 @@
 import { Notice } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
-import { ANTHROPIC_MODELS, OPENAI_MODELS, addMessage, filenameMessageHistoryJSON, removeMessageThread } from "./view";
+import { ANTHROPIC_MODELS, OPENAI_MODELS, addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
 import BMOGPT from './main';
+import { fetchOpenAIAPITitle } from './modelFetch';
 
 type ModelObject = {
   [key: string]: string;
@@ -198,7 +199,7 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
 
 // `/ref` to turn on/off referenceCurrentNote
 export async function commandReference(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
-  console.log('Plugin instance in executeCommand:', plugin);
+  // console.log('Plugin instance in executeCommand:', plugin);
   const messageBlock = createBotMessage(currentSettings);
 
   let formattedSettings = '';
@@ -335,6 +336,8 @@ export async function commandSave(currentSettings: BMOSettings) {
   if (folderName && !folderName.endsWith('/')) {
     folderName += '/';
   }
+
+
   
   // Create a datetime string to append to the file name
   const now = new Date();
@@ -344,9 +347,6 @@ export async function commandSave(currentSettings: BMOSettings) {
                         + now.getHours().toString().padStart(2, '0') + "-" 
                         + now.getMinutes().toString().padStart(2, '0') + "-" 
                         + now.getSeconds().toString().padStart(2, '0');
-
-                      
-  const fileName = folderName + baseFileName + ' ' + dateTimeStamp + fileExtension;
 
   try {
     let markdownContent = '';
@@ -420,10 +420,47 @@ export async function commandSave(currentSettings: BMOSettings) {
       await this.app.vault.createFolder(folderName);
     }
 
+    let fileName = '';
+
+    if (currentSettings.allowRenameNoteTitle) {
+      let referenceCurrentNote = '';
+      let uniqueNameFound = false;
+      let modelRenameTitle;
+
+      const activeFile = this.app.workspace.getActiveFile();
+
+      if (activeFile) {
+          if (currentSettings.referenceCurrentNote) {
+              referenceCurrentNote = await getActiveFileContent(activeFile);
+          }
+      }
+
+      const allFiles = app.vault.getFiles(); // Retrieve all files from the vault
+
+      // Function to check if a file name already exists
+      const fileNameExists = (name: string | null) => {
+          return allFiles.some((file) => file.path === folderName + name + fileExtension);
+      };
+    
+      while (!uniqueNameFound) {
+          modelRenameTitle = await fetchOpenAIAPITitle(currentSettings, referenceCurrentNote + markdownContent);
+      
+          if (!fileNameExists(modelRenameTitle)) {
+              uniqueNameFound = true;
+          }
+      }
+
+      fileName = folderName + modelRenameTitle + fileExtension;
+      
+    }
+    else {
+      fileName = folderName + baseFileName + ' ' + dateTimeStamp + fileExtension;
+    }
+
     // Create the new note with formatted Markdown content
     const file = await this.app.vault.create(fileName, markdownContent);
     if (file) {
-      console.log('Note created: ' + file.path);
+      // console.log('Note created: ' + file.path);
       new Notice("Saved conversation.");
 
       // Open the newly created note in a new pane

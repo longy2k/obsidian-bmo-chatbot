@@ -334,6 +334,16 @@ export class BMOSettingTab extends PluginSettingTab {
 				await this.plugin.saveSettings();
             })
         );
+
+		new Setting(containerEl)
+		.setName('Allow Rename Note Title')
+		.setDesc('Allow model to rename the note title of saved chat history.')
+		.addToggle((toggle) =>
+			toggle.setValue(this.plugin.settings.allowRenameNoteTitle).onChange((value) => {
+				this.plugin.settings.allowRenameNoteTitle = value;
+				this.plugin.saveSettings();
+			})
+		);
 				
 		// ======================= ADVANCED =======================
 

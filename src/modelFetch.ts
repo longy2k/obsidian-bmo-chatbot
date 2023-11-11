@@ -77,6 +77,39 @@ export async function fetchOpenAIAPI(
     }
 }
 
+export async function fetchOpenAIAPITitle(settings: BMOSettings, markdownContent: string) {
+    const openai = new OpenAI({
+        apiKey: settings.apiKey,
+        baseURL: settings.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
+
+    const prompt = `Based on the following markdown content, create a new, suitable title.
+     The title should not contain any of the following characters: backslashes, forward slashes, or colons.
+     Also, please provide the title without using quotation marks:\n\n`;
+
+    try {
+        const chatCompletion = await openai.chat.completions.create({
+            model: settings.model,
+            messages: [
+                { role: 'system', content: prompt + markdownContent},
+            ],
+        });
+
+        let title = chatCompletion.choices[0].message.content;
+        // Remove backslashes, forward slashes, and colons
+        if (title) {
+            title = title.replace(/[\\/:]/g, '');
+        }
+
+        return title;
+
+    } catch (error) {
+        console.log("ERROR");
+        throw new Error(error.response?.data?.error || error.message);
+    }
+}
+
 // Request response from Anthropic 
 export async function requestUrlAnthropicAPI(
     url: string,

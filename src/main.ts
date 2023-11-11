@@ -18,6 +18,7 @@ export interface BMOSettings {
 	openAIBaseUrl: string;
 	restAPIUrl: string;
 	referenceCurrentNote: boolean;
+	allowRenameNoteTitle: boolean;
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	restAPIUrl: '',
 	models: undefined,
 	referenceCurrentNote: false,
+	allowRenameNoteTitle: false,
 }
 
 

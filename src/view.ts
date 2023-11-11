@@ -614,6 +614,7 @@ export class BMOView extends ItemView {
                 system_role: systemReferenceCurrentNote + this.settings.system_role
             };
 
+
             // OpenAI models
             if (OPENAI_MODELS.includes(this.settings.model)) {
                 try {
@@ -709,7 +710,7 @@ export class BMOView extends ItemView {
                 }
             }
         }
-        console.log("BMO settings:", this.settings);
+        // console.log("BMO settings:", this.settings);
     }
 
     async onClose() {
