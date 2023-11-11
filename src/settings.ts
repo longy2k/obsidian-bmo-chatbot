@@ -1,6 +1,7 @@
-import { App, PluginSettingTab, Setting, ColorComponent, requestUrl } from 'obsidian';
+import { App, PluginSettingTab, Setting, ColorComponent, requestUrl, DropdownComponent } from 'obsidian';
 import { DEFAULT_SETTINGS } from './main';
 import BMOGPT from './main';
+import { ANTHROPIC_MODELS, OPENAI_MODELS } from './view';
 
 export class BMOSettingTab extends PluginSettingTab {
 	plugin: BMOGPT;
@@ -57,25 +58,24 @@ export class BMOSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
+		// Function to add options to dropdown
+		const addOptionsToDropdown = (dropdown: DropdownComponent, models: any[]) => {
+			models.forEach(model => {
+			dropdown.addOption(model, model);
+			});
+		};
+  
+
 		new Setting(containerEl)
 			.setName('Model')
 			.setDesc('Choose a model.')
 			.addDropdown(dropdown => {
 
 				if (!this.plugin.settings.apiKey || !this.plugin.settings.apiKey.startsWith("sk-ant")) {
-					dropdown
-					.addOption('gpt-3.5-turbo', 'gpt-3.5-turbo')
-					.addOption('gpt-3.5-turbo-1106', 'gpt-3.5-turbo-1106')
-					.addOption('gpt-3.5-turbo-16k-0613', 'gpt-3.5-turbo-16k-0613')
-					.addOption('gpt-4', 'gpt-4')
-					.addOption('gpt-4-1106-preview', 'gpt-4-1106-preview')
+					addOptionsToDropdown(dropdown, OPENAI_MODELS);
 				}
-				if (this.plugin.settings.apiKey) {
-					if (this.plugin.settings.apiKey.startsWith("sk-ant")) {
-						dropdown
-						.addOption('claude-instant-1.2', 'claude-instant-1.2')
-						.addOption('claude-2.0', 'claude-2.0')
-					}
+				if (this.plugin.settings.apiKey && this.plugin.settings.apiKey.startsWith("sk-ant")) {
+					addOptionsToDropdown(dropdown, ANTHROPIC_MODELS);
 				}
 				if (this.plugin.settings.restAPIUrl && models && models.length > 0) {
 					models.forEach((model: string) => {

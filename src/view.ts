@@ -8,6 +8,10 @@ import BMOGPT from './main';
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
+
+export const ANTHROPIC_MODELS = ["claude-instant-1.2", "claude-2.0"];
+export const OPENAI_MODELS = ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-4", "gpt-4-1106-preview"];
+
 export let messageHistory: { role: string; content: string }[] = [];
 
 export function clearMessageHistory() {
@@ -93,7 +97,7 @@ export class BMOView extends ItemView {
     
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile) {
-            await this.getActiveFileContent(activeFile);
+            await getActiveFileContent(activeFile);
         }
 
         const messageContainer = chatbotContainer.createEl("div", {
@@ -151,7 +155,7 @@ export class BMOView extends ItemView {
                     }
                 });
             
-                if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                     const fullString = messageData.content;
                     const cleanString = fullString.split(' ').slice(1).join(' ').trim();
                     userP.innerHTML = marked(cleanString);
@@ -179,7 +183,7 @@ export class BMOView extends ItemView {
                     const botMessageData = messageHistory[index + 1];
                     const botP = document.createElement("p");
                     let messageText = botMessageData.content;
-                    if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                    if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                         const fullString = botMessageData.content;
                         const cleanString = fullString.split(' ').slice(1).join(' ').trim();
                         botP.innerHTML = marked(cleanString);
@@ -252,7 +256,7 @@ export class BMOView extends ItemView {
                 let botP = '';
 
                 if (messageHistory.length >= 2) {
-                    if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                    if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                         const fullString = messageData.content;
                         const cleanString = fullString.split(' ').slice(1).join(' ').trim();
                         botP = marked(cleanString);
@@ -313,7 +317,7 @@ export class BMOView extends ItemView {
     }
 
     async handleFileOpenEvent(file: TFile) {
-        await this.getActiveFileContent(file);
+        await getActiveFileContent(file);
     }
     
     async handleKeyup(event: KeyboardEvent) {
@@ -346,7 +350,7 @@ export class BMOView extends ItemView {
                 userNameSpan.setAttribute("id", "userName");
                 userMessage.appendChild(userNameSpan);
                 
-                if (["claude-instant-1.2", "claude-2.0"].includes(this.settings.model)) {
+                if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                     addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
                 } else {
                     addMessage(input, 'userMessage', this.settings);
@@ -488,7 +492,7 @@ export class BMOView extends ItemView {
                             }
                         };  
 
-                        if (!["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(this.settings.model)) {
+                        if (!OPENAI_MODELS.includes(this.settings.model)) {
                             botMessage.appendChild(loadingEl);
                             loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
                         }
@@ -571,7 +575,7 @@ export class BMOView extends ItemView {
 
         if (activeFile) {
             if (this.settings.referenceCurrentNote) {
-                referenceCurrentNote = await this.getActiveFileContent(activeFile);
+                referenceCurrentNote = await getActiveFileContent(activeFile);
             }
         }
 
@@ -580,7 +584,7 @@ export class BMOView extends ItemView {
         const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
 
         // If apiKey does not exist.
-        if (!this.settings.apiKey && ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(this.settings.model)) {
+        if (!this.settings.apiKey && OPENAI_MODELS.includes(this.settings.model)) {
             new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
             if (chatbotNameHeading){
                 chatbotNameHeading.textContent = "ERROR";
@@ -611,7 +615,7 @@ export class BMOView extends ItemView {
             };
 
             // OpenAI models
-            if (["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(this.settings.model)) {
+            if (OPENAI_MODELS.includes(this.settings.model)) {
                 try {
                     await fetchOpenAIAPI(this.settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature); 
                 }
@@ -621,7 +625,7 @@ export class BMOView extends ItemView {
                     console.log("messageHistory: " + messageHistory);
                 }
             }
-            else if (["claude-2.0", "claude-instant-1.2"].includes(this.settings.model)) {
+            else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 try {
                     const url = 'https://api.anthropic.com/v1/complete';
                     const response = await requestUrlAnthropicAPI(url, this.settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
@@ -708,27 +712,6 @@ export class BMOView extends ItemView {
         console.log("BMO settings:", this.settings);
     }
 
-    // Reference Current Note
-    async getActiveFileContent(file: TFile) {
-        const activeFile = this.app.workspace.getActiveFile();
-        const dotElement = document.querySelector('.dotIndicator');
-        let currentNote = '';
-        if (activeFile?.extension === 'md') {
-            const content = await this.app.vault.read(activeFile);
-            currentNote = 'Note:```' + content + '```\n';
-            if (dotElement) {
-                (dotElement as HTMLElement).style.backgroundColor = 'green';
-            }
-        } else {
-            if (dotElement) {
-                (dotElement as HTMLElement).style.backgroundColor = '#da2c2c';
-            }
-        }
-        return currentNote;
-    }
-
-
-
     async onClose() {
         // Nothing to clean up.
     }
@@ -758,6 +741,25 @@ async function loadData() {
     }
 }
 
+// Reference Current Note
+export async function getActiveFileContent(file: TFile) {
+    const activeFile = app.workspace.getActiveFile();
+    const dotElement = document.querySelector('.dotIndicator');
+    let currentNote = '';
+    if (activeFile?.extension === 'md') {
+        const content = await app.vault.read(activeFile);
+        currentNote = 'Note:```' + content + '```\n';
+        if (dotElement) {
+            (dotElement as HTMLElement).style.backgroundColor = 'green';
+        }
+    } else {
+        if (dotElement) {
+            (dotElement as HTMLElement).style.backgroundColor = '#da2c2c';
+        }
+    }
+    return currentNote;
+}
+
 // Add a new message to the messageHistory array and save it to the file
 export async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index?: number) {
     const messageObj: { role: string; content: string } = {
@@ -782,7 +784,7 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
                 let messageText = messageObj.content;
         
                 if (messageText !== null) {
-                    if (["claude-instant-1.2", "claude-2.0"].includes(settings.model)) {
+                    if (ANTHROPIC_MODELS.includes(settings.model)) {
                         const fullString = messageObj.content;
                         const cleanString = fullString.split(' ').slice(1).join(' ').trim();
                         messageText = cleanString;
