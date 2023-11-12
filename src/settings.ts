@@ -327,7 +327,7 @@ export class BMOSettingTab extends PluginSettingTab {
 		.setName('Chat History Folder Path')
 		.setDesc('Save your chat history in a specified folder.')
 		.addText(text => text
-            .setPlaceholder('BMOChatHistory/')
+            .setPlaceholder('BMO/')
             .setValue(this.plugin.settings.chatHistoryPath || DEFAULT_SETTINGS.chatHistoryPath)
             .onChange(async (value) => {
 				this.plugin.settings.chatHistoryPath = value ? value : DEFAULT_SETTINGS.chatHistoryPath;
@@ -357,7 +357,6 @@ export class BMOSettingTab extends PluginSettingTab {
 					const fileExists = allFiles.some(file => 
 						file.path.toLowerCase() === this.plugin.settings.templateFilePath.toLowerCase());
 					
-	
 					if (fileExists) {
 						// console.log("File exists in vault!");
 						text.inputEl.style.borderColor = "";
@@ -375,7 +374,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName('Allow Rename Note Title')
-		.setDesc('Allow model to rename the note title of saved chat history.')
+		.setDesc('Allow model to rename the note title when saving chat history.')
 		.addToggle((toggle) =>
 			toggle.setValue(this.plugin.settings.allowRenameNoteTitle).onChange((value) => {
 				this.plugin.settings.allowRenameNoteTitle = value;

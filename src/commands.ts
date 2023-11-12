@@ -14,8 +14,8 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
   const command = input.split(' ')[0]; // Get the first word from the input
   
   switch (command) {
-      case '/help':
       case '/commands':
+      case '/help':
           commandHelp(settings);
           break;
       case '/inspect':
@@ -397,7 +397,7 @@ export async function commandAppend(currentSettings: BMOSettings) {
       await app.vault.modify(activeFile, updatedContent);
     }
     else {
-      new Notice ('Turn on reference current note.');
+      new Notice ('Please turn on reference current note.');
     }
   }
 }

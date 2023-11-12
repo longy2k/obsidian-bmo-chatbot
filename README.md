@@ -53,7 +53,8 @@ If you want to clear the chat history, simply click on the bot icon again in the
 	- `/system "WRITE IN ALL CAPS!"`
 - `/maxtokens [VALUE]` - Set max tokens.
 - `/temp [VALUE]` - Change temperature range from 0 to 1.
-- `/ref on | off` - Turn on or off "reference current note".
+- `/ref on | off` - Turn on or off reference current note.
+- `/append` - Append current chat history to current reference note.
 - `/save` - Save current chat history to a note.
 - `/clear` or `/c` - Clear chat history.
 
