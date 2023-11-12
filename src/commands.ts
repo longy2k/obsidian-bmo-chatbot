@@ -435,7 +435,7 @@ export async function commandSave(currentSettings: BMOSettings) {
         modelName = modelNameElement.textContent.replace('Model: ', '').toUpperCase();
     }
 
-    const templateFile = allFiles.find(file => file.path.toLowerCase() === currentSettings.templateFilePath);
+    const templateFile = allFiles.find(file => file.path.toLowerCase() === currentSettings.templateFilePath.toLowerCase());
 
     if (templateFile) {
       let fileContent = await app.vault.read(templateFile);

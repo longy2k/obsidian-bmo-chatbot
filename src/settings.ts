@@ -356,7 +356,7 @@ export class BMOSettingTab extends PluginSettingTab {
 					// Check if the specified file path (including directories) exists in the array of files
 					const fileExists = allFiles.some(file => 
 						file.path.toLowerCase() === this.plugin.settings.templateFilePath.toLowerCase());
-					
+						
 					if (fileExists) {
 						// console.log("File exists in vault!");
 						text.inputEl.style.borderColor = "";
