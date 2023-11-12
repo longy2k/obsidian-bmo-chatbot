@@ -37,6 +37,9 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
       case '/system':
           commandSystem(input, settings, plugin);
           break;
+      case '/append':
+          commandAppend(settings);
+          break;
       case '/save':
           commandSave(settings);
           break;
@@ -123,6 +126,7 @@ export function commandHelp(currentSettings: BMOSettings) {
       <p><strong>/maxtokens</strong> [VALUE] - Set max tokens</p>
       <p><strong>/temp</strong> [VALUE] - Change temperature range 0 from to 1.</p>
       <p><strong>/ref</strong> on | off - Turn on or off "reference current note".</p>
+      <p><strong>/append</strong> - Append current chat history to current reference note.</p>
       <p><strong>/save</strong> - Save current chat history to a note.</p>
       <p><strong>/clear or /c</strong> - Clear chat history.</p>
     </div>
@@ -197,7 +201,7 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
   }
 }
 
-// `/ref` to turn on/off referenceCurrentNote
+// `/ref` to turn on/off referenceCurrentNote.
 export async function commandReference(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
   // console.log('Plugin instance in executeCommand:', plugin);
   const messageBlock = createBotMessage(currentSettings);
@@ -238,7 +242,7 @@ export async function commandReference(input: string, currentSettings: BMOSettin
   await plugin.saveSettings();
 }
 
-// `/temp "VALUE"` to change the temperature
+// `/temp "VALUE"` to change the temperature.
 export async function commandTemperature(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
   const messageBlock = createBotMessage(currentSettings);
 
@@ -263,7 +267,7 @@ export async function commandTemperature(input: string, currentSettings: BMOSett
   await plugin.saveSettings();
 }
 
-// `/maxtokens` to change max_tokens
+// `/maxtokens` to change max_tokens.
 export async function commandMaxTokens(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
   const messageBlock = createBotMessage(currentSettings);
 
@@ -326,6 +330,78 @@ export async function commandSystem(input: string, currentSettings: BMOSettings,
   displayMessage(messageBlock, formattedSettings, currentSettings);
   await plugin.saveSettings();
 }
+
+export async function commandAppend(currentSettings: BMOSettings) {
+  let markdownContent = '';
+
+  const activeFile = app.workspace.getActiveFile();
+
+  if (activeFile) {
+    if (currentSettings.referenceCurrentNote) {
+      const existingContent = await app.vault.read(activeFile);
+
+      // Retrieve user and chatbot names
+      const userNames = document.querySelectorAll('#userName') as NodeListOf<HTMLHeadingElement>;
+
+      let userNameText = 'USER';
+      if (userNames.length > 0) {
+          const userNameNode = userNames[0];
+          Array.from(userNameNode.childNodes).forEach((node) => {
+              // Check if the node is a text node and its textContent is not null
+              if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+                  userNameText = node.textContent.trim().toUpperCase();
+              }
+          });
+      }
+
+      const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+      const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
+
+      // Check and read the JSON file
+      if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+        try {
+          const jsonContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
+          const messages = JSON.parse(jsonContent);
+
+          // Filter out messages starting with '/', and the assistant's response immediately following it
+          let skipNext = false;
+          markdownContent += messages
+            .filter((message: { role: string; content: string; }, index: number, array: string | any[]) => {
+              if (skipNext && message.role === 'assistant') {
+                skipNext = false;
+                return false;
+              }
+              if (message.content.startsWith('/')) {
+                // Check if next message is also from user and starts with '/'
+                skipNext = index + 1 < array.length && array[index + 1].role === 'assistant';
+                return false;
+              }
+              return true;
+            })
+            .map((message: { role: string; content: string; }) => {
+              let roleText = message.role.toUpperCase();
+              roleText = roleText === 'USER' ? userNameText : roleText;
+              roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
+              return `###### ${roleText}\n${message.content}`;
+            })
+            .join('\n');
+
+        } catch (error) {
+          console.error("Error processing message history:", error);
+        }
+      }
+      
+      const updatedContent = existingContent + '\n' + markdownContent;
+
+      // Save the updated content back to the active file
+      await app.vault.modify(activeFile, updatedContent);
+    }
+    else {
+      new Notice ('Turn on reference current note.');
+    }
+  }
+}
+
 
 // `/save` to save current chat history to a note.
 export async function commandSave(currentSettings: BMOSettings) {
