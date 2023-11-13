@@ -3,7 +3,7 @@ import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
 import { ANTHROPIC_MODELS, OPENAI_MODELS, addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
 import BMOGPT from './main';
-import { fetchOpenAIAPITitle } from './modelFetch';
+import { fetchOpenAIAPITitle } from './models';
 
 type ModelObject = {
   [key: string]: string;
@@ -382,7 +382,7 @@ export async function commandAppend(currentSettings: BMOSettings) {
               let roleText = message.role.toUpperCase();
               roleText = roleText === 'USER' ? userNameText : roleText;
               roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
-              return `###### ${roleText}\n${message.content}`;
+              return `###### ${roleText}\n${message.content}\n`;
             })
             .join('\n');
 
@@ -502,7 +502,7 @@ export async function commandSave(currentSettings: BMOSettings) {
             let roleText = message.role.toUpperCase();
             roleText = roleText === 'USER' ? userNameText : roleText;
             roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
-            return `###### ${roleText}\n${message.content}`;
+            return `###### ${roleText}\n${message.content}\n`;
           })
           .join('\n');
 

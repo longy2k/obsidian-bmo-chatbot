@@ -3,7 +3,7 @@ import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import { colorToHex } from "./settings";
 import { marked } from "marked";
 import { executeCommand } from "./commands";
-import { fetchOpenAIAPI, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./modelFetch";
+import { fetchOpenAIAPI, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./models";
 import BMOGPT from './main';
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
