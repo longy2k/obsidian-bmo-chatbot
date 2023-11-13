@@ -25,7 +25,7 @@ Additionally, if you want to interact with self-hosted Large Language Models (LL
 Explore some models at [GPT4ALL](https://gpt4all.io/index.html) under the "Model Explorer" section.
 
 ## How to activate the plugin
-Two methods:
+Three methods:
 
 Obsidian Community plugins (**Recommended**):
   1. Search for "BMO Chatbot" in the Obsidian Community plugins.
@@ -37,8 +37,18 @@ To activate the plugin from this repo:
   3. Once the dependencies have been installed, run `npm run build` to build the plugin.
   4. Once the plugin has been built, it should be ready to activate.
 
+Install using Beta Reviewers Auto-update Tester ([BRAT](https://github.com/TfTHacker/obsidian42-brat)) - [Quick guide for using BRAT](https://tfthacker.com/Obsidian+Plugins+by+TfTHacker/BRAT+-+Beta+Reviewer's+Auto-update+Tool/Quick+guide+for+using+BRAT)
+
+1. Search for "Obsidian42 - BRAT" in the Obsidian Community plugins.
+2. Open the command palette and run the command `BRAT: Add a beta plugin for testing` (If you want the plugin version to be frozen, use the command `BRAT: Add a beta plugin with frozen version based on a release tag`.)
+3. Paste "https://github.com/longy2k/obsidian-bmo-chatbot".
+4. Click on "Add Plugin".
+5. After BRAT confirms the installation, in Settings go to the Community plugins tab.
+6. Refresh the list of plugins.
+7. Find the beta plugin you just installed and enable it.
+
 ## Getting Started
-To start using the plugin, enable it in your settings menu and enter your OpenAPI key. After completing these steps, you can access the bot panel by clicking on the bot icon in the left sidebar.
+To start using the plugin, enable it in your settings menu and enter your OpenAI API key. After completing these steps, you can access the bot panel by clicking on the bot icon in the left sidebar.
 
 If you want to clear the chat history, simply click on the bot icon again in the left ribbon bar.
 
