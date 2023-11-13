@@ -126,7 +126,7 @@ export function commandHelp(currentSettings: BMOSettings) {
       <p><strong>/maxtokens</strong> [VALUE] - Set max tokens</p>
       <p><strong>/temp</strong> [VALUE] - Change temperature range 0 from to 1.</p>
       <p><strong>/ref</strong> on | off - Turn on or off "reference current note".</p>
-      <p><strong>/append</strong> - Append current chat history to current reference note.</p>
+      <p><strong>/append</strong> - Append current chat history to current active note.</p>
       <p><strong>/save</strong> - Save current chat history to a note.</p>
       <p><strong>/clear or /c</strong> - Clear chat history.</p>
     </div>
@@ -337,68 +337,63 @@ export async function commandAppend(currentSettings: BMOSettings) {
   const activeFile = app.workspace.getActiveFile();
 
   if (activeFile) {
-    if (currentSettings.referenceCurrentNote) {
-      const existingContent = await app.vault.read(activeFile);
+    const existingContent = await app.vault.read(activeFile);
 
-      // Retrieve user and chatbot names
-      const userNames = document.querySelectorAll('#userName') as NodeListOf<HTMLHeadingElement>;
+    // Retrieve user and chatbot names
+    const userNames = document.querySelectorAll('#userName') as NodeListOf<HTMLHeadingElement>;
 
-      let userNameText = 'USER';
-      if (userNames.length > 0) {
-          const userNameNode = userNames[0];
-          Array.from(userNameNode.childNodes).forEach((node) => {
-              // Check if the node is a text node and its textContent is not null
-              if (node.nodeType === Node.TEXT_NODE && node.textContent) {
-                  userNameText = node.textContent.trim().toUpperCase();
-              }
-          });
-      }
-
-      const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
-      const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
-
-      // Check and read the JSON file
-      if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
-        try {
-          const jsonContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
-          const messages = JSON.parse(jsonContent);
-
-          // Filter out messages starting with '/', and the assistant's response immediately following it
-          let skipNext = false;
-          markdownContent += messages
-            .filter((message: { role: string; content: string; }, index: number, array: string | any[]) => {
-              if (skipNext && message.role === 'assistant') {
-                skipNext = false;
-                return false;
-              }
-              if (message.content.startsWith('/')) {
-                // Check if next message is also from user and starts with '/'
-                skipNext = index + 1 < array.length && array[index + 1].role === 'assistant';
-                return false;
-              }
-              return true;
-            })
-            .map((message: { role: string; content: string; }) => {
-              let roleText = message.role.toUpperCase();
-              roleText = roleText === 'USER' ? userNameText : roleText;
-              roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
-              return `###### ${roleText}\n${message.content}\n`;
-            })
-            .join('\n');
-
-        } catch (error) {
-          console.error("Error processing message history:", error);
-        }
-      }
-      
-      const updatedContent = existingContent + '\n' + markdownContent;
-
-      // Save the updated content back to the active file
-      await app.vault.modify(activeFile, updatedContent);
+    let userNameText = 'USER';
+    if (userNames.length > 0) {
+        const userNameNode = userNames[0];
+        Array.from(userNameNode.childNodes).forEach((node) => {
+            // Check if the node is a text node and its textContent is not null
+            if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+                userNameText = node.textContent.trim().toUpperCase();
+            }
+        });
     }
-    else {
-      new Notice ('Please turn on reference current note.');
+
+    const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+    const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
+
+    // Check and read the JSON file
+    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+      try {
+        const jsonContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
+        const messages = JSON.parse(jsonContent);
+
+        // Filter out messages starting with '/', and the assistant's response immediately following it
+        let skipNext = false;
+        markdownContent += messages
+          .filter((message: { role: string; content: string; }, index: number, array: string | any[]) => {
+            if (skipNext && message.role === 'assistant') {
+              skipNext = false;
+              return false;
+            }
+            if (message.content.startsWith('/')) {
+              // Check if next message is also from user and starts with '/'
+              skipNext = index + 1 < array.length && array[index + 1].role === 'assistant';
+              return false;
+            }
+            return true;
+          })
+          .map((message: { role: string; content: string; }) => {
+            let roleText = message.role.toUpperCase();
+            roleText = roleText === 'USER' ? userNameText : roleText;
+            roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
+            return `###### ${roleText}\n${message.content}\n`;
+          })
+          .join('\n');
+
+      } catch (error) {
+        console.error("Error processing message history:", error);
+      }
     }
+    
+    const updatedContent = existingContent + '\n' + markdownContent;
+
+    // Save the updated content back to the active file
+    await app.vault.modify(activeFile, updatedContent);
   }
 }
 
@@ -451,7 +446,7 @@ export async function commandSave(currentSettings: BMOSettings) {
 ---\n` + fileContent;
       }
       markdownContent += fileContent;
-      console.log(fileContent); // or process the content as needed
+      // console.log(fileContent);
   } else {
       // YAML front matter
       markdownContent += 
