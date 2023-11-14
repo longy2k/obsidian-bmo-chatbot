@@ -264,3 +264,17 @@ ul#dropdownOptions li:hover {
 	margin: 0.5rem;
 	font-size: 0.8rem;
 }
+
+.formattedSettings h2 {
+	margin: 8px 0 12px 0;
+}
+
+.formattedSettings p {
+	padding: 0.1rem 0;
+}
+
+.formattedSettings code {
+	background-color: #4d5158;
+	border-radius: 0.2rem;
+	padding: 0.16rem;
+}

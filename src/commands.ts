@@ -120,15 +120,15 @@ export function commandHelp(currentSettings: BMOSettings) {
   const formattedSettings = `
     <div class="formattedSettings">
       <h2>Commands</h2>
-      <p><strong>/inspect</strong> - Show System Settings</p>
-      <p><strong>/model</strong> "[VALUE]" - Change model</p>
-      <p><strong>/system</strong> "[VALUE]" - Change system setting</p>
-      <p><strong>/maxtokens</strong> [VALUE] - Set max tokens</p>
-      <p><strong>/temp</strong> [VALUE] - Change temperature range 0 from to 1.</p>
-      <p><strong>/ref</strong> on | off - Turn on or off "reference current note".</p>
-      <p><strong>/append</strong> - Append current chat history to current active note.</p>
-      <p><strong>/save</strong> - Save current chat history to a note.</p>
-      <p><strong>/clear or /c</strong> - Clear chat history.</p>
+      <p><code>/inspect</code> - Show system setting.</p>
+      <p><code>/model "[MODEL-NAME]" or [VALUE]</code> - Change model.</p>
+      <p><code>/system "[PROMPT]"</code> - Change system setting.</p>
+      <p><code>/maxtokens [VALUE]</code> - Set max tokens.</p>
+      <p><code>/temp [VALUE]</code> - Change temperature range 0 from to 1.</p>
+      <p><code>/ref on | off</code> - Turn on or off "reference current note".</p>
+      <p><code>/append</code> - Append current chat history to current active note.</p>
+      <p><code>/save</code> - Save current chat history to a note.</p>
+      <p><code>/clear</code> or <code>/c</code> - Clear chat history.</p>
     </div>
   `;
 
