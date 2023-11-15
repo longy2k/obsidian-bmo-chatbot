@@ -684,7 +684,7 @@ export function codeBlockCopyButton(messageBlock: { querySelectorAll: (arg0: str
             const codeText = `\`\`\`${language}\n${codeElement.textContent}\`\`\``;
             if (codeText) {
                 navigator.clipboard.writeText(codeText).then(() => {
-                    new Notice('Copied bot codeblock.');
+                    new Notice('Copied codeblock.');
                 }, (err) => {
                     console.error("Failed to copy code: ", err);
                     new Notice("Failed to copy code: ", err);

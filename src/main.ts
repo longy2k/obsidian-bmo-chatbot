@@ -97,6 +97,23 @@ export default class BMOGPT extends Plugin {
 			type: VIEW_TYPE_CHATBOT,
 			active: true,
 		});
+
+		this.app.workspace.revealLeaf(
+			this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT)[0]
+		);
+	
+		// Focus on the textarea
+		const textarea = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
+	
+		if (textarea) {
+			textarea.style.opacity = '0';
+			textarea.style.transition = 'opacity 1s ease-in-out';
+	
+			setTimeout(() => {
+				textarea.focus();
+				textarea.style.opacity = '1';
+			}, 50); 
+		}
 	
 		this.app.workspace.revealLeaf(
 			this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT)[0]
