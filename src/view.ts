@@ -110,51 +110,35 @@ export class BMOView extends ItemView {
         
         messageContainer.id = "messageContainer";
         
-        messageHistory.forEach((messageData, index) => {
-
-            const dropdownOptions = document.createElement("ul");
-            dropdownOptions.setAttribute("id", "dropdownOptions");
-
-            const ellipsisLink = document.createElement("a");
-            ellipsisLink.href = "#";
-        
-            const elipsesSpan = document.createElement("span");
-            elipsesSpan.setAttribute("id", "elipses");
-            elipsesSpan.textContent = "...";
-            elipsesSpan.style.float = "right";
-              
+        messageHistory.forEach((messageData, index) => {     
+            const buttonContainerDiv = document.createElement("div");
+            buttonContainerDiv.className = "button-container";
 
             if (messageData.role == "user") {
                 const userMessageDiv = document.createElement("div");
                 userMessageDiv.className = "userMessage";
-                userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
-            
-                const userNameSpan = document.createElement("span");
-                userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
-                userNameSpan.setAttribute("id", "userName");
-                userMessageDiv.appendChild(userNameSpan);
-
-                const userP = document.createElement("p");
-            
-                // Add a click event listener to the ellipsis span to toggle the dropdown
-                elipsesSpan.addEventListener("click", function (event) {
-                    event.stopPropagation();
-                    const wasOpen = dropdownOptions.classList.contains("dropdownOptionsOpen");
-                    hideAllDropdowns();
-                    if (!wasOpen) {
-                        dropdownOptions.style.display = "block";
-                        dropdownOptions.classList.add("dropdownOptionsOpen");
-                    }
-                });
+                userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || 
+                    getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
                 
-            
-                // Add a click event listener to the document to hide the dropdown when clicking outside
-                document.addEventListener("click", function (event) {
-                    if (!(event.target instanceof HTMLElement && (event.target.id === "elipses" || event.target.id === "dropdownOptions" || event.target.closest("#dropdownOptions")))) {
-                        hideAllDropdowns();
-                    }
-                });
-            
+                const userMessageToolBarDiv = document.createElement("div");
+                userMessageToolBarDiv.className = "userMessageToolBar";
+                
+                const userNameSpan = document.createElement("span");
+                userNameSpan.className = "userName";
+                userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
+                const userP = document.createElement("p");
+
+                const copyUserButton = displayUserCopyButton(userP);
+                const trashButton = displayTrash();
+                
+                userMessageToolBarDiv.appendChild(userNameSpan);
+                userMessageToolBarDiv.appendChild(buttonContainerDiv);
+                buttonContainerDiv.appendChild(copyUserButton);
+                buttonContainerDiv.appendChild(trashButton);
+                userMessageDiv.appendChild(userMessageToolBarDiv);
+                userMessageDiv.appendChild(userP);
+                messageContainer.appendChild(userMessageDiv);
+
                 if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                     const fullString = messageData.content;
                     const cleanString = fullString.split(' ').slice(1).join(' ').trim();
@@ -162,117 +146,50 @@ export class BMOView extends ItemView {
                 } else {
                     userP.innerHTML = marked(messageData.content);
                 }
-
-                const option1 = document.createElement("li");
-                option1.textContent = "Copy User Message";
-                option1.addEventListener("click", function () {
-                    const messageText = userP.textContent;
-            
-                    if (messageText !== null) {
-                        copyMessageToClipboard(messageText);
-                        new Notice('Copied User Message');
-                        hideAllDropdowns();
-                    } else {
-                        console.error('Message content is null. Cannot copy.');
-                    }
-                });
-                dropdownOptions.appendChild(option1);
-
-                // Check if the next message in the history is from the assistant
-                if (index + 1 < messageHistory.length && messageHistory[index + 1].role == "assistant") {
-                    const botMessageData = messageHistory[index + 1];
-                    const botP = document.createElement("p");
-                    let messageText = botMessageData.content;
-                    if (ANTHROPIC_MODELS.includes(this.settings.model)) {
-                        const fullString = botMessageData.content;
-                        const cleanString = fullString.split(' ').slice(1).join(' ').trim();
-                        botP.innerHTML = marked(cleanString);
-                        messageText = cleanString;
-                    } else {
-                        botP.innerHTML = marked(botMessageData.content);
-                    }
-
-                    const option2 = document.createElement("li");
-                    option2.textContent = "Copy Bot Message";
-                    option2.addEventListener("click", function () {
-                        if (messageText !== null) {
-                            copyMessageToClipboard(messageText);
-                            new Notice('Copied Bot Message');
-                            hideAllDropdowns();
-                        } else {
-                            console.error('Message content is null. Cannot copy.');
-                        }
-                    });
-                    dropdownOptions.appendChild(option2);
-                }
-
-                const modal = new Modal(this.app);
-
-                const option3 = document.createElement("li");
-                option3.innerHTML = "Delete Thread";
-                option3.addEventListener("click", function () {
-                    modal.contentEl.innerHTML = `
-                        <div class="modal-content">
-                            <h2>Delete Thread</h2>
-                            <p>Are you sure you want to delete this thread?</p>
-                            <button id="confirmDelete">Confirm Delete</button>
-                        </div>
-                    `;
-                
-                    const confirmDeleteButton = modal.contentEl.querySelector("#confirmDelete");
-                    confirmDeleteButton?.addEventListener("click", async function () {
-                        removeMessageThread(index);
-                        new Notice('Thread Deleted');
-                        hideAllDropdowns();
-                        modal.close();
-                    });
-                
-                    modal.open();
-                });
-                
-                dropdownOptions.appendChild(option3);
-                
-                ellipsisLink.appendChild(elipsesSpan);
-                userNameSpan.appendChild(ellipsisLink);
-                userMessageDiv.appendChild(userNameSpan);
-                userMessageDiv.appendChild(dropdownOptions);
-                userMessageDiv.appendChild(userP);
-                messageContainer.appendChild(userMessageDiv);
             }
         
             if (messageData.role == "assistant") {
                 const botMessageDiv = document.createElement("div");
                 botMessageDiv.className = "botMessage";
-                botMessageDiv.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+                botMessageDiv.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor ||
+                    getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+                const botMessageToolBarDiv = document.createElement("div");
+                botMessageToolBarDiv.className = "botMessageToolBar";
         
                 const botNameSpan = document.createElement("span"); 
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
                 botNameSpan.setAttribute("id", "chatbotName")
-                botMessageDiv.appendChild(botNameSpan);
         
                 const messageBlockDiv = document.createElement("div");
                 messageBlockDiv.className = "messageBlock";
 
                 let botP = '';
 
+                const messageText = messageData.content;
                 if (messageHistory.length >= 2) {
                     if (ANTHROPIC_MODELS.includes(this.settings.model)) {
-                        const fullString = messageData.content;
-                        const cleanString = fullString.split(' ').slice(1).join(' ').trim();
+                        const cleanString = messageText.split(' ').slice(1).join(' ').trim();
                         botP = marked(cleanString);
                     } else if (messageData.content.includes('div class="formattedSettings"')) {
                         botP = messageData.content;
                     } 
                     else {
                         botP = marked(messageData.content);
-                    }                      
-                        
-                  }
+                    }                                  
+                }
 
                 const newBotP = document.createElement('p');
                 newBotP.innerHTML = botP;
 
-                // Append the paragraph element to messageBlockDiv
+                botMessageToolBarDiv.appendChild(botNameSpan);
+                botMessageToolBarDiv.appendChild(buttonContainerDiv);
+
+                if (!messageText.includes('div class="formattedSettings"')) {
+                    const copyBotButton = displayBotCopyButton(messageData, this.settings);
+                    buttonContainerDiv.appendChild(copyBotButton);
+                }
+                botMessageDiv.appendChild(botMessageToolBarDiv);
                 messageBlockDiv.appendChild(newBotP);
                 botMessageDiv.appendChild(messageBlockDiv);
                 messageContainer.appendChild(botMessageDiv);
@@ -282,7 +199,6 @@ export class BMOView extends ItemView {
                 if (!messageData.content.includes('div class="formattedSettings"')){
                     addParagraphBreaks(messageBlockDiv);        
                 }
-
                 const botMessages = messageContainer.querySelectorAll(".botMessage");
                 const lastBotMessage = botMessages[botMessages.length - 1];
 
@@ -330,209 +246,137 @@ export class BMOView extends ItemView {
                 return;
             }
 
-                const dropdownOptions = document.createElement("ul");
-                dropdownOptions.setAttribute("id", "dropdownOptions");
-        
-                const ellipsisLink = document.createElement("a");
-                ellipsisLink.href = "#";
+            if (ANTHROPIC_MODELS.includes(this.settings.model)) {
+                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
+            } else {
+                addMessage(input, 'userMessage', this.settings);
+            }
             
-                const elipsesSpan = document.createElement("span");
-                elipsesSpan.setAttribute("id", "elipses");
-                elipsesSpan.textContent = "...";
-                elipsesSpan.style.float = "right";
-                
-                const userMessage = document.createElement("div");
-                userMessage.classList.add("userMessage");
-                userMessage.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
-                
-                const userNameSpan = document.createElement("span");
-                userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
-                userNameSpan.setAttribute("id", "userName");
-                userMessage.appendChild(userNameSpan);
-                
-                if (ANTHROPIC_MODELS.includes(this.settings.model)) {
-                    addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
-                } else {
-                    addMessage(input, 'userMessage', this.settings);
-                }
-                
-                const userParagraph = document.createElement("p");
-                const markdownContent = marked(input);
-                userParagraph.innerHTML = markdownContent;
-
-                const option1 = document.createElement("li");
-                option1.textContent = "Copy User Message";
-                option1.addEventListener("click", function () {
-                    const messageText = input;
+            const userP = document.createElement("p");
+            const markdownContent = marked(input);
+            userP.innerHTML = markdownContent;
             
-                    if (messageText !== null) {
-                        copyMessageToClipboard(messageText);
-                        new Notice('Copied User Message');
-                        hideAllDropdowns();
-                    } else {
-                        new Notice('Message content is null. Cannot copy.');
-                        console.error('Message content is null. Cannot copy.');
-                    }
-                });
-                dropdownOptions.appendChild(option1);
-
-                let lastClickedElement: HTMLElement | null = null;
-
-                // Add a click event listener to the ellipsis span to toggle the dropdown
-                elipsesSpan.addEventListener("click", function (event) {
-                    event.stopPropagation();
-                    const wasOpen = dropdownOptions.classList.contains("dropdownOptionsOpen");
-                    hideAllDropdowns();
-                    if (!wasOpen) {
-                        dropdownOptions.style.display = "block";
-                        dropdownOptions.classList.add("dropdownOptionsOpen");
-                    }
-                    lastClickedElement = event.target as HTMLElement;
-
-                    while (lastClickedElement && !lastClickedElement.classList.contains('userMessage')) {
-                        lastClickedElement = lastClickedElement.parentElement;
-                    }
-
-                    if (lastClickedElement) {
-                        const userMessages = Array.from(document.querySelectorAll('#messageContainer .userMessage'));
-                    
-                        const index = userMessages.indexOf(lastClickedElement) * 2;
-                    
-                        if (index !== -1) {
-                            const modal = new Modal(app);
-                    
-                            if (!Array.from(dropdownOptions.children).find(option => option.textContent === "Delete Thread")) {
-                                const option3 = document.createElement("li");
-                                option3.innerHTML = "Delete Thread";
-                                option3.addEventListener("click", function () {
-                                    modal.contentEl.innerHTML = `
-                                        <div class="modal-content">
-                                            <h2>Delete Thread</h2>
-                                            <p>Are you sure you want to delete this thread?</p>
-                                            <button id="confirmDelete">Confirm Delete</button>
-                                        </div>
-                                    `;
-                    
-                                    const confirmDeleteButton = modal.contentEl.querySelector("#confirmDelete");
-                                    confirmDeleteButton?.addEventListener("click", async function () {
-                                        removeMessageThread(index);
-                                        new Notice('Thread Deleted');
-                                        hideAllDropdowns();
-                                        modal.close();
-                                    });
-                    
-                                    modal.open();
-                                });
-                    
-                                dropdownOptions.appendChild(option3);
-                            }
-                        }
-                    }
-                    
-                });
-                
             
-                // Add a click event listener to the document to hide the dropdown when clicking outside
-                document.addEventListener("click", function (event) {
-                    if (!(event.target instanceof HTMLElement && (event.target.id === "elipses" || event.target.id === "dropdownOptions" || event.target.closest("#dropdownOptions")))) {
-                        hideAllDropdowns();
+            const userMessageDiv = document.createElement("div");
+            userMessageDiv.className = "userMessage";
+            userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || 
+                getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+            
+            const userMessageToolBarDiv = document.createElement("div");
+            userMessageToolBarDiv.className = "userMessageToolBar";
+            
+            const userNameSpan = document.createElement("span");
+            userNameSpan.className = "userName";
+            userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
+
+            const buttonContainerDiv = document.createElement("div");
+            buttonContainerDiv.className = "button-container";
+            
+            const messageContainer = document.querySelector("#messageContainer");
+            if (messageContainer) {
+                const copyUserButton = displayUserCopyButton(userP);
+                const trashButton = displayTrash();
+
+                userMessageToolBarDiv.appendChild(userNameSpan);
+                userMessageToolBarDiv.appendChild(buttonContainerDiv);
+                buttonContainerDiv.appendChild(copyUserButton);
+                buttonContainerDiv.appendChild(trashButton);
+                userMessageDiv.appendChild(userMessageToolBarDiv);
+                userMessageDiv.appendChild(userP);
+                messageContainer.appendChild(userMessageDiv);
+
+                
+
+                if (input.startsWith("/")) {
+    
+                    executeCommand(input, this.settings, this.plugin);
+                    const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
+                    if (modelName) {
+                        modelName.textContent = 'Model: ' + this.settings.model.toLowerCase();
                     }
-                });
 
-                const messageContainer = document.querySelector("#messageContainer");
-                if (messageContainer) {
-                    ellipsisLink.appendChild(elipsesSpan);
-                    userNameSpan.appendChild(ellipsisLink);
-                    userMessage.appendChild(userNameSpan);
-                    userMessage.appendChild(dropdownOptions);
-                    userMessage.appendChild(userParagraph);
-                    messageContainer.appendChild(userMessage);
-                    
 
-                    if (input.startsWith("/")) {
-        
-                        executeCommand(input, this.settings, this.plugin);
-                        const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
-                        if (modelName) {
-                            modelName.textContent = 'Model: ' + this.settings.model.toLowerCase();
+                }   
+                else {
+                    const botMessageDiv = document.createElement("div");
+                    botMessageDiv.className = "botMessage";
+                    botMessageDiv.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor ||
+                        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+                    const botMessageToolBarDiv = document.createElement("div");
+                    botMessageToolBarDiv.className = "botMessageToolBar";
+
+                    const botNameSpan = document.createElement("span"); 
+                    botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+                    botNameSpan.setAttribute("id", "chatbotName")
+
+                    const messageBlockDiv = document.createElement("div");
+                    messageBlockDiv.className = "messageBlock";
+
+                    botMessageToolBarDiv.appendChild(botNameSpan);
+                    botMessageDiv.appendChild(botMessageToolBarDiv);
+                    botMessageDiv.appendChild(messageBlockDiv);
+                    messageContainer.appendChild(botMessageDiv);
+
+                    const loadingEl = document.createElement("span");
+                    loadingEl.setAttribute("id", "loading"); 
+                    loadingEl.style.display = "inline-block"; 
+                    loadingEl.textContent = "..."; 
+
+                    // Define a function to update the loading animation
+                    const updateLoadingAnimation = () => {
+                        const loadingEl = document.querySelector('#loading');
+                        if (!loadingEl) {
+                            return;
                         }
-
-
-                    }   
-                    else {
-                        const botMessage = document.createElement("div");
-                        botMessage.classList.add("botMessage");
-                        botMessage.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor || getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
-                        messageContainer.appendChild(botMessage);
-                    
-                        const botNameSpan = document.createElement("span"); 
-                        botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                        botNameSpan.setAttribute("id", "chatbotName")
-                        botMessage.appendChild(botNameSpan);
-
-                        const messageBlock = document.createElement("div");
-                        messageBlock.classList.add("messageBlock");
-                        botMessage.appendChild(messageBlock);
-
-                        const loadingEl = document.createElement("span");
-                        loadingEl.setAttribute("id", "loading"); 
-                        loadingEl.style.display = "inline-block"; 
-                        loadingEl.textContent = "..."; 
-
-                        // Define a function to update the loading animation
-                        const updateLoadingAnimation = () => {
-                            const loadingEl = document.querySelector('#loading');
-                            if (!loadingEl) {
-                                return;
-                            }
-                            loadingEl.textContent += ".";
-                            // If the loading animation has reached three dots, reset it to one dot
-                            if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
-                                loadingEl.textContent = ".";
-                            }
-                        };  
-
-                        if (!OPENAI_MODELS.includes(this.settings.model)) {
-                            botMessage.appendChild(loadingEl);
-                            loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        loadingEl.textContent += ".";
+                        // If the loading animation has reached three dots, reset it to one dot
+                        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+                            loadingEl.textContent = ".";
                         }
+                    };  
 
-                        const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
-
-                        // Create a spacer element for scrolling most recent userMessage/botMessage to
-                        const spacer = document.createElement("div");
-                        spacer.setAttribute("id", "spacer");
-                        messageContainer.appendChild(spacer);
-
-                        userMessage.scrollIntoView({ behavior: "smooth", block: "start" });
-
-                        this.preventEnter = true;
-                        // Call the chatbot function with the user's input
-                        this.BMOchatbot(input)
-                            .then(() => {
-                                const spacer = messageContainer.querySelector("#spacer");
-                                if (spacer) {
-                                    spacer.remove();
-                                }
-                                this.preventEnter = false;
-                                clearInterval(loadingAnimationIntervalId);
-                            })
-                            .catch(() => {
-                                // Stop the loading animation and update the bot message with an error message
-                                clearInterval(loadingAnimationIntervalId);
-                                const botParagraph = document.createElement("p");
-                                botParagraph.textContent = "Oops, something went wrong. Please try again.";
-                                botMessage.appendChild(botParagraph);
-                            });
+                    if (!OPENAI_MODELS.includes(this.settings.model)) {
+                        botMessageDiv.appendChild(loadingEl);
+                        loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
                     }
-                        
-                }
 
-                this.textareaElement.value = "";
-                this.textareaElement.style.height = "29px";
-                this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
-                this.textareaElement.setSelectionRange(0, 0);
+                    const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+
+                    // Create a spacer element for scrolling most recent userMessage/botMessage to
+                    const spacer = document.createElement("div");
+                    spacer.setAttribute("id", "spacer");
+                    messageContainer.appendChild(spacer);
+
+                    userMessageDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+
+                    this.preventEnter = true;
+                    // Call the chatbot function with the user's input
+                    this.BMOchatbot(input)
+                        .then(() => {
+                            const spacer = messageContainer.querySelector("#spacer");
+                            if (spacer) {
+                                spacer.remove();
+                            }
+                            this.preventEnter = false;
+                            clearInterval(loadingAnimationIntervalId);
+                        })
+                        .catch(() => {
+                            // Stop the loading animation and update the bot message with an error message
+                            clearInterval(loadingAnimationIntervalId);
+                            const botParagraph = document.createElement("p");
+                            botParagraph.textContent = "Oops, something went wrong. Please try again.";
+                            botMessageDiv.appendChild(botParagraph);
+                        });
                 }
+                    
+            }
+
+            this.textareaElement.value = "";
+            this.textareaElement.style.height = "29px";
+            this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
+            this.textareaElement.setSelectionRange(0, 0);
+            }
     }
 
     handleKeydown(event: KeyboardEvent) {
@@ -775,33 +619,13 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
         messageObj.role = 'assistant';  
         messageObj.content = input;
 
-        const dropdowns = document.querySelectorAll("#dropdownOptions");
-        const dropdownOptions = dropdowns[dropdowns.length - 1];
-
-        if (dropdowns.length > 0) {
-            const option2 = document.createElement("li");
-            option2.textContent = "Copy Bot Message";   
-            option2.addEventListener("click", function () {
-                let messageText = messageObj.content;
-        
-                if (messageText !== null) {
-                    if (ANTHROPIC_MODELS.includes(settings.model)) {
-                        const fullString = messageObj.content;
-                        const cleanString = fullString.split(' ').slice(1).join(' ').trim();
-                        messageText = cleanString;
-                        copyMessageToClipboard(messageText);
-                    }
-                    else {
-                        copyMessageToClipboard(messageText);
-                    }
-                    new Notice('Copied Bot Message');
-                    hideAllDropdowns();
-                } else {
-                    new Notice('Message content is null. Cannot copy.');
-                    console.error('Message content is null. Cannot copy.');
-                }
-            });
-            dropdownOptions.appendChild(option2);
+        const botMessageToolBarDiv = document.querySelectorAll(".botMessageToolBar");
+        const lastBotMessageToolBarDiv = botMessageToolBarDiv[botMessageToolBarDiv.length - 1];
+        if (botMessageToolBarDiv.length > 0) {
+            if (!messageObj.content.includes('div class="formattedSettings"')) {
+                const copyBotButton = displayBotCopyButton(messageObj, settings);
+                lastBotMessageToolBarDiv.appendChild(copyBotButton);
+            }
         }
 
     }
@@ -844,7 +668,7 @@ export function prismHighlighting(messageBlock: { querySelectorAll: (arg0: strin
 // Copy button for code blocks
 export function codeBlockCopyButton(messageBlock: { querySelectorAll: (arg0: string) => any; }) {
     const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
-    codeBlocks.forEach((codeElement: { parentNode: { insertBefore: (arg0: HTMLButtonElement, arg1: any) => void; }; nextSibling: any; textContent: any; }) => {
+    codeBlocks.forEach((codeElement: HTMLElement) => {
         const copyButton = document.createElement("button");
         copyButton.textContent = "copy";
         setIcon(copyButton, "copy");
@@ -854,12 +678,16 @@ export function codeBlockCopyButton(messageBlock: { querySelectorAll: (arg0: str
             codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
         }
         copyButton.addEventListener("click", () => {
-            const codeText = codeElement.textContent;
+            // Extract the language from the class attribute
+            const language = codeElement.getAttribute('class')?.replace('language-', '') || '';
+            // Format the code text in markdown code block syntax
+            const codeText = `\`\`\`${language}\n${codeElement.textContent}\`\`\``;
             if (codeText) {
                 navigator.clipboard.writeText(codeText).then(() => {
-                    new Notice('Copied to your clipboard');
+                    new Notice('Copied bot codeblock.');
                 }, (err) => {
                     console.error("Failed to copy code: ", err);
+                    new Notice("Failed to copy code: ", err);
                 });
             }
         });
@@ -890,14 +718,130 @@ export function copyMessageToClipboard(message: string) {
     });
 }
 
-// eslint-disable-next-line no-inner-declarations
-export function hideAllDropdowns(exceptDropdown: HTMLElement | null = null) {
-    const openDropdowns = document.querySelectorAll("#dropdownOptions");
-    openDropdowns.forEach((dropdown) => {
-        if (dropdown !== exceptDropdown && dropdown instanceof HTMLElement) {
-            dropdown.classList.remove("dropdownOptionsOpen");
-            dropdown.style.display = "none";
-        }});
+function displayUserCopyButton (userP: HTMLParagraphElement) {
+    const copyButton = document.createElement("button");
+    copyButton.textContent = "copy";
+    setIcon(copyButton, "copy");
+    copyButton.classList.add("copy-button");
+    copyButton.title = "copy";
+
+    copyButton.addEventListener("click", function () {
+        const messageText = userP.textContent;
+
+        if (messageText !== null) {
+            copyMessageToClipboard(messageText);
+            new Notice('Copied user message.');
+        } else {
+            console.error('Message content is null. Cannot copy.');
+        }
+    });
+    return copyButton;
+}
+
+function displayBotCopyButton (messageObj: {role: string; content: string;}, settings: BMOSettings) {
+    const copyButton = document.createElement("button");
+    copyButton.textContent = "copy";
+    setIcon(copyButton, "copy");
+    copyButton.classList.add("copy-button");
+    copyButton.title = "copy";
+
+    let messageText = messageObj.content;
+
+    if (messageText !== null) {
+        if (ANTHROPIC_MODELS.includes(settings.model)) {
+            const fullString = messageObj.content;
+            const cleanString = fullString.split(' ').slice(1).join(' ').trim();
+            messageText = cleanString;
+        } 
+    } else {
+        new Notice('Message content is null. Cannot copy.');
+        console.error('Message content is null. Cannot copy.');
+    }
+
+    copyButton.addEventListener("click", function () {
+        if (messageText !== null) {
+            copyMessageToClipboard(messageText);
+            new Notice('Copied bot message.');
+        } else {
+            console.error('Message content is null. Cannot copy.');
+        }
+    });
+    return copyButton;
+}
+
+function displayTrash () {
+    const trashButton = document.createElement("button");
+    trashButton.textContent = "trash";
+    setIcon(trashButton, "trash");
+    trashButton.classList.add("trash-button");
+    trashButton.title = "trash";
+
+    let lastClickedElement: HTMLElement | null = null;
+
+    // Add a click event listener to the ellipsis span to toggle the dropdown
+    trashButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        lastClickedElement = event.target as HTMLElement;
+
+        while (lastClickedElement && !lastClickedElement.classList.contains('userMessage')) {
+            lastClickedElement = lastClickedElement.parentElement;
+        }
+
+        if (lastClickedElement) {
+            const userMessages = Array.from(document.querySelectorAll('#messageContainer .userMessage'));
+        
+            const index = userMessages.indexOf(lastClickedElement) * 2;
+        
+            if (index !== -1) {
+                const modal = new Modal(app);
+                
+                modal.contentEl.innerHTML = `
+                <div class="modal-content">
+                    <h2>Delete Message Block.</h2>
+                    <p>Are you sure you want to delete this message block?</p>
+                    <button id="confirmDelete">Confirm Delete</button>
+                </div>
+                `;
+
+                const confirmDeleteButton = modal.contentEl.querySelector("#confirmDelete");
+                confirmDeleteButton?.addEventListener("click", async function () {
+                    deleteMessage(index);
+                    new Notice('Message deleted.');
+                    // hideAllDropdowns();
+                    modal.close();
+                });
+
+                modal.open();
+        
+            }
+        }
+        
+    });
+    return trashButton;
+}
+
+export async function deleteMessage(index: number) {
+    const messageContainer = document.querySelector('#messageContainer');
+
+    const divElements = messageContainer?.querySelectorAll('div.botMessage, div.userMessage');
+
+    if (divElements && divElements.length > 0 && index >= 0 && index < divElements.length) {
+        // Remove the specified message and the next one if it exists
+        messageContainer?.removeChild(divElements[index]);
+        if (index + 1 < divElements.length) {
+            messageContainer?.removeChild(divElements[index + 1]);
+        }
+    }
+
+    // Update the messageHistory by removing the specified index and the next one
+    messageHistory.splice(index, 2);
+    const jsonString = JSON.stringify(messageHistory, null, 4);
+
+    try {
+        await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+    } catch (error) {
+        console.error('Error writing messageHistory.json', error);
+    }
 }
 
 export async function removeMessageThread(index: number) {
@@ -920,4 +864,5 @@ export async function removeMessageThread(index: number) {
         console.error('Error writing messageHistory.json', error);
     }
 }
+
 

@@ -74,7 +74,7 @@ If your plugin does not need CSS, delete this file.
 
 /* User & Bot Messages */
 
-#userName,
+.userName,
 #chatbotName {
 	display: block;
 	font-size: 0.8rem;
@@ -141,8 +141,88 @@ If your plugin does not need CSS, delete this file.
 	max-width: 30px;
 }
 
-.messageBlock pre .copy-button:hover {
+.messageBlock .copy-button:hover {
 	color: white;
+}
+
+.userMessageToolBar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 1.2rem;
+}
+
+.button-container {
+	margin: 0;
+}
+
+/* Styles for copy button */
+.userMessageToolBar button.copy-button {
+	padding: 0 3px;
+	background-color: transparent !important;
+	box-shadow: none !important;
+	border: none;
+	color: var(--interactive-accent);
+	width: 1.2rem;
+}
+
+.userMessageToolBar .copy-button:hover {
+	color: var(--text-muted);
+}
+
+.botMessageToolBar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 1.2rem;
+}
+
+.botMessageToolBar button.copy-button {
+	padding: 0 3px;
+	background-color: transparent !important;
+	box-shadow: none !important;
+	border: none;
+	color: var(--interactive-accent);
+	width: 1.2rem;
+}
+
+.botMessageToolBar .copy-button:hover {
+	color: var(--text-muted);
+}
+
+/* Styles for trash button */
+.userMessageToolBar button.trash-button {
+	padding: 0 3px;
+	background-color: transparent !important;
+	box-shadow: none !important;
+	border: none;
+	color: var(--interactive-accent);
+	width: 1.2rem;
+}
+
+.userMessageToolBar .trash-button:hover {
+	color: rgb(188, 35, 35);
+}
+
+/* Hide buttons */
+.userMessage .copy-button,
+.userMessage .trash-button,
+.botMessage .copy-button {
+	visibility: hidden;
+	opacity: 0;
+}
+
+/* Show buttons on hover */
+.userMessage:hover .copy-button,
+.userMessage:hover .trash-button,
+.botMessage:hover .copy-button {
+	visibility: visible;
+	opacity: 1;
+}
+
+.userMessageToolBar button,
+.botMessageToolBar button {
+	width: 1.2rem;
 }
 
 /* Tables */
