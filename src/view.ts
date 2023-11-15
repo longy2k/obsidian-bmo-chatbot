@@ -828,13 +828,22 @@ export async function deleteMessage(index: number) {
     if (divElements && divElements.length > 0 && index >= 0 && index < divElements.length) {
         // Remove the specified message and the next one if it exists
         messageContainer?.removeChild(divElements[index]);
+        // Check if the next message is from the assistant and remove it if it is
         if (index + 1 < divElements.length) {
-            messageContainer?.removeChild(divElements[index + 1]);
+            const nextMessage = divElements[index + 1];
+            if (nextMessage.classList.contains('botMessage')) {
+                messageContainer?.removeChild(nextMessage);
+            }
         }
     }
 
-    // Update the messageHistory by removing the specified index and the next one
-    messageHistory.splice(index, 2);
+    // Update the messageHistory by removing the specified index and potentially the next one
+    if (messageHistory[index + 1] && messageHistory[index + 1].role === "assistant") {
+        messageHistory.splice(index, 2);
+    } else {
+        messageHistory.splice(index, 1);
+    }
+    
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {

@@ -203,7 +203,6 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
 
 // `/ref` to turn on/off referenceCurrentNote.
 export async function commandReference(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
-  // console.log('Plugin instance in executeCommand:', plugin);
   const messageBlock = createBotMessage(currentSettings);
 
   let formattedSettings = '';
@@ -336,7 +335,7 @@ export async function commandAppend(currentSettings: BMOSettings) {
 
   const activeFile = app.workspace.getActiveFile();
 
-  if (activeFile) {
+  if (activeFile?.extension === 'md') {
     const existingContent = await app.vault.read(activeFile);
 
     // Retrieve user and chatbot names
@@ -394,6 +393,10 @@ export async function commandAppend(currentSettings: BMOSettings) {
 
     // Save the updated content back to the active file
     await app.vault.modify(activeFile, updatedContent);
+    new Notice("Appended conversation.");
+  }
+  else {
+    new Notice("No active note to append to.");
   }
 }
 
