@@ -67,7 +67,8 @@ function createBotMessage(currentSettings: BMOSettings): HTMLDivElement {
   const botNameSpan = document.createElement("span");
   botNameSpan.textContent =
     currentSettings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-  botNameSpan.setAttribute("id", "chatbotName");
+  // botNameSpan.setAttribute("id", "chatbotName");
+  botNameSpan.className = "chatbotName";
   botMessage.appendChild(botNameSpan);
 
   const messageBlock = document.createElement("div");
@@ -339,7 +340,7 @@ export async function commandAppend(currentSettings: BMOSettings) {
     const existingContent = await app.vault.read(activeFile);
 
     // Retrieve user and chatbot names
-    const userNames = document.querySelectorAll('#userName') as NodeListOf<HTMLHeadingElement>;
+    const userNames = document.querySelectorAll('.userName') as NodeListOf<HTMLHeadingElement>;
 
     let userNameText = 'USER';
     if (userNames.length > 0) {
@@ -352,7 +353,8 @@ export async function commandAppend(currentSettings: BMOSettings) {
         });
     }
 
-    const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+    // const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+    const chatbotNames = document.querySelectorAll('.chatbotName') as NodeListOf<HTMLHeadingElement>;
     const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
 
     // Check and read the JSON file
@@ -459,7 +461,7 @@ export async function commandSave(currentSettings: BMOSettings) {
   }
 
     // Retrieve user and chatbot names
-    const userNames = document.querySelectorAll('#userName') as NodeListOf<HTMLHeadingElement>;
+    const userNames = document.querySelectorAll('.userName') as NodeListOf<HTMLHeadingElement>;
 
     let userNameText = 'USER';
     if (userNames.length > 0) {
@@ -472,7 +474,8 @@ export async function commandSave(currentSettings: BMOSettings) {
         });
     }
 
-    const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+    // const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+    const chatbotNames = document.querySelectorAll('.chatbotName') as NodeListOf<HTMLHeadingElement>;
     const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
 
     // Check and read the JSON file

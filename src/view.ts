@@ -159,7 +159,8 @@ export class BMOView extends ItemView {
         
                 const botNameSpan = document.createElement("span"); 
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                botNameSpan.setAttribute("id", "chatbotName")
+                // botNameSpan.setAttribute("id", "chatbotName")
+                botNameSpan.className = "chatbotName";
         
                 const messageBlockDiv = document.createElement("div");
                 messageBlockDiv.className = "messageBlock";
@@ -308,7 +309,8 @@ export class BMOView extends ItemView {
 
                     const botNameSpan = document.createElement("span"); 
                     botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                    botNameSpan.setAttribute("id", "chatbotName")
+                    // botNameSpan.setAttribute("id", "chatbotName")
+                    botNameSpan.className = "chatbotName";
 
                     const messageBlockDiv = document.createElement("div");
                     messageBlockDiv.className = "messageBlock";
@@ -438,7 +440,8 @@ export class BMOView extends ItemView {
             const errorMessage = document.createElement('p');
             errorMessage.textContent = "API key not found. Please add your OpenAI API key in the plugin settings.";
             errorMessage.classList.add('errorMessage');
-            const chatbotNameError = lastDiv.querySelector('#chatbotName') as HTMLDivElement;
+            // const chatbotNameError = lastDiv.querySelector('#chatbotName') as HTMLDivElement;
+            const chatbotNameError = lastDiv.querySelector('.chatbotName') as HTMLDivElement;
             chatbotNameError.textContent = "ERROR";
             lastDiv.appendChild(errorMessage);
             chatbox.disabled = true;

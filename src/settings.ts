@@ -190,7 +190,7 @@ export class BMOSettingTab extends PluginSettingTab {
 				this.plugin.settings.userName = value ? value.toUpperCase() : DEFAULT_SETTINGS.userName;
 				text.inputEl.maxLength = 30;
 				await this.plugin.saveSettings();
-				const userNames = document.querySelectorAll('#userName') as NodeListOf<HTMLHeadingElement>;
+				const userNames = document.querySelectorAll('.userName') as NodeListOf<HTMLHeadingElement>;
 				userNames.forEach(userName => {
 					userName.textContent = this.plugin.settings.userName;
 				});
@@ -208,7 +208,7 @@ export class BMOSettingTab extends PluginSettingTab {
 				text.inputEl.maxLength = 30;
 				await this.plugin.saveSettings();
 				const chatbotNameHeading = document.querySelector('#chatbotNameHeading') as HTMLHeadingElement;
-				const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
+				const chatbotNames = document.querySelectorAll('.chatbotName') as NodeListOf<HTMLHeadingElement>;
 				if (chatbotNameHeading) {
 					chatbotNameHeading.textContent = this.plugin.settings.chatbotName;
 				}
