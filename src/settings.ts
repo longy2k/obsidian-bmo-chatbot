@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, ColorComponent, requestUrl, DropdownComponent } from 'obsidian';
+import { App, PluginSettingTab, Setting, ColorComponent, requestUrl, DropdownComponent, Notice } from 'obsidian';
 import { DEFAULT_SETTINGS } from './main';
 import BMOGPT from './main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from './view';
@@ -12,8 +12,8 @@ export class BMOSettingTab extends PluginSettingTab {
 	}
 
 	async display(): Promise<void> {
-		const models = await this.fetchData();
-
+		const localAIModels = await this.localAIFetchData();
+		const ollamaModels = await this.ollamaFetchModels();
 		const {containerEl} = this;
 
 		containerEl.empty();
@@ -26,8 +26,7 @@ export class BMOSettingTab extends PluginSettingTab {
 			href: "https://github.com/longy2k/obsidian-bmo-chatbot/releases",
 		});
 
-		// Set the style separately
-		changeLogLink.style.fontSize = "0.8rem";  // Adjust the font size as needed
+		changeLogLink.style.fontSize = "0.8rem"; 
 
 
 		const usageText = containerEl.createEl("p", {
@@ -69,28 +68,43 @@ export class BMOSettingTab extends PluginSettingTab {
 				}));
 
 		// Function to add options to dropdown
-		const addOptionsToDropdown = (dropdown: DropdownComponent, models: any[]) => {
+		const addOptionsToDropdown = (dropdown: DropdownComponent, models: string[]) => {
 			models.forEach(model => {
 			dropdown.addOption(model, model);
 			});
 		};
-  
 
 		new Setting(containerEl)
 			.setName('Model')
 			.setDesc('Choose a model.')
 			.addDropdown(dropdown => {
-
 				if (!this.plugin.settings.apiKey || !this.plugin.settings.apiKey.startsWith("sk-ant")) {
 					addOptionsToDropdown(dropdown, OPENAI_MODELS);
 				}
 				if (this.plugin.settings.apiKey && this.plugin.settings.apiKey.startsWith("sk-ant")) {
 					addOptionsToDropdown(dropdown, ANTHROPIC_MODELS);
 				}
-				if (this.plugin.settings.restAPIUrl && models && models.length > 0) {
-					models.forEach((model: string) => {
-						dropdown.addOption(model, model);
-					});
+				if (this.plugin.settings.ollamaRestAPIUrl && this.plugin.settings.ollamaModels && this.plugin.settings.ollamaModels.length > 0) {
+					try {
+						ollamaModels.forEach((model: string) => {
+							dropdown.addOption(model, model);
+						});
+					}
+					catch (error) {
+						console.error('Error:', error);
+						new Notice('Ollama connection error.');
+					}
+				}
+				if (this.plugin.settings.localAIRestAPIUrl && localAIModels && localAIModels.length > 0) {
+					try {
+						localAIModels.forEach((model: string) => {
+							dropdown.addOption(model, model);
+						});
+					}
+					catch (error) {
+						console.error('Error:', error);
+						new Notice('LocalAI connection error.');
+					}
 				}
 			dropdown
 				.setValue(this.plugin.settings.model || DEFAULT_SETTINGS.model)
@@ -409,13 +423,25 @@ export class BMOSettingTab extends PluginSettingTab {
 		);
 
 		new Setting(containerEl)
-		.setName('REST API URL')
+		.setName('OLLAMA REST API URL')
+		.setDesc('Enter your OLLAMA REST API URL.')
+		.addText(text => text
+			.setPlaceholder('http://localhost:11435')
+			.setValue(this.plugin.settings.ollamaRestAPIUrl || DEFAULT_SETTINGS.ollamaRestAPIUrl)
+			.onChange(async (value) => {
+					this.plugin.settings.ollamaRestAPIUrl = value ? value : DEFAULT_SETTINGS.ollamaRestAPIUrl;
+					await this.plugin.saveSettings();
+				})
+		);
+
+		new Setting(containerEl)
+		.setName('LOCALAI REST API URL')
 		.setDesc(descLink1('Enter your REST API URL using', 'https://github.com/go-skynet/LocalAI', ''))
 		.addText(text => text
 			.setPlaceholder('http://localhost:8080')
-			.setValue(this.plugin.settings.restAPIUrl || DEFAULT_SETTINGS.restAPIUrl)
+			.setValue(this.plugin.settings.localAIRestAPIUrl || DEFAULT_SETTINGS.localAIRestAPIUrl)
 			.onChange(async (value) => {
-					this.plugin.settings.restAPIUrl = value ? value : DEFAULT_SETTINGS.restAPIUrl;
+					this.plugin.settings.localAIRestAPIUrl = value ? value : DEFAULT_SETTINGS.localAIRestAPIUrl;
 					await this.plugin.saveSettings();
 				})
 		);
@@ -441,14 +467,49 @@ export class BMOSettingTab extends PluginSettingTab {
 		}
 	}
 
-	async fetchData() {
-		const restAPIUrl = this.plugin.settings.restAPIUrl;
-
-		if (!restAPIUrl) {
+	// Fetch models from OLLAMA REST API
+	async ollamaFetchModels() {
+		const ollamaRestAPIUrl = this.plugin.settings.ollamaRestAPIUrl;
+	
+		if (!ollamaRestAPIUrl) {
 			return;
 		}
 	
-		const url = restAPIUrl + '/v1/models';
+		const url = ollamaRestAPIUrl + '/api/tags';
+	
+		try {
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+	
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+	
+			const jsonData = await response.json();
+	
+			const models = jsonData.models.map((model: { name: string; }) => model.name);
+			this.plugin.settings.ollamaModels = models;
+	
+			return models;
+	
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	}
+	
+
+	async localAIFetchData() {
+		const localAIRestAPIUrl = this.plugin.settings.localAIRestAPIUrl;
+
+		if (!localAIRestAPIUrl) {
+			return;
+		}
+	
+		const url = localAIRestAPIUrl + '/v1/models';
 	
 		try {
 			const response = await requestUrl({
@@ -461,9 +522,9 @@ export class BMOSettingTab extends PluginSettingTab {
 	
 			const jsonData = response.json;
 	
-			const models = jsonData.data.map((model: { id: any; }) => model.id);
+			const models = jsonData.data.map((model: { id: number; }) => model.id); 
 
-			this.plugin.settings.models = models;  
+			this.plugin.settings.localAIModels = models;  
 	
 			return models;
 	

@@ -3,7 +3,6 @@ import { BMOView, VIEW_TYPE_CHATBOT, filenameMessageHistoryJSON, clearMessageHis
 import { BMOSettingTab } from './settings';
 
 export interface BMOSettings {
-	models: any;
 	apiKey: string;
 	max_tokens: string;
 	model: string;
@@ -17,7 +16,10 @@ export interface BMOSettings {
 	chatHistoryPath: string;
 	templateFilePath: string;
 	openAIBaseUrl: string;
-	restAPIUrl: string;
+	ollamaRestAPIUrl: string;
+	ollamaModels: string[];
+	localAIRestAPIUrl: string;
+	localAIModels: string[];
 	referenceCurrentNote: boolean;
 	allowRenameNoteTitle: boolean;
 }
@@ -36,8 +38,10 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	chatHistoryPath: 'BMO/',
 	templateFilePath: '',
 	openAIBaseUrl: 'https://api.openai.com/v1',
-	restAPIUrl: '',
-	models: undefined,
+	ollamaRestAPIUrl: '',
+	ollamaModels: [],
+	localAIRestAPIUrl: '',
+	localAIModels: [],
 	referenceCurrentNote: false,
 	allowRenameNoteTitle: false,
 }

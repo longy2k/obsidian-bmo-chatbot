@@ -3,7 +3,7 @@ import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
 import { ANTHROPIC_MODELS, OPENAI_MODELS, addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
 import BMOGPT from './main';
-import { fetchOpenAIAPITitle } from './models';
+import { fetchModelRenameTitle } from './models';
 
 type ModelObject = {
   [key: string]: string;
@@ -152,7 +152,7 @@ export function commandInspect(currentSettings: BMOSettings) {
       <p><strong>CHATBOT NAME:</strong> ${currentSettings.chatbotName}</p>
       <p><strong>USER BACKGROUND COLOR:</strong> "${currentSettings.userMessageBackgroundColor}"</p>
       <p><strong>BOT BACKGROUND COLOR:</strong> "${currentSettings.botMessageBackgroundColor}"</p>
-      <p><strong>REST API URL:</strong> "${currentSettings.restAPIUrl}"</p>
+      <p><strong>REST API URL:</strong> "${currentSettings.localAIModels}"</p>
     </div>
   `;
 
@@ -538,7 +538,7 @@ export async function commandSave(currentSettings: BMOSettings) {
       };
     
       while (!uniqueNameFound) {
-          modelRenameTitle = await fetchOpenAIAPITitle(currentSettings, referenceCurrentNote + markdownContent);
+          modelRenameTitle = await fetchModelRenameTitle(currentSettings, referenceCurrentNote + markdownContent);
       
           if (!fileNameExists(modelRenameTitle)) {
               uniqueNameFound = true;

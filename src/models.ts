@@ -1,6 +1,6 @@
-import { requestUrl } from "obsidian";
+import { Notice, requestUrl } from "obsidian";
 import { BMOSettings } from "./main";
-import { addMessage, addParagraphBreaks, codeBlockCopyButton, prismHighlighting } from "./view";
+import { OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, prismHighlighting } from "./view";
 import { marked } from "marked";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
@@ -46,16 +46,22 @@ export async function fetchOpenAIAPI(
             if (messageContainerEl) {
                 const botMessages = messageContainerEl.querySelectorAll(".botMessage");
                 const lastBotMessage = botMessages[botMessages.length - 1];
-
                 const messageBlock = lastBotMessage.querySelector('.messageBlock');
+                const loadingEl = lastBotMessage.querySelector("#loading");
 
                 if (messageBlock) {
+                    if (loadingEl) {
+                        loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        lastBotMessage.removeChild(loadingEl);
+                    }
+
                     messageBlock.innerHTML = marked(message);
 
                     addParagraphBreaks(messageBlock);
                     prismHighlighting(messageBlock);
                     codeBlockCopyButton(messageBlock);
                 }
+
             }
         }
 
@@ -77,36 +83,92 @@ export async function fetchOpenAIAPI(
     }
 }
 
-export async function fetchOpenAIAPITitle(settings: BMOSettings, markdownContent: string) {
-    const openai = new OpenAI({
-        apiKey: settings.apiKey,
-        baseURL: settings.openAIBaseUrl,
-        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
-    });
+// Fetch Ollama API
+export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNoteContent: string) {
+    const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
 
-    const prompt = `Based on the following markdown content, create a new, suitable title.
-     The title should not contain any of the following characters: backslashes, forward slashes, or colons.
-     Also, please provide the title without using quotation marks:\n\n`;
+    if (!ollamaRestAPIUrl) {
+        return;
+    }
+
+    const url = ollamaRestAPIUrl + '/api/generate';
+
+    const messageHistoryAsString = messageHistory.map(item => `${item.role}: ${item.content}`).join('\n');
 
     try {
-        const chatCompletion = await openai.chat.completions.create({
-            model: settings.model,
-            messages: [
-                { role: 'system', content: prompt + markdownContent},
-            ],
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                prompt: referenceCurrentNoteContent + '\n\n' + messageHistoryAsString + '\n\n' + 'YOUR RESPONSE:' + '\n\n'+ 'SYSTEM' + settings.system_role,
+                model: settings.model,
+                stream: true,
+                options: {
+                    temperature: settings.temperature,
+                    num_predict: parseInt(settings.max_tokens),
+                },
+            }),
         });
 
-        let title = chatCompletion.choices[0].message.content;
-        // Remove backslashes, forward slashes, and colons
-        if (title) {
-            title = title.replace(/[\\/:]/g, '');
+        if (!response.ok) {
+            new Notice(`HTTP error! Status: ${response.status}`);
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        return title;
+        if (!response.body) {
+            new Notice(`Response body is null or undefined.`);
+            throw new Error('Response body is null or undefined.');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let reading = true;
+
+        let message = '';
+
+        while (reading) {
+            const { done, value } = await reader.read();
+            if (done) {
+                reading = false;
+                break;
+            }
+
+            const chunk = decoder.decode(value, { stream: true }) || '';
+            const parsedChunk = JSON.parse(chunk);
+
+            const content = parsedChunk.response;
+
+            message += content;
+
+            const messageContainerEl = document.querySelector('#messageContainer');
+            if (messageContainerEl) {
+                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                const lastBotMessage = botMessages[botMessages.length - 1];
+                const messageBlock = lastBotMessage.querySelector('.messageBlock');
+                const loadingEl = lastBotMessage.querySelector("#loading");
+
+                if (messageBlock) {
+                    if (loadingEl) {
+                        loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        lastBotMessage.removeChild(loadingEl);
+                    }
+
+                    messageBlock.innerHTML = marked(message);
+
+                    addParagraphBreaks(messageBlock);
+                    prismHighlighting(messageBlock);
+                    codeBlockCopyButton(messageBlock);
+                }
+            }
+            message = message.replace(/assistant:/gi, '');
+        }
+        addMessage(message, 'botMessage', settings);
 
     } catch (error) {
-        console.log("ERROR");
-        throw new Error(error.response?.data?.error || error.message);
+        console.error('Error making API request:', error);
+        throw error;
     }
 }
 
@@ -150,10 +212,10 @@ export async function requestUrlAnthropicAPI(
         if (messageContainerEl) {
             const botMessages = messageContainerEl.querySelectorAll(".botMessage");
             const lastBotMessage = botMessages[botMessages.length - 1];
-
             const messageBlock = lastBotMessage.querySelector('.messageBlock');
 
             if (messageBlock) {
+
                 messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages. We recommend clearing max_tokens for best results.';
                 addMessage(messageBlock.innerHTML, 'botMessage', settings);
 
@@ -208,4 +270,75 @@ export async function requestUrlChatCompletion(
             console.error('Error making API request:', error);
             throw error;
         }
+}
+
+// Rename note title based on specified model
+export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurrentNoteContent: string) {
+
+    const prompt = `Based on the following markdown content, create a new, suitable title.
+     The title should not contain any of the following characters: backslashes, forward slashes, or colons.
+     Also, please provide the title without using quotation marks - \n\n`;
+
+    try {
+        if (OPENAI_MODELS.includes(settings.model)) {
+
+            const openai = new OpenAI({
+                apiKey: settings.apiKey,
+                baseURL: settings.openAIBaseUrl,
+                dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+            });
+
+            const chatCompletion = await openai.chat.completions.create({
+                model: settings.model,
+                messages: [
+                    { role: 'system', content: prompt + referenceCurrentNoteContent},
+                ],
+            });
+
+            let title = chatCompletion.choices[0].message.content;
+            // Remove backslashes, forward slashes, and colons
+            if (title) {
+                title = title.replace(/[\\/:]/g, '');
+            }
+
+            return title;
+        }
+        else {
+            if (settings.ollamaRestAPIUrl) {
+                const url = settings.ollamaRestAPIUrl + '/api/generate';
+    
+                const requestBody = {
+                    prompt: referenceCurrentNoteContent + '\n\n' + prompt  + ' OUTPUT TITLE ONLY:',
+                    model: settings.model,
+                    stream: false,
+                    options: {
+                        temperature: settings.temperature,
+                        num_predict: 25,
+                    },
+                };
+        
+                const response = await requestUrl({
+                    url,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+    
+                const parseText = JSON.parse(response.text);
+                let title = parseText.response;
+    
+                // Remove backslashes, forward slashes, and colons
+                if (title) {
+                    title = title.replace(/[\\/:]/g, '');
+                }
+    
+                return title;
+            }
+        }
+    } catch (error) {
+        console.log("ERROR");
+        throw new Error(error.response?.data?.error || error.message);
+    }
 }

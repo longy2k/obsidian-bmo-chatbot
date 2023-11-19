@@ -3,7 +3,7 @@ import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import { colorToHex } from "./settings";
 import { marked } from "marked";
 import { executeCommand } from "./commands";
-import { fetchOpenAIAPI, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./models";
+import { fetchOpenAIAPI, ollamaFetchData, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./models";
 import BMOGPT from './main';
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
@@ -338,10 +338,10 @@ export class BMOView extends ItemView {
                         }
                     };  
 
-                    if (!OPENAI_MODELS.includes(this.settings.model)) {
-                        botMessageDiv.appendChild(loadingEl);
-                        loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    }
+                    // Dispaly loading animation
+                    botMessageDiv.appendChild(loadingEl);
+                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
 
                     const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
@@ -440,7 +440,6 @@ export class BMOView extends ItemView {
             const errorMessage = document.createElement('p');
             errorMessage.textContent = "API key not found. Please add your OpenAI API key in the plugin settings.";
             errorMessage.classList.add('errorMessage');
-            // const chatbotNameError = lastDiv.querySelector('#chatbotName') as HTMLDivElement;
             const chatbotNameError = lastDiv.querySelector('.chatbotName') as HTMLDivElement;
             chatbotNameError.textContent = "ERROR";
             lastDiv.appendChild(errorMessage);
@@ -521,33 +520,38 @@ export class BMOView extends ItemView {
             }
             else {
                 try { 
-                    const response = await requestUrlChatCompletion(this.settings.restAPIUrl, settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
-                
-                    const message = response.json.choices[0].message.content;
-
-                    addMessage(message, 'botMessage', this.settings);
-
-                    if (messageContainerEl) {
-                        const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                        const lastBotMessage = botMessages[botMessages.length - 1];
-                        const loadingEl = lastBotMessage.querySelector("#loading");
-                        
-                        if (loadingEl) {
-                            loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                            lastBotMessage.removeChild(loadingEl);
-                        }
+                    if (this.settings.ollamaRestAPIUrl) {
+                        await ollamaFetchData(this.settings, referenceCurrentNote);
+                    }
+                    else {
+                        const response = await requestUrlChatCompletion(this.settings.localAIRestAPIUrl, settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
                     
-                        const messageBlock = document.createElement("p");
-                        const markdownContent = marked(message);
-                        messageBlock.innerHTML = markdownContent;
-                        messageBlock.classList.add("messageBlock");
+                        const message = response.json.choices[0].message.content;
+
+                        if (messageContainerEl) {
+                            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                            const lastBotMessage = botMessages[botMessages.length - 1];
+                            const loadingEl = lastBotMessage.querySelector("#loading");
+                            
+                            if (loadingEl) {
+                                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                                lastBotMessage.removeChild(loadingEl);
+                            }
                         
-                        addParagraphBreaks(messageBlock);
-                        prismHighlighting(messageBlock);
-                        codeBlockCopyButton(messageBlock);
-                        
-                        lastBotMessage.appendChild(messageBlock);
-                        lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            const messageBlock = document.createElement("p");
+                            const markdownContent = marked(message);
+                            messageBlock.innerHTML = markdownContent;
+                            messageBlock.classList.add("messageBlock");
+                            
+                            addParagraphBreaks(messageBlock);
+                            prismHighlighting(messageBlock);
+                            codeBlockCopyButton(messageBlock);
+                            
+                            lastBotMessage.appendChild(messageBlock);
+                            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+
+                        addMessage(message, 'botMessage', this.settings);
                     }
                 } 
                 catch (error) {
