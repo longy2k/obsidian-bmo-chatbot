@@ -15,12 +15,14 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 - **Set Max Tokens and Temperature:** Customize the length and randomness of the chatbot's responses with Max Tokens and Temperature settings.
 - **System theme color accents:** Seamlessly matches the chatbot's interface with your system's color scheme.
 - **Save current chat history as markdown:** Use the `/save` command in chat to save current conversation.
-- **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URL provided to interact with self-hosted Large Language Models (LLMs) using [LocalAI](https://github.com/go-skynet/LocalAI).
+- **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URL provided to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LocalAI](https://github.com/go-skynet/LocalAI).
 
 ## Requirements
 To use this plugin, you'll need an OpenAI account with API access. If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview).
 
 Additionally, if you want to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LocalAI](https://github.com/go-skynet/LocalAI), you will need to have the self-hosted API set up and running. You can follow the instructions provided by the self-hosted API provider to get it up and running. Once you have the REST API URL for your self-hosted API, you can use it with this plugin to interact with your models.
+
+Please see [instruction](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
 
 Explore some models at [GPT4ALL](https://gpt4all.io/index.html) under the "Model Explorer" section or [Ollama's Library](https://ollama.ai/library).
 
@@ -79,7 +81,8 @@ If you want to clear the chat history, simply click on the bot icon again in the
   - gpt-4 (Context window: 8,192 tokens)
   - gpt-4-1106-preview (Context window: 128,000 tokens)
 - Any self-hosted models using [Ollama](https://ollama.ai).
-  - Please see [instruction](https://github.com/longy2k/obsidian-bmo-chatbot/wiki).
+  - Please keep in mind that local LLMs may have unexpected results. For this version, a smaller context window is ideally better.
+  - See [instruction](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
 
 ## Other Supported Models (Low Support)
 I would like to continue supporting Anthropic's models, but I no longer have access to the API.
@@ -96,8 +99,8 @@ Ollama becomes available on Windows.
 "BMO" is a tag name for this project, inspired by the character BMO from the animated TV show "Adventure Time."
 
 ## Contributing
-If you have any bugs, improvements, or questions please create an issue!
-
 Any ideas or support is highly appreciated :)
+
+If you have any bugs, improvements, or questions please create an issue or discussion!
 
 <a href='https://ko-fi.com/K3K8PNYT8' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
