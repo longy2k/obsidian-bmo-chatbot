@@ -78,16 +78,30 @@ export class BMOSettingTab extends PluginSettingTab {
 			.setName('Model')
 			.setDesc('Choose a model.')
 			.addDropdown(dropdown => {
+				this.plugin.settings.allModels = [];
 				if (!this.plugin.settings.apiKey || !this.plugin.settings.apiKey.startsWith("sk-ant")) {
 					addOptionsToDropdown(dropdown, OPENAI_MODELS);
+					for (const model of OPENAI_MODELS) {
+						if (!this.plugin.settings.allModels.includes(model)) {
+							this.plugin.settings.allModels.push(model);
+						}
+					}
 				}
 				if (this.plugin.settings.apiKey && this.plugin.settings.apiKey.startsWith("sk-ant")) {
 					addOptionsToDropdown(dropdown, ANTHROPIC_MODELS);
+					for (const model of ANTHROPIC_MODELS) {
+						if (!this.plugin.settings.allModels.includes(model)) {
+							this.plugin.settings.allModels.push(model);
+						}
+					}
 				}
 				if (this.plugin.settings.ollamaRestAPIUrl && this.plugin.settings.ollamaModels && this.plugin.settings.ollamaModels.length > 0) {
 					try {
 						ollamaModels.forEach((model: string) => {
 							dropdown.addOption(model, model);
+							if (!this.plugin.settings.allModels.includes(model)) {
+								this.plugin.settings.allModels.push(model);
+							}
 						});
 					}
 					catch (error) {
@@ -99,6 +113,9 @@ export class BMOSettingTab extends PluginSettingTab {
 					try {
 						localAIModels.forEach((model: string) => {
 							dropdown.addOption(model, model);
+							if (!this.plugin.settings.allModels.includes(model)) {
+								this.plugin.settings.allModels.push(model);
+							}
 						});
 					}
 					catch (error) {
@@ -419,6 +436,7 @@ export class BMOSettingTab extends PluginSettingTab {
 			.onChange(async (value) => {
 					this.plugin.settings.openAIBaseUrl = value ? value : DEFAULT_SETTINGS.openAIBaseUrl;
 					await this.plugin.saveSettings();
+					this.display();
 				})
 		);
 
@@ -431,6 +449,7 @@ export class BMOSettingTab extends PluginSettingTab {
 			.onChange(async (value) => {
 					this.plugin.settings.ollamaRestAPIUrl = value ? value : DEFAULT_SETTINGS.ollamaRestAPIUrl;
 					await this.plugin.saveSettings();
+					this.display();
 				})
 		);
 
@@ -443,6 +462,7 @@ export class BMOSettingTab extends PluginSettingTab {
 			.onChange(async (value) => {
 					this.plugin.settings.localAIRestAPIUrl = value ? value : DEFAULT_SETTINGS.localAIRestAPIUrl;
 					await this.plugin.saveSettings();
+					this.display();
 				})
 		);
 

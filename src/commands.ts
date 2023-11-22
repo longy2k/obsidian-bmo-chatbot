@@ -1,13 +1,9 @@
 import { Notice } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
-import { ANTHROPIC_MODELS, OPENAI_MODELS, addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
+import { addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
 import BMOGPT from './main';
 import { fetchModelRenameTitle } from './models';
-
-type ModelObject = {
-  [key: string]: string;
-};
 
 // Commands
 export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
@@ -173,27 +169,21 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
   if (input.split(' ')[1] !== undefined) {
     const inputModel = input.split(' ')[1].replace(/^"(.*)"$/, '$1');
 
-    const anthropicKeyModels = createModelObject(ANTHROPIC_MODELS);
-    const openAIKeyModels = createModelObject(OPENAI_MODELS);
-
     let messageHtml = "";
 
-    if (currentSettings.apiKey.startsWith("sk-ant")) {
-      if (anthropicKeyModels[inputModel as keyof typeof anthropicKeyModels] || ["claude-instant-1.2", "claude-2.0"].includes(inputModel as string)) {
-        currentSettings.model = anthropicKeyModels[inputModel as keyof typeof anthropicKeyModels] ?? inputModel;
-        messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${currentSettings.model}</strong></p></div>`;
-      } else {
-        messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
-      }
-    } else if (currentSettings.apiKey.startsWith("sk-")) {
-      if (openAIKeyModels[inputModel as keyof typeof openAIKeyModels] || ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-3.5-turbo-16k-0613", "gpt-4", "gpt-4-1106-preview"].includes(inputModel)) {
-        currentSettings.model = openAIKeyModels[inputModel as keyof typeof openAIKeyModels] || inputModel;
-        messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${currentSettings.model}</strong></p></div>`;
-      } else {
-        messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
-      }
+    const modelAliases: { [key: string]: string } = {};
+
+    for (let i = 1; i <= currentSettings.allModels.length; i++) {
+      const model = currentSettings.allModels[i - 1];
+      modelAliases[i] = model;
+    }
+
+    if (Object.keys(modelAliases).includes(inputModel)) {
+      currentSettings.model = modelAliases[inputModel];
+      messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${currentSettings.model}</strong></p></div>`;
     } else {
-      messageHtml = `<div class="formattedSettings"><p><strong>Invalid API key.</strong></p></div>`;
+      messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
+      new Notice("Invalid model.");
     }
 
     displayMessage(messageBlock, messageHtml, currentSettings);
@@ -564,13 +554,4 @@ export async function commandSave(currentSettings: BMOSettings) {
   } catch (error) {
     console.error('Failed to create note:', error);
   }
-}
-
-// Function to convert an array of models into an object with numeric keys
-function createModelObject(modelsArray: string[]): ModelObject {
-  const modelObject: ModelObject = {};
-  modelsArray.forEach((model, index) => {
-    modelObject[(index + 1).toString()] = model;
-  });
-  return modelObject;
 }
