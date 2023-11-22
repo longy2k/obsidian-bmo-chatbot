@@ -18,7 +18,7 @@ export function clearMessageHistory() {
     messageHistory = [];
 }
 
-let messageHistoryContent: { role: string; content: string }[] = [];
+export let messageHistoryContent: { role: string; content: string }[] = [];
 
 export class BMOView extends ItemView {
     public settings: BMOSettings;
@@ -421,13 +421,13 @@ export class BMOView extends ItemView {
     }
 
     async BMOchatbot(_input: string) {
-        let referenceCurrentNote = '';
+        let referenceCurrentNoteContent = '';
 
         const activeFile = this.app.workspace.getActiveFile();
 
         if (activeFile) {
             if (this.settings.referenceCurrentNote) {
-                referenceCurrentNote = await getActiveFileContent(activeFile);
+                referenceCurrentNoteContent = await getActiveFileContent(activeFile);
             }
         }
 
@@ -470,7 +470,7 @@ export class BMOView extends ItemView {
             // OpenAI models
             if (OPENAI_MODELS.includes(this.settings.model)) {
                 try {
-                    await fetchOpenAIAPI(this.settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature); 
+                    await fetchOpenAIAPI(this.settings, referenceCurrentNoteContent); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -480,7 +480,7 @@ export class BMOView extends ItemView {
             else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 try {
                     const url = 'https://api.anthropic.com/v1/complete';
-                    const response = await requestUrlAnthropicAPI(url, this.settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
+                    const response = await requestUrlAnthropicAPI(url, this.settings, referenceCurrentNoteContent, messageHistoryContent, maxTokens, temperature);
 
                     const message = response.text;
                     const lines = message.split('\n');
@@ -526,10 +526,10 @@ export class BMOView extends ItemView {
             else {
                 try { 
                     if (this.settings.ollamaRestAPIUrl) {
-                        await ollamaFetchData(this.settings, referenceCurrentNote);
+                        await ollamaFetchData(this.settings, referenceCurrentNoteContent);
                     }
                     else {
-                        const response = await requestUrlChatCompletion(this.settings.localAIRestAPIUrl, settings, referenceCurrentNote, messageHistoryContent, maxTokens, temperature);
+                        const response = await requestUrlChatCompletion(this.settings.localAIRestAPIUrl, settings, referenceCurrentNoteContent, messageHistoryContent, maxTokens, temperature);
                     
                         const message = response.json.choices[0].message.content;
 

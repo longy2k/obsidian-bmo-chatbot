@@ -1,40 +1,29 @@
 import { Notice, requestUrl } from "obsidian";
 import { BMOSettings } from "./main";
-import { OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, prismHighlighting } from "./view";
+import { OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, messageHistoryContent, prismHighlighting } from "./view";
 import { marked } from "marked";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 
 let abortController = new AbortController();
 
-export async function fetchOpenAIAPI(
-    settings: BMOSettings,
-    referenceCurrentNote: string,
-    messageHistoryContent: { role: string; content: string }[] = [],
-    maxTokens: string,
-    temperature: number) 
-    {
+export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote: string) {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
         baseURL: settings.openAIBaseUrl,
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
-    const messageHistory = messageHistoryContent.map(item => ({
-        role: item.role,
-        content: item.content,
-    })) as ChatCompletionMessageParam[];
-
     abortController = new AbortController();
 
     try {
         const stream = await openai.chat.completions.create({
             model: settings.model,
-            max_tokens: parseInt(maxTokens),
-            temperature: temperature,
+            max_tokens: parseInt(settings.max_tokens),
+            temperature: settings.temperature,
             messages: [
                 { role: 'system', content: referenceCurrentNote + settings.system_role },
-                ...messageHistory
+                ...messageHistoryContent as ChatCompletionMessageParam[]
             ],
             stream: true,
         });

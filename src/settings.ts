@@ -65,7 +65,11 @@ export class BMOSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.apiKey = value;
 					await this.plugin.saveSettings();
-				}));
+				})
+				.inputEl.addEventListener('focusout', async () => {
+					this.display();
+				})
+			);
 
 		// Function to add options to dropdown
 		const addOptionsToDropdown = (dropdown: DropdownComponent, models: string[]) => {
@@ -79,7 +83,7 @@ export class BMOSettingTab extends PluginSettingTab {
 			.setDesc('Choose a model.')
 			.addDropdown(dropdown => {
 				this.plugin.settings.allModels = [];
-				if (!this.plugin.settings.apiKey || !this.plugin.settings.apiKey.startsWith("sk-ant")) {
+				if (this.plugin.settings.apiKey && !this.plugin.settings.apiKey.startsWith("sk-ant")) {
 					addOptionsToDropdown(dropdown, OPENAI_MODELS);
 					for (const model of OPENAI_MODELS) {
 						if (!this.plugin.settings.allModels.includes(model)) {
@@ -427,7 +431,6 @@ export class BMOSettingTab extends PluginSettingTab {
 			.onClick(async () => {
 				this.plugin.settings.openAIBaseUrl = DEFAULT_SETTINGS.openAIBaseUrl;
 				await this.plugin.saveSettings();
-				this.display();
 			})
 		)
 		.addText(text => text
@@ -436,37 +439,43 @@ export class BMOSettingTab extends PluginSettingTab {
 			.onChange(async (value) => {
 					this.plugin.settings.openAIBaseUrl = value ? value : DEFAULT_SETTINGS.openAIBaseUrl;
 					await this.plugin.saveSettings();
-					this.display();
 				})
+			.inputEl.addEventListener('focusout', async () => {
+				this.display();
+			})
 		);
 
 		new Setting(containerEl)
 		.setName('OLLAMA REST API URL')
-		.setDesc('Enter your OLLAMA REST API URL.')
+		.setDesc(descLink1('Enter your OLLAMA REST API URL. ', 'https://github.com/go-skynet/LocalAI', '', '[Instructions]'))
 		.addText(text => text
 			.setPlaceholder('http://localhost:11435')
 			.setValue(this.plugin.settings.ollamaRestAPIUrl || DEFAULT_SETTINGS.ollamaRestAPIUrl)
 			.onChange(async (value) => {
 					this.plugin.settings.ollamaRestAPIUrl = value ? value : DEFAULT_SETTINGS.ollamaRestAPIUrl;
 					await this.plugin.saveSettings();
-					this.display();
 				})
+			.inputEl.addEventListener('focusout', async () => {
+				this.display();
+			})
 		);
 
 		new Setting(containerEl)
 		.setName('LOCALAI REST API URL')
-		.setDesc(descLink1('Enter your REST API URL using', 'https://github.com/go-skynet/LocalAI', ''))
+		.setDesc(descLink1('Enter your REST API URL using', 'https://github.com/go-skynet/LocalAI', '', 'LocalAI'))
 		.addText(text => text
 			.setPlaceholder('http://localhost:8080')
 			.setValue(this.plugin.settings.localAIRestAPIUrl || DEFAULT_SETTINGS.localAIRestAPIUrl)
 			.onChange(async (value) => {
 					this.plugin.settings.localAIRestAPIUrl = value ? value : DEFAULT_SETTINGS.localAIRestAPIUrl;
 					await this.plugin.saveSettings();
-					this.display();
 				})
+			.inputEl.addEventListener('focusout', async () => {
+				this.display();
+			})
 		);
 
-		function descLink1(text: string, link: string, extraWords: string): DocumentFragment {
+		function descLink1(text: string, link: string, extraWords: string, innerText: string): DocumentFragment {
 			const frag = new DocumentFragment();
 			const desc = document.createElement('span');
 			desc.innerText = text + ' ';
@@ -476,7 +485,7 @@ export class BMOSettingTab extends PluginSettingTab {
 			anchor.href = link;
 			anchor.target = '_blank';
 			anchor.rel = 'noopener noreferrer';
-			anchor.innerText = 'LocalAI';
+			anchor.innerText = innerText;
 			frag.appendChild(anchor);
 		
 			const extra = document.createElement('span');
