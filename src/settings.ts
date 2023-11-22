@@ -447,7 +447,7 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName('OLLAMA REST API URL')
-		.setDesc(descLink1('Enter your OLLAMA REST API URL. ', 'https://github.com/go-skynet/LocalAI', '', '[Instructions]'))
+		.setDesc(descLink1('Enter your OLLAMA REST API URL. ', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki', '', '[Instruction]'))
 		.addText(text => text
 			.setPlaceholder('http://localhost:11435')
 			.setValue(this.plugin.settings.ollamaRestAPIUrl || DEFAULT_SETTINGS.ollamaRestAPIUrl)
