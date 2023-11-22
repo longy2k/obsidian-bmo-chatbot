@@ -238,11 +238,17 @@ export class BMOView extends ItemView {
     }
     
     async handleKeyup(event: KeyboardEvent) {
+        const input = this.textareaElement.value.trim();
+
+        // Only allow /stop command to be executed during fetch
+        if ((input === "/s" || input === "/stop") && event.key === "Enter") {
+            this.preventEnter = false;
+            executeCommand(input, this.settings, this.plugin);
+        }
 
         if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {
             loadData();
             event.preventDefault();
-            const input = this.textareaElement.value.trim();
             if (input.length === 0) {
                 return;
             }
@@ -250,7 +256,9 @@ export class BMOView extends ItemView {
             if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
             } else {
-                addMessage(input, 'userMessage', this.settings);
+                if (!(input === "/s" || input === "/stop")) {
+                    addMessage(input, 'userMessage', this.settings);
+                }
             }
             
             const userP = document.createElement("p");
@@ -295,10 +303,9 @@ export class BMOView extends ItemView {
                     if (modelName) {
                         modelName.textContent = 'Model: ' + this.settings.model.toLowerCase();
                     }
-
-
                 }   
                 else {
+                    this.preventEnter = true;
                     const botMessageDiv = document.createElement("div");
                     botMessageDiv.className = "botMessage";
                     botMessageDiv.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor ||
@@ -352,7 +359,6 @@ export class BMOView extends ItemView {
 
                     userMessageDiv.scrollIntoView({ behavior: "smooth", block: "start" });
 
-                    this.preventEnter = true;
                     // Call the chatbot function with the user's input
                     this.BMOchatbot(input)
                         .then(() => {
@@ -469,7 +475,6 @@ export class BMOView extends ItemView {
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
                     console.log(error.message);
-                    console.log("messageHistory: " + messageHistory);
                 }
             }
             else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
@@ -557,7 +562,6 @@ export class BMOView extends ItemView {
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
                     console.log(error.message);
-                    console.log("messageHistory: " + messageHistory);
                 }
             }
         }

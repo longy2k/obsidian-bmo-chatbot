@@ -3,7 +3,7 @@ import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
 import { addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
 import BMOGPT from './main';
-import { fetchModelRenameTitle } from './models';
+import { fetchModelRenameTitle, getAbortController } from './models';
 
 // Commands
 export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
@@ -42,6 +42,10 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
       case '/clear':
       case '/c':
           removeMessageThread(0);
+          break;
+      case '/stop':
+      case '/s':
+          commandStop();
           break;
       default:
           commandFalse(settings, plugin);
@@ -126,6 +130,7 @@ export function commandHelp(currentSettings: BMOSettings) {
       <p><code>/append</code> - Append current chat history to current active note.</p>
       <p><code>/save</code> - Save current chat history to a note.</p>
       <p><code>/clear</code> or <code>/c</code> - Clear chat history.</p>
+      <p><code>/stop</code> or <code>/s</code> - Stop fetching response.</p>
     </div>
   `;
 
@@ -148,7 +153,8 @@ export function commandInspect(currentSettings: BMOSettings) {
       <p><strong>CHATBOT NAME:</strong> ${currentSettings.chatbotName}</p>
       <p><strong>USER BACKGROUND COLOR:</strong> "${currentSettings.userMessageBackgroundColor}"</p>
       <p><strong>BOT BACKGROUND COLOR:</strong> "${currentSettings.botMessageBackgroundColor}"</p>
-      <p><strong>REST API URL:</strong> "${currentSettings.localAIModels}"</p>
+      <p><strong>LOCALAI REST API URL:</strong> "${currentSettings.localAIModels}"</p>
+      <p><strong>OLLAMA REST API URL:</strong> "${currentSettings.ollamaModels}"</p>
     </div>
   `;
 
@@ -553,5 +559,13 @@ export async function commandSave(currentSettings: BMOSettings) {
     }
   } catch (error) {
     console.error('Failed to create note:', error);
+  }
+}
+
+// `/stop` to stop fetching response
+export function commandStop() {
+  const controller = getAbortController();
+  if (controller) {
+      controller.abort();
   }
 }

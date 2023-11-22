@@ -5,6 +5,8 @@ import { marked } from "marked";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 
+let abortController = new AbortController();
+
 export async function fetchOpenAIAPI(
     settings: BMOSettings,
     referenceCurrentNote: string,
@@ -23,6 +25,8 @@ export async function fetchOpenAIAPI(
         content: item.content,
     })) as ChatCompletionMessageParam[];
 
+    abortController = new AbortController();
+
     try {
         const stream = await openai.chat.completions.create({
             model: settings.model,
@@ -38,6 +42,7 @@ export async function fetchOpenAIAPI(
         let message = '';
 
         for await (const part of stream) {
+
             const content = part.choices[0]?.delta?.content || '';
 
             message += content;
@@ -62,6 +67,11 @@ export async function fetchOpenAIAPI(
                     codeBlockCopyButton(messageBlock);
                 }
 
+            }
+            
+            if (abortController.signal.aborted) {
+                new Notice('Error making API request: The user aborted a request.');
+                break;
             }
         }
 
@@ -95,6 +105,10 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
 
     const messageHistoryAsString = messageHistory.map(item => `${item.role}: ${item.content}`).join('\n');
 
+    abortController = new AbortController();
+
+    let message = '';
+
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -110,7 +124,10 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                     num_predict: parseInt(settings.max_tokens),
                 },
             }),
-        });
+            signal: abortController.signal
+        })
+        
+
 
         if (!response.ok) {
             new Notice(`HTTP error! Status: ${response.status}`);
@@ -125,8 +142,6 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let reading = true;
-
-        let message = '';
 
         while (reading) {
             const { done, value } = await reader.read();
@@ -164,9 +179,11 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
             }
             message = message.replace(/assistant:/gi, '');
         }
+
         addMessage(message, 'botMessage', settings);
 
     } catch (error) {
+        addMessage(message, 'botMessage', settings);
         console.error('Error making API request:', error);
         throw error;
     }
@@ -341,4 +358,8 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
         console.log("ERROR");
         throw new Error(error.response?.data?.error || error.message);
     }
+}
+
+export function getAbortController() {
+    return abortController;
 }
