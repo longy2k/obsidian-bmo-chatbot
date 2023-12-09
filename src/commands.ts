@@ -14,10 +14,6 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
       case '/help':
           commandHelp(settings);
           break;
-      case '/inspect':
-      case '/settings':
-          commandInspect(settings);
-          break;
       case '/model':
           return commandModel(input, settings, plugin);
       case '/reference':
@@ -121,7 +117,6 @@ export function commandHelp(currentSettings: BMOSettings) {
   const formattedSettings = `
     <div class="formattedSettings">
       <h2>Commands</h2>
-      <p><code>/inspect</code> - Show system setting.</p>
       <p><code>/model "[MODEL-NAME]" or [VALUE]</code> - Change model.</p>
       <p><code>/system "[PROMPT]"</code> - Change system setting.</p>
       <p><code>/maxtokens [VALUE]</code> - Set max tokens.</p>
@@ -131,30 +126,6 @@ export function commandHelp(currentSettings: BMOSettings) {
       <p><code>/save</code> - Save current chat history to a note.</p>
       <p><code>/clear</code> or <code>/c</code> - Clear chat history.</p>
       <p><code>/stop</code> or <code>/s</code> - Stop fetching response.</p>
-    </div>
-  `;
-
-  displayMessage(messageBlock, formattedSettings, currentSettings);
-}
-
-// `/inspect` to inspect settings
-export function commandInspect(currentSettings: BMOSettings) {
-  const messageBlock = createBotMessage(currentSettings);
-  
-  const formattedSettings = `
-    <div class="formattedSettings">
-      <h2>Inspect</h2>
-      <p><strong>MODEL:</strong> ${currentSettings.model}</p>
-      <p><strong>SYSTEM:</strong> "${currentSettings.system_role}"</p>
-      <p><strong>MAX TOKENS:</strong> "${currentSettings.max_tokens}"</p>
-      <p><strong>TEMPERATURE:</strong> ${currentSettings.temperature}</p>
-      <p><strong>REFERENCE CURRENT NOTE:</strong> ${currentSettings.referenceCurrentNote}</p>
-      <p><strong>USERNAME:</strong> ${currentSettings.userName}</p>
-      <p><strong>CHATBOT NAME:</strong> ${currentSettings.chatbotName}</p>
-      <p><strong>USER BACKGROUND COLOR:</strong> "${currentSettings.userMessageBackgroundColor}"</p>
-      <p><strong>BOT BACKGROUND COLOR:</strong> "${currentSettings.botMessageBackgroundColor}"</p>
-      <p><strong>LOCALAI REST API URL:</strong> "${currentSettings.localAIModels}"</p>
-      <p><strong>OLLAMA REST API URL:</strong> "${currentSettings.ollamaModels}"</p>
     </div>
   `;
 
