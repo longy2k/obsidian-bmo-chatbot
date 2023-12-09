@@ -256,7 +256,7 @@ export class BMOView extends ItemView {
             if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
             } else {
-                if (!(input === "/s" || input === "/stop")) {
+                if (!input.startsWith("/")) {
                     addMessage(input, 'userMessage', this.settings);
                 }
             }

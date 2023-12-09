@@ -122,7 +122,7 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                prompt: referenceCurrentNoteContent + '\n\n' + messageHistoryAsString + '\n\n' + 'YOUR RESPONSE:' + '\n\n'+ 'SYSTEM' + settings.system_role,
+                prompt: referenceCurrentNoteContent + '\n\n' + messageHistoryAsString + '\n\n' + 'YOU MUST CONSIDER THIS IN YOUR RESPONSE:' + settings.system_role + '\n\n' + 'YOUR RESPONSE:',
                 model: settings.model,
                 stream: true,
                 options: {
