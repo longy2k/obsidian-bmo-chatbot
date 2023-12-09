@@ -143,6 +143,7 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
     return;
   }
 
+  // Check if the user has specified a model after the "/model" command
   if (input.split(' ')[1] !== undefined) {
     const inputModel = input.split(' ')[1].replace(/^"(.*)"$/, '$1');
 
@@ -155,10 +156,15 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
       modelAliases[i] = model;
     }
 
-    if (Object.keys(modelAliases).includes(inputModel)) {
+    if (Object.entries(modelAliases).find(([key, val]) => key === inputModel)){
       currentSettings.model = modelAliases[inputModel];
       messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${currentSettings.model}</strong></p></div>`;
-    } else {
+    }
+    else if (Object.entries(modelAliases).find(([key, val]) => val === inputModel)) {
+      currentSettings.model = modelAliases[Object.keys(modelAliases).find(key => modelAliases[key] === inputModel) || ''];
+      messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${currentSettings.model}</strong></p></div>`;
+    }
+     else {
       messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
       new Notice("Invalid model.");
     }
