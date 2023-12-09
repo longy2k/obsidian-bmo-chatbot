@@ -294,8 +294,6 @@ export class BMOView extends ItemView {
                 userMessageDiv.appendChild(userP);
                 messageContainer.appendChild(userMessageDiv);
 
-                
-
                 if (input.startsWith("/")) {
     
                     executeCommand(input, this.settings, this.plugin);
@@ -316,7 +314,6 @@ export class BMOView extends ItemView {
 
                     const botNameSpan = document.createElement("span"); 
                     botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                    // botNameSpan.setAttribute("id", "chatbotName")
                     botNameSpan.className = "chatbotName";
 
                     const messageBlockDiv = document.createElement("div");
@@ -348,7 +345,6 @@ export class BMOView extends ItemView {
                     // Dispaly loading animation
                     botMessageDiv.appendChild(loadingEl);
                     loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-
 
                     const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 

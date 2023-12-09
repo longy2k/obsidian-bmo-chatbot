@@ -16,6 +16,8 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
 
     abortController = new AbortController();
 
+    let isScroll = false;
+
     try {
         const stream = await openai.chat.completions.create({
             model: settings.model,
@@ -54,6 +56,18 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
                     addParagraphBreaks(messageBlock);
                     prismHighlighting(messageBlock);
                     codeBlockCopyButton(messageBlock);
+                }
+
+
+                messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
+                    // If the user scrolls up or down, stop auto-scrolling
+                    if (event.deltaY < 0 || event.deltaY > 0) {
+                        isScroll = true;
+                    }
+                });
+
+                if (!isScroll) {
+                    lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
 
             }
@@ -98,6 +112,8 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
 
     let message = '';
 
+    let isScroll = false;
+
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -116,8 +132,6 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
             signal: abortController.signal
         })
         
-
-
         if (!response.ok) {
             new Notice(`HTTP error! Status: ${response.status}`);
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -164,6 +178,18 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                     addParagraphBreaks(messageBlock);
                     prismHighlighting(messageBlock);
                     codeBlockCopyButton(messageBlock);
+
+                }
+
+                messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
+                    // If the user scrolls up or down, stop auto-scrolling
+                    if (event.deltaY < 0 || event.deltaY > 0) {
+                        isScroll = true;
+                    }
+                });
+
+                if (!isScroll) {
+                    lastBotMessage.scrollIntoView({ behavior: 'auto', block: 'start' });
                 }
             }
             message = message.replace(/assistant:/gi, '');
