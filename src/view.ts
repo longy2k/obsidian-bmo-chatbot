@@ -9,7 +9,7 @@ import BMOGPT from './main';
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 
-export const ANTHROPIC_MODELS = ["claude-instant-1.2", "claude-2.0"];
+export const ANTHROPIC_MODELS = ["claude-instant-1.2", "claude-2.0", "claude-2.1"];
 export const OPENAI_MODELS = ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-4", "gpt-4-1106-preview"];
 
 export let messageHistory: { role: string; content: string }[] = [];

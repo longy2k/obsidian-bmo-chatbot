@@ -81,7 +81,6 @@ If you want to clear the chat history, simply click on the bot icon again in the
   - gpt-4 (Context window: 8,192 tokens)
   - gpt-4-1106-preview (Context window: 128,000 tokens)
 - Any self-hosted models using [Ollama](https://ollama.ai).
-  - Please keep in mind that local LLMs may have unexpected results. For this version, a smaller context window is ideally better.
   - See [instructions](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
 
 ## Other Supported Models (Low Support)
@@ -93,6 +92,7 @@ Ollama becomes available on Windows.
 - Anthropic
   - claude-instant-1.2
   - claude-2.0
+  - claude-2.1
 - Any self-hosted models using [LocalAI](https://github.com/go-skynet/LocalAI)
 
 ## Other Notes
