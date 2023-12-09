@@ -104,6 +104,7 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
         return;
     }
 
+    // TODO: Switch to /api/chat when v0.1.14 is released
     const url = ollamaRestAPIUrl + '/api/generate';
 
     const messageHistoryAsString = messageHistory.map(item => `${item.role}: ${item.content}`).join('\n');
@@ -153,12 +154,14 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                 break;
             }
 
-            const chunk = decoder.decode(value, { stream: true }) || '';
-            const parsedChunk = JSON.parse(chunk);
-
-            const content = parsedChunk.response;
-
-            message += content;
+            try {
+                const chunk = decoder.decode(value, { stream: true }).trim();
+                const parsedChunk = JSON.parse(chunk);
+                const content = parsedChunk.response;
+                message += content;
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+            }
 
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
@@ -173,7 +176,7 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                         lastBotMessage.removeChild(loadingEl);
                     }
 
-                    messageBlock.innerHTML = marked(message);
+                    messageBlock.innerHTML = marked(message, { breaks: true });
 
                     addParagraphBreaks(messageBlock);
                     prismHighlighting(messageBlock);
