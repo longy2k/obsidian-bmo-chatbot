@@ -39,7 +39,7 @@ export class BMOView extends ItemView {
     }
 
     getDisplayText() {
-        return "Chatbot";
+        return "BMO Chatbot";
     }
     
 

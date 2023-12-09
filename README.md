@@ -22,7 +22,7 @@ To use this plugin, you'll need an OpenAI account with API access. If you don't 
 
 Additionally, if you want to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LocalAI](https://github.com/go-skynet/LocalAI), you will need to have the self-hosted API set up and running. You can follow the instructions provided by the self-hosted API provider to get it up and running. Once you have the REST API URL for your self-hosted API, you can use it with this plugin to interact with your models.
 
-Please see [instruction](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
+Please see [instructions](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
 
 Explore some models at [GPT4ALL](https://gpt4all.io/index.html) under the "Model Explorer" section or [Ollama's Library](https://ollama.ai/library).
 
@@ -82,7 +82,7 @@ If you want to clear the chat history, simply click on the bot icon again in the
   - gpt-4-1106-preview (Context window: 128,000 tokens)
 - Any self-hosted models using [Ollama](https://ollama.ai).
   - Please keep in mind that local LLMs may have unexpected results. For this version, a smaller context window is ideally better.
-  - See [instruction](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
+  - See [instructions](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
 
 ## Other Supported Models (Low Support)
 I would like to continue supporting Anthropic's models, but I no longer have access to the API.
