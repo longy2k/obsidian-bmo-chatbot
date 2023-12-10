@@ -18,8 +18,6 @@ export function clearMessageHistory() {
     messageHistory = [];
 }
 
-export let messageHistoryContent: { role: string; content: string }[] = [];
-
 export class BMOView extends ItemView {
     public settings: BMOSettings;
     private textareaElement: HTMLTextAreaElement;
@@ -159,7 +157,6 @@ export class BMOView extends ItemView {
         
                 const botNameSpan = document.createElement("span"); 
                 botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                // botNameSpan.setAttribute("id", "chatbotName")
                 botNameSpan.className = "chatbotName";
         
                 const messageBlockDiv = document.createElement("div");
@@ -256,7 +253,10 @@ export class BMOView extends ItemView {
             if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
             } else {
-                if (!input.startsWith("/")) {
+                // if (!input.startsWith("/")) {
+                //     addMessage(input, 'userMessage', this.settings);
+                // }
+                if (!(input === "/s" || input === "/stop")) {
                     addMessage(input, 'userMessage', this.settings);
                 }
             }
@@ -476,7 +476,7 @@ export class BMOView extends ItemView {
             else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 try {
                     const url = 'https://api.anthropic.com/v1/complete';
-                    const response = await requestUrlAnthropicAPI(url, this.settings, referenceCurrentNoteContent, messageHistoryContent, maxTokens, temperature);
+                    const response = await requestUrlAnthropicAPI(url, this.settings, referenceCurrentNoteContent, messageHistory, maxTokens, temperature);
 
                     const message = response.text;
                     const lines = message.split('\n');
@@ -525,7 +525,7 @@ export class BMOView extends ItemView {
                         await ollamaFetchData(this.settings, referenceCurrentNoteContent);
                     }
                     else {
-                        const response = await requestUrlChatCompletion(this.settings.localAIRestAPIUrl, settings, referenceCurrentNoteContent, messageHistoryContent, maxTokens, temperature);
+                        const response = await requestUrlChatCompletion(this.settings.localAIRestAPIUrl, settings, referenceCurrentNoteContent, messageHistory, maxTokens, temperature);
                     
                         const message = response.json.choices[0].message.content;
 
@@ -639,14 +639,7 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
 
     messageHistory.push(messageObj);
 
-    messageHistoryContent = messageHistory.map(item => {
-        return {
-            role: item.role,
-            content: item.content
-        };
-    });
-
-    const jsonString = JSON.stringify(messageHistoryContent, null, 4);
+    const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {
         await this.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);

@@ -563,6 +563,7 @@ export class BMOSettingTab extends PluginSettingTab {
 	}
 }
 
+// Function to convert HSL or RGB to HEX
 export function colorToHex(colorValue: string): string {
     if (colorValue.startsWith("hsl")) {
       // Convert HSL to HEX
@@ -611,6 +612,7 @@ export function colorToHex(colorValue: string): string {
     }
 }
 
+// Function to convert HSL to RGB
 function hue2rgb(p: number, q: number, t: number) {
 	if (t < 0) t += 1;
 	if (t > 1) t -= 1;

@@ -1,7 +1,7 @@
 import { Notice } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from "./main";
 import { colorToHex } from "./settings";
-import { filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
+import { addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
 import BMOGPT from './main';
 import { fetchModelRenameTitle, getAbortController } from './models';
 
@@ -86,6 +86,7 @@ function displayMessage(messageBlock: HTMLDivElement, messageHtml: string, curre
 
     if (messageBlock2) {
       messageBlock2.innerHTML = messageHtml;
+      addMessage(messageBlock.innerHTML, 'botMessage', currentSettings);
 
       lastBotMessage.appendChild(messageBlock2);
       lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });

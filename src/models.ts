@@ -1,13 +1,24 @@
 import { Notice, requestUrl } from "obsidian";
 import { BMOSettings } from "./main";
-import { OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, messageHistoryContent, prismHighlighting } from "./view";
+import { OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, prismHighlighting } from "./view";
 import { marked } from "marked";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 
 let abortController = new AbortController();
 
+// Fetch OpenAI API
 export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote: string) {
+    // Removes all system commands from the message history
+    const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
+        // Check if the current message or the previous one is a user message containing '/'
+        const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
+                                        (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
+    
+        // Include the message in the new array if it's not part of a pair to be removed
+        return !isUserMessageWithSlash;
+    });
+
     const openai = new OpenAI({
         apiKey: settings.apiKey,
         baseURL: settings.openAIBaseUrl,
@@ -25,7 +36,7 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
             temperature: settings.temperature,
             messages: [
                 { role: 'system', content: referenceCurrentNote + settings.system_role },
-                ...messageHistoryContent as ChatCompletionMessageParam[]
+                ...filteredMessageHistoryContent as ChatCompletionMessageParam[]
             ],
             stream: true,
         });
@@ -67,7 +78,7 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
                 });
 
                 if (!isScroll) {
-                    lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    lastBotMessage.scrollIntoView({ behavior: 'auto', block: 'start' });
                 }
 
             }
@@ -107,7 +118,26 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
     // TODO: Switch to /api/chat when v0.1.14 is released
     const url = ollamaRestAPIUrl + '/api/generate';
 
-    const messageHistoryAsString = messageHistory.map(item => `${item.role}: ${item.content}`).join('\n');
+    // // Removes all system commands from the message history
+    // const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
+    //     // Check if the current message or the previous one is a user message containing '/'
+    //     const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
+    //                                     (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
+    
+    //     // Include the message in the new array if it's not part of a pair to be removed
+    //     return !isUserMessageWithSlash;
+    // });
+    // console.log(filteredMessageHistoryContent);
+
+    // Removes all system commands from the message history
+    let messageHistoryAsString = '';
+    for (let i = 0; i < messageHistory.length; i++) {
+        if (messageHistory[i].role === 'user' && messageHistory[i].content.includes('/')) {
+            i++; // Skip the next item (assistant's response)
+            continue;
+        }
+        messageHistoryAsString += `${messageHistory[i].role}: ${messageHistory[i].content}\n`;
+    }
 
     abortController = new AbortController();
 
@@ -266,7 +296,7 @@ export async function requestUrlAnthropicAPI(
     }
 }
 
-// Request response from self-hosted models
+// Request response from self-hosted models (LOCAL AI)
 export async function requestUrlChatCompletion(
     url: string, 
     settings: { apiKey: string; model: string; system_role: string; }, 
@@ -378,6 +408,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
     }
 }
 
+// Abort controller
 export function getAbortController() {
     return abortController;
 }
