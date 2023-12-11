@@ -270,6 +270,10 @@ If your plugin does not need CSS, delete this file.
 	font-weight: 500;
 }
 
+.chatbox textarea::selection {
+	background: blue !important;
+}
+
 .theme-light .chatbox textarea {
 	color: white;
 }
