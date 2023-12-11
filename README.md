@@ -7,6 +7,7 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 </p>
 
 ## Features
+- **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URL provided to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LocalAI](https://github.com/go-skynet/LocalAI).
 - **Chat from anywhere in Obsidian:** Chat with your bot from anywhere within Obsidian.
 - **Chat with current note:** Use your chatbot to reference and engage within your current note.
 - **Chatbot responds in Markdown:** Receive formatted responses in Markdown for consistency.
@@ -15,7 +16,6 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 - **Set Max Tokens and Temperature:** Customize the length and randomness of the chatbot's responses with Max Tokens and Temperature settings.
 - **System theme color accents:** Seamlessly matches the chatbot's interface with your system's color scheme.
 - **Save current chat history as markdown:** Use the `/save` command in chat to save current conversation.
-- **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URL provided to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LocalAI](https://github.com/go-skynet/LocalAI).
 
 ## Requirements
 To use this plugin, you'll need an OpenAI account with API access. If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview).
@@ -52,8 +52,6 @@ Install using Beta Reviewers Auto-update Tester ([BRAT](https://github.com/TfTHa
 ## Getting Started
 To start using the plugin, enable it in your settings menu and enter your OpenAI API key. After completing these steps, you can access the bot panel by clicking on the bot icon in the left sidebar.
 
-If you want to clear the chat history, simply click on the bot icon again in the left ribbon bar.
-
 ## Commands
 - `/help` - Show help commands.
 - `/model` - Change model.
@@ -73,10 +71,9 @@ If you want to clear the chat history, simply click on the bot icon again in the
 ## Supported Models
 - OpenAI
   - gpt-3.5-turbo
-    - Will be redirected to gpt-3.5-turbo-1106 on December 11, 2023
   - gpt-3.5-turbo-1106
     - Newest gpt-3.5-turbo model with a context window of 16,385 tokens, replacing gpt-3.5-turbo-16k.
-    - Same pricing as gpt-3.5-turbo (Input: 0.001 per 1k tokens; Output: 0.002 per 1k tokens).
+    - Same pricing as gpt-3.5-turbo.
   - gpt-4 (Context window: 8,192 tokens)
   - gpt-4-1106-preview (Context window: 128,000 tokens)
 - Any self-hosted models using [Ollama](https://ollama.ai).
