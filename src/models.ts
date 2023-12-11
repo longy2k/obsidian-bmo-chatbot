@@ -9,6 +9,18 @@ let abortController = new AbortController();
 
 // Fetch OpenAI API
 export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote: string) {
+    const openai = new OpenAI({
+        apiKey: settings.apiKey,
+        baseURL: settings.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
+
+    abortController = new AbortController();
+
+    let message = '';
+
+    let isScroll = false;
+
     // Removes all system commands from the message history
     const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
         // Check if the current message or the previous one is a user message containing '/'
@@ -18,16 +30,6 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
         // Include the message in the new array if it's not part of a pair to be removed
         return !isUserMessageWithSlash;
     });
-
-    const openai = new OpenAI({
-        apiKey: settings.apiKey,
-        baseURL: settings.openAIBaseUrl,
-        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
-    });
-
-    abortController = new AbortController();
-
-    let isScroll = false;
 
     try {
         const stream = await openai.chat.completions.create({
@@ -40,8 +42,6 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
             ],
             stream: true,
         });
-
-        let message = '';
 
         for await (const part of stream) {
 
@@ -115,35 +115,23 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
         return;
     }
 
-    // TODO: Switch to /api/chat when v0.1.14 is released
-    const url = ollamaRestAPIUrl + '/api/generate';
-
-    // // Removes all system commands from the message history
-    // const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
-    //     // Check if the current message or the previous one is a user message containing '/'
-    //     const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
-    //                                     (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
-    
-    //     // Include the message in the new array if it's not part of a pair to be removed
-    //     return !isUserMessageWithSlash;
-    // });
-    // console.log(filteredMessageHistoryContent);
-
-    // Removes all system commands from the message history
-    let messageHistoryAsString = '';
-    for (let i = 0; i < messageHistory.length; i++) {
-        if (messageHistory[i].role === 'user' && messageHistory[i].content.includes('/')) {
-            i++; // Skip the next item (assistant's response)
-            continue;
-        }
-        messageHistoryAsString += `${messageHistory[i].role}: ${messageHistory[i].content}\n`;
-    }
+    const url = ollamaRestAPIUrl + '/api/chat';
 
     abortController = new AbortController();
 
     let message = '';
 
     let isScroll = false;
+
+    // Removes all system commands from the message history
+    const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
+        // Check if the current message or the previous one is a user message containing '/'
+        const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
+                                        (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
+    
+        // Include the message in the new array if it's not part of a pair to be removed
+        return !isUserMessageWithSlash;
+    });
 
     try {
         const response = await fetch(url, {
@@ -152,8 +140,11 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                prompt: referenceCurrentNoteContent + '\n\n' + messageHistoryAsString + '\n\n' + 'YOU MUST CONSIDER THIS IN YOUR RESPONSE:' + settings.system_role + '\n\n' + 'YOUR RESPONSE:',
                 model: settings.model,
+                messages: [
+                    { role: 'system', content: referenceCurrentNoteContent + settings.system_role },
+                    ...filteredMessageHistoryContent
+                ],
                 stream: true,
                 options: {
                     temperature: settings.temperature,
@@ -185,10 +176,12 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
             }
 
             try {
-                const chunk = decoder.decode(value, { stream: true }).trim();
-                const parsedChunk = JSON.parse(chunk);
-                const content = parsedChunk.response;
-                message += content;
+                const chunk = decoder.decode(value, { stream: true });
+                const parsedChunk = JSON.parse(chunk.split('\n')[0]);
+                if (parsedChunk.done != true) {
+                    const content = parsedChunk.message.content;
+                    message += content;
+                }
             } catch (e) {
                 console.error('Error parsing JSON:', e);
             }
@@ -225,13 +218,12 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                     lastBotMessage.scrollIntoView({ behavior: 'auto', block: 'start' });
                 }
             }
-            message = message.replace(/assistant:/gi, '');
+
         }
-
         addMessage(message, 'botMessage', settings);
-
+        
     } catch (error) {
-        addMessage(message, 'botMessage', settings);
+        addMessage(message, 'botMessage', settings); // This will save mid-stream conversation.
         console.error('Error making API request:', error);
         throw error;
     }
