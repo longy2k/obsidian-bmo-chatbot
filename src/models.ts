@@ -175,15 +175,22 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                 break;
             }
 
-            try {
-                const chunk = decoder.decode(value, { stream: true });
-                const parsedChunk = JSON.parse(chunk.split('\n')[0]);
-                if (parsedChunk.done != true) {
-                    const content = parsedChunk.message.content;
-                    message += content;
+            const chunk = decoder.decode(value, { stream: true }) || "";
+            // Splitting the chunk to parse JSON messages separately
+            const parts = chunk.split('\n');
+            for (const part of parts.filter(Boolean)) { // Filter out empty parts
+                let parsedChunk;
+                try {
+                    parsedChunk = JSON.parse(part);
+                    if (parsedChunk.done !== true) {
+                        const content = parsedChunk.message.content;
+                        message += content;
+                    }
+                } catch (err) {
+                    console.error('Error parsing JSON:', err);
+                    console.log('Part with error:', part);
+                    parsedChunk = {response: '{_e_}'};
                 }
-            } catch (e) {
-                console.error('Error parsing JSON:', e);
             }
 
             const messageContainerEl = document.querySelector('#messageContainer');
