@@ -238,9 +238,11 @@ export class BMOView extends ItemView {
         const input = this.textareaElement.value.trim();
 
         // Only allow /stop command to be executed during fetch
-        if ((input === "/s" || input === "/stop") && event.key === "Enter") {
-            this.preventEnter = false;
-            executeCommand(input, this.settings, this.plugin);
+        if (this.settings.allowOllamaStream || !this.settings.ollamaModels.includes(this.settings.model)) {
+            if ((input === "/s" || input === "/stop") && event.key === "Enter") {
+                this.preventEnter = false;
+                executeCommand(input, this.settings, this.plugin);
+            }
         }
 
         if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {

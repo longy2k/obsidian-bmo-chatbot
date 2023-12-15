@@ -138,11 +138,6 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
             }),
         });
 
-        if (abortController.signal.aborted) {
-            new Notice('Error making API request: The user aborted a request.');
-            return;
-        }
-
         const message = response.json.message.content;
 
         const messageContainerEl = document.querySelector('#messageContainer');

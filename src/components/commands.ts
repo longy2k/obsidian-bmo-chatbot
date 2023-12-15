@@ -16,6 +16,8 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
           break;
       case '/model':
           return commandModel(input, settings, plugin);
+      case '/list':
+          return commandListModels(input, settings, plugin);
       case '/reference':
       case '/ref':
           commandReference(input, settings, plugin);
@@ -116,6 +118,7 @@ export function commandHelp(currentSettings: BMOSettings) {
   const formattedSettings = `
     <div class="formattedSettings">
       <h2>Commands</h2>
+      <p><code>/list</code> - List models.</p>
       <p><code>/model "[MODEL-NAME]" or [VALUE]</code> - Change model.</p>
       <p><code>/system "[PROMPT]"</code> - Change system setting.</p>
       <p><code>/maxtokens [VALUE]</code> - Set max tokens.</p>
@@ -173,6 +176,19 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
     return currentSettings;
   }
 }
+
+// `/list` to list all models.
+export async function commandListModels(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
+  const messageBlock = createBotMessage(currentSettings);
+
+  // Loop through allModels and create list items
+  const modelListItems = currentSettings.allModels.map(model => `<li>${model}</li>`).join('');
+
+  const formattedSettings = `<ol>${modelListItems}</ol>`;
+
+  displayMessage(messageBlock, formattedSettings, currentSettings);
+}
+
 
 // `/ref` to turn on/off referenceCurrentNote.
 export async function commandReference(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
