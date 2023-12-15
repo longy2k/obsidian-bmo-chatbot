@@ -5,9 +5,9 @@ import BMOGPT from "src/main";
 export async function fetchOllamaModels(plugin: BMOGPT) {
 	const ollamaRestAPIUrl = plugin.settings.ollamaRestAPIUrl;
 
-	if (!ollamaRestAPIUrl) {
-		return;
-	}
+	// if (!ollamaRestAPIUrl) {
+	// 	return;
+	// }
 
 	try {
 		const response = await requestUrl({

@@ -253,9 +253,6 @@ export class BMOView extends ItemView {
             if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
             } else {
-                // if (!input.startsWith("/")) {
-                //     addMessage(input, 'userMessage', this.settings);
-                // }
                 if (!(input === "/s" || input === "/stop")) {
                     addMessage(input, 'userMessage', this.settings);
                 }
@@ -475,8 +472,7 @@ export class BMOView extends ItemView {
             }
             else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 try {
-                    const url = 'https://api.anthropic.com/v1/complete';
-                    const response = await requestUrlAnthropicAPI(url, this.settings, referenceCurrentNoteContent, messageHistory, maxTokens, temperature);
+                    const response = await requestUrlAnthropicAPI(this.settings, referenceCurrentNoteContent);
 
                     const message = response.text;
                     const lines = message.split('\n');

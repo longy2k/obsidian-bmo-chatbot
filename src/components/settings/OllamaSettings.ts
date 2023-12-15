@@ -8,7 +8,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .setName('OLLAMA REST API URL')
         .setDesc(addDescriptionLink('Enter your REST API URL using', 'https://ollama.ai/', '', 'Ollama'))
         .addText(text => text
-            .setPlaceholder('http://localhost:11435')
+            .setPlaceholder('http://localhost:11434')
             .setValue(plugin.settings.ollamaRestAPIUrl || DEFAULT_SETTINGS.ollamaRestAPIUrl)
             .onChange(async (value) => {
                     plugin.settings.ollamaRestAPIUrl = value ? value : DEFAULT_SETTINGS.ollamaRestAPIUrl;

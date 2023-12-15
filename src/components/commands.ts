@@ -48,7 +48,6 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
   }
 }
 
-
 // Function to create and append a bot message
 function createBotMessage(currentSettings: BMOSettings): HTMLDivElement {
   const messageContainer = document.querySelector("#messageContainer");
@@ -385,8 +384,6 @@ export async function commandSave(currentSettings: BMOSettings) {
   if (folderName && !folderName.endsWith('/')) {
     folderName += '/';
   }
-
-
   
   // Create a datetime string to append to the file name
   const now = new Date();
@@ -403,7 +400,7 @@ export async function commandSave(currentSettings: BMOSettings) {
 
     // Retrieve model name
     const modelNameElement = document.querySelector('#modelName') as HTMLHeadingElement;
-    let modelName = 'GPT-3.5-TURBO'; // Default model name
+    let modelName = 'Unknown'; // Default model name
     if (modelNameElement && modelNameElement.textContent) {
         modelName = modelNameElement.textContent.replace('Model: ', '').toUpperCase();
     }

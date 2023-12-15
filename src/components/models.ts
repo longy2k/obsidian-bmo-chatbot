@@ -1,6 +1,6 @@
 import { Notice, requestUrl } from "obsidian";
 import { BMOSettings } from "../main";
-import { OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, prismHighlighting } from "../view";
+import { ANTHROPIC_MODELS, OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, prismHighlighting } from "../view";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 import { marked } from "marked";
@@ -307,33 +307,26 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
 }
 
 // Request response from Anthropic 
-export async function requestUrlAnthropicAPI(
-    url: string,
-    settings: BMOSettings,
-    referenceCurrentNote: string,
-    messageHistoryContent: { role: string; content: string }[] = [],
-    maxTokens: string,
-    temperature: number) 
-    {
+export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCurrentNoteContent: string) {
     const headers = {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
       'x-api-key': settings.apiKey,
     };
   
-    const messageHistoryString = messageHistoryContent.map(entry => entry.content).join('\n');
+    const messageHistoryString = messageHistory.map(entry => entry.content).join('\n');
 
     const requestBody = {
         model: settings.model,
-        prompt:  `\n\nHuman: ${referenceCurrentNote}\n\n${settings.system_role}\n\n${messageHistoryString}\n\nAssistant:`,
-        max_tokens_to_sample: parseInt(maxTokens) || 100000,
-        temperature: temperature,
+        prompt:  `\n\nHuman: ${referenceCurrentNoteContent}\n\n${settings.system_role}\n\n${messageHistoryString}\n\nAssistant:`,
+        max_tokens_to_sample: parseInt(settings.max_tokens) || 100000,
+        temperature: settings.temperature,
         stream: true,
     };
   
     try {
       const response = await requestUrl({
-        url,
+        url: 'https://api.anthropic.com/v1/complete',
         method: 'POST',
         headers,
         body: JSON.stringify(requestBody),
@@ -411,7 +404,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
 
     const prompt = `Based on the following markdown content, create a new, suitable title.
      The title should not contain any of the following characters: backslashes, forward slashes, or colons.
-     Also, please provide the title without using quotation marks - \n\n`;
+     Also, please provide the title without using quotation marks. THE TITLE IS: \n\n`;
 
     try {
         if (OPENAI_MODELS.includes(settings.model)) {
@@ -436,6 +429,54 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
             }
 
             return title;
+        }
+        else if(ANTHROPIC_MODELS.includes(settings.model)) {
+            const headers = {
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+                'x-api-key': settings.apiKey,
+              };
+          
+              const requestBody = {
+                  model: settings.model,
+                  prompt:  `\n\nHuman: ${prompt}\n\nAssistant:`,
+                  max_tokens_to_sample: 25,
+                  temperature: settings.temperature,
+                  stream: true,
+              };
+            
+              try {
+                const response = await requestUrl({
+                  url: 'https://api.anthropic.com/v1/complete',
+                  method: 'POST',
+                  headers,
+                  body: JSON.stringify(requestBody),
+                });
+
+                const message = response.text;
+                const lines = message.split('\n');
+                let title = '';
+            
+                for (const line of lines) {
+                  if (line.startsWith('data:')) {
+                    const eventData = JSON.parse(line.slice('data:'.length));
+                    if (eventData.completion) {
+                      title += eventData.completion;
+                    }
+                  }
+                }
+
+                if (title) {
+                    title = title.replace(/[\\/:]/g, '');
+                }
+            
+                return title;
+            
+              } catch (error) {
+                new Notice('Error making API request:', error);
+                console.error('Error making API request:', error);
+                throw error;
+              }
         }
         else {
             if (settings.ollamaRestAPIUrl) {

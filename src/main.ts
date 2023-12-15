@@ -29,7 +29,7 @@ export interface BMOSettings {
 export const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
 	max_tokens: '',
-	model: 'gpt-3.5-turbo',
+	model: '',
 	allModels: [],
 	system_role: '',
 	temperature: 1.00,
@@ -41,7 +41,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	chatHistoryPath: 'BMO/',
 	templateFilePath: '',
 	openAIBaseUrl: 'https://api.openai.com/v1',
-	ollamaRestAPIUrl: 'https://localhost:11434',
+	ollamaRestAPIUrl: 'http://localhost:11434',
 	ollamaModels: [],
 	allowOllamaStream: false,
 	localAIRestAPIUrl: '',
