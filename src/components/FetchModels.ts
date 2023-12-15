@@ -1,7 +1,7 @@
 import { requestUrl } from "obsidian";
 import BMOGPT from "src/main";
 
-// Fetch models from OLLAMA REST API
+// Fetch OLLAMA models from OLLAMA REST API
 export async function fetchOllamaModels(plugin: BMOGPT) {
 	const ollamaRestAPIUrl = plugin.settings.ollamaRestAPIUrl;
 
@@ -9,24 +9,19 @@ export async function fetchOllamaModels(plugin: BMOGPT) {
 		return;
 	}
 
-	const url = ollamaRestAPIUrl + '/api/tags';
-
 	try {
-		const response = await fetch(url, {
+		const response = await requestUrl({
+			url: ollamaRestAPIUrl + '/api/tags',
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 		});
 
-		if (!response.ok) {
-			throw new Error('Network response was not ok');
-		}
-
-		const jsonData = await response.json();
+		const jsonData = response.json;
 
 		const models = jsonData.models.map((model: { name: string; }) => model.name);
-		plugin.settings.ollamaModels = models;
+		plugin.settings.ollamaModels = models;  
 
 		return models;
 

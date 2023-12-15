@@ -2,8 +2,8 @@ import { ItemView, WorkspaceLeaf, Notice, setIcon, loadPrism, TFile, Modal } fro
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
 import { colorToHex } from "./utils/ColorConverter";
-import { fetchOpenAIAPI, ollamaFetchData, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./models";
-import { executeCommand } from "./commands";
+import { fetchOpenAIAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./components/models";
+import { executeCommand } from "./components/commands";
 import { marked } from "marked";
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
@@ -522,7 +522,12 @@ export class BMOView extends ItemView {
             else {
                 try { 
                     if (this.settings.ollamaRestAPIUrl) {
-                        await ollamaFetchData(this.settings, referenceCurrentNoteContent);
+                        if (this.settings.allowOllamaStream) {
+                            await ollamaFetchDataStream(this.settings, referenceCurrentNoteContent);
+                        }
+                        else {
+                            await ollamaFetchData(this.settings, referenceCurrentNoteContent);
+                        }
                     }
                     else {
                         const response = await requestUrlChatCompletion(this.settings.localAIRestAPIUrl, settings, referenceCurrentNoteContent, messageHistory, maxTokens, temperature);

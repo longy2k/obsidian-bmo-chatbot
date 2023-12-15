@@ -1,6 +1,6 @@
 import { Notice, requestUrl } from "obsidian";
-import { BMOSettings } from "./main";
-import { OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, prismHighlighting } from "./view";
+import { BMOSettings } from "../main";
+import { OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, prismHighlighting } from "../view";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 import { marked } from "marked";
@@ -107,8 +107,78 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
     }
 }
 
-// Fetch Ollama API
-export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNoteContent: string) {
+// Request response from Ollama
+// NOTE: Abort does not work for requestUrl
+export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNoteContent: string){
+    const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
+
+    if (!ollamaRestAPIUrl) {
+        return;
+    }
+    
+    try {
+
+        const response = await requestUrl({
+            url: ollamaRestAPIUrl + '/api/chat',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: settings.model,
+                messages: [
+                    { role: 'system', content: referenceCurrentNoteContent + settings.system_role },
+                    ...messageHistory
+                ],
+                stream: false,
+                options: {
+                    temperature: settings.temperature,
+                    num_predict: parseInt(settings.max_tokens),
+                },
+            }),
+        });
+
+        if (abortController.signal.aborted) {
+            new Notice('Error making API request: The user aborted a request.');
+            return;
+        }
+
+        const message = response.json.message.content;
+
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            const lastBotMessage = botMessages[botMessages.length - 1];
+            const loadingEl = lastBotMessage.querySelector("#loading");
+            
+            if (loadingEl) {
+                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                lastBotMessage.removeChild(loadingEl);
+            }
+        
+            const messageBlock = document.createElement("p");
+            const markdownContent = marked(message);
+            messageBlock.innerHTML = markdownContent;
+            messageBlock.classList.add("messageBlock");
+            
+            addParagraphBreaks(messageBlock);
+            prismHighlighting(messageBlock);
+            codeBlockCopyButton(messageBlock);
+            
+            lastBotMessage.appendChild(messageBlock);
+            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        addMessage(message, 'botMessage', settings);
+
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
+    }
+}
+
+// Fetch Ollama API via stream
+export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurrentNoteContent: string) {
     const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
 
     if (!ollamaRestAPIUrl) {

@@ -19,6 +19,7 @@ export interface BMOSettings {
 	openAIBaseUrl: string;
 	ollamaRestAPIUrl: string;
 	ollamaModels: string[];
+	allowOllamaStream: boolean;
 	localAIRestAPIUrl: string;
 	localAIModels: string[];
 	referenceCurrentNote: boolean;
@@ -40,8 +41,9 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	chatHistoryPath: 'BMO/',
 	templateFilePath: '',
 	openAIBaseUrl: 'https://api.openai.com/v1',
-	ollamaRestAPIUrl: '',
+	ollamaRestAPIUrl: 'https://localhost:11434',
 	ollamaModels: [],
+	allowOllamaStream: false,
 	localAIRestAPIUrl: '',
 	localAIModels: [],
 	referenceCurrentNote: false,

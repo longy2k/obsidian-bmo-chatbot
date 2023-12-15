@@ -76,17 +76,17 @@ export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
                     new Notice('LocalAI connection error.');
                 }
             }
-        dropdown
-            .setValue(plugin.settings.model || DEFAULT_SETTINGS.model)
-            .onChange(async (value) => {
-                plugin.settings.model = value;
-                await plugin.saveSettings();
-                const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
-                if (modelName) {
-                    modelName.textContent = 'Model: ' + plugin.settings.model.toLowerCase();
-                }
-            })
-    });
+            dropdown
+                .setValue(plugin.settings.model || DEFAULT_SETTINGS.model)
+                .onChange(async (value) => {
+                    plugin.settings.model = value;
+                    await plugin.saveSettings();
+                    const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
+                    if (modelName) {
+                        modelName.textContent = 'Model: ' + plugin.settings.model.toLowerCase();
+                    }
+                })
+        });
 
     new Setting(containerEl)
         .setName('System')
@@ -110,39 +110,39 @@ export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
                 plugin.settings.max_tokens = value;
                 await plugin.saveSettings();
             })
-    );
+        );
 
     new Setting(containerEl)
-    .setName('Temperature')
-    .setDesc('Temperature controls how random the generated output is. Lower values make the text more predictable, while higher values make it more creative and unpredictable.')
-    .addSlider(slider => slider
-        .setLimits(0, 1, 0.05)
-        .setValue(plugin.settings.temperature !== undefined ? plugin.settings.temperature : DEFAULT_SETTINGS.temperature)
-        .setDynamicTooltip()
-        .onChange(async (value) => {
-            plugin.settings.temperature = value;
-            await plugin.saveSettings();
-        })
-    );
+        .setName('Temperature')
+        .setDesc('Temperature controls how random the generated output is. Lower values make the text more predictable, while higher values make it more creative and unpredictable.')
+        .addSlider(slider => slider
+            .setLimits(0, 1, 0.05)
+            .setValue(plugin.settings.temperature !== undefined ? plugin.settings.temperature : DEFAULT_SETTINGS.temperature)
+            .setDynamicTooltip()
+            .onChange(async (value) => {
+                plugin.settings.temperature = value;
+                await plugin.saveSettings();
+            })
+        );
 
     new Setting(containerEl)
-    .setName('Allow Reference Current Note')
-    .setDesc('Allow chatbot to reference current active note during conversation.')
-    .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.referenceCurrentNote).onChange((value) => {
-            plugin.settings.referenceCurrentNote = value;
-            plugin.saveSettings();
+        .setName('Allow Reference Current Note')
+        .setDesc('Allow chatbot to reference current active note during conversation.')
+        .addToggle((toggle) =>
+            toggle.setValue(plugin.settings.referenceCurrentNote).onChange((value) => {
+                plugin.settings.referenceCurrentNote = value;
+                plugin.saveSettings();
 
-            const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');
-            if (referenceCurrentNoteElement) {
-                if (value) {
-                    referenceCurrentNoteElement.style.display = 'block';
-                } else {
-                    referenceCurrentNoteElement.style.display = 'none';
+                const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');
+                if (referenceCurrentNoteElement) {
+                    if (value) {
+                        referenceCurrentNoteElement.style.display = 'block';
+                    } else {
+                        referenceCurrentNoteElement.style.display = 'none';
+                    }
                 }
-            }
-        })
-    );
+            })
+        );
 
     function descLink(text: string, link: string): DocumentFragment {
         const frag = new DocumentFragment();

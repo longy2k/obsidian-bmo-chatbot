@@ -1,8 +1,8 @@
 import { Notice } from 'obsidian';
-import { BMOSettings, DEFAULT_SETTINGS } from "./main";
-import { colorToHex } from "./utils/ColorConverter";
-import { addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
-import BMOGPT from './main';
+import { BMOSettings, DEFAULT_SETTINGS } from "../main";
+import { colorToHex } from "../utils/ColorConverter";
+import { addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "../view";
+import BMOGPT from '../main';
 import { fetchModelRenameTitle, getAbortController } from './models';
 
 // Commands
@@ -125,7 +125,7 @@ export function commandHelp(currentSettings: BMOSettings) {
       <p><code>/append</code> - Append current chat history to current active note.</p>
       <p><code>/save</code> - Save current chat history to a note.</p>
       <p><code>/clear</code> or <code>/c</code> - Clear chat history.</p>
-      <p><code>/stop</code> or <code>/s</code> - Stop fetching response.</p>
+      <p><code>/stop</code> or <code>/s</code> - [STREAMING MODELS ONLY]: Stop fetching response.</p>
     </div>
   `;
 
