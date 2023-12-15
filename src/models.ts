@@ -1,9 +1,9 @@
 import { Notice, requestUrl } from "obsidian";
 import { BMOSettings } from "./main";
 import { OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, prismHighlighting } from "./view";
-import { marked } from "marked";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
+import { marked } from "marked";
 
 let abortController = new AbortController();
 

@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS } from "./main";
-import { colorToHex } from "./settings";
+import { colorToHex } from "./utils/ColorConverter";
 import { addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "./view";
 import BMOGPT from './main';
 import { fetchModelRenameTitle, getAbortController } from './models';

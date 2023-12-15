@@ -1,10 +1,10 @@
 import { ItemView, WorkspaceLeaf, Notice, setIcon, loadPrism, TFile, Modal } from "obsidian";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
-import { colorToHex } from "./settings";
-import { marked } from "marked";
-import { executeCommand } from "./commands";
-import { fetchOpenAIAPI, ollamaFetchData, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./models";
 import BMOGPT from './main';
+import { colorToHex } from "./utils/ColorConverter";
+import { fetchOpenAIAPI, ollamaFetchData, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./models";
+import { executeCommand } from "./commands";
+import { marked } from "marked";
 
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
