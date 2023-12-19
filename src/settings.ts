@@ -5,7 +5,7 @@ import { addAppearanceSettings } from './components/settings/AppearanceSettings'
 import { addChatHistorySettings } from './components/settings/ChatHistorySettings';
 import { addOllamaSettings } from './components/settings/OllamaSettings';
 import { addAdvancedSettings } from './components/settings/AdvancedSettings';
-import { fetchLocalAIModels, fetchOllamaModels } from './components/FetchModels';
+import { fetchLocalAIModels, fetchOllamaModels } from './components/FetchModelList';
 
 export class BMOSettingTab extends PluginSettingTab {
 	plugin: BMOGPT;
@@ -28,27 +28,6 @@ export class BMOSettingTab extends PluginSettingTab {
 		});
 
 		changeLogLink.style.fontSize = "0.8rem"; 
-
-		const usageText = containerEl.createEl("p", {
-			text: "Check usage: ",
-		});
-
-		const statusText = containerEl.createEl("p", {
-			text: "Check status: ",
-		});
-		
-		const usageLink = containerEl.createEl("a", {
-				text: "https://platform.openai.com/account/usage",
-				href: "https://platform.openai.com/account/usage",
-		});
-
-		const statusLink = containerEl.createEl("a", {
-			text: "https://status.openai.com/",
-			href: "https://status.openai.com/",
-		});
-
-		usageText.appendChild(usageLink);
-		statusText.appendChild(statusLink);
 
 		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
 

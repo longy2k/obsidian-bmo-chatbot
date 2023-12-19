@@ -28,4 +28,5 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
                 plugin.saveSettings();
             })
         );
+
 }

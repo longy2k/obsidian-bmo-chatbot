@@ -138,6 +138,8 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
             }),
         });
 
+        console.log(response);
+
         const message = response.json.message.content;
 
         const messageContainerEl = document.querySelector('#messageContainer');

@@ -3,7 +3,7 @@ import { BMOSettings, DEFAULT_SETTINGS } from "../main";
 import { colorToHex } from "../utils/ColorConverter";
 import { addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "../view";
 import BMOGPT from '../main';
-import { fetchModelRenameTitle, getAbortController } from './models';
+import { fetchModelRenameTitle, getAbortController } from './FetchModel';
 
 // Commands
 export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {

@@ -2,7 +2,7 @@ import { ItemView, WorkspaceLeaf, Notice, setIcon, loadPrism, TFile, Modal } fro
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
 import { colorToHex } from "./utils/ColorConverter";
-import { fetchOpenAIAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./components/models";
+import { fetchOpenAIAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./components/FetchModel";
 import { executeCommand } from "./components/commands";
 import { marked } from "marked";
 
