@@ -3,7 +3,7 @@ import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
 import { colorToHex } from "./utils/ColorConverter";
 import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./components/FetchModel";
-import { executeCommand } from "./components/commands";
+import { executeCommand } from "./components/Commands";
 import { marked } from "marked";
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';

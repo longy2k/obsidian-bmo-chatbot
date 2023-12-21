@@ -184,7 +184,11 @@ export async function commandListModels(input: string, currentSettings: BMOSetti
   // Loop through allModels and create list items
   const modelListItems = currentSettings.allModels.map(model => `<li>${model}</li>`).join('');
 
-  const formattedSettings = `<ol>${modelListItems}</ol>`;
+  const formattedSettings = 
+  `<div class="formattedSettings">
+  <h2>Models</h2>
+    <ol>${modelListItems}</ol>
+  </div>`;
 
   displayMessage(messageBlock, formattedSettings, currentSettings);
 }
