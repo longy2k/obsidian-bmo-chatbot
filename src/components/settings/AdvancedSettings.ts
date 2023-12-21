@@ -14,6 +14,7 @@ export function addAdvancedSettings(containerEl: HTMLElement, plugin: BMOGPT, Se
         .setClass("clickable-icon")
         .onClick(async () => {
             plugin.settings.openAIBaseUrl = DEFAULT_SETTINGS.openAIBaseUrl;
+            SettingTab.display();
             await plugin.saveSettings();
         })
     )

@@ -23,11 +23,9 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
 
     // Removes all system commands from the message history
     const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
-        // Check if the current message or the previous one is a user message containing '/'
         const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
                                         (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
-    
-        // Include the message in the new array if it's not part of a pair to be removed
+
         return !isUserMessageWithSlash;
     });
 
@@ -107,6 +105,69 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
     }
 }
 
+// Fetch OpenAI API
+export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrentNote: string) {
+    const openai = new OpenAI({
+        apiKey: settings.apiKey,
+        baseURL: settings.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
+
+    // Removes all system commands from the message history
+    const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
+        const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
+                                        (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
+
+        return !isUserMessageWithSlash;
+    });
+
+    try {
+        const completion = await openai.chat.completions.create({
+            model: settings.model,
+            max_tokens: parseInt(settings.max_tokens),
+            messages: [
+                { role: 'system', content: referenceCurrentNote + settings.system_role },
+                ...filteredMessageHistoryContent as ChatCompletionMessageParam[]
+            ],
+        });
+
+        const message = completion.choices[0].message.content;
+
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            const lastBotMessage = botMessages[botMessages.length - 1];
+            const loadingEl = lastBotMessage.querySelector("#loading");
+
+            if (loadingEl) {
+                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                lastBotMessage.removeChild(loadingEl);
+            }
+
+            const messageBlock = document.createElement("p");
+            const markdownContent = message ? marked(message) : '';
+            messageBlock.innerHTML = markdownContent;
+            messageBlock.classList.add("messageBlock");
+
+            addParagraphBreaks(messageBlock);
+            prismHighlighting(messageBlock);
+            codeBlockCopyButton(messageBlock);
+            
+            lastBotMessage.appendChild(messageBlock);
+            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (message != null) {
+            addMessage(message, 'botMessage', settings);
+        }
+
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
+    }
+
+}
+
 // Request response from Ollama
 // NOTE: Abort does not work for requestUrl
 export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNoteContent: string){
@@ -117,7 +178,6 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
     }
     
     try {
-
         const response = await requestUrl({
             url: ollamaRestAPIUrl + '/api/chat',
             method: 'POST',
@@ -137,8 +197,6 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                 },
             }),
         });
-
-        console.log(response);
 
         const message = response.json.message.content;
 
@@ -164,6 +222,11 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
             
             lastBotMessage.appendChild(messageBlock);
             lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            const spacer = messageContainerEl.querySelector("#spacer");
+            if (spacer) {
+                spacer.remove();
+            }
         }
 
         addMessage(message, 'botMessage', settings);
@@ -404,7 +467,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
      Also, please provide the title without using quotation marks. THE TITLE IS: \n\n`;
 
     try {
-        if (OPENAI_MODELS.includes(settings.model)) {
+        if (OPENAI_MODELS.includes(settings.model) || settings.openAIBaseModels.includes(settings.model)) {
 
             const openai = new OpenAI({
                 apiKey: settings.apiKey,
@@ -414,6 +477,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
 
             const chatCompletion = await openai.chat.completions.create({
                 model: settings.model,
+                max_tokens: 40,
                 messages: [
                     { role: 'system', content: prompt + referenceCurrentNoteContent},
                 ],
@@ -437,7 +501,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
               const requestBody = {
                   model: settings.model,
                   prompt:  `\n\nHuman: ${prompt}\n\nAssistant:`,
-                  max_tokens_to_sample: 25,
+                  max_tokens_to_sample: 40,
                   temperature: settings.temperature,
                   stream: true,
               };

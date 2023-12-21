@@ -6,7 +6,6 @@ export interface BMOSettings {
 	apiKey: string;
 	max_tokens: string;
 	model: string;
-	allModels: string[];
 	system_role: string;
 	temperature: number;
 	userName: string;
@@ -18,19 +17,20 @@ export interface BMOSettings {
 	templateFilePath: string;
 	openAIBaseUrl: string;
 	ollamaRestAPIUrl: string;
-	ollamaModels: string[];
 	allowOllamaStream: boolean;
 	localAIRestAPIUrl: string;
-	localAIModels: string[];
 	referenceCurrentNote: boolean;
 	allowRenameNoteTitle: boolean;
+	allModels: string[];
+	ollamaModels: string[];
+	localAIModels: string[];
+	openAIBaseModels: string[];
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
 	max_tokens: '',
 	model: '',
-	allModels: [],
 	system_role: '',
 	temperature: 1.00,
 	userName: 'USER',
@@ -42,12 +42,14 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	templateFilePath: '',
 	openAIBaseUrl: 'https://api.openai.com/v1',
 	ollamaRestAPIUrl: 'http://localhost:11434',
-	ollamaModels: [],
 	allowOllamaStream: false,
 	localAIRestAPIUrl: '',
-	localAIModels: [],
 	referenceCurrentNote: false,
 	allowRenameNoteTitle: false,
+	allModels: [],
+	ollamaModels: [],
+	localAIModels: [],
+	openAIBaseModels: [],
 }
 
 

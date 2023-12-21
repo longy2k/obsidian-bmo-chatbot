@@ -2,10 +2,9 @@ import { ItemView, WorkspaceLeaf, Notice, setIcon, loadPrism, TFile, Modal } fro
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
 import { colorToHex } from "./utils/ColorConverter";
-import { fetchOpenAIAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./components/FetchModel";
+import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./components/FetchModel";
 import { executeCommand } from "./components/commands";
 import { marked } from "marked";
-
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 
@@ -416,6 +415,7 @@ export class BMOView extends ItemView {
     }
 
     async BMOchatbot(_input: string) {
+        
         let referenceCurrentNoteContent = '';
 
         const activeFile = this.app.workspace.getActiveFile();
@@ -461,11 +461,19 @@ export class BMOView extends ItemView {
                 system_role: systemReferenceCurrentNote + this.settings.system_role
             };
 
-
-            // OpenAI models
+            // Fetch OpenAI base API
             if (OPENAI_MODELS.includes(this.settings.model)) {
                 try {
                     await fetchOpenAIAPI(this.settings, referenceCurrentNoteContent); 
+                }
+                catch (error) {
+                    new Notice('Error occurred while fetching completion: ' + error.message);
+                    console.log(error.message);
+                }
+            }
+            else if (this.plugin.settings.openAIBaseModels.includes(this.settings.model)) {
+                try {
+                    await fetchOpenAIBaseAPI(this.settings, referenceCurrentNoteContent); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -517,17 +525,16 @@ export class BMOView extends ItemView {
                     console.error('Error:', error);
                 }
             }
-            else {
+            else if (this.settings.ollamaRestAPIUrl ) {
+                if (this.settings.allowOllamaStream) {
+                    await ollamaFetchDataStream(this.settings, referenceCurrentNoteContent);
+                }
+                else {
+                    await ollamaFetchData(this.settings, referenceCurrentNoteContent);
+                }
+            }
+            else if (this.settings.localAIRestAPIUrl){
                 try { 
-                    if (this.settings.ollamaRestAPIUrl) {
-                        if (this.settings.allowOllamaStream) {
-                            await ollamaFetchDataStream(this.settings, referenceCurrentNoteContent);
-                        }
-                        else {
-                            await ollamaFetchData(this.settings, referenceCurrentNoteContent);
-                        }
-                    }
-                    else {
                         const response = await requestUrlChatCompletion(this.settings.localAIRestAPIUrl, settings, referenceCurrentNoteContent, messageHistory, maxTokens, temperature);
                     
                         const message = response.json.choices[0].message.content;
@@ -556,12 +563,14 @@ export class BMOView extends ItemView {
                         }
 
                         addMessage(message, 'botMessage', this.settings);
-                    }
                 } 
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
                     console.log(error.message);
                 }
+            }
+            else {
+                new Notice("No models detected.");
             }
         }
         // console.log("BMO settings:", this.settings);

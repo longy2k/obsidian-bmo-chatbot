@@ -1,6 +1,7 @@
 import { DropdownComponent, Notice, Setting, SettingTab } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
+import { fetchOpenAIBaseModels } from "../FetchModelList";
 
 export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab, localAIModels: string[], ollamaModels: string[]) {
     containerEl.createEl('h2', {text: 'General'});
@@ -30,9 +31,9 @@ export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
     new Setting(containerEl)
         .setName('Model')
         .setDesc('Choose a model.')
-        .addDropdown(dropdown => {
+        .addDropdown(async dropdown => {
             plugin.settings.allModels = [];
-            if (plugin.settings.apiKey && !plugin.settings.apiKey.startsWith("sk-ant")) {
+            if (plugin.settings.apiKey && !plugin.settings.apiKey.startsWith("sk-ant") && (plugin.settings.openAIBaseUrl === DEFAULT_SETTINGS.openAIBaseUrl)) {
                 addOptionsToDropdown(dropdown, OPENAI_MODELS);
                 for (const model of OPENAI_MODELS) {
                     if (!plugin.settings.allModels.includes(model)) {
@@ -74,6 +75,21 @@ export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
                 catch (error) {
                     console.error('Error:', error);
                     new Notice('LocalAI connection error.');
+                }
+            }
+            if (plugin.settings.apiKey && (plugin.settings.openAIBaseUrl != DEFAULT_SETTINGS.openAIBaseUrl)) {
+                const openAIModels = await fetchOpenAIBaseModels(plugin);
+                try {
+                    openAIModels.forEach((model: string) => {
+                        dropdown.addOption(model, model);
+                        if (!plugin.settings.allModels.includes(model)) {
+                            plugin.settings.allModels.push(model);
+                        }
+                    });
+                }
+                catch (error) {
+                    console.error('Error:', error);
+                    new Notice('OpenAI-based url connection error.');
                 }
             }
             dropdown
