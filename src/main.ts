@@ -1,4 +1,4 @@
-import { Plugin } from 'obsidian';
+import { Plugin, TFile } from 'obsidian';
 import { BMOView, VIEW_TYPE_CHATBOT} from "./view";
 import { BMOSettingTab } from './settings';
 
@@ -52,12 +52,19 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	openAIBaseModels: [],
 }
 
+export let checkActiveFile: TFile | null = null;
 
 export default class BMOGPT extends Plugin {
 	settings: BMOSettings;
 
 	async onload() {
 		await this.loadSettings();
+
+        this.registerEvent(
+            this.app.workspace.on('active-leaf-change', () => {
+                this.handleFileSwitch();
+            })
+        );
 
 		this.registerView(
 			VIEW_TYPE_CHATBOT,
@@ -85,6 +92,10 @@ export default class BMOGPT extends Plugin {
 		this.addSettingTab(new BMOSettingTab(this.app, this));
 	}
 
+	handleFileSwitch() {
+		checkActiveFile = this.app.workspace.getActiveFile();
+	}
+
 	async onunload() {
 		this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT).forEach((leaf) => {
 			const bmoView = leaf.view as BMOView;
@@ -94,6 +105,7 @@ export default class BMOGPT extends Plugin {
 				bmoView.cleanup();
 			} 
 		});
+		
 	}
 
 	async activateView() {

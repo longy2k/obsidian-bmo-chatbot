@@ -137,23 +137,23 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
         if (messageContainerEl) {
             const botMessages = messageContainerEl.querySelectorAll(".botMessage");
             const lastBotMessage = botMessages[botMessages.length - 1];
+            const messageBlock = lastBotMessage.querySelector('.messageBlock');
             const loadingEl = lastBotMessage.querySelector("#loading");
 
-            if (loadingEl) {
-                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                lastBotMessage.removeChild(loadingEl);
+            if (messageBlock) {
+                if (loadingEl) {
+                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    lastBotMessage.removeChild(loadingEl);
+                }
+
+                messageBlock.innerHTML = marked(message || '', { breaks: true });
+
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                lastBotMessage.appendChild(messageBlock);
             }
-
-            const messageBlock = document.createElement("p");
-            const markdownContent = message ? marked(message) : '';
-            messageBlock.innerHTML = markdownContent;
-            messageBlock.classList.add("messageBlock");
-
-            addParagraphBreaks(messageBlock);
-            prismHighlighting(messageBlock);
-            codeBlockCopyButton(messageBlock);
-            
-            lastBotMessage.appendChild(messageBlock);
             lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -204,23 +204,22 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
         if (messageContainerEl) {
             const botMessages = messageContainerEl.querySelectorAll(".botMessage");
             const lastBotMessage = botMessages[botMessages.length - 1];
+            const messageBlock = lastBotMessage.querySelector('.messageBlock');
             const loadingEl = lastBotMessage.querySelector("#loading");
-            
-            if (loadingEl) {
-                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                lastBotMessage.removeChild(loadingEl);
-            }
         
-            const messageBlock = document.createElement("p");
-            const markdownContent = marked(message);
-            messageBlock.innerHTML = markdownContent;
-            messageBlock.classList.add("messageBlock");
-            
-            addParagraphBreaks(messageBlock);
-            prismHighlighting(messageBlock);
-            codeBlockCopyButton(messageBlock);
-            
-            lastBotMessage.appendChild(messageBlock);
+            if (messageBlock) {
+                if (loadingEl) {
+                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    lastBotMessage.removeChild(loadingEl);
+                }
+                messageBlock.innerHTML = marked(message, { breaks: true });
+                
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                lastBotMessage.appendChild(messageBlock);
+            }
             lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
             const spacer = messageContainerEl.querySelector("#spacer");

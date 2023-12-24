@@ -1,5 +1,5 @@
-import { ItemView, WorkspaceLeaf, Notice, setIcon, loadPrism, TFile, Modal } from "obsidian";
-import {DEFAULT_SETTINGS, BMOSettings} from './main';
+import { ItemView, WorkspaceLeaf, Notice, setIcon, loadPrism, TFile, Modal, MarkdownView, Editor, EditorPosition } from "obsidian";
+import {DEFAULT_SETTINGS, BMOSettings, checkActiveFile} from './main';
 import BMOGPT from './main';
 import { colorToHex } from "./utils/ColorConverter";
 import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./components/FetchModel";
@@ -17,6 +17,15 @@ export function clearMessageHistory() {
     messageHistory = [];
 }
 
+let lastCursorPosition: EditorPosition = {
+    line: 0,
+    ch: 0,
+}
+
+let lastCursorPositionFile: TFile | null = null;
+let activeEditor: Editor | null | undefined = null;
+
+
 export class BMOView extends ItemView {
     public settings: BMOSettings;
     private textareaElement: HTMLTextAreaElement;
@@ -28,7 +37,8 @@ export class BMOView extends ItemView {
         super(leaf);
         this.settings = settings;
         this.plugin = plugin;
-        this.icon = 'bot';      
+        this.icon = 'bot';
+        this.addCursorLogging();
     }
 
     getViewType() {
@@ -39,10 +49,8 @@ export class BMOView extends ItemView {
         return "BMO Chatbot";
     }
     
-
     async onOpen(): Promise<void> {
         this.registerEvent(this.app.workspace.on("file-open", this.handleFileOpenEvent.bind(this)));
-
 
         const container = this.containerEl.children[1];
         container.empty();
@@ -107,7 +115,7 @@ export class BMOView extends ItemView {
         
         messageContainer.id = "messageContainer";
         
-        messageHistory.forEach((messageData, index) => {     
+        messageHistory.forEach((messageData) => {   
             const buttonContainerDiv = document.createElement("div");
             buttonContainerDiv.className = "button-container";
 
@@ -184,7 +192,9 @@ export class BMOView extends ItemView {
 
                 if (!messageText.includes('div class="formattedSettings"')) {
                     const copyBotButton = displayBotCopyButton(messageData, this.settings);
+                    const appendButton = displayAppendButton(messageData);
                     buttonContainerDiv.appendChild(copyBotButton);
+                    buttonContainerDiv.appendChild(appendButton);
                 }
                 botMessageDiv.appendChild(botMessageToolBarDiv);
                 messageBlockDiv.appendChild(newBotP);
@@ -235,6 +245,7 @@ export class BMOView extends ItemView {
     
     async handleKeyup(event: KeyboardEvent) {
         const input = this.textareaElement.value.trim();
+        const activeFile = this.app.workspace.getActiveFile();
 
         // Only allow /stop command to be executed during fetch
         if (this.settings.allowOllamaStream || !this.settings.ollamaModels.includes(this.settings.model)) {
@@ -252,10 +263,10 @@ export class BMOView extends ItemView {
             }
 
             if (ANTHROPIC_MODELS.includes(this.settings.model)) {
-                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
+                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings, activeFile || undefined);
             } else {
                 if (!(input === "/s" || input === "/stop")) {
-                    addMessage(input, 'userMessage', this.settings);
+                    addMessage(input, 'userMessage', this.settings, activeFile || undefined);
                 }
             }
             
@@ -401,6 +412,26 @@ export class BMOView extends ItemView {
     exportSettings() {
         return this.settings;
     }
+
+    addCursorLogging() {
+        const updateCursorPosition = () => {
+            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            if (view) {
+                const cursor = view.editor.getCursor();
+                lastCursorPositionFile = this.app.workspace.getActiveFile();
+                if (cursor != null && this.app.workspace.activeEditor != null) {
+                    lastCursorPosition = cursor;
+                    activeEditor = view.editor;
+                }
+            }
+        };
+
+        activeWindow.addEventListener('click', updateCursorPosition);
+        activeWindow.addEventListener('keyup', updateCursorPosition);
+        activeWindow.addEventListener('keydown', updateCursorPosition);
+        activeWindow.addEventListener('input', updateCursorPosition);
+    }
+
     
     cleanup() {
         this.textareaElement.removeEventListener("keyup", this.handleKeyup.bind(this));
@@ -519,7 +550,7 @@ export class BMOView extends ItemView {
                         lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
 
-                    addMessage('\n\nAssistant: ' + completionText, 'botMessage', this.settings);
+                    addMessage('\n\nAssistant: ' + completionText, 'botMessage', this.settings, activeFile || undefined);
                 }
                 catch (error) {
                     console.error('Error:', error);
@@ -562,7 +593,7 @@ export class BMOView extends ItemView {
                             lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }
 
-                        addMessage(message, 'botMessage', this.settings);
+                        addMessage(message, 'botMessage', this.settings, activeFile || undefined);
                 } 
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -612,7 +643,7 @@ export async function getActiveFileContent(file: TFile) {
     let currentNote = '';
     if (activeFile?.extension === 'md') {
         const content = await app.vault.read(activeFile);
-        currentNote = 'Note:```' + content + '```\n';
+        currentNote = 'REFER TO THIS NOTE:```' + content + '```\n';
         if (dotElement) {
             (dotElement as HTMLElement).style.backgroundColor = 'green';
         }
@@ -625,7 +656,7 @@ export async function getActiveFileContent(file: TFile) {
 }
 
 // Add a new message to the messageHistory array and save it to the file
-export async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index?: number) {
+export async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, file?: TFile) {
     const messageObj: { role: string; content: string } = {
         role: "",
         content: ""
@@ -636,14 +667,19 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
         messageObj.content = input;
     } else if (messageType === 'botMessage') {
         messageObj.role = 'assistant';  
-        messageObj.content = input;
+        messageObj.content = input.trim();
 
         const botMessageToolBarDiv = document.querySelectorAll(".botMessageToolBar");
         const lastBotMessageToolBarDiv = botMessageToolBarDiv[botMessageToolBarDiv.length - 1];
         if (botMessageToolBarDiv.length > 0) {
             if (!messageObj.content.includes('div class="formattedSettings"')) {
+                const buttonContainerDiv = document.createElement("div");
                 const copyBotButton = displayBotCopyButton(messageObj, settings);
-                lastBotMessageToolBarDiv.appendChild(copyBotButton);
+                const appendButton = displayAppendButton(messageObj);
+                buttonContainerDiv.className = "button-container";
+                lastBotMessageToolBarDiv.appendChild(buttonContainerDiv);
+                buttonContainerDiv.appendChild(copyBotButton);
+                buttonContainerDiv.appendChild(appendButton);
             }
         }
 
@@ -724,7 +760,6 @@ export function addParagraphBreaks(messageBlock: { querySelectorAll: (arg0: stri
 
 export function copyMessageToClipboard(message: string) {
     navigator.clipboard.writeText(message).then(function() {
-    //   console.log('Message copied to clipboard');
     }).catch(function(err) {
       console.error('Unable to copy message: ', err);
     });
@@ -790,7 +825,6 @@ function displayTrash () {
 
     let lastClickedElement: HTMLElement | null = null;
 
-    // Add a click event listener to the ellipsis span to toggle the dropdown
     trashButton.addEventListener("click", function (event) {
         event.stopPropagation();
         lastClickedElement = event.target as HTMLElement;
@@ -827,10 +861,43 @@ function displayTrash () {
         
             }
         }
-        
     });
     return trashButton;
 }
+
+function displayAppendButton(messageObj: {role: string; content: string;}) {
+    const appendButton = document.createElement("button");
+    appendButton.textContent = "append";
+    setIcon(appendButton, "plus-square");
+    appendButton.classList.add("append-button");
+    appendButton.title = "append";
+
+    const messageText = messageObj.content;
+
+    appendButton.addEventListener("click", async function (event) {
+        if (checkActiveFile?.extension === 'md') {
+            // Check if the active file is different from the file of the last cursor position
+            if ((checkActiveFile !== lastCursorPositionFile)) {
+                // Append to the bottom of the file
+                const existingContent = await app.vault.read(checkActiveFile);
+                const updatedContent = existingContent + '\n' + messageText;
+                app.vault.modify(checkActiveFile, updatedContent);
+            } else {
+                // Append at the last cursor position
+                activeEditor?.replaceRange(messageText, lastCursorPosition);
+            }
+
+            event.stopPropagation();
+            new Notice("Appended response.");
+        }
+        else {
+            new Notice("No active Markdown file detected.");
+        }
+    });
+
+    return appendButton;
+}
+
 
 export async function deleteMessage(index: number) {
     const messageContainer = document.querySelector('#messageContainer');
@@ -885,5 +952,3 @@ export async function removeMessageThread(index: number) {
         console.error('Error writing messageHistory.json', error);
     }
 }
-
-

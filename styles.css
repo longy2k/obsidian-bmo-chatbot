@@ -204,9 +204,24 @@ If your plugin does not need CSS, delete this file.
 	color: rgb(188, 35, 35);
 }
 
+/* Styles for append button */
+.botMessageToolBar button.append-button {
+	padding: 0 3px;
+	background-color: transparent !important;
+	box-shadow: none !important;
+	border: none;
+	color: var(--interactive-accent);
+	width: 1.2rem;
+}
+
+.botMessageToolBar .append-button:hover {
+	color: var(--text-muted);
+}
+
 /* Hide buttons */
 .userMessage .copy-button,
 .userMessage .trash-button,
+.botMessage .append-button,
 .botMessage .copy-button {
 	visibility: hidden;
 	opacity: 0;
@@ -215,6 +230,7 @@ If your plugin does not need CSS, delete this file.
 /* Show buttons on hover */
 .userMessage:hover .copy-button,
 .userMessage:hover .trash-button,
+.botMessage:hover .append-button,
 .botMessage:hover .copy-button {
 	visibility: visible;
 	opacity: 1;

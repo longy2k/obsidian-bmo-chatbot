@@ -345,7 +345,6 @@ export async function commandAppend(currentSettings: BMOSettings) {
         });
     }
 
-    // const chatbotNames = document.querySelectorAll('#chatbotName') as NodeListOf<HTMLHeadingElement>;
     const chatbotNames = document.querySelectorAll('.chatbotName') as NodeListOf<HTMLHeadingElement>;
     const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
 
@@ -390,7 +389,7 @@ export async function commandAppend(currentSettings: BMOSettings) {
     new Notice("Appended conversation.");
   }
   else {
-    new Notice("No active note to append to.");
+    new Notice("No active Markdown file detected.");
   }
 }
 
