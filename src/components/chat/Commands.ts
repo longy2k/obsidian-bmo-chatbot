@@ -1,9 +1,11 @@
 import { Notice } from 'obsidian';
-import { BMOSettings, DEFAULT_SETTINGS } from "../main";
-import { colorToHex } from "../utils/ColorConverter";
-import { addMessage, filenameMessageHistoryJSON, getActiveFileContent, removeMessageThread } from "../view";
-import BMOGPT from '../main';
-import { fetchModelRenameTitle, getAbortController } from './FetchModel';
+import { BMOSettings, DEFAULT_SETTINGS } from "../../main";
+import { colorToHex } from "../../utils/ColorConverter";
+import { filenameMessageHistoryJSON, messageHistory } from "../../view";
+import BMOGPT from '../../main';
+import { fetchModelRenameTitle, getAbortController } from '../FetchModel';
+import { getActiveFileContent } from '../ReferenceCurrentNoteIndicator';
+import { addMessage } from './Message';
 
 // Commands
 export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
@@ -560,5 +562,26 @@ export function commandStop() {
   const controller = getAbortController();
   if (controller) {
       controller.abort();
+  }
+}
+
+export async function removeMessageThread(index: number) {
+  const messageContainer = document.querySelector('#messageContainer');
+
+  const divElements = messageContainer?.querySelectorAll('div.botMessage, div.userMessage');
+
+  if (divElements && divElements.length > 0 && index >= 0 && index < divElements.length) {
+    for (let i = index; i < divElements.length; i++) {
+      messageContainer?.removeChild(divElements[i]);
+    }
+  }
+
+  messageHistory.splice(index);
+  const jsonString = JSON.stringify(messageHistory, null, 4);
+
+  try {
+      await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+  } catch (error) {
+      console.error('Error writing messageHistory.json', error);
   }
 }

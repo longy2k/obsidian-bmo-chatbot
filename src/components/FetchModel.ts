@@ -1,9 +1,12 @@
 import { Notice, requestUrl } from "obsidian";
 import { BMOSettings } from "../main";
-import { ANTHROPIC_MODELS, OPENAI_MODELS, addMessage, addParagraphBreaks, codeBlockCopyButton, messageHistory, prismHighlighting } from "../view";
+import { ANTHROPIC_MODELS, OPENAI_MODELS, messageHistory } from "../view";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 import { marked } from "marked";
+import { prismHighlighting } from "src/components/PrismaHighlighting";
+import { addMessage, addParagraphBreaks } from "./chat/Message";
+import { codeBlockCopyButton } from "./chat/Buttons";
 
 let abortController = new AbortController();
 
