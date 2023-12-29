@@ -7,6 +7,7 @@ import { marked } from "marked";
 import { prismHighlighting } from "src/components/PrismaHighlighting";
 import { addMessage, addParagraphBreaks } from "./chat/Message";
 import { codeBlockCopyButton } from "./chat/Buttons";
+import { getPrompt } from "./chat/Prompt";
 
 let abortController = new AbortController();
 
@@ -24,6 +25,9 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
 
     let isScroll = false;
 
+    const prompt = await getPrompt(settings);
+
+
     // Removes all system commands from the message history
     const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
         const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
@@ -38,7 +42,7 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
             max_tokens: parseInt(settings.max_tokens),
             temperature: settings.temperature,
             messages: [
-                { role: 'system', content: referenceCurrentNote + settings.system_role },
+                { role: 'system', content: referenceCurrentNote + settings.system_role + prompt},
                 ...filteredMessageHistoryContent as ChatCompletionMessageParam[]
             ],
             stream: true,
@@ -121,7 +125,7 @@ export async function fetchOpenAIAPIEditor(settings: BMOSettings, selectionStrin
         model: settings.model,
         max_tokens: parseInt(settings.max_tokens),
         messages: [
-            { role: 'system', content:  settings.system_role },
+            { role: 'system', content:  settings.system_role},
             { role: 'user', content: selectionString}
         ],
     });
@@ -138,6 +142,8 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
+    const prompt = await getPrompt(settings);
+
     // Removes all system commands from the message history
     const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
         const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
@@ -151,7 +157,7 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
             model: settings.model,
             max_tokens: parseInt(settings.max_tokens),
             messages: [
-                { role: 'system', content: referenceCurrentNote + settings.system_role },
+                { role: 'system', content: referenceCurrentNote + settings.system_role + prompt},
                 ...filteredMessageHistoryContent as ChatCompletionMessageParam[]
             ],
         });
@@ -222,6 +228,8 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
     if (!ollamaRestAPIUrl) {
         return;
     }
+
+    const prompt = await getPrompt(settings);
     
     try {
         const response = await requestUrl({
@@ -233,7 +241,7 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
             body: JSON.stringify({
                 model: settings.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.system_role },
+                    { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
                     ...messageHistory
                 ],
                 stream: false,
@@ -338,6 +346,8 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
 
     let isScroll = false;
 
+    const prompt = await getPrompt(settings);
+
     // Removes all system commands from the message history
     const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
         // Check if the current message or the previous one is a user message containing '/'
@@ -357,7 +367,7 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
             body: JSON.stringify({
                 model: settings.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.system_role },
+                    { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
                     ...filteredMessageHistoryContent
                 ],
                 stream: true,
@@ -460,10 +470,11 @@ export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCur
     };
   
     const messageHistoryString = messageHistory.map(entry => entry.content).join('\n');
+    const prompt = await getPrompt(settings);
 
     const requestBody = {
         model: settings.model,
-        prompt:  `\n\nHuman: ${referenceCurrentNoteContent}\n\n${settings.system_role}\n\n${messageHistoryString}\n\nAssistant:`,
+        prompt:  `\n\nHuman: ${referenceCurrentNoteContent}\n\n${settings.system_role}\n\n${prompt}\n\n${messageHistoryString}\n\nAssistant:`,
         max_tokens_to_sample: parseInt(settings.max_tokens) || 100000,
         temperature: settings.temperature,
         stream: true,
@@ -536,44 +547,34 @@ export async function requestUrlAnthropicAPIEditor(settings: BMOSettings, select
 }
 
 // Request response from self-hosted models (LOCAL AI)
-export async function requestUrlChatCompletion(
-    url: string, 
-    settings: { apiKey: string; model: string; system_role: string; }, 
-    referenceCurrentNote: string,
-    messageHistoryContent: { role: string; content: string }[] = [],
-    maxTokens: string, 
-    temperature: number)
-    {
-        const messageHistory = messageHistoryContent.map((item: { role: string; content: string; }) => ({
-            role: item.role,
-            content: item.content,
-        }));
+export async function requestUrlChatCompletion(settings: BMOSettings, referenceCurrentNote: string) {
+    const prompt = await getPrompt(settings);
 
-        try {
-            const response = await requestUrl({
-                url: url + '/v1/chat/completions',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${settings.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: settings.model,
-                    messages: [
-                        { role: 'system', content: referenceCurrentNote + settings.system_role },
-                        ...messageHistory
-                    ],
-                    max_tokens: parseInt(maxTokens),
-                    temperature: temperature,
-                }),
-            });
+    try {
+        const response = await requestUrl({
+            url: settings.localAIRestAPIUrl + '/v1/chat/completions',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.apiKey}`
+            },
+            body: JSON.stringify({
+                model: settings.model,
+                messages: [
+                    { role: 'system', content: referenceCurrentNote + settings.system_role + prompt},
+                    ...messageHistory
+                ],
+                max_tokens: parseInt(settings.max_tokens),
+                temperature: settings.temperature,
+            }),
+        });
 
-            return response;
+        return response;
 
-        } catch (error) {
-            console.error('Error making API request:', error);
-            throw error;
-        }
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
+    }
 }
 
 // Request response from self-hosted models (LOCAL AI)

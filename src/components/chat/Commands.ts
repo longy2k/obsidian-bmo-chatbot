@@ -16,9 +16,11 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
           commandHelp(settings);
           break;
       case '/model':
+      case '/models':
           return commandModel(input, settings, plugin);
-      case '/list':
-          return commandListModels(input, settings, plugin);
+      case '/prompt':
+      case '/prompts':
+          return commandPrompt(input, settings, plugin);
       case '/reference':
       case '/ref':
           commandReference(input, settings, plugin);
@@ -119,8 +121,9 @@ export function commandHelp(currentSettings: BMOSettings) {
   const formattedSettings = `
     <div class="formattedSettings">
       <h2>Commands</h2>
-      <p><code>/list</code> - List models.</p>
-      <p><code>/model "[MODEL-NAME]" or [VALUE]</code> - Change model.</p>
+      <p><code>/model "[MODEL-NAME]" or [VALUE]</code> - List or change model.</p>
+      <p><code>/prompt "[PROMPT-NAME]" or [VALUE]</code> - List or change prompt.</p>
+      <p><code>/prompt clear</code> - Clear prompt.</p>
       <p><code>/system "[PROMPT]"</code> - Change system setting.</p>
       <p><code>/maxtokens [VALUE]</code> - Set max tokens.</p>
       <p><code>/temp [VALUE]</code> - Change temperature range 0 from to 1.</p>
@@ -138,12 +141,19 @@ export function commandHelp(currentSettings: BMOSettings) {
 // `/model "[VALUE]"` to change model.
 export async function commandModel(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
   const messageBlock = createBotMessage(currentSettings);
-
   // Check if the user has not specified a model after the "/model" command
   if (!input.split(' ')[1]) {
-    const messageHtml = `<div class="formattedSettings"><p><strong>Please select a model.</strong></p></div>`;
-    displayMessage(messageBlock, messageHtml, currentSettings);
-    return;
+
+    // Loop through allModels and create list items
+    const modelListItems = currentSettings.allModels.map(model => `<li>${model}</li>`).join('');
+  
+    const formattedSettings = 
+    `<div class="formattedSettings">
+    <h2>Models</h2>
+      <ol>${modelListItems}</ol>
+    </div>`;
+  
+    displayMessage(messageBlock, formattedSettings, currentSettings);
   }
 
   // Check if the user has specified a model after the "/model" command
@@ -167,7 +177,7 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
       currentSettings.model = modelAliases[Object.keys(modelAliases).find(key => modelAliases[key] === inputModel) || ''];
       messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${currentSettings.model}</strong></p></div>`;
     }
-     else {
+    else {
       messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
       new Notice("Invalid model.");
     }
@@ -178,22 +188,86 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
   }
 }
 
-// `/list` to list all models.
-export async function commandListModels(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
+// `/prompt "[VALUE]"` to change prompt.
+export async function commandPrompt(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
+
+  // Fetching files from the specified folder
+  const files = app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.promptFolderPath));
+
   const messageBlock = createBotMessage(currentSettings);
 
-  // Loop through allModels and create list items
-  const modelListItems = currentSettings.allModels.map(model => `<li>${model}</li>`).join('');
+  // Sorting the files array alphabetically by file name
+  files.sort((a, b) => a.name.localeCompare(b.name));
 
-  const formattedSettings = 
-  `<div class="formattedSettings">
-  <h2>Models</h2>
-    <ol>${modelListItems}</ol>
-  </div>`;
+  // Check if the user has not specified a prompt after the "/prompt" command
+  if (!input.split(' ')[1]) {
 
-  displayMessage(messageBlock, formattedSettings, currentSettings);
+    // Loop through files and create list items, removing the file extension
+    const fileListItems = files.map(file => {
+      const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, ""); // Removing the last dot and what follows
+      return `<li>${fileNameWithoutExtension}</li>`;
+    }).join('');
+
+  let currentModel = currentSettings.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+
+    // Check if currentModel is empty, and set it to "Empty" if it is
+    if (!currentModel) {
+      currentModel = "Empty";
+    }
+
+    const formattedSettings = 
+    `<div class="formattedSettings">
+    <h2>Prompts</h2>
+      <p><b>Current Model:</b> ${currentModel}</p>
+      <ol>${fileListItems}</ol>
+    </div>`;
+
+    displayMessage(messageBlock, formattedSettings, currentSettings);
+    return;
+  }
+
+  // Check if the user has specified a prompt after the "/prompt" command
+  if (input.startsWith('/prompt ')) {
+    const inputValue = input.substring('/prompt '.length).trim();
+    let messageHtml = "";
+
+    // Set to default or empty if the input is 'clear' or 'c'
+    if (inputValue === 'clear' || inputValue === 'c') {
+      currentSettings.prompt = ''; // Set to default or empty
+      messageHtml = `<div class="formattedSettings"><p><strong>Prompt cleared.</strong></p></div>`;
+      displayMessage(messageBlock, messageHtml, currentSettings);
+      await plugin.saveSettings();
+      return currentSettings;
+    }
+    
+    const promptAliases: { [key: string]: string } = {};
+    
+    // Create aliases for each file (prompt)
+    for (let i = 1; i <= files.length; i++) {
+      const fileNameWithoutExtension = files[i - 1].name.replace(/\.[^/.]+$/, "");
+      promptAliases[i.toString()] = fileNameWithoutExtension;
+    }
+
+    if (promptAliases[inputValue]) {
+      // If input matches a key in promptAliases
+      currentSettings.prompt = promptAliases[inputValue] + '.md';
+      messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentSettings.prompt}</strong></p></div>`;
+    } else if (Object.values(promptAliases).includes(inputValue)) {
+      // If input matches a value in promptAliases
+      currentSettings.prompt = inputValue + '.md';
+      messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentSettings.prompt}</strong></p></div>`;
+    } else {
+      // If the input prompt does not exist
+      messageHtml = `<div class="formattedSettings"><p><strong>Prompt '${inputValue}' does not exist.</strong></p></div>`;
+      new Notice("Invalid prompt.");
+    }
+
+    displayMessage(messageBlock, messageHtml, currentSettings);
+    await plugin.saveSettings();
+    return currentSettings;
+  }
+
 }
-
 
 // `/ref` to turn on/off referenceCurrentNote.
 export async function commandReference(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {

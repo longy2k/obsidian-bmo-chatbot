@@ -16,6 +16,8 @@ export interface BMOSettings {
 	botMessageBackgroundColor: string;
 	chatHistoryPath: string;
 	templateFilePath: string;
+	promptFolderPath: string;
+	prompt: string;
 	openAIBaseUrl: string;
 	ollamaRestAPIUrl: string;
 	allowOllamaStream: boolean;
@@ -41,6 +43,8 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	botMessageBackgroundColor: '--background-secondary',
 	chatHistoryPath: 'BMO/',
 	templateFilePath: '',
+	promptFolderPath: 'BMO/Prompts/',
+	prompt: '',
 	openAIBaseUrl: 'https://api.openai.com/v1',
 	ollamaRestAPIUrl: 'http://localhost:11434',
 	allowOllamaStream: false,
