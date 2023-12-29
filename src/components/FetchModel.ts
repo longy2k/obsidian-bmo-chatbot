@@ -10,7 +10,7 @@ import { codeBlockCopyButton } from "./chat/Buttons";
 
 let abortController = new AbortController();
 
-// Fetch OpenAI API
+// Fetch OpenAI API Chat
 export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote: string) {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
@@ -108,7 +108,29 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
     }
 }
 
+
 // Fetch OpenAI API
+export async function fetchOpenAIAPIEditor(settings: BMOSettings, selectionString: string) {
+    const openai = new OpenAI({
+        apiKey: settings.apiKey,
+        baseURL: settings.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
+
+    const completion = await openai.chat.completions.create({
+        model: settings.model,
+        max_tokens: parseInt(settings.max_tokens),
+        messages: [
+            { role: 'system', content:  settings.system_role },
+            { role: 'user', content: selectionString}
+        ],
+    });
+
+    const message = completion.choices[0].message.content;
+    return message;
+}
+
+// Fetch OpenAI-Based API
 export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrentNote: string) {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
@@ -168,7 +190,28 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
         console.error('Error making API request:', error);
         throw error;
     }
+}
 
+// Fetch OpenAI API
+export async function fetchOpenAIBaseAPIEditor(settings: BMOSettings, selectionString: string) {
+    const openai = new OpenAI({
+        apiKey: settings.apiKey,
+        baseURL: settings.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
+
+    const completion = await openai.chat.completions.create({
+        model: settings.model,
+        max_tokens: parseInt(settings.max_tokens),
+        messages: [
+            { role: 'system', content: settings.system_role },
+            { role: 'user', content: selectionString}
+        ],
+    });
+
+
+    const message = completion.choices[0].message.content;
+    return message;
 }
 
 // Request response from Ollama
@@ -232,6 +275,46 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
         }
 
         addMessage(message, 'botMessage', settings);
+
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
+    }
+}
+
+// Request response from Ollama
+// NOTE: Abort does not work for requestUrl
+export async function ollamaFetchDataEditor(settings: BMOSettings, selectionString: string) {
+    const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
+
+    if (!ollamaRestAPIUrl) {
+        return;
+    }
+    
+    try {
+        const response = await requestUrl({
+            url: ollamaRestAPIUrl + '/api/chat',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: settings.model,
+                messages: [
+                    { role: 'system', content: settings.system_role },
+                    { role: 'user', content: selectionString}
+                ],
+                stream: false,
+                options: {
+                    temperature: settings.temperature,
+                    num_predict: parseInt(settings.max_tokens),
+                },
+            }),
+        });
+
+        const message = response.json.message.content;
+
+        return message;
 
     } catch (error) {
         console.error('Error making API request:', error);
@@ -420,6 +503,38 @@ export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCur
     }
 }
 
+// Request response from Anthropic 
+export async function requestUrlAnthropicAPIEditor(settings: BMOSettings, selectionString: string) {
+    const headers = {
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'x-api-key': settings.apiKey,
+    };
+
+    const requestBody = {
+        model: settings.model,
+        prompt:  `\n\nHuman: ${settings.system_role}\n\n${selectionString}\n\nAssistant:`,
+        max_tokens_to_sample: parseInt(settings.max_tokens) || 100000,
+        temperature: settings.temperature,
+        stream: false,
+    };
+  
+    try {
+      const response = await requestUrl({
+        url: 'https://api.anthropic.com/v1/complete',
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody),
+      });
+
+      return response;
+  
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
+    }
+}
+
 // Request response from self-hosted models (LOCAL AI)
 export async function requestUrlChatCompletion(
     url: string, 
@@ -461,12 +576,41 @@ export async function requestUrlChatCompletion(
         }
 }
 
+// Request response from self-hosted models (LOCAL AI)
+export async function requestUrlChatCompletionEditor(BMOSettings: BMOSettings, selectionString: string) {
+
+        try {
+            const response = await requestUrl({
+                url: BMOSettings.localAIRestAPIUrl + '/v1/chat/completions',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${BMOSettings.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: BMOSettings.model,
+                    messages: [
+                        { role: 'system', content: BMOSettings.system_role },
+                        { role: 'user', content: selectionString}
+                    ],
+                    max_tokens: parseInt(BMOSettings.max_tokens),
+                    temperature: BMOSettings.temperature,
+                }),
+            });
+
+            return response;
+
+        } catch (error) {
+            console.error('Error making API request:', error);
+            throw error;
+        }
+}
+
 // Rename note title based on specified model
 export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurrentNoteContent: string) {
-
-    const prompt = `Based on the following markdown content, create a new, suitable title.
-     The title should not contain any of the following characters: backslashes, forward slashes, or colons.
-     Also, please provide the title without using quotation marks. THE TITLE IS: \n\n`;
+    
+    const prompt = `You are a title generator. You will give succinct titles that does not contain backslashes,
+                    forward slashes, or colons. Please generate one title as your response.\n\n`;
 
     try {
         if (OPENAI_MODELS.includes(settings.model) || settings.openAIBaseModels.includes(settings.model)) {
@@ -546,7 +690,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                 const url = settings.ollamaRestAPIUrl + '/api/generate';
     
                 const requestBody = {
-                    prompt: referenceCurrentNoteContent + '\n\n' + prompt  + ' OUTPUT TITLE ONLY:',
+                    prompt: prompt + '\n\n' + referenceCurrentNoteContent + '\n\n',
                     model: settings.model,
                     stream: false,
                     options: {

@@ -1,7 +1,7 @@
 import { Plugin, TFile } from 'obsidian';
 import { BMOView, VIEW_TYPE_CHATBOT} from "./view";
 import { BMOSettingTab } from './settings';
-import { renameTitle } from './components/EditorCommands';
+import { promptSelectGenerateCommand, renameTitleCommand } from './components/EditorCommands';
 
 export interface BMOSettings {
 	apiKey: string;
@@ -94,7 +94,7 @@ export default class BMOGPT extends Plugin {
             id: 'rename-note-title',
             name: 'Rename Note Title',
             callback: () => {
-				renameTitle(this.settings);
+				renameTitleCommand(this.settings);
             },
             hotkeys: [
 				{
@@ -113,10 +113,24 @@ export default class BMOGPT extends Plugin {
 				menu.addItem((item) => {
 					item
 						.setTitle('BMO Chatbot: Generate new title')
-						.onClick(() => renameTitle(this.settings));
+						.onClick(() => renameTitleCommand(this.settings));
 				});
 			})
 		);
+
+		this.addCommand({
+            id: 'prompt-select-generate',
+            name: 'Prompt Select Generate',
+            callback: () => {
+				promptSelectGenerateCommand(this.settings);
+            },
+            hotkeys: [
+				{
+					modifiers: ['Mod'],
+					key: '=',
+				},
+            ],
+        });
 
 		this.addSettingTab(new BMOSettingTab(this.app, this));
 	}

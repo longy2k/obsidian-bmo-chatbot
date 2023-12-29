@@ -496,7 +496,7 @@ export class BMOView extends ItemView {
                 system_role: systemReferenceCurrentNote + this.settings.system_role
             };
 
-            // Fetch OpenAI base API
+            // Fetch OpenAI API
             if (OPENAI_MODELS.includes(this.settings.model)) {
                 try {
                     await fetchOpenAIAPI(this.settings, referenceCurrentNoteContent); 
