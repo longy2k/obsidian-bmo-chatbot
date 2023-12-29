@@ -4,7 +4,6 @@ import { colorToHex } from "../../utils/ColorConverter";
 import { filenameMessageHistoryJSON, messageHistory } from "../../view";
 import BMOGPT from '../../main';
 import { fetchModelRenameTitle, getAbortController } from '../FetchModel';
-import { getActiveFileContent } from '../ReferenceCurrentNoteIndicator';
 import { addMessage } from './Message';
 
 // Commands
@@ -470,7 +469,7 @@ export async function commandSave(currentSettings: BMOSettings) {
     const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
 
     // Check and read the JSON file
-    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+    if (await app.vault.adapter.exists(filenameMessageHistoryJSON)) {
       try {
         const jsonContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
         const messages = JSON.parse(jsonContent);
@@ -504,24 +503,15 @@ export async function commandSave(currentSettings: BMOSettings) {
     }
 
     // Check if the folder exists, create it if not
-    if (!await this.app.vault.adapter.exists(folderName)) {
-      await this.app.vault.createFolder(folderName);
+    if (!await app.vault.adapter.exists(folderName)) {
+      await app.vault.createFolder(folderName);
     }
 
     let fileName = '';
 
     if (currentSettings.allowRenameNoteTitle) {
-      let referenceCurrentNote = '';
       let uniqueNameFound = false;
       let modelRenameTitle;
-
-      const activeFile = this.app.workspace.getActiveFile();
-
-      if (activeFile) {
-          if (currentSettings.referenceCurrentNote) {
-              referenceCurrentNote = await getActiveFileContent(activeFile);
-          }
-      }
 
       // Function to check if a file name already exists
       const fileNameExists = (name: string | null) => {
@@ -529,7 +519,7 @@ export async function commandSave(currentSettings: BMOSettings) {
       };
     
       while (!uniqueNameFound) {
-          modelRenameTitle = await fetchModelRenameTitle(currentSettings, referenceCurrentNote + markdownContent);
+          modelRenameTitle = await fetchModelRenameTitle(currentSettings,  markdownContent);
       
           if (!fileNameExists(modelRenameTitle)) {
               uniqueNameFound = true;
@@ -544,13 +534,13 @@ export async function commandSave(currentSettings: BMOSettings) {
     }
 
     // Create the new note with formatted Markdown content
-    const file = await this.app.vault.create(fileName, markdownContent);
+    const file = await app.vault.create(fileName, markdownContent);
     if (file) {
       // console.log('Note created: ' + file.path);
       new Notice("Saved conversation.");
 
       // Open the newly created note in a new pane
-      this.app.workspace.openLinkText(fileName, '', true, { active: true });
+      app.workspace.openLinkText(fileName, '', true, { active: true });
     }
   } catch (error) {
     console.error('Failed to create note:', error);

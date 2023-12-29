@@ -89,6 +89,7 @@ export function copyMessageToClipboard(message: string) {
     });
 }
 
+// Append button to editor
 export function displayAppendButton(messageObj: {role: string; content: string;}) {
     const appendButton = document.createElement("button");
     appendButton.textContent = "append";
