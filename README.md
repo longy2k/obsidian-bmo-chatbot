@@ -13,7 +13,6 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 - **Chatbot responds in Markdown:** Receive formatted responses in Markdown for consistency.
 - **Customizable bot name:** Personalize the chatbot's name.
 - **System role prompt:** Configure the chatbot to prompt for user roles before responding to messages.
-- **System theme color accents:** Seamlessly matches the chatbot's interface with your system's color scheme.
 - **Custom prompts in Markdown:** Create custom prompts in Markdown to interact with your models.
 - **Prompt Select Generate:** Prompt, select, and generate within your editor.
 - **Save current chat history as markdown:** Use the `/save` command in chat to save current conversation.
