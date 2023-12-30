@@ -27,7 +27,6 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
 
     const prompt = await getPrompt(settings);
 
-
     // Removes all system commands from the message history
     const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
         const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
@@ -276,10 +275,6 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
             }
             lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
-            const spacer = messageContainerEl.querySelector("#spacer");
-            if (spacer) {
-                spacer.remove();
-            }
         }
 
         addMessage(message, 'botMessage', settings);

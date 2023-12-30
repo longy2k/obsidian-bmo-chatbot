@@ -218,7 +218,7 @@ export async function commandPrompt(input: string, currentSettings: BMOSettings,
     const formattedSettings = 
     `<div class="formattedSettings">
     <h2>Prompts</h2>
-      <p><b>Current Model:</b> ${currentModel}</p>
+      <p><b>Current prompt:</b> ${currentModel}</p>
       <ol>${fileListItems}</ol>
     </div>`;
 

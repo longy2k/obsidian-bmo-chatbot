@@ -6,7 +6,7 @@ import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStr
 import { executeCommand } from "./components/chat/Commands";
 import { marked } from "marked";
 import { prismHighlighting } from "./components/PrismaHighlighting";
-import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton, displayTrashButton, displayUserCopyButton } from "./components/chat/Buttons";
+import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton, displayTrashButton, displayUserCopyButton, regenerateUserButton } from "./components/chat/Buttons";
 import { getActiveFileContent } from "./components/ReferenceCurrentNoteIndicator";
 import { addMessage, addParagraphBreaks } from "./components/chat/Message";
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
@@ -28,6 +28,8 @@ export let lastCursorPosition: EditorPosition = {
 
 export let lastCursorPositionFile: TFile | null = null;
 export let activeEditor: Editor | null | undefined = null;
+
+let referenceCurrentNoteContent = '';
 
 
 export class BMOView extends ItemView {
@@ -124,6 +126,7 @@ export class BMOView extends ItemView {
             buttonContainerDiv.className = "button-container";
 
             if (messageData.role == "user") {
+                
                 const userMessageDiv = document.createElement("div");
                 userMessageDiv.className = "userMessage";
                 userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || 
@@ -155,6 +158,25 @@ export class BMOView extends ItemView {
                 } else {
                     userP.innerHTML = marked(messageData.content);
                 }
+
+                const messageText = messageData.content;
+                const userMessages = messageContainer.querySelectorAll(".userMessage");
+
+                // Clear any existing regenerate buttons
+                userMessages.forEach(message => {
+                    const existingRegenerateButton = message.querySelector(".regenerate-button");
+                    if (existingRegenerateButton) {
+                        existingRegenerateButton.remove();
+                    }
+                });
+                if (!messageText.startsWith("/")) {
+                    const lastUserMessage = userMessages[userMessages.length - 1];
+                    const lastUserMessageToolBarDiv = lastUserMessage.querySelector(".userMessageToolBar");
+                    const lastButtonContainerDiv = lastUserMessageToolBarDiv?.querySelector(".button-container");
+                    const regenerateButton = regenerateUserButton(this.settings, referenceCurrentNoteContent);
+                    lastButtonContainerDiv?.insertBefore(regenerateButton, lastButtonContainerDiv.firstChild);
+                }
+                
             }
         
             if (messageData.role == "assistant") {
@@ -250,6 +272,11 @@ export class BMOView extends ItemView {
     async handleKeyup(event: KeyboardEvent) {
         const input = this.textareaElement.value.trim();
         const activeFile = this.app.workspace.getActiveFile();
+        if (activeFile) {
+            if (this.settings.referenceCurrentNote) {
+                referenceCurrentNoteContent = await getActiveFileContent(activeFile);
+            }
+        }
 
         // Only allow /stop command to be executed during fetch
         if (this.settings.allowOllamaStream || !this.settings.ollamaModels.includes(this.settings.model)) {
@@ -296,11 +323,24 @@ export class BMOView extends ItemView {
             
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {
+                const userMessages = messageContainer.querySelectorAll(".userMessage");
+                // Clear any existing regenerate buttons
+                userMessages.forEach(message => {
+                    const existingRegenerateButton = message.querySelector(".regenerate-button");
+                    if (existingRegenerateButton) {
+                        existingRegenerateButton.remove();
+                    }
+                });
+
+                const regenerateButton = regenerateUserButton(this.settings, referenceCurrentNoteContent);
                 const copyUserButton = displayUserCopyButton(userP);
                 const trashButton = displayTrashButton();
 
                 userMessageToolBarDiv.appendChild(userNameSpan);
                 userMessageToolBarDiv.appendChild(buttonContainerDiv);
+                if (!input.startsWith("/")) {
+                    buttonContainerDiv.appendChild(regenerateButton);
+                }
                 buttonContainerDiv.appendChild(copyUserButton);
                 buttonContainerDiv.appendChild(trashButton);
                 userMessageDiv.appendChild(userMessageToolBarDiv);
@@ -361,20 +401,11 @@ export class BMOView extends ItemView {
 
                     const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
-                    // Create a spacer element for scrolling most recent userMessage/botMessage to
-                    const spacer = document.createElement("div");
-                    spacer.setAttribute("id", "spacer");
-                    messageContainer.appendChild(spacer);
-
                     userMessageDiv.scrollIntoView({ behavior: "smooth", block: "start" });
 
                     // Call the chatbot function with the user's input
                     this.BMOchatbot(input)
                         .then(() => {
-                            const spacer = messageContainer.querySelector("#spacer");
-                            if (spacer) {
-                                spacer.remove();
-                            }
                             this.preventEnter = false;
                             clearInterval(loadingAnimationIntervalId);
                         })
@@ -386,7 +417,6 @@ export class BMOView extends ItemView {
                             botMessageDiv.appendChild(botParagraph);
                         });
                 }
-                    
             }
 
             this.textareaElement.value = "";
@@ -450,8 +480,6 @@ export class BMOView extends ItemView {
     }
 
     async BMOchatbot(_input: string) {
-        
-        let referenceCurrentNoteContent = '';
 
         const activeFile = this.app.workspace.getActiveFile();
 
@@ -482,20 +510,6 @@ export class BMOView extends ItemView {
             chatbox.disabled = true;
         } 
         else {
-            let systemReferenceCurrentNote = '';
-
-            if (this.settings.referenceCurrentNote) {
-                systemReferenceCurrentNote = 'Refer to note if asked.'
-            }
-
-            const maxTokens = this.settings.max_tokens;
-            const temperature = this.settings.temperature;
-            const settings = {
-                apiKey: this.settings.apiKey,
-                model: this.settings.model,
-                system_role: systemReferenceCurrentNote + this.settings.system_role
-            };
-
             // Fetch OpenAI API
             if (OPENAI_MODELS.includes(this.settings.model)) {
                 try {
@@ -570,7 +584,7 @@ export class BMOView extends ItemView {
             }
             else if (this.settings.localAIRestAPIUrl){
                 try { 
-                        const response = await requestUrlChatCompletion(this.settings.localAIRestAPIUrl, settings, referenceCurrentNoteContent, messageHistory, maxTokens, temperature);
+                        const response = await requestUrlChatCompletion(this.settings, referenceCurrentNoteContent);
                     
                         const message = response.json.choices[0].message.content;
 

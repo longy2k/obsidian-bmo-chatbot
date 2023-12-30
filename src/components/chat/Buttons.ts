@@ -1,6 +1,92 @@
 import { Modal, Notice, setIcon } from "obsidian";
 import { BMOSettings, checkActiveFile } from "src/main";
-import { ANTHROPIC_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from "src/view";
+import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from "src/view";
+import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream } from "../FetchModel";
+
+export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote: string) {
+    const regenerateButton = document.createElement("button");
+    regenerateButton.textContent = "regenerate";
+    setIcon(regenerateButton, "refresh-ccw");
+    regenerateButton.classList.add("regenerate-button");
+    regenerateButton.title = "regenerate";
+
+    regenerateButton.addEventListener("click", async function () {
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            const lastBotMessage = botMessages[botMessages.length - 1];
+            const messageBlock = lastBotMessage.querySelector('.messageBlock');
+            const lastBotMessageToolBarDiv = lastBotMessage.querySelector(".botMessageToolBar");
+            if (lastBotMessageToolBarDiv) {
+                const buttonContainerDiv = lastBotMessageToolBarDiv.querySelector(".button-container");
+                if (buttonContainerDiv) {
+                    // Remove the button container div
+                    buttonContainerDiv.remove();
+                }
+            }
+            if (messageBlock) {
+                messageBlock.innerHTML = '';
+                messageHistory.pop();
+
+                const loadingEl = document.createElement("span");
+                loadingEl.setAttribute("id", "loading"); 
+                loadingEl.style.display = "inline-block"; 
+                loadingEl.textContent = "..."; 
+
+                // Define a function to update the loading animation
+                const updateLoadingAnimation = () => {
+                    const loadingEl = document.querySelector('#loading');
+                    if (!loadingEl) {
+                        return;
+                    }
+                    loadingEl.textContent += ".";
+                    // If the loading animation has reached three dots, reset it to one dot
+                    if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+                        loadingEl.textContent = ".";
+                    }
+                };  
+
+                // Dispaly loading animation
+                lastBotMessage.appendChild(loadingEl);
+                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+                lastBotMessage.scrollIntoView({ behavior: "smooth", block: "end" });
+
+                // Fetch OpenAI API
+                if (OPENAI_MODELS.includes(settings.model)) {
+                    try {
+                        await fetchOpenAIAPI(settings, referenceCurrentNote); 
+                    }
+                    catch (error) {
+                        new Notice('Error occurred while fetching completion: ' + error.message);
+                        console.log(error.message);
+                    }
+                }
+                else if (settings.openAIBaseModels.includes(settings.model)) {
+                    try {
+                        await fetchOpenAIBaseAPI(settings, referenceCurrentNote); 
+                    }
+                    catch (error) {
+                        new Notice('Error occurred while fetching completion: ' + error.message);
+                        console.log(error.message);
+                    }
+                }
+                else if (settings.ollamaRestAPIUrl ) {
+                    if (settings.allowOllamaStream) {
+                        await ollamaFetchDataStream(settings, referenceCurrentNote);
+                    }
+                    else {
+                        await ollamaFetchData(settings, referenceCurrentNote);
+                    }
+                }
+
+                clearInterval(loadingAnimationIntervalId);
+            }
+        }
+    });
+    return regenerateButton;
+}
 
 export function displayUserCopyButton (userP: HTMLParagraphElement) {
     const copyButton = document.createElement("button");
@@ -204,3 +290,26 @@ export async function deleteMessage(index: number) {
         console.error('Error writing messageHistory.json', error);
     }
 }
+
+// export async function deleteMessage(index: number) {
+//     const messageContainer = document.querySelector('#messageContainer');
+
+//     const divElements = messageContainer?.querySelectorAll('div.botMessage, div.userMessage');
+
+//     if (divElements && divElements.length > 0 && index >= 0 && index < divElements.length - 1) {
+//         // Only check and remove the next message if it is from the bot
+//         const nextMessage = divElements[index + 1];
+//         if (nextMessage && nextMessage.classList.contains('botMessage')) {
+//             messageContainer?.removeChild(nextMessage);
+//             messageHistory.splice(index + 1, 1);
+//         }
+//     }
+
+//     const jsonString = JSON.stringify(messageHistory, null, 4);
+
+//     try {
+//         await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+//     } catch (error) {
+//         console.error('Error writing messageHistory.json', error);
+//     }
+// }

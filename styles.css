@@ -157,7 +157,8 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Styles for copy button */
-.userMessageToolBar button.copy-button {
+.userMessageToolBar button.copy-button,
+button.regenerate-button {
 	padding: 0 3px;
 	background-color: transparent !important;
 	box-shadow: none !important;
@@ -166,7 +167,8 @@ If your plugin does not need CSS, delete this file.
 	width: 1.2rem;
 }
 
-.userMessageToolBar .copy-button:hover {
+.userMessageToolBar .copy-button:hover,
+.regenerate-button:hover {
 	color: var(--text-muted);
 }
 
@@ -219,6 +221,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Hide buttons */
+.userMessage .regenerate-button,
 .userMessage .copy-button,
 .userMessage .trash-button,
 .botMessage .append-button,
@@ -228,6 +231,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Show buttons on hover */
+.userMessage:hover .regenerate-button,
 .userMessage:hover .copy-button,
 .userMessage:hover .trash-button,
 .botMessage:hover .append-button,
