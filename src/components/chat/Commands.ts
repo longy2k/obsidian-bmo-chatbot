@@ -208,7 +208,7 @@ export async function commandPrompt(input: string, currentSettings: BMOSettings,
       return `<li>${fileNameWithoutExtension}</li>`;
     }).join('');
 
-  let currentModel = currentSettings.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+    let currentModel = currentSettings.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
 
     // Check if currentModel is empty, and set it to "Empty" if it is
     if (!currentModel) {
@@ -228,8 +228,14 @@ export async function commandPrompt(input: string, currentSettings: BMOSettings,
 
   // Check if the user has specified a prompt after the "/prompt" command
   if (input.startsWith('/prompt ')) {
-    const inputValue = input.substring('/prompt '.length).trim();
+    let inputValue = input.substring('/prompt '.length).trim();
     let messageHtml = "";
+
+    // Remove quotation marks if present
+    if ((inputValue.startsWith('"') && inputValue.endsWith('"')) ||
+        (inputValue.startsWith("'") && inputValue.endsWith("'"))) {
+      inputValue = inputValue.substring(1, inputValue.length - 1);
+    }
 
     // Set to default or empty if the input is 'clear' or 'c'
     if (inputValue === 'clear' || inputValue === 'c') {
@@ -248,14 +254,17 @@ export async function commandPrompt(input: string, currentSettings: BMOSettings,
       promptAliases[i.toString()] = fileNameWithoutExtension;
     }
 
+    let currentModel;
     if (promptAliases[inputValue]) {
       // If input matches a key in promptAliases
       currentSettings.prompt = promptAliases[inputValue] + '.md';
-      messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentSettings.prompt}</strong></p></div>`;
+      currentModel = currentSettings.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+      messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentModel}</strong></p></div>`;
     } else if (Object.values(promptAliases).includes(inputValue)) {
       // If input matches a value in promptAliases
       currentSettings.prompt = inputValue + '.md';
-      messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentSettings.prompt}</strong></p></div>`;
+      currentModel = currentSettings.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+      messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentModel}</strong></p></div>`;
     } else {
       // If the input prompt does not exist
       messageHtml = `<div class="formattedSettings"><p><strong>Prompt '${inputValue}' does not exist.</strong></p></div>`;
@@ -496,7 +505,7 @@ export async function commandSave(currentSettings: BMOSettings) {
     const modelNameElement = document.querySelector('#modelName') as HTMLHeadingElement;
     let modelName = 'Unknown'; // Default model name
     if (modelNameElement && modelNameElement.textContent) {
-        modelName = modelNameElement.textContent.replace('Model: ', '').toUpperCase();
+        modelName = modelNameElement.textContent.replace('Model: ', '').toLowerCase();
     }
 
     const templateFile = allFiles.find(file => file.path.toLowerCase() === currentSettings.templateFilePath.toLowerCase());

@@ -1,10 +1,9 @@
 import { filenameMessageHistoryJSON, messageHistory } from "src/view";
 import { displayAppendButton, displayBotCopyButton } from "./Buttons";
 import { BMOSettings } from "src/main";
-import { TFile } from "obsidian";
 
 // Add a new message to the messageHistory array and save it to the file
-export async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, file?: TFile) {
+export async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings) {
     const messageObj: { role: string; content: string } = {
         role: "",
         content: ""

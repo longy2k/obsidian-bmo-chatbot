@@ -294,10 +294,10 @@ export class BMOView extends ItemView {
             }
 
             if (ANTHROPIC_MODELS.includes(this.settings.model)) {
-                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings, activeFile || undefined);
+                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
             } else {
                 if (!(input === "/s" || input === "/stop")) {
-                    addMessage(input, 'userMessage', this.settings, activeFile || undefined);
+                    addMessage(input, 'userMessage', this.settings);
                 }
             }
             
@@ -529,51 +529,6 @@ export class BMOView extends ItemView {
                     console.log(error.message);
                 }
             }
-            else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
-                try {
-                    const response = await requestUrlAnthropicAPI(this.settings, referenceCurrentNoteContent);
-
-                    const message = response.text;
-                    const lines = message.split('\n');
-                    let completionText = '';
-                
-                    for (const line of lines) {
-                      if (line.startsWith('data:')) {
-                        const eventData = JSON.parse(line.slice('data:'.length));
-                        if (eventData.completion) {
-                          completionText += eventData.completion;
-                        }
-                      }
-                    }
-
-                    if (messageContainerEl) {
-                        const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                        const lastBotMessage = botMessages[botMessages.length - 1];
-                        const loadingEl = lastBotMessage.querySelector("#loading");
-                        
-                        if (loadingEl) {
-                            loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                            lastBotMessage.removeChild(loadingEl);
-                        }
-
-                        const messageBlock = lastBotMessage.querySelector('.messageBlock');
-
-                        if (messageBlock) {
-                            messageBlock.innerHTML = marked(completionText);
-                        
-                            addParagraphBreaks(messageBlock);
-                            prismHighlighting(messageBlock);
-                            codeBlockCopyButton(messageBlock);
-                        }
-                        lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-
-                    addMessage('\n\nAssistant: ' + completionText, 'botMessage', this.settings, activeFile || undefined);
-                }
-                catch (error) {
-                    console.error('Error:', error);
-                }
-            }
             else if (this.settings.ollamaRestAPIUrl ) {
                 if (this.settings.allowOllamaStream) {
                     await ollamaFetchDataStream(this.settings, referenceCurrentNoteContent);
@@ -582,41 +537,16 @@ export class BMOView extends ItemView {
                     await ollamaFetchData(this.settings, referenceCurrentNoteContent);
                 }
             }
-            else if (this.settings.localAIRestAPIUrl){
-                try { 
-                        const response = await requestUrlChatCompletion(this.settings, referenceCurrentNoteContent);
-                    
-                        const message = response.json.choices[0].message.content;
-
-                        if (messageContainerEl) {
-                            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                            const lastBotMessage = botMessages[botMessages.length - 1];
-                            const loadingEl = lastBotMessage.querySelector("#loading");
-                            
-                            if (loadingEl) {
-                                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                                lastBotMessage.removeChild(loadingEl);
-                            }
-                        
-                            const messageBlock = document.createElement("p");
-                            const markdownContent = marked(message);
-                            messageBlock.innerHTML = markdownContent;
-                            messageBlock.classList.add("messageBlock");
-                            
-                            addParagraphBreaks(messageBlock);
-                            prismHighlighting(messageBlock);
-                            codeBlockCopyButton(messageBlock);
-                            
-                            lastBotMessage.appendChild(messageBlock);
-                            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-
-                        addMessage(message, 'botMessage', this.settings, activeFile || undefined);
-                } 
-                catch (error) {
-                    new Notice('Error occurred while fetching completion: ' + error.message);
-                    console.log(error.message);
+            else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
+                try {
+                    await requestUrlAnthropicAPI(this.settings, referenceCurrentNoteContent);
                 }
+                catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+            else if (this.settings.localAIRestAPIUrl){
+                await requestUrlChatCompletion(this.settings, referenceCurrentNoteContent);
             }
             else {
                 new Notice("No models detected.");

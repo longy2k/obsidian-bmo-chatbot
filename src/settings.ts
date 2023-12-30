@@ -6,7 +6,7 @@ import { addChatHistorySettings } from './components/settings/ChatHistorySetting
 import { addOllamaSettings } from './components/settings/OllamaSettings';
 import { addAdvancedSettings } from './components/settings/AdvancedSettings';
 import { fetchLocalAIModels, fetchOllamaModels } from './components/FetchModelList';
-import { addPromptSettings } from './components/settings/promptSettings';
+import { addPromptSettings } from './components/settings/PromptSettings';
 
 export class BMOSettingTab extends PluginSettingTab {
 	plugin: BMOGPT;

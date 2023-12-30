@@ -483,7 +483,43 @@ export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCur
         body: JSON.stringify(requestBody),
       });
   
-      return response;
+      const message = response.text;
+      const lines = message.split('\n');
+      let completionText = '';
+  
+      for (const line of lines) {
+        if (line.startsWith('data:')) {
+          const eventData = JSON.parse(line.slice('data:'.length));
+          if (eventData.completion) {
+            completionText += eventData.completion;
+          }
+        }
+      }
+
+      const messageContainerEl = document.querySelector('#messageContainer');
+      if (messageContainerEl) {
+          const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+          const lastBotMessage = botMessages[botMessages.length - 1];
+          const loadingEl = lastBotMessage.querySelector("#loading");
+          
+          if (loadingEl) {
+              loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+              lastBotMessage.removeChild(loadingEl);
+          }
+
+          const messageBlock = lastBotMessage.querySelector('.messageBlock');
+
+          if (messageBlock) {
+              messageBlock.innerHTML = marked(completionText);
+          
+              addParagraphBreaks(messageBlock);
+              prismHighlighting(messageBlock);
+              codeBlockCopyButton(messageBlock);
+          }
+          lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      addMessage('\n\nAssistant: ' + completionText, 'botMessage', settings);
   
     } catch (error) {
         const messageContainerEl = document.querySelector('#messageContainer');
@@ -573,28 +609,53 @@ export async function requestUrlChatCompletion(settings: BMOSettings, referenceC
 }
 
 // Request response from self-hosted models (LOCAL AI)
-export async function requestUrlChatCompletionEditor(BMOSettings: BMOSettings, selectionString: string) {
+export async function requestUrlChatCompletionEditor(settings: BMOSettings, selectionString: string) {
 
         try {
             const response = await requestUrl({
-                url: BMOSettings.localAIRestAPIUrl + '/v1/chat/completions',
+                url: settings.localAIRestAPIUrl + '/v1/chat/completions',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${BMOSettings.apiKey}`
+                    'Authorization': `Bearer ${settings.apiKey}`
                 },
                 body: JSON.stringify({
-                    model: BMOSettings.model,
+                    model: settings.model,
                     messages: [
-                        { role: 'system', content: BMOSettings.system_role },
+                        { role: 'system', content: settings.system_role },
                         { role: 'user', content: selectionString}
                     ],
-                    max_tokens: parseInt(BMOSettings.max_tokens),
-                    temperature: BMOSettings.temperature,
+                    max_tokens: parseInt(settings.max_tokens),
+                    temperature: settings.temperature,
                 }),
             });
 
-            return response;
+            const message = response.json.choices[0].message.content;
+            const messageContainerEl = document.querySelector('#messageContainer');
+            if (messageContainerEl) {
+                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+                const lastBotMessage = botMessages[botMessages.length - 1];
+                const loadingEl = lastBotMessage.querySelector("#loading");
+                
+                if (loadingEl) {
+                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    lastBotMessage.removeChild(loadingEl);
+                }
+            
+                const messageBlock = document.createElement("p");
+                const markdownContent = marked(message);
+                messageBlock.innerHTML = markdownContent;
+                messageBlock.classList.add("messageBlock");
+                
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                lastBotMessage.appendChild(messageBlock);
+                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            addMessage(message, 'botMessage', settings);
 
         } catch (error) {
             console.error('Error making API request:', error);
@@ -626,9 +687,9 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
             });
 
             let title = chatCompletion.choices[0].message.content;
-            // Remove backslashes, forward slashes, and colons
+            // Remove backslashes, forward slashes, colons, and quotes
             if (title) {
-                title = title.replace(/[\\/:]/g, '');
+                title = title.replace(/[\\/:"]/g, '');
             }
 
             return title;
@@ -669,8 +730,9 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                   }
                 }
 
+                // Remove backslashes, forward slashes, colons, and quotes
                 if (title) {
-                    title = title.replace(/[\\/:]/g, '');
+                    title = title.replace(/[\\/:"]/g, '');
                 }
             
                 return title;
@@ -707,9 +769,9 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                 const parseText = JSON.parse(response.text);
                 let title = parseText.response;
     
-                // Remove backslashes, forward slashes, and colons
+                // Remove backslashes, forward slashes, colons, and quotes
                 if (title) {
-                    title = title.replace(/[\\/:]/g, '');
+                    title = title.replace(/[\\/:"]/g, '');
                 }
     
                 return title;

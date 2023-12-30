@@ -11,7 +11,9 @@ export async function getPrompt(settings: BMOSettings) {
     try {
         // Await the reading of the file and return its content
         const content = await app.vault.adapter.read(promptFilePath);
-        return content;
+        // Remove YAML front matter if present
+        const cleanedContent = content.replace(/---[\s\S]+?---/, '').trim();
+        return cleanedContent;
     } catch (error) {
         console.error(`Error reading file ${promptFilePath}:`, error);
         return null; 

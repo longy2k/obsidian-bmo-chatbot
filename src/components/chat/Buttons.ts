@@ -1,7 +1,7 @@
 import { Modal, Notice, setIcon } from "obsidian";
 import { BMOSettings, checkActiveFile } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from "src/view";
-import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream } from "../FetchModel";
+import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "../FetchModel";
 
 export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote: string) {
     const regenerateButton = document.createElement("button");
@@ -79,6 +79,20 @@ export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote
                     else {
                         await ollamaFetchData(settings, referenceCurrentNote);
                     }
+                }
+                else if (ANTHROPIC_MODELS.includes(settings.model)) {
+                    try {
+                        await requestUrlAnthropicAPI(settings, referenceCurrentNote);
+                    }
+                    catch (error) {
+                        console.error('Error:', error);
+                    }
+                }
+                else if (settings.localAIRestAPIUrl){
+                    await requestUrlChatCompletion(settings, referenceCurrentNote);
+                }
+                else {
+                    new Notice("No models detected.");
                 }
 
                 clearInterval(loadingAnimationIntervalId);
@@ -290,26 +304,3 @@ export async function deleteMessage(index: number) {
         console.error('Error writing messageHistory.json', error);
     }
 }
-
-// export async function deleteMessage(index: number) {
-//     const messageContainer = document.querySelector('#messageContainer');
-
-//     const divElements = messageContainer?.querySelectorAll('div.botMessage, div.userMessage');
-
-//     if (divElements && divElements.length > 0 && index >= 0 && index < divElements.length - 1) {
-//         // Only check and remove the next message if it is from the bot
-//         const nextMessage = divElements[index + 1];
-//         if (nextMessage && nextMessage.classList.contains('botMessage')) {
-//             messageContainer?.removeChild(nextMessage);
-//             messageHistory.splice(index + 1, 1);
-//         }
-//     }
-
-//     const jsonString = JSON.stringify(messageHistory, null, 4);
-
-//     try {
-//         await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
-//     } catch (error) {
-//         console.error('Error writing messageHistory.json', error);
-//     }
-// }
