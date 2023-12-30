@@ -14,6 +14,8 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 - **Customizable bot name:** Personalize the chatbot's name.
 - **System role prompt:** Configure the chatbot to prompt for user roles before responding to messages.
 - **System theme color accents:** Seamlessly matches the chatbot's interface with your system's color scheme.
+- **Custom prompts in Markdown:** Create custom prompts in Markdown to interact with your models.
+- **Prompt Select Generate:** Prompt, select, and generate within your editor.
 - **Save current chat history as markdown:** Use the `/save` command in chat to save current conversation.
 
 ## Requirements
@@ -53,11 +55,13 @@ To start using the plugin, enable it in your settings menu and enter your OpenAI
 
 ## Commands
 - `/help` - Show help commands.
-- `/list` - List models.
-- `/model` - Change model.
+- `/model` - List or change model.
 	- `/model 1` or `/model "gpt-3.5-turbo"`
  	- `/model 2` or `/model "gpt-3.5-turbo-1106"`
     - ...
+- `/prompt` - List or change prompt.
+	- `/prompt 1` or `/prompt "[PROMPT-NAME]"`
+- `/prompt clear` or `/prompt c` - Clear prompt.
 - `/system` - Change system prompt.
 	- `/system "WRITE IN ALL CAPS!"`
 - `/maxtokens [VALUE]` - Set max tokens.

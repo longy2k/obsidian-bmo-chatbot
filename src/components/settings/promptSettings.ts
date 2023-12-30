@@ -25,7 +25,6 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
                     if (folder && folder instanceof TFolder) {
                         text.inputEl.style.borderColor = ""; 
                     } else {
-                        // Folder does not exist in the vault
                         text.inputEl.style.borderColor = "red"; 
                     }
                 }
@@ -40,7 +39,6 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .setName('Prompt')
         .setDesc('Select a prompt.')
         .addDropdown(dropdown => {
-            // Adding an empty option as the default
             dropdown.addOption('', '');
 
             // Set the default option to the empty one
