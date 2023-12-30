@@ -1,6 +1,8 @@
 import { Setting, SettingTab, TFolder } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 
+
+// Prompt Settings
 export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     containerEl.createEl('h2', {text: 'Prompts'});
 

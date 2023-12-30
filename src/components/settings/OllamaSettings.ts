@@ -2,6 +2,7 @@ import { Setting, SettingTab } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 import { addDescriptionLink } from "src/utils/DescriptionLink";
 
+// Ollama Settings
 export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     containerEl.createEl('h2', {text: 'Ollama Local LLMs'});
     new Setting(containerEl)
