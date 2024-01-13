@@ -43,9 +43,6 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .addDropdown(dropdown => {
             dropdown.addOption('', '');
 
-            // Set the default option to the empty one
-            dropdown.setValue('');
-
             if (plugin.settings.promptFolderPath !== '') {
                 // Fetching files from the specified folder
                 const files = app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.promptFolderPath));
@@ -59,6 +56,9 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
                     dropdown.addOption(file.name, fileName);
                 });
             }
+
+            // Set the default option to the empty one
+            dropdown.setValue('');
 
             dropdown
             .setValue(plugin.settings.prompt || DEFAULT_SETTINGS.prompt)

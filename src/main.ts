@@ -21,12 +21,12 @@ export interface BMOSettings {
 	openAIBaseUrl: string;
 	ollamaRestAPIUrl: string;
 	allowOllamaStream: boolean;
-	localAIRestAPIUrl: string;
+	openAIRestAPIUrl: string;
 	referenceCurrentNote: boolean;
 	allowRenameNoteTitle: boolean;
 	allModels: string[];
 	ollamaModels: string[];
-	localAIModels: string[];
+	openAIRestAPIModels: string[];
 	openAIBaseModels: string[];
 }
 
@@ -48,12 +48,12 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	openAIBaseUrl: 'https://api.openai.com/v1',
 	ollamaRestAPIUrl: 'http://localhost:11434',
 	allowOllamaStream: false,
-	localAIRestAPIUrl: '',
+	openAIRestAPIUrl: '',
 	referenceCurrentNote: false,
 	allowRenameNoteTitle: false,
 	allModels: [],
 	ollamaModels: [],
-	localAIModels: [],
+	openAIRestAPIModels: [],
 	openAIBaseModels: [],
 }
 

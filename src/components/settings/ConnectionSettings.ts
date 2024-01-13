@@ -1,13 +1,27 @@
 import { Setting, SettingTab } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
-import { addDescriptionLink } from "src/utils/DescriptionLink";
 
-export function addAdvancedSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
-    containerEl.createEl('h2', {text: 'Advanced'});
+export function addConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
+    containerEl.createEl('h2', {text: 'Establish Connection'});
+
+    new Setting(containerEl)
+    .setName('API Key')
+    .setDesc('Insert API Key.')
+    .addText(text => text
+        .setPlaceholder('insert-api-key')
+        .setValue(plugin.settings.apiKey ? `${plugin.settings.apiKey.slice(0, 6)}-...${plugin.settings.apiKey.slice(-4)}` : "")
+        .onChange(async (value) => {
+            plugin.settings.apiKey = value;
+            await plugin.saveSettings();
+        })
+        .inputEl.addEventListener('focusout', async () => {
+            SettingTab.display();
+        })
+    );
 
     new Setting(containerEl)
     .setName('OPENAI BASE URL')
-    .setDesc('Enter your custom OpenAI base url.')
+    .setDesc('Enter your custom OpenAI-base url.')
     .addButton(button => button
         .setButtonText("Restore Default")
         .setIcon("rotate-cw")
@@ -31,13 +45,14 @@ export function addAdvancedSettings(containerEl: HTMLElement, plugin: BMOGPT, Se
     );
 
     new Setting(containerEl)
-    .setName('LOCALAI REST API URL')
-    .setDesc(addDescriptionLink('Enter your REST API URL using', 'https://github.com/go-skynet/LocalAI', '', 'LocalAI'))
+    .setName('OPENAI REST API URL')
+    .setDesc('Enter your custom OpenAI REST API url.')
     .addText(text => text
-        .setPlaceholder('http://localhost:8080')
-        .setValue(plugin.settings.localAIRestAPIUrl || DEFAULT_SETTINGS.localAIRestAPIUrl)
+        .setPlaceholder('http://localhost:1234')
+        .setValue(plugin.settings.openAIRestAPIUrl || DEFAULT_SETTINGS.openAIRestAPIUrl)
         .onChange(async (value) => {
-                plugin.settings.localAIRestAPIUrl = value ? value : DEFAULT_SETTINGS.localAIRestAPIUrl;
+                plugin.settings.openAIRestAPIUrl = value ? value : DEFAULT_SETTINGS.openAIRestAPIUrl;
+                console.log(plugin.settings.openAIRestAPIUrl);
                 await plugin.saveSettings();
             })
         .inputEl.addEventListener('focusout', async () => {

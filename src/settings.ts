@@ -4,8 +4,8 @@ import { addGeneralSettings } from './components/settings/GeneralSettings';
 import { addAppearanceSettings } from './components/settings/AppearanceSettings';
 import { addChatHistorySettings } from './components/settings/ChatHistorySettings';
 import { addOllamaSettings } from './components/settings/OllamaSettings';
-import { addAdvancedSettings } from './components/settings/AdvancedSettings';
-import { fetchLocalAIModels, fetchOllamaModels } from './components/FetchModelList';
+import { addConnectionSettings } from './components/settings/ConnectionSettings';
+import { fetchOpenAIRestAPIModels, fetchOllamaModels } from './components/FetchModelList';
 import { addPromptSettings } from './components/settings/PromptSettings';
 
 export class BMOSettingTab extends PluginSettingTab {
@@ -33,15 +33,15 @@ export class BMOSettingTab extends PluginSettingTab {
 		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
 
 		// Fetch models
-		const localAIModels = await fetchLocalAIModels(this.plugin);
+		const openAIRestAPIModels = await fetchOpenAIRestAPIModels(this.plugin);
 		const ollamaModels = await fetchOllamaModels(this.plugin);
 
 		// Display settings
-		addGeneralSettings(this.containerEl, this.plugin, this, localAIModels, ollamaModels);
+		addConnectionSettings(this.containerEl, this.plugin, this);
+		addOllamaSettings(this.containerEl, this.plugin, this);
+		addGeneralSettings(this.containerEl, this.plugin, this, openAIRestAPIModels, ollamaModels);
 		addAppearanceSettings(this.containerEl, this.plugin, this);		
 		addChatHistorySettings(this.containerEl, this.plugin, this);
 		addPromptSettings(this.containerEl, this.plugin, this);
-		addOllamaSettings(this.containerEl, this.plugin, this);
-		addAdvancedSettings(this.containerEl, this.plugin, this);
 	}
 }

@@ -577,13 +577,13 @@ export async function requestUrlAnthropicAPIEditor(settings: BMOSettings, select
     }
 }
 
-// Request response from self-hosted models (LOCAL AI)
-export async function requestUrlChatCompletion(settings: BMOSettings, referenceCurrentNote: string) {
+// Request response from openai-based rest api url
+export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCurrentNote: string) {
     const prompt = await getPrompt(settings);
 
     try {
         const response = await requestUrl({
-            url: settings.localAIRestAPIUrl + '/v1/chat/completions',
+            url: settings.openAIRestAPIUrl + '/v1/chat/completions',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -600,7 +600,33 @@ export async function requestUrlChatCompletion(settings: BMOSettings, referenceC
             }),
         });
 
-        return response;
+        const message = response.json.choices[0].message.content;
+
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            const lastBotMessage = botMessages[botMessages.length - 1];
+            const messageBlock = lastBotMessage.querySelector('.messageBlock');
+            const loadingEl = lastBotMessage.querySelector("#loading");
+        
+            if (messageBlock) {
+                if (loadingEl) {
+                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    lastBotMessage.removeChild(loadingEl);
+                }
+                messageBlock.innerHTML = marked(message, { breaks: true });
+                
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                lastBotMessage.appendChild(messageBlock);
+            }
+            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+        }
+
+        addMessage(message, 'botMessage', settings);
 
     } catch (error) {
         console.error('Error making API request:', error);
@@ -608,12 +634,12 @@ export async function requestUrlChatCompletion(settings: BMOSettings, referenceC
     }
 }
 
-// Request response from self-hosted models (LOCAL AI)
-export async function requestUrlChatCompletionEditor(settings: BMOSettings, selectionString: string) {
+// Request response from openai-based rest api url (editor)
+export async function openAIRestAPIFetchDataEditor(settings: BMOSettings, selectionString: string) {
 
         try {
             const response = await requestUrl({
-                url: settings.localAIRestAPIUrl + '/v1/chat/completions',
+                url: settings.openAIRestAPIUrl + '/v1/chat/completions',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -631,31 +657,7 @@ export async function requestUrlChatCompletionEditor(settings: BMOSettings, sele
             });
 
             const message = response.json.choices[0].message.content;
-            const messageContainerEl = document.querySelector('#messageContainer');
-            if (messageContainerEl) {
-                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                const lastBotMessage = botMessages[botMessages.length - 1];
-                const loadingEl = lastBotMessage.querySelector("#loading");
-                
-                if (loadingEl) {
-                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    lastBotMessage.removeChild(loadingEl);
-                }
-            
-                const messageBlock = document.createElement("p");
-                const markdownContent = marked(message);
-                messageBlock.innerHTML = markdownContent;
-                messageBlock.classList.add("messageBlock");
-                
-                addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
-                
-                lastBotMessage.appendChild(messageBlock);
-                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
-            addMessage(message, 'botMessage', settings);
+            return message;
 
         } catch (error) {
             console.error('Error making API request:', error);
@@ -744,7 +746,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
               }
         }
         else {
-            if (settings.ollamaRestAPIUrl) {
+            if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
                 const url = settings.ollamaRestAPIUrl + '/api/generate';
     
                 const requestBody = {
@@ -775,6 +777,33 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                 }
     
                 return title;
+            }
+            else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)) {
+                try {
+                    const response = await requestUrl({
+                        url: settings.openAIRestAPIUrl + '/v1/chat/completions',
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: [
+                                { role: 'system', content: prompt + referenceCurrentNoteContent},
+                            ],
+                            max_tokens: 40,
+                            temperature: settings.temperature,
+                        }),
+                    });
+        
+                    const message = response.json.choices[0].message.content;
+                    return message;
+        
+                } catch (error) {
+                    console.error('Error making API request:', error);
+                    throw error;
+                }
             }
         }
     } catch (error) {

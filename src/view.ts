@@ -2,7 +2,7 @@ import { ItemView, WorkspaceLeaf, Notice, TFile, MarkdownView, Editor, EditorPos
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
 import { colorToHex } from "./utils/ColorConverter";
-import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "./components/FetchModel";
+import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData } from "./components/FetchModel";
 import { executeCommand } from "./components/chat/Commands";
 import { marked } from "marked";
 import { prismHighlighting } from "./components/PrismaHighlighting";
@@ -529,14 +529,6 @@ export class BMOView extends ItemView {
                     console.log(error.message);
                 }
             }
-            else if (this.settings.ollamaRestAPIUrl ) {
-                if (this.settings.allowOllamaStream) {
-                    await ollamaFetchDataStream(this.settings, referenceCurrentNoteContent);
-                }
-                else {
-                    await ollamaFetchData(this.settings, referenceCurrentNoteContent);
-                }
-            }
             else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 try {
                     await requestUrlAnthropicAPI(this.settings, referenceCurrentNoteContent);
@@ -545,8 +537,22 @@ export class BMOView extends ItemView {
                     console.error('Error:', error);
                 }
             }
-            else if (this.settings.localAIRestAPIUrl){
-                await requestUrlChatCompletion(this.settings, referenceCurrentNoteContent);
+            else if (this.settings.ollamaRestAPIUrl && this.settings.ollamaModels.includes(this.settings.model)) {
+                if (this.settings.allowOllamaStream) {
+                    await ollamaFetchDataStream(this.settings, referenceCurrentNoteContent);
+                }
+                else {
+                    await ollamaFetchData(this.settings, referenceCurrentNoteContent);
+                }
+            }
+            else if (this.settings.openAIRestAPIUrl && this.settings.openAIRestAPIModels.includes(this.settings.model)){
+                try {
+                    await openAIRestAPIFetchData(this.settings, referenceCurrentNoteContent);
+                }
+                catch (error) {
+                    new Notice('Error occurred while fetching completion: ' + error.message);
+                    console.log(error.message);
+                }
             }
             else {
                 new Notice("No models detected.");

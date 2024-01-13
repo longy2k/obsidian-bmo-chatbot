@@ -1,7 +1,7 @@
 import { Modal, Notice, setIcon } from "obsidian";
 import { BMOSettings, checkActiveFile } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from "src/view";
-import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, requestUrlChatCompletion } from "../FetchModel";
+import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData } from "../FetchModel";
 
 export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote: string) {
     const regenerateButton = document.createElement("button");
@@ -72,14 +72,6 @@ export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote
                         console.log(error.message);
                     }
                 }
-                else if (settings.ollamaRestAPIUrl ) {
-                    if (settings.allowOllamaStream) {
-                        await ollamaFetchDataStream(settings, referenceCurrentNote);
-                    }
-                    else {
-                        await ollamaFetchData(settings, referenceCurrentNote);
-                    }
-                }
                 else if (ANTHROPIC_MODELS.includes(settings.model)) {
                     try {
                         await requestUrlAnthropicAPI(settings, referenceCurrentNote);
@@ -88,8 +80,16 @@ export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote
                         console.error('Error:', error);
                     }
                 }
-                else if (settings.localAIRestAPIUrl){
-                    await requestUrlChatCompletion(settings, referenceCurrentNote);
+                else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
+                    if (settings.allowOllamaStream) {
+                        await ollamaFetchDataStream(settings, referenceCurrentNote);
+                    }
+                    else {
+                        await ollamaFetchData(settings, referenceCurrentNote);
+                    }
+                }
+                else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
+                    await openAIRestAPIFetchData(settings, referenceCurrentNote);
                 }
                 else {
                     new Notice("No models detected.");

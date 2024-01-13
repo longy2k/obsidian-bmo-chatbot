@@ -3,23 +3,23 @@ import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
 import { fetchOpenAIBaseModels } from "../FetchModelList";
 
-export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab, localAIModels: string[], ollamaModels: string[]) {
+export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab, openAIRestAPIModels: string[], ollamaModels: string[]) {
     containerEl.createEl('h2', {text: 'General'});
     
-    new Setting(containerEl)
-    .setName('API Key')
-    .setDesc('Insert API Key from OpenAI or Anthropic.')
-    .addText(text => text
-        .setPlaceholder('insert-api-key')
-        .setValue(plugin.settings.apiKey ? `${plugin.settings.apiKey.slice(0, 6)}-...${plugin.settings.apiKey.slice(-4)}` : "")
-        .onChange(async (value) => {
-            plugin.settings.apiKey = value;
-            await plugin.saveSettings();
-        })
-        .inputEl.addEventListener('focusout', async () => {
-            SettingTab.display();
-        })
-    );
+    // new Setting(containerEl)
+    // .setName('API Key')
+    // .setDesc('Insert API Key from OpenAI or Anthropic.')
+    // .addText(text => text
+    //     .setPlaceholder('insert-api-key')
+    //     .setValue(plugin.settings.apiKey ? `${plugin.settings.apiKey.slice(0, 6)}-...${plugin.settings.apiKey.slice(-4)}` : "")
+    //     .onChange(async (value) => {
+    //         plugin.settings.apiKey = value;
+    //         await plugin.saveSettings();
+    //     })
+    //     .inputEl.addEventListener('focusout', async () => {
+    //         SettingTab.display();
+    //     })
+    // );
 
     // Function to add options to dropdown
     const addOptionsToDropdown = (dropdown: DropdownComponent, models: string[]) => {
@@ -63,9 +63,9 @@ export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
                     new Notice('Ollama connection error.');
                 }
             }
-            if (plugin.settings.localAIRestAPIUrl && localAIModels && localAIModels.length > 0) {
+            if (plugin.settings.openAIRestAPIUrl && openAIRestAPIModels && openAIRestAPIModels.length > 0) {
                 try {
-                    localAIModels.forEach((model: string) => {
+                    openAIRestAPIModels.forEach((model: string) => {
                         dropdown.addOption(model, model);
                         if (!plugin.settings.allModels.includes(model)) {
                             plugin.settings.allModels.push(model);

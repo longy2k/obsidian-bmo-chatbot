@@ -1,5 +1,5 @@
 import { BMOSettings } from "src/main";
-import { fetchModelRenameTitle, fetchOpenAIAPIEditor, fetchOpenAIBaseAPIEditor, ollamaFetchDataEditor, requestUrlAnthropicAPIEditor } from "./FetchModel";
+import { fetchModelRenameTitle, fetchOpenAIAPIEditor, fetchOpenAIBaseAPIEditor, ollamaFetchDataEditor, requestUrlAnthropicAPIEditor, openAIRestAPIFetchDataEditor } from "./FetchModel";
 import { MarkdownView, Notice } from "obsidian";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
 
@@ -94,7 +94,17 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
                 console.log(error.message);
             }
         }
-        else if (BMOSettings.ollamaRestAPIUrl ) {
+        else if (ANTHROPIC_MODELS.includes(BMOSettings.model)) {
+            try {
+                const response = await requestUrlAnthropicAPIEditor(BMOSettings, select); 
+                view.editor.replaceSelection(response);
+            }
+            catch (error) {
+                new Notice('Error occurred while fetching completion: ' + error.message);
+                console.log(error.message);
+            }
+        }
+        else if (BMOSettings.ollamaRestAPIUrl && BMOSettings.ollamaModels.includes(BMOSettings.model)) {
             try {
                 const response = await ollamaFetchDataEditor(BMOSettings, select); 
                 // Replace the current selection with the response
@@ -115,19 +125,9 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
                 console.log(error.message);
             }
         }
-        else if (ANTHROPIC_MODELS.includes(BMOSettings.model)) {
+        else if (BMOSettings.openAIRestAPIUrl && BMOSettings.openAIRestAPIModels.includes(BMOSettings.model)){
             try {
-                const response = await requestUrlAnthropicAPIEditor(BMOSettings, select); 
-                view.editor.replaceSelection(response);
-            }
-            catch (error) {
-                new Notice('Error occurred while fetching completion: ' + error.message);
-                console.log(error.message);
-            }
-        }
-        else if (BMOSettings.localAIRestAPIUrl){
-            try {
-                const response = await ollamaFetchDataEditor(BMOSettings, select); 
+                const response = await openAIRestAPIFetchDataEditor(BMOSettings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);

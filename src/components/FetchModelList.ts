@@ -12,6 +12,7 @@ export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
 
 	const models = list.data.map((model) => model.id);
 	plugin.settings.openAIBaseModels = models;
+	console.log(models);
 
 	return models;
 }
@@ -45,14 +46,14 @@ export async function fetchOllamaModels(plugin: BMOGPT) {
 	}
 }
 
-export async function fetchLocalAIModels(plugin: BMOGPT) {
-	const localAIRestAPIUrl = plugin.settings.localAIRestAPIUrl;
+export async function fetchOpenAIRestAPIModels(plugin: BMOGPT) {
+	const openAIRestAPIUrl = plugin.settings.openAIRestAPIUrl;
 
-	if (!localAIRestAPIUrl) {
+	if (!openAIRestAPIUrl) {
 		return;
 	}
 
-	const url = localAIRestAPIUrl + '/v1/models';
+	const url = openAIRestAPIUrl + '/v1/models';
 
 	try {
 		const response = await requestUrl({
@@ -67,7 +68,7 @@ export async function fetchLocalAIModels(plugin: BMOGPT) {
 
 		const models = jsonData.data.map((model: { id: number; }) => model.id); 
 
-		plugin.settings.localAIModels = models;  
+		plugin.settings.openAIRestAPIModels = models;  
 
 		return models;
 
