@@ -191,6 +191,11 @@ export async function commandModel(input: string, currentSettings: BMOSettings, 
 // `/prompt "[VALUE]"` to change prompt.
 export async function commandPrompt(input: string, currentSettings: BMOSettings, plugin: BMOGPT) {
 
+  if (!currentSettings.promptFolderPath) {
+    new Notice("Prompt folder path not set.");
+    return;
+  }
+
   // Fetching files from the specified folder
   const files = app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.promptFolderPath));
 
