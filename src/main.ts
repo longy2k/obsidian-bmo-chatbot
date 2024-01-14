@@ -46,7 +46,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	promptFolderPath: '',
 	prompt: '',
 	openAIBaseUrl: 'https://api.openai.com/v1',
-	ollamaRestAPIUrl: 'http://localhost:11434',
+	ollamaRestAPIUrl: '',
 	allowOllamaStream: false,
 	openAIRestAPIUrl: '',
 	referenceCurrentNote: false,

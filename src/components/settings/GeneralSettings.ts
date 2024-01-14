@@ -1,25 +1,10 @@
 import { DropdownComponent, Notice, Setting, SettingTab } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
-import { fetchOpenAIBaseModels } from "../FetchModelList";
+import { fetchOllamaModels, fetchOpenAIBaseModels, fetchOpenAIRestAPIModels } from "../FetchModelList";
 
-export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab, openAIRestAPIModels: string[], ollamaModels: string[]) {
+export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     containerEl.createEl('h2', {text: 'General'});
-    
-    // new Setting(containerEl)
-    // .setName('API Key')
-    // .setDesc('Insert API Key from OpenAI or Anthropic.')
-    // .addText(text => text
-    //     .setPlaceholder('insert-api-key')
-    //     .setValue(plugin.settings.apiKey ? `${plugin.settings.apiKey.slice(0, 6)}-...${plugin.settings.apiKey.slice(-4)}` : "")
-    //     .onChange(async (value) => {
-    //         plugin.settings.apiKey = value;
-    //         await plugin.saveSettings();
-    //     })
-    //     .inputEl.addEventListener('focusout', async () => {
-    //         SettingTab.display();
-    //     })
-    // );
 
     // Function to add options to dropdown
     const addOptionsToDropdown = (dropdown: DropdownComponent, models: string[]) => {
@@ -50,6 +35,7 @@ export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
                 }
             }
             if (plugin.settings.ollamaRestAPIUrl && plugin.settings.ollamaModels && plugin.settings.ollamaModels.length > 0) {
+                const ollamaModels = await fetchOllamaModels(plugin);
                 try {
                     ollamaModels.forEach((model: string) => {
                         dropdown.addOption(model, model);
@@ -59,11 +45,12 @@ export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
                     });
                 }
                 catch (error) {
-                    console.error('Error:', error);
+                    // console.error('Error:', error);
                     new Notice('Ollama connection error.');
                 }
             }
-            if (plugin.settings.openAIRestAPIUrl && openAIRestAPIModels && openAIRestAPIModels.length > 0) {
+            if (plugin.settings.openAIRestAPIUrl && plugin.settings.openAIRestAPIModels && plugin.settings.openAIRestAPIModels.length > 0) {
+                const openAIRestAPIModels = await fetchOpenAIRestAPIModels(plugin);
                 try {
                     openAIRestAPIModels.forEach((model: string) => {
                         dropdown.addOption(model, model);
@@ -73,7 +60,7 @@ export function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
                     });
                 }
                 catch (error) {
-                    console.error('Error:', error);
+                    // console.error('Error:', error);
                     new Notice('LocalAI connection error.');
                 }
             }

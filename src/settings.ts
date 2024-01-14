@@ -5,8 +5,8 @@ import { addAppearanceSettings } from './components/settings/AppearanceSettings'
 import { addChatHistorySettings } from './components/settings/ChatHistorySettings';
 import { addOllamaSettings } from './components/settings/OllamaSettings';
 import { addConnectionSettings } from './components/settings/ConnectionSettings';
-import { fetchOpenAIRestAPIModels, fetchOllamaModels } from './components/FetchModelList';
 import { addPromptSettings } from './components/settings/PromptSettings';
+// import { fetchOllamaModels, fetchOpenAIRestAPIModels } from './components/FetchModelList';
 
 export class BMOSettingTab extends PluginSettingTab {
 	plugin: BMOGPT;
@@ -32,14 +32,10 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
 
-		// Fetch models
-		const openAIRestAPIModels = await fetchOpenAIRestAPIModels(this.plugin);
-		const ollamaModels = await fetchOllamaModels(this.plugin);
-
 		// Display settings
 		addConnectionSettings(this.containerEl, this.plugin, this);
 		addOllamaSettings(this.containerEl, this.plugin, this);
-		addGeneralSettings(this.containerEl, this.plugin, this, openAIRestAPIModels, ollamaModels);
+		addGeneralSettings(this.containerEl, this.plugin, this);
 		addAppearanceSettings(this.containerEl, this.plugin, this);		
 		addChatHistorySettings(this.containerEl, this.plugin, this);
 		addPromptSettings(this.containerEl, this.plugin, this);

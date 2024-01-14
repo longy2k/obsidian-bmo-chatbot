@@ -12,7 +12,6 @@ export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
 
 	const models = list.data.map((model) => model.id);
 	plugin.settings.openAIBaseModels = models;
-	console.log(models);
 
 	return models;
 }
@@ -21,9 +20,13 @@ export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
 export async function fetchOllamaModels(plugin: BMOGPT) {
 	const ollamaRestAPIUrl = plugin.settings.ollamaRestAPIUrl;
 
-	if (!ollamaRestAPIUrl) {
-		return;
-	}
+    // URL Validation
+    try {
+        new URL(ollamaRestAPIUrl);
+    } catch (error) {
+        // console.error('Invalid OLLAMA URL:', ollamaRestAPIUrl);
+        return;
+    }
 
 	try {
 		const response = await requestUrl({
@@ -39,6 +42,7 @@ export async function fetchOllamaModels(plugin: BMOGPT) {
 		const models = jsonData.models.map((model: { name: string; }) => model.name);
 		plugin.settings.ollamaModels = models;  
 
+
 		return models;
 
 	} catch (error) {
@@ -47,32 +51,35 @@ export async function fetchOllamaModels(plugin: BMOGPT) {
 }
 
 export async function fetchOpenAIRestAPIModels(plugin: BMOGPT) {
-	const openAIRestAPIUrl = plugin.settings.openAIRestAPIUrl;
+    const openAIRestAPIUrl = plugin.settings.openAIRestAPIUrl;
 
-	if (!openAIRestAPIUrl) {
-		return;
-	}
+    // URL Validation
+    try {
+        new URL(openAIRestAPIUrl);
+    } catch (error) {
+        // console.error('Invalid OpenAI Rest API URL:', openAIRestAPIUrl);
+        return;
+    }
 
-	const url = openAIRestAPIUrl + '/v1/models';
+    const url = openAIRestAPIUrl + '/v1/models';
 
-	try {
-		const response = await requestUrl({
-			url: url,
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		});
+    try {
+        const response = await requestUrl({
+            url: url,
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-		const jsonData = response.json;
+        const jsonData = response.json;
+        const models = jsonData.data.map((model: { id: number; }) => model.id);
 
-		const models = jsonData.data.map((model: { id: number; }) => model.id); 
+        plugin.settings.openAIRestAPIModels = models;
 
-		plugin.settings.openAIRestAPIModels = models;  
+        return models;
 
-		return models;
-
-	} catch (error) {
-		console.error('Error:', error);
-	}
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }

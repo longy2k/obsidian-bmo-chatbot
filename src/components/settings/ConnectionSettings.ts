@@ -52,7 +52,6 @@ export function addConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, 
         .setValue(plugin.settings.openAIRestAPIUrl || DEFAULT_SETTINGS.openAIRestAPIUrl)
         .onChange(async (value) => {
                 plugin.settings.openAIRestAPIUrl = value ? value : DEFAULT_SETTINGS.openAIRestAPIUrl;
-                console.log(plugin.settings.openAIRestAPIUrl);
                 await plugin.saveSettings();
             })
         .inputEl.addEventListener('focusout', async () => {
