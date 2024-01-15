@@ -1,7 +1,8 @@
 import { BMOSettings } from "src/main";
-import { fetchModelRenameTitle, fetchOpenAIAPIEditor, fetchOpenAIBaseAPIEditor, ollamaFetchDataEditor, requestUrlAnthropicAPIEditor, openAIRestAPIFetchDataEditor } from "./FetchModel";
+import { fetchModelRenameTitle } from "./FetchModel";
 import { MarkdownView, Notice } from "obsidian";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
+import { fetchOpenAIAPIEditor, fetchOpenAIBaseAPIEditor, ollamaFetchDataEditor, openAIRestAPIFetchDataEditor, requestUrlAnthropicAPIEditor } from "./FetchModelEditor";
 
 export async function renameTitleCommand(settings: BMOSettings) {
     let uniqueNameFound = false;
@@ -56,28 +57,6 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
             try {
                 new Notice("Generating...");
                 const response = await fetchOpenAIAPIEditor(settings, select); 
-                // Replace the current selection with the response
-                const cursorStart = view.editor.getCursor('from');
-                view.editor.replaceSelection(response);
-
-                // Calculate new cursor position based on the length of the response
-                const cursorEnd = { 
-                    line: cursorStart.line, 
-                    ch: cursorStart.ch + response?.length 
-                };
-
-                // Keep the new text selected
-                view.editor.setSelection(cursorStart, cursorEnd);
-            }
-            catch (error) {
-                new Notice('Error occurred while fetching completion: ' + error.message);
-                console.log(error.message);
-            }
-        }
-        else if (settings.openAIBaseModels.includes(settings.model)) {
-            try {
-                new Notice("Generating...");
-                const response = await fetchOpenAIBaseAPIEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);
@@ -152,6 +131,28 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
             }
         }
         new Notice("Generation complete.");
+    }
+    else if (settings.openAIBaseModels.includes(settings.model)) {
+        try {
+            new Notice("Generating...");
+            const response = await fetchOpenAIBaseAPIEditor(settings, select); 
+            // Replace the current selection with the response
+            const cursorStart = view.editor.getCursor('from');
+            view.editor.replaceSelection(response);
+
+            // Calculate new cursor position based on the length of the response
+            const cursorEnd = { 
+                line: cursorStart.line, 
+                ch: cursorStart.ch + response?.length 
+            };
+
+            // Keep the new text selected
+            view.editor.setSelection(cursorStart, cursorEnd);
+        }
+        catch (error) {
+            new Notice('Error occurred while fetching completion: ' + error.message);
+            console.log(error.message);
+        }
     }
     else {
         new Notice("No text selected.");    

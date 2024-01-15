@@ -22,7 +22,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
 
     new Setting(containerEl)
         .setName('Allow Stream')
-        .setDesc(addDescriptionLink('Allow Ollama models to stream response. Additional setup required: ', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki', '', '[Instructions]'))
+        .setDesc(addDescriptionLink('Allow Ollama models to stream response. Additional setup required: ', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/How-to-setup-with-Ollama-to-stream-text', '', '[Instructions]'))
         .addToggle((toggle) =>
             toggle.setValue(plugin.settings.allowOllamaStream).onChange((value) => {
                 plugin.settings.allowOllamaStream = value;

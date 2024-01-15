@@ -61,7 +61,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                 }
                 catch (error) {
                     // console.error('Error:', error);
-                    new Notice('LocalAI connection error.');
+                    new Notice('OpenAI REST API URL connection error.');
                 }
             }
             if (plugin.settings.apiKey && (plugin.settings.openAIBaseUrl != DEFAULT_SETTINGS.openAIBaseUrl)) {

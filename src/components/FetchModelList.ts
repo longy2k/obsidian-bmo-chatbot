@@ -1,4 +1,4 @@
-import { requestUrl } from "obsidian";
+import { Notice, requestUrl } from "obsidian";
 import OpenAI from "openai";
 import BMOGPT from "src/main";
 
@@ -61,25 +61,40 @@ export async function fetchOpenAIRestAPIModels(plugin: BMOGPT) {
         return;
     }
 
-    const url = openAIRestAPIUrl + '/v1/models';
+    const urls = [
+        openAIRestAPIUrl + '/v1/models',
+        openAIRestAPIUrl + '/api/v1/models'
+    ];
 
-    try {
-        const response = await requestUrl({
-            url: url,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+    let lastError = null;
 
-        const jsonData = response.json;
-        const models = jsonData.data.map((model: { id: number; }) => model.id);
+    for (const url of urls) {
+        try {
+            const response = await requestUrl({
+                url: url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${plugin.settings.apiKey}`
+                },
+            });
 
-        plugin.settings.openAIRestAPIModels = models;
+            // Check if the response is valid
+            if (response.json && response.json.data) {
+                const models = response.json.data.map((model: { id: number; }) => model.id);
+                plugin.settings.openAIRestAPIModels = models;
+                return models;
+            }
+        } catch (error) {
+            lastError = error; // Store the last error and continue
+        }
+    }
 
-        return models;
-
-    } catch (error) {
-        console.error('Error:', error);
+    // If all requests failed, throw the last encountered error
+    if (lastError) {
+        console.error('Error making API request:', lastError);
+        new Notice("OpenAI REST API URL connection error.");
+        throw lastError;
     }
 }
+

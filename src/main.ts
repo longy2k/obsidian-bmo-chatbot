@@ -22,6 +22,7 @@ export interface BMOSettings {
 	ollamaRestAPIUrl: string;
 	allowOllamaStream: boolean;
 	openAIRestAPIUrl: string;
+	allowOpenAIRestAPIStream: boolean;
 	allowReferenceCurrentNote: boolean;
 	allowRenameNoteTitle: boolean;
 	allModels: string[];
@@ -50,6 +51,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	ollamaRestAPIUrl: '',
 	allowOllamaStream: false,
 	openAIRestAPIUrl: '',
+	allowOpenAIRestAPIStream: false,
 	allowReferenceCurrentNote: false,
 	allowRenameNoteTitle: false,
 	allModels: [],

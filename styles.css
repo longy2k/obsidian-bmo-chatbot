@@ -37,7 +37,7 @@ If your plugin does not need CSS, delete this file.
 	margin: 0;
 	text-align: center;
 	color: var(--interactive-accent);
-	font-size: 0.7rem;
+	font-size: 0.75rem;
 }
 
 #referenceCurrentNote {
@@ -61,7 +61,7 @@ If your plugin does not need CSS, delete this file.
 	-ms-user-select: text;
 	-o-user-select: text;
 	user-select: text;
-	max-height: calc(100% - 140px);
+	max-height: calc(100% - 120px);
 	word-wrap: break-word;
 }
 

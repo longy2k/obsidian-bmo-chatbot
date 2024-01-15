@@ -1,8 +1,8 @@
 import { Setting, SettingTab } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 
-export function addConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
-    containerEl.createEl('h2', {text: 'Establish Connection'});
+export function addAPIConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
+    containerEl.createEl('h2', {text: 'API Connections'});
 
     new Setting(containerEl)
     .setName('API Key')
@@ -37,21 +37,6 @@ export function addConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, 
         .setValue(plugin.settings.openAIBaseUrl || DEFAULT_SETTINGS.openAIBaseUrl)
         .onChange(async (value) => {
                 plugin.settings.openAIBaseUrl = value ? value : DEFAULT_SETTINGS.openAIBaseUrl;
-                await plugin.saveSettings();
-            })
-        .inputEl.addEventListener('focusout', async () => {
-            SettingTab.display();
-        })
-    );
-
-    new Setting(containerEl)
-    .setName('OPENAI REST API URL')
-    .setDesc('Enter your custom OpenAI REST API url.')
-    .addText(text => text
-        .setPlaceholder('http://localhost:1234')
-        .setValue(plugin.settings.openAIRestAPIUrl || DEFAULT_SETTINGS.openAIRestAPIUrl)
-        .onChange(async (value) => {
-                plugin.settings.openAIRestAPIUrl = value ? value : DEFAULT_SETTINGS.openAIRestAPIUrl;
                 await plugin.saveSettings();
             })
         .inputEl.addEventListener('focusout', async () => {
