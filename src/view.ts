@@ -99,7 +99,7 @@ export class BMOView extends ItemView {
         referenceCurrentNoteElement.style.display = 'none';
         
         if (referenceCurrentNoteElement) {
-            if (this.settings.referenceCurrentNote) {
+            if (this.settings.allowReferenceCurrentNote) {
                 referenceCurrentNoteElement.style.display = 'block';
             } else {
                 referenceCurrentNoteElement.style.display = 'none';
@@ -121,9 +121,16 @@ export class BMOView extends ItemView {
         
         messageContainer.id = "messageContainer";
         
-        messageHistory.forEach((messageData) => {   
+        messageHistory.forEach(async (messageData) => {   
             const buttonContainerDiv = document.createElement("div");
             buttonContainerDiv.className = "button-container";
+
+            const activeFile = this.app.workspace.getActiveFile();
+            if (activeFile) {
+                if (this.settings.allowReferenceCurrentNote) {
+                    referenceCurrentNoteContent = await getActiveFileContent(activeFile);
+                }
+            }
 
             if (messageData.role == "user") {
                 
@@ -273,7 +280,7 @@ export class BMOView extends ItemView {
         const input = this.textareaElement.value.trim();
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile) {
-            if (this.settings.referenceCurrentNote) {
+            if (this.settings.allowReferenceCurrentNote) {
                 referenceCurrentNoteContent = await getActiveFileContent(activeFile);
             }
         }
@@ -331,7 +338,6 @@ export class BMOView extends ItemView {
                         existingRegenerateButton.remove();
                     }
                 });
-
                 const regenerateButton = regenerateUserButton(this.settings, referenceCurrentNoteContent);
                 const copyUserButton = displayUserCopyButton(userP);
                 const trashButton = displayTrashButton();
@@ -480,11 +486,10 @@ export class BMOView extends ItemView {
     }
 
     async BMOchatbot(_input: string) {
-
+        referenceCurrentNoteContent = ''; // Clear reference current note content every time BMOchatbot is called.
         const activeFile = this.app.workspace.getActiveFile();
-
         if (activeFile) {
-            if (this.settings.referenceCurrentNote) {
+            if (this.settings.allowReferenceCurrentNote) {
                 referenceCurrentNoteContent = await getActiveFileContent(activeFile);
             }
         }
@@ -557,6 +562,7 @@ export class BMOView extends ItemView {
             else {
                 new Notice("No models detected.");
             }
+
         }
         // console.log("BMO settings:", this.settings);
     }

@@ -292,7 +292,7 @@ export async function commandReference(input: string, currentSettings: BMOSettin
   const inputValue = input.split(' ')[1]?.toLowerCase();
 
   if (inputValue === "true" || inputValue === "on") {
-      currentSettings.referenceCurrentNote = true;
+      currentSettings.allowReferenceCurrentNote = true;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'block';
       }
@@ -302,7 +302,7 @@ export async function commandReference(input: string, currentSettings: BMOSettin
           </div>
       `;
   } else if (inputValue === "false" || inputValue === "off") {
-      currentSettings.referenceCurrentNote = false;
+      currentSettings.allowReferenceCurrentNote = false;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'none';
       }

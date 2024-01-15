@@ -12,7 +12,7 @@ import { getPrompt } from "./chat/Prompt";
 let abortController = new AbortController();
 
 // Fetch OpenAI API Chat
-export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote: string) {
+export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNoteContent: string) {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
         baseURL: settings.openAIBaseUrl,
@@ -41,7 +41,7 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
             max_tokens: parseInt(settings.max_tokens),
             temperature: settings.temperature,
             messages: [
-                { role: 'system', content: referenceCurrentNote + settings.system_role + prompt},
+                { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
                 ...filteredMessageHistoryContent as ChatCompletionMessageParam[]
             ],
             stream: true,

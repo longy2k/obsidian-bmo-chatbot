@@ -7,7 +7,8 @@ export async function getActiveFileContent(file: TFile) {
     let currentNote = '';
     if (activeFile?.extension === 'md') {
         const content = await app.vault.read(activeFile);
-        currentNote = 'REFER TO THIS NOTE:```' + content + '```\n';
+        currentNote = 'You will refer to this content if the user is asking for anything related to their notes:' + 
+                      '\n' + content + '\n';
         if (dotElement) {
             (dotElement as HTMLElement).style.backgroundColor = 'green';
         }
