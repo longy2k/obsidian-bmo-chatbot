@@ -3,7 +3,7 @@ import { fetchModelRenameTitle, fetchOpenAIAPIEditor, fetchOpenAIBaseAPIEditor, 
 import { MarkdownView, Notice } from "obsidian";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
 
-export async function renameTitleCommand(BMOSettings: BMOSettings) {
+export async function renameTitleCommand(settings: BMOSettings) {
     let uniqueNameFound = false;
     let modelRenameTitle;
     let folderName = app.vault.getAbstractFileByPath(app.workspace.getActiveFile()?.path || '')?.parent?.path || '';
@@ -27,7 +27,7 @@ export async function renameTitleCommand(BMOSettings: BMOSettings) {
         };
     
         while (!uniqueNameFound) {
-            modelRenameTitle = await fetchModelRenameTitle(BMOSettings, fileContent);
+            modelRenameTitle = await fetchModelRenameTitle(settings, fileContent);
         
             if (!fileNameExists(modelRenameTitle)) {
                 uniqueNameFound = true;
@@ -47,15 +47,15 @@ export async function renameTitleCommand(BMOSettings: BMOSettings) {
 }
 
 // Prompt + Select + Generate command
-export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
+export async function promptSelectGenerateCommand(settings: BMOSettings) {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     const select = view.editor.getSelection();
     if (view && select && select.trim() !== "") {
         // Fetch OpenAI API
-        if (OPENAI_MODELS.includes(BMOSettings.model)) {
+        if (OPENAI_MODELS.includes(settings.model)) {
             try {
                 new Notice("Generating...");
-                const response = await fetchOpenAIAPIEditor(BMOSettings, select); 
+                const response = await fetchOpenAIAPIEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);
@@ -74,10 +74,10 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
                 console.log(error.message);
             }
         }
-        else if (BMOSettings.openAIBaseModels.includes(BMOSettings.model)) {
+        else if (settings.openAIBaseModels.includes(settings.model)) {
             try {
                 new Notice("Generating...");
-                const response = await fetchOpenAIBaseAPIEditor(BMOSettings, select); 
+                const response = await fetchOpenAIBaseAPIEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);
@@ -96,10 +96,10 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
                 console.log(error.message);
             }
         }
-        else if (ANTHROPIC_MODELS.includes(BMOSettings.model)) {
+        else if (ANTHROPIC_MODELS.includes(settings.model)) {
             try {
                 new Notice("Generating...");
-                const response = await requestUrlAnthropicAPIEditor(BMOSettings, select); 
+                const response = await requestUrlAnthropicAPIEditor(settings, select); 
                 view.editor.replaceSelection(response);
             }
             catch (error) {
@@ -107,10 +107,10 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
                 console.log(error.message);
             }
         }
-        else if (BMOSettings.ollamaRestAPIUrl && BMOSettings.ollamaModels.includes(BMOSettings.model)) {
+        else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
             try {
                 new Notice("Generating...");
-                const response = await ollamaFetchDataEditor(BMOSettings, select); 
+                const response = await ollamaFetchDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);
@@ -129,10 +129,10 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
                 console.log(error.message);
             }
         }
-        else if (BMOSettings.openAIRestAPIUrl && BMOSettings.openAIRestAPIModels.includes(BMOSettings.model)){
+        else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
             try {
                 new Notice("Generating...");
-                const response = await openAIRestAPIFetchDataEditor(BMOSettings, select); 
+                const response = await openAIRestAPIFetchDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);

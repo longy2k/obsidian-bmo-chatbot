@@ -28,6 +28,7 @@ export interface BMOSettings {
 	ollamaModels: string[];
 	openAIRestAPIModels: string[];
 	openAIBaseModels: string[];
+	allowHeader: boolean;
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -55,6 +56,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	ollamaModels: [],
 	openAIRestAPIModels: [],
 	openAIBaseModels: [],
+	allowHeader: true,
 }
 
 export let checkActiveFile: TFile | null = null;

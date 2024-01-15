@@ -65,15 +65,21 @@ export class BMOView extends ItemView {
                 class: "chatbotContainer",
             },
         });
+
+        const header = chatbotContainer.createEl("div", {
+            attr: {
+                id: "header",
+            },
+        });
         
-        chatbotContainer.createEl("h1", { 
+        const chatbotNameHeading = chatbotContainer.createEl("h1", { 
             text: this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName,
             attr: {
                 id: "chatbotNameHeading"
             }
         });
 
-        chatbotContainer.createEl("p", {
+        const modelName = chatbotContainer.createEl("p", {
             text: "Model: " + this.settings.model || DEFAULT_SETTINGS.model,
             attr: {
                 id: "modelName"
@@ -93,6 +99,7 @@ export class BMOView extends ItemView {
                 id: "referenceCurrentNote"
             }
         });
+    
 
         referenceCurrentNoteElement.appendChild(spanElement);
 
@@ -116,6 +123,18 @@ export class BMOView extends ItemView {
                 id: "messageContainer",
             },
         });
+
+        header.appendChild(chatbotNameHeading);
+        header.appendChild(modelName);
+
+        if (this.settings.allowHeader) {
+            header.style.display = 'block';
+        }
+        else {
+            header.style.display = 'none';
+            messageContainer.style.maxHeight = `calc(100% - 60px)`;
+            referenceCurrentNoteElement.style.margin = `0.5rem 0 0.5rem 0`;
+        }
         
         await loadData();
         
@@ -486,7 +505,7 @@ export class BMOView extends ItemView {
     }
 
     async BMOchatbot(_input: string) {
-        referenceCurrentNoteContent = ''; // Clear reference current note content every time BMOchatbot is called.
+        referenceCurrentNoteContent = ''; // Clear reference current note content every time BMOchatbot is called
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile) {
             if (this.settings.allowReferenceCurrentNote) {
@@ -496,6 +515,7 @@ export class BMOView extends ItemView {
 
         const messageContainerEl = document.querySelector('#messageContainer');
         const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
+
         const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
 
         // If apiKey does not exist.

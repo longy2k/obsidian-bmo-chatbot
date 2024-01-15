@@ -7,7 +7,6 @@ export async function getPrompt(settings: BMOSettings) {
     }
 
     const promptFilePath = settings.promptFolderPath + '/' + settings.prompt;
-    console.log(`Prompt file path: ${promptFilePath}`);
 
     try {
         // Await the reading of the file and return its content

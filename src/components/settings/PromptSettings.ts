@@ -41,7 +41,7 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .setName('Prompt')
         .setDesc('Select a prompt.')
         .addDropdown(dropdown => {
-            dropdown.addOption('', '');
+            dropdown.addOption('', '--EMPTY--');
 
             if (plugin.settings.promptFolderPath !== '') {
                 // Fetching files from the specified folder
