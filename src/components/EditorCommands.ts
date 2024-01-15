@@ -54,6 +54,7 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
         // Fetch OpenAI API
         if (OPENAI_MODELS.includes(BMOSettings.model)) {
             try {
+                new Notice("Generating...");
                 const response = await fetchOpenAIAPIEditor(BMOSettings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -75,6 +76,7 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
         }
         else if (BMOSettings.openAIBaseModels.includes(BMOSettings.model)) {
             try {
+                new Notice("Generating...");
                 const response = await fetchOpenAIBaseAPIEditor(BMOSettings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -96,6 +98,7 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
         }
         else if (ANTHROPIC_MODELS.includes(BMOSettings.model)) {
             try {
+                new Notice("Generating...");
                 const response = await requestUrlAnthropicAPIEditor(BMOSettings, select); 
                 view.editor.replaceSelection(response);
             }
@@ -106,6 +109,7 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
         }
         else if (BMOSettings.ollamaRestAPIUrl && BMOSettings.ollamaModels.includes(BMOSettings.model)) {
             try {
+                new Notice("Generating...");
                 const response = await ollamaFetchDataEditor(BMOSettings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -127,6 +131,7 @@ export async function promptSelectGenerateCommand(BMOSettings: BMOSettings) {
         }
         else if (BMOSettings.openAIRestAPIUrl && BMOSettings.openAIRestAPIModels.includes(BMOSettings.model)){
             try {
+                new Notice("Generating...");
                 const response = await openAIRestAPIFetchDataEditor(BMOSettings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
