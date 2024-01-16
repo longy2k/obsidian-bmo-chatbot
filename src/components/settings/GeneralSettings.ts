@@ -34,7 +34,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                     }
                 }
             }
-            if (plugin.settings.ollamaRestAPIUrl && plugin.settings.ollamaModels && plugin.settings.ollamaModels.length > 0) {
+            if (plugin.settings.ollamaRestAPIUrl != '') {
                 const ollamaModels = await fetchOllamaModels(plugin);
                 try {
                     ollamaModels.forEach((model: string) => {
@@ -49,7 +49,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                     new Notice('Ollama connection error.');
                 }
             }
-            if (plugin.settings.openAIRestAPIUrl && plugin.settings.openAIRestAPIModels && plugin.settings.openAIRestAPIModels.length > 0) {
+            if (plugin.settings.openAIRestAPIUrl != '') {
                 const openAIRestAPIModels = await fetchOpenAIRestAPIModels(plugin);
                 try {
                     openAIRestAPIModels.forEach((model: string) => {
