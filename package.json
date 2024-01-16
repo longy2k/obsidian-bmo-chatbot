@@ -1,6 +1,6 @@
 {
 	"name": "bmo-chatbot",
-	"version": "1.8.0",
+	"version": "1.8.1",
 	"description": "Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) such as OpenAI's \"gpt-3.5-turbo\" and \"gpt-4.\"",
 	"main": "main.js",
 	"scripts": {

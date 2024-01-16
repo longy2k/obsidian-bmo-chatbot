@@ -1,5 +1,5 @@
 # BMO Chatbot for Obsidian
-Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) such as OpenAI's "gpt-3.5-turbo" and "gpt-4" for Obsidian.
+Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) with OpenAI, Ollama, LM Studio, OpenRouter, and Mistral AI.
 
 ![Screenshot-1](README_images/Screenshot-1.png)
 <p align="center">
@@ -7,7 +7,7 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 </p>
 
 ## Features
-- **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URL provided to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LocalAI](https://github.com/go-skynet/LocalAI).
+- **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URLs provided to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LM Studio](https://lmstudio.ai/).
 - **Chat from anywhere in Obsidian:** Chat with your bot from anywhere within Obsidian.
 - **Chat with current note:** Use your chatbot to reference and engage within your current note.
 - **Chatbot responds in Markdown:** Receive formatted responses in Markdown for consistency.
@@ -20,9 +20,9 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 ## Requirements
 To use this plugin, you'll need an OpenAI account with API access. If you don't have an account yet, you can sign up for one on the [OpenAI website](https://platform.openai.com/overview).
 
-Additionally, if you want to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LocalAI](https://github.com/go-skynet/LocalAI), you will need to have the self-hosted API set up and running. You can follow the instructions provided by the self-hosted API provider to get it up and running. Once you have the REST API URL for your self-hosted API, you can use it with this plugin to interact with your models.
+Additionally, if you want to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LM Studio](https://lmstudio.ai/), you will need to have the self-hosted API set up and running. You can follow the instructions provided by the self-hosted API provider to get it up and running. Once you have the REST API URL for your self-hosted API, you can use it with this plugin to interact with your models.
 
-Please see [instructions](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
+Please see [instructions](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup with other LLMs providers.
 
 Explore some models at [GPT4ALL](https://gpt4all.io/index.html) under the "Model Explorer" section or [Ollama's Library](https://ollama.ai/library).
 
@@ -81,18 +81,17 @@ To start using the plugin, enable it in your settings menu and enter your OpenAI
   - gpt-4-1106-preview (Context window: 128,000 tokens)
 - Any self-hosted models using [Ollama](https://ollama.ai).
   - See [instructions](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
+- Any self-hosted models using OpenAI's REST API URL endpoints.
+  - [LM Studio](https://lmstudio.ai/) 
+  - [LocalAI](https://github.com/mudler/LocalAI)
 
 ## Other Supported Models (Low Support)
 I would like to continue supporting Anthropic's models, but I no longer have access to the API.
-
-I'm currently prioritizing Ollama over LocalAI due to its simplicity. I may drop LocalAI when
-Ollama becomes available on Windows.
 
 - Anthropic
   - claude-instant-1.2
   - claude-2.0
   - claude-2.1
-- Any self-hosted models using [LocalAI](https://github.com/go-skynet/LocalAI)
 
 ## Other Notes
 "BMO" is a tag name for this project, inspired by the character BMO from the animated TV show "Adventure Time."
