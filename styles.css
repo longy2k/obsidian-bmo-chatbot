@@ -133,7 +133,27 @@ If your plugin does not need CSS, delete this file.
 	color: #ced4df;
 }
 
-.messageBlock pre button.copy-button {
+.edit-textarea {
+	max-width: 100%;
+	min-width: 100%;
+	min-height: 2rem;
+	width: 100%;
+	margin-top: 0.3rem;
+}
+
+.textarea-edit-button,
+.textarea-cancel-button {
+	margin: 0.2rem 0.5rem 0 0;
+	font-size: 0.7rem;
+	padding: 0 0.6rem;
+}
+
+.textarea-edit-button:hover {
+	background-color: var(--interactive-accent);
+}
+
+.messageBlock pre button.copy-button,
+.messageBlock pre button.edit-button {
 	padding: 0 4px;
 	background-color: transparent !important;
 	box-shadow: none !important;
@@ -146,7 +166,8 @@ If your plugin does not need CSS, delete this file.
 	max-width: 30px;
 }
 
-.messageBlock .copy-button:hover {
+.messageBlock .copy-button:hover,
+.messageBlock .edit-button:hover {
 	color: white;
 }
 
@@ -163,6 +184,7 @@ If your plugin does not need CSS, delete this file.
 
 /* Styles for copy button */
 .userMessageToolBar button.copy-button,
+.userMessageToolBar button.edit-button,
 button.regenerate-button {
 	padding: 0 3px;
 	background-color: transparent !important;
@@ -173,6 +195,7 @@ button.regenerate-button {
 }
 
 .userMessageToolBar .copy-button:hover,
+.userMessageToolBar .edit-button:hover,
 .regenerate-button:hover {
 	color: var(--text-muted);
 }
@@ -226,6 +249,7 @@ button.regenerate-button {
 }
 
 /* Hide buttons */
+.userMessage .edit-button,
 .userMessage .regenerate-button,
 .userMessage .copy-button,
 .userMessage .trash-button,
@@ -236,6 +260,7 @@ button.regenerate-button {
 }
 
 /* Show buttons on hover */
+.userMessage:hover .edit-button,
 .userMessage:hover .regenerate-button,
 .userMessage:hover .copy-button,
 .userMessage:hover .trash-button,

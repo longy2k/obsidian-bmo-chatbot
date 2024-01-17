@@ -6,7 +6,7 @@ import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStr
 import { executeCommand } from "./components/chat/Commands";
 import { marked } from "marked";
 import { prismHighlighting } from "./components/PrismaHighlighting";
-import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton, displayTrashButton, displayUserCopyButton, regenerateUserButton } from "./components/chat/Buttons";
+import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton, displayEditButton, displayTrashButton, displayUserCopyButton, regenerateUserButton, } from "./components/chat/Buttons";
 import { getActiveFileContent } from "./components/ReferenceCurrentNoteIndicator";
 import { addMessage, addParagraphBreaks } from "./components/chat/Message";
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
@@ -35,7 +35,6 @@ let referenceCurrentNoteContent = '';
 export class BMOView extends ItemView {
     public settings: BMOSettings;
     private textareaElement: HTMLTextAreaElement;
-    private loadingAnimationIntervalId: number;
     private preventEnter = false;
     private plugin: BMOGPT;
 
@@ -166,11 +165,18 @@ export class BMOView extends ItemView {
                 userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
                 const userP = document.createElement("p");
 
+                const regenerateButton = regenerateUserButton(this.settings, referenceCurrentNoteContent);
+                const editButton = displayEditButton(this.settings, referenceCurrentNoteContent, userP);
                 const copyUserButton = displayUserCopyButton(userP);
                 const trashButton = displayTrashButton();
                 
                 userMessageToolBarDiv.appendChild(userNameSpan);
                 userMessageToolBarDiv.appendChild(buttonContainerDiv);
+                
+                if (!messageData.content.startsWith("/")) {
+                    buttonContainerDiv.appendChild(regenerateButton);
+                    buttonContainerDiv.appendChild(editButton);
+                }
                 buttonContainerDiv.appendChild(copyUserButton);
                 buttonContainerDiv.appendChild(trashButton);
                 userMessageDiv.appendChild(userMessageToolBarDiv);
@@ -183,24 +189,6 @@ export class BMOView extends ItemView {
                     userP.innerHTML = marked(cleanString);
                 } else {
                     userP.innerHTML = marked(messageData.content);
-                }
-
-                const messageText = messageData.content;
-                const userMessages = messageContainer.querySelectorAll(".userMessage");
-
-                // Clear any existing regenerate buttons
-                userMessages.forEach(message => {
-                    const existingRegenerateButton = message.querySelector(".regenerate-button");
-                    if (existingRegenerateButton) {
-                        existingRegenerateButton.remove();
-                    }
-                });
-                if (!messageText.startsWith("/")) {
-                    const lastUserMessage = userMessages[userMessages.length - 1];
-                    const lastUserMessageToolBarDiv = lastUserMessage.querySelector(".userMessageToolBar");
-                    const lastButtonContainerDiv = lastUserMessageToolBarDiv?.querySelector(".button-container");
-                    const regenerateButton = regenerateUserButton(this.settings, referenceCurrentNoteContent);
-                    lastButtonContainerDiv?.insertBefore(regenerateButton, lastButtonContainerDiv.firstChild);
                 }
                 
             }
@@ -349,15 +337,8 @@ export class BMOView extends ItemView {
             
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {
-                const userMessages = messageContainer.querySelectorAll(".userMessage");
-                // Clear any existing regenerate buttons
-                userMessages.forEach(message => {
-                    const existingRegenerateButton = message.querySelector(".regenerate-button");
-                    if (existingRegenerateButton) {
-                        existingRegenerateButton.remove();
-                    }
-                });
                 const regenerateButton = regenerateUserButton(this.settings, referenceCurrentNoteContent);
+                const editButton = displayEditButton(this.settings, referenceCurrentNoteContent, userP);
                 const copyUserButton = displayUserCopyButton(userP);
                 const trashButton = displayTrashButton();
 
@@ -365,6 +346,7 @@ export class BMOView extends ItemView {
                 userMessageToolBarDiv.appendChild(buttonContainerDiv);
                 if (!input.startsWith("/")) {
                     buttonContainerDiv.appendChild(regenerateButton);
+                    buttonContainerDiv.appendChild(editButton);
                 }
                 buttonContainerDiv.appendChild(copyUserButton);
                 buttonContainerDiv.appendChild(trashButton);
@@ -407,24 +389,8 @@ export class BMOView extends ItemView {
                     loadingEl.style.display = "inline-block"; 
                     loadingEl.textContent = "..."; 
 
-                    // Define a function to update the loading animation
-                    const updateLoadingAnimation = () => {
-                        const loadingEl = document.querySelector('#loading');
-                        if (!loadingEl) {
-                            return;
-                        }
-                        loadingEl.textContent += ".";
-                        // If the loading animation has reached three dots, reset it to one dot
-                        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
-                            loadingEl.textContent = ".";
-                        }
-                    };  
-
                     // Dispaly loading animation
                     botMessageDiv.appendChild(loadingEl);
-                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-
-                    const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
                     userMessageDiv.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -432,11 +398,8 @@ export class BMOView extends ItemView {
                     this.BMOchatbot(input)
                         .then(() => {
                             this.preventEnter = false;
-                            clearInterval(loadingAnimationIntervalId);
                         })
                         .catch(() => {
-                            // Stop the loading animation and update the bot message with an error message
-                            clearInterval(loadingAnimationIntervalId);
                             const botParagraph = document.createElement("p");
                             botParagraph.textContent = "Oops, something went wrong. Please try again.";
                             botMessageDiv.appendChild(botParagraph);
@@ -497,11 +460,6 @@ export class BMOView extends ItemView {
         this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
         this.textareaElement.removeEventListener("input", this.handleInput.bind(this));
         this.textareaElement.removeEventListener("blur", this.handleBlur.bind(this));
-
-        // Clear the loading animation interval if it's active
-        if (this.loadingAnimationIntervalId) {
-            clearInterval(this.loadingAnimationIntervalId);
-        }
     }
 
     async BMOchatbot(_input: string) {

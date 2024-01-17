@@ -2,7 +2,7 @@ import { Setting, SettingTab } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 
 export function addAPIConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
-    containerEl.createEl('h2', {text: 'API Connections'});
+    containerEl.createEl('h2', {text: 'API Connection'});
 
     new Setting(containerEl)
     .setName('API Key')

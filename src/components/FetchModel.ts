@@ -1,5 +1,5 @@
 import { Notice, requestUrl } from "obsidian";
-import { BMOSettings } from "../main";
+import { BMOSettings, DEFAULT_SETTINGS } from "../main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS, messageHistory } from "../view";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
@@ -8,11 +8,12 @@ import { prismHighlighting } from "src/components/PrismaHighlighting";
 import { addMessage, addParagraphBreaks } from "./chat/Message";
 import { codeBlockCopyButton } from "./chat/Buttons";
 import { getPrompt } from "./chat/Prompt";
+import { colorToHex } from "src/utils/ColorConverter";
 
 let abortController = new AbortController();
 
 // Fetch OpenAI API Chat
-export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNoteContent: string) {
+export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNoteContent: string, index?: number) {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
         baseURL: settings.openAIBaseUrl,
@@ -35,6 +36,82 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
         return !isUserMessageWithSlash;
     });
 
+    function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; }[]) {
+        const result = [];
+        let foundUserMessage = false;
+    
+        for (let i = 0; i < messageHistory.length; i++) {
+            if (messageHistory[i].role === 'user') {
+                if (!foundUserMessage) {
+                    // First user message, add to result
+                    result.push(messageHistory[i]);
+                    foundUserMessage = true;
+                } else {
+                    // Second consecutive user message found, stop adding to result
+                    break;
+                }
+            } else {
+                // Non-user message, add to result
+                result.push(messageHistory[i]);
+                foundUserMessage = false;
+            }
+        }
+        return result;
+    }
+    
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistoryContent);
+
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    if (index || index === 0) {
+
+        const botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "botMessage";
+        botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
+            getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+        const botMessageToolBarDiv = document.createElement("div");
+        botMessageToolBarDiv.className = "botMessageToolBar";
+
+        const botNameSpan = document.createElement("span"); 
+        botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+        botNameSpan.className = "chatbotName";
+
+        const messageBlockDiv = document.createElement("div");
+        messageBlockDiv.className = "messageBlock";
+
+        const loadingEl = document.createElement("span");
+        loadingEl.setAttribute("id", "loading"); 
+        loadingEl.style.display = "inline-block"; 
+        loadingEl.textContent = "...";  
+
+        botMessageToolBarDiv.appendChild(botNameSpan);
+        botMessageDiv.appendChild(botMessageToolBarDiv);
+        botMessageDiv.appendChild(messageBlockDiv);
+
+        // Dispaly loading animation
+        botMessageDiv.appendChild(loadingEl);
+
+        messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    }
+
+    // Define a function to update the loading animation
+    const updateLoadingAnimation = () => {
+        const loadingEl = document.querySelector('#loading');
+        if (!loadingEl) {
+            return;
+        }
+        loadingEl.textContent += ".";
+        // If the loading animation has reached three dots, reset it to one dot
+        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+            loadingEl.textContent = ".";
+        }
+    }; 
+
+    const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+
+
     try {
         const stream = await openai.chat.completions.create({
             model: settings.model,
@@ -42,7 +119,7 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
             temperature: settings.temperature,
             messages: [
                 { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
-                ...filteredMessageHistoryContent as ChatCompletionMessageParam[]
+                ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
             stream: true,
         });
@@ -53,17 +130,19 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
 
             message += content;
 
-            const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
-                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                const lastBotMessage = botMessages[botMessages.length - 1];
-                const messageBlock = lastBotMessage.querySelector('.messageBlock');
-                const loadingEl = lastBotMessage.querySelector("#loading");
+
+                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+                const targetBotMessage = targetUserMessage.nextElementSibling;
+                
+                const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+                const loadingEl = targetBotMessage?.querySelector("#loading");
+                
 
                 if (messageBlock) {
                     if (loadingEl) {
-                        loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                        lastBotMessage.removeChild(loadingEl);
+                        clearInterval(loadingAnimationIntervalId);
+                        targetBotMessage?.removeChild(loadingEl);
                     }
 
                     messageBlock.innerHTML = marked(message);
@@ -82,18 +161,16 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
                 });
 
                 if (!isScroll) {
-                    lastBotMessage.scrollIntoView({ behavior: 'auto', block: 'start' });
+                    targetBotMessage?.scrollIntoView({ behavior: 'auto', block: 'start' });
                 }
-
             }
-            
+        
             if (abortController.signal.aborted) {
                 new Notice('Error making API request: The user aborted a request.');
                 break;
             }
         }
-
-        addMessage(message, 'botMessage', settings);
+        addMessage(message, 'botMessage', settings, index);
     } catch (error) {
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
@@ -104,7 +181,7 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
 
             if (messageBlock) {
                 messageBlock.innerHTML = marked(error.response?.data?.error || error.message);
-                addMessage(messageBlock.innerHTML, 'botMessage', settings);
+                addMessage(messageBlock.innerHTML, 'botMessage', settings, index);
             }
         }
         throw new Error(error.response?.data?.error || error.message);
@@ -112,7 +189,7 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
 }
 
 // Fetch OpenAI-Based API
-export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrentNote: string) {
+export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrentNote: string, index?: number) {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
         baseURL: settings.openAIBaseUrl,
@@ -129,29 +206,104 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
         return !isUserMessageWithSlash;
     });
 
+    function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; }[]) {
+        const result = [];
+        let foundUserMessage = false;
+    
+        for (let i = 0; i < messageHistory.length; i++) {
+            if (messageHistory[i].role === 'user') {
+                if (!foundUserMessage) {
+                    // First user message, add to result
+                    result.push(messageHistory[i]);
+                    foundUserMessage = true;
+                } else {
+                    // Second consecutive user message found, stop adding to result
+                    break;
+                }
+            } else {
+                // Non-user message, add to result
+                result.push(messageHistory[i]);
+                foundUserMessage = false;
+            }
+        }
+        return result;
+    }
+    
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistoryContent);
+
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    if (index || index === 0) {
+
+        const botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "botMessage";
+        botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
+            getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+        const botMessageToolBarDiv = document.createElement("div");
+        botMessageToolBarDiv.className = "botMessageToolBar";
+
+        const botNameSpan = document.createElement("span"); 
+        botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+        botNameSpan.className = "chatbotName";
+
+        const messageBlockDiv = document.createElement("div");
+        messageBlockDiv.className = "messageBlock";
+
+        const loadingEl = document.createElement("span");
+        loadingEl.setAttribute("id", "loading"); 
+        loadingEl.style.display = "inline-block"; 
+        loadingEl.textContent = "...";  
+
+        botMessageToolBarDiv.appendChild(botNameSpan);
+        botMessageDiv.appendChild(botMessageToolBarDiv);
+        botMessageDiv.appendChild(messageBlockDiv);
+
+        // Dispaly loading animation
+        botMessageDiv.appendChild(loadingEl);
+
+        messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    }
+
+    // Define a function to update the loading animation
+    const updateLoadingAnimation = () => {
+        const loadingEl = document.querySelector('#loading');
+        if (!loadingEl) {
+            return;
+        }
+        loadingEl.textContent += ".";
+        // If the loading animation has reached three dots, reset it to one dot
+        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+            loadingEl.textContent = ".";
+        }
+    }; 
+
+    const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+
     try {
         const completion = await openai.chat.completions.create({
             model: settings.model,
             max_tokens: parseInt(settings.max_tokens),
             messages: [
                 { role: 'system', content: referenceCurrentNote + settings.system_role + prompt},
-                ...filteredMessageHistoryContent as ChatCompletionMessageParam[]
+                ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
         });
 
         const message = completion.choices[0].message.content;
-
-        const messageContainerEl = document.querySelector('#messageContainer');
+        
         if (messageContainerEl) {
-            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-            const lastBotMessage = botMessages[botMessages.length - 1];
-            const messageBlock = lastBotMessage.querySelector('.messageBlock');
-            const loadingEl = lastBotMessage.querySelector("#loading");
+            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+            const targetBotMessage = targetUserMessage.nextElementSibling;
+
+            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+            const loadingEl = targetBotMessage?.querySelector("#loading");
 
             if (messageBlock) {
                 if (loadingEl) {
-                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    lastBotMessage.removeChild(loadingEl);
+                    clearInterval(loadingAnimationIntervalId);
+                    targetBotMessage?.removeChild(loadingEl);
                 }
 
                 messageBlock.innerHTML = marked(message || '', { breaks: true });
@@ -160,13 +312,13 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
                 prismHighlighting(messageBlock);
                 codeBlockCopyButton(messageBlock);
                 
-                lastBotMessage.appendChild(messageBlock);
+                targetBotMessage?.appendChild(messageBlock);
             }
-            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         if (message != null) {
-            addMessage(message, 'botMessage', settings);
+            addMessage(message, 'botMessage', settings, index);
         }
 
     } catch (error) {
@@ -177,7 +329,7 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
 
 // Request response from Ollama
 // NOTE: Abort does not work for requestUrl
-export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNoteContent: string){
+export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNoteContent: string, index?: number) {
     const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
 
     if (!ollamaRestAPIUrl) {
@@ -185,6 +337,90 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
     }
 
     const prompt = await getPrompt(settings);
+
+    // Removes all system commands from the message history
+    const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
+        const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
+                                        (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
+
+        return !isUserMessageWithSlash;
+    });
+
+    function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; }[]) {
+        const result = [];
+        let foundUserMessage = false;
+    
+        for (let i = 0; i < messageHistory.length; i++) {
+            if (messageHistory[i].role === 'user') {
+                if (!foundUserMessage) {
+                    // First user message, add to result
+                    result.push(messageHistory[i]);
+                    foundUserMessage = true;
+                } else {
+                    // Second consecutive user message found, stop adding to result
+                    break;
+                }
+            } else {
+                // Non-user message, add to result
+                result.push(messageHistory[i]);
+                foundUserMessage = false;
+            }
+        }
+        return result;
+    }
+    
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistoryContent);
+
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    if (index || index === 0) {
+
+        const botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "botMessage";
+        botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
+            getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+        const botMessageToolBarDiv = document.createElement("div");
+        botMessageToolBarDiv.className = "botMessageToolBar";
+
+        const botNameSpan = document.createElement("span"); 
+        botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+        botNameSpan.className = "chatbotName";
+
+        const messageBlockDiv = document.createElement("div");
+        messageBlockDiv.className = "messageBlock";
+
+        const loadingEl = document.createElement("span");
+        loadingEl.setAttribute("id", "loading"); 
+        loadingEl.style.display = "inline-block"; 
+        loadingEl.textContent = "...";  
+
+        botMessageToolBarDiv.appendChild(botNameSpan);
+        botMessageDiv.appendChild(botMessageToolBarDiv);
+        botMessageDiv.appendChild(messageBlockDiv);
+
+        // Dispaly loading animation
+        botMessageDiv.appendChild(loadingEl);
+
+        messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    }
+
+
+    // Define a function to update the loading animation
+    const updateLoadingAnimation = () => {
+        const loadingEl = document.querySelector('#loading');
+        if (!loadingEl) {
+            return;
+        }
+        loadingEl.textContent += ".";
+        // If the loading animation has reached three dots, reset it to one dot
+        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+            loadingEl.textContent = ".";
+        }
+    }; 
+
+    const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
     
     try {
         const response = await requestUrl({
@@ -197,7 +433,7 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                 model: settings.model,
                 messages: [
                     { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
-                    ...messageHistory
+                    ...messageHistoryAtIndex
                 ],
                 stream: false,
                 options: {
@@ -211,15 +447,16 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
 
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
-            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-            const lastBotMessage = botMessages[botMessages.length - 1];
-            const messageBlock = lastBotMessage.querySelector('.messageBlock');
-            const loadingEl = lastBotMessage.querySelector("#loading");
+            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+            const targetBotMessage = targetUserMessage.nextElementSibling;
+
+            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+            const loadingEl = targetBotMessage?.querySelector("#loading");
         
             if (messageBlock) {
                 if (loadingEl) {
-                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    lastBotMessage.removeChild(loadingEl);
+                    clearInterval(loadingAnimationIntervalId);
+                    targetBotMessage?.removeChild(loadingEl);
                 }
                 messageBlock.innerHTML = marked(message, { breaks: true });
                 
@@ -227,13 +464,13 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                 prismHighlighting(messageBlock);
                 codeBlockCopyButton(messageBlock);
                 
-                lastBotMessage.appendChild(messageBlock);
+                targetBotMessage?.appendChild(messageBlock);
             }
-            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
         }
 
-        addMessage(message, 'botMessage', settings);
+        addMessage(message, 'botMessage', settings, index);
 
     } catch (error) {
         console.error('Error making API request:', error);
@@ -242,7 +479,7 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
 }
 
 // Fetch Ollama API via stream
-export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurrentNoteContent: string) {
+export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurrentNoteContent: string, index?: number) {
     const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
 
     if (!ollamaRestAPIUrl) {
@@ -259,15 +496,91 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
 
     const prompt = await getPrompt(settings);
 
+
     // Removes all system commands from the message history
     const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
-        // Check if the current message or the previous one is a user message containing '/'
         const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
                                         (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
     
-        // Include the message in the new array if it's not part of a pair to be removed
         return !isUserMessageWithSlash;
     });
+
+    function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; }[]) {
+        const result = [];
+        let foundUserMessage = false;
+    
+        for (let i = 0; i < messageHistory.length; i++) {
+            if (messageHistory[i].role === 'user') {
+                if (!foundUserMessage) {
+                    // First user message, add to result
+                    result.push(messageHistory[i]);
+                    foundUserMessage = true;
+                } else {
+                    // Second consecutive user message found, stop adding to result
+                    break;
+                }
+            } else {
+                // Non-user message, add to result
+                result.push(messageHistory[i]);
+                foundUserMessage = false;
+            }
+        }
+        return result;
+    }
+    
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistoryContent);
+    
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+    
+    if (index || index === 0) {
+
+        const botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "botMessage";
+        botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
+            getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+        const botMessageToolBarDiv = document.createElement("div");
+        botMessageToolBarDiv.className = "botMessageToolBar";
+
+        const botNameSpan = document.createElement("span"); 
+        botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+        botNameSpan.className = "chatbotName";
+
+        const messageBlockDiv = document.createElement("div");
+        messageBlockDiv.className = "messageBlock";
+
+        const loadingEl = document.createElement("span");
+        loadingEl.setAttribute("id", "loading"); 
+        loadingEl.style.display = "inline-block"; 
+        loadingEl.textContent = "...";  
+
+        botMessageToolBarDiv.appendChild(botNameSpan);
+        botMessageDiv.appendChild(botMessageToolBarDiv);
+        botMessageDiv.appendChild(messageBlockDiv);
+
+        // Dispaly loading animation
+        botMessageDiv.appendChild(loadingEl);
+
+        messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    }
+
+    
+    
+    // Define a function to update the loading animation
+    const updateLoadingAnimation = () => {
+        const loadingEl = document.querySelector('#loading');
+        if (!loadingEl) {
+            return;
+        }
+        loadingEl.textContent += ".";
+        // If the loading animation has reached three dots, reset it to one dot
+        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+            loadingEl.textContent = ".";
+        }
+    }; 
+
+    const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
     try {
         const response = await fetch(url, {
@@ -279,7 +592,7 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
                 model: settings.model,
                 messages: [
                     { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
-                    ...filteredMessageHistoryContent
+                    ...messageHistoryAtIndex
                 ],
                 stream: true,
                 options: {
@@ -331,15 +644,16 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
 
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
-                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                const lastBotMessage = botMessages[botMessages.length - 1];
-                const messageBlock = lastBotMessage.querySelector('.messageBlock');
-                const loadingEl = lastBotMessage.querySelector("#loading");
+                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+                const targetBotMessage = targetUserMessage.nextElementSibling;
+    
+                const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+                const loadingEl = targetBotMessage?.querySelector("#loading");
 
                 if (messageBlock) {
                     if (loadingEl) {
-                        loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                        lastBotMessage.removeChild(loadingEl);
+                        clearInterval(loadingAnimationIntervalId);
+                        targetBotMessage?.removeChild(loadingEl);
                     }
 
                     messageBlock.innerHTML = marked(message, { breaks: true });
@@ -358,23 +672,107 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
                 });
 
                 if (!isScroll) {
-                    lastBotMessage.scrollIntoView({ behavior: 'auto', block: 'start' });
+                    targetBotMessage?.scrollIntoView({ behavior: 'auto', block: 'start' });
                 }
             }
 
         }
-        addMessage(message, 'botMessage', settings);
+        addMessage(message, 'botMessage', settings, index);
         
     } catch (error) {
-        addMessage(message, 'botMessage', settings); // This will save mid-stream conversation.
+        addMessage(message, 'botMessage', settings, index); // This will save mid-stream conversation.
         console.error('Error making API request:', error);
         throw error;
     }
 }
 
 // Request response from openai-based rest api url
-export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCurrentNote: string) {
+export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCurrentNote: string, index?: number) {
     const prompt = await getPrompt(settings);
+
+    // Removes all system commands from the message history
+    const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
+        const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
+                                        (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
+
+        return !isUserMessageWithSlash;
+    });
+
+    function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; }[]) {
+        const result = [];
+        let foundUserMessage = false;
+    
+        for (let i = 0; i < messageHistory.length; i++) {
+            if (messageHistory[i].role === 'user') {
+                if (!foundUserMessage) {
+                    // First user message, add to result
+                    result.push(messageHistory[i]);
+                    foundUserMessage = true;
+                } else {
+                    // Second consecutive user message found, stop adding to result
+                    break;
+                }
+            } else {
+                // Non-user message, add to result
+                result.push(messageHistory[i]);
+                foundUserMessage = false;
+            }
+        }
+        return result;
+    }
+    
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistoryContent);
+    
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+    
+    if (index || index === 0) {
+
+        const botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "botMessage";
+        botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
+            getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+        const botMessageToolBarDiv = document.createElement("div");
+        botMessageToolBarDiv.className = "botMessageToolBar";
+
+        const botNameSpan = document.createElement("span"); 
+        botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+        botNameSpan.className = "chatbotName";
+
+        const messageBlockDiv = document.createElement("div");
+        messageBlockDiv.className = "messageBlock";
+
+        const loadingEl = document.createElement("span");
+        loadingEl.setAttribute("id", "loading"); 
+        loadingEl.style.display = "inline-block"; 
+        loadingEl.textContent = "...";  
+
+        botMessageToolBarDiv.appendChild(botNameSpan);
+        botMessageDiv.appendChild(botMessageToolBarDiv);
+        botMessageDiv.appendChild(messageBlockDiv);
+
+        // Dispaly loading animation
+        botMessageDiv.appendChild(loadingEl);
+
+        messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    }
+    
+    // Define a function to update the loading animation
+    const updateLoadingAnimation = () => {
+        const loadingEl = document.querySelector('#loading');
+        if (!loadingEl) {
+            return;
+        }
+        loadingEl.textContent += ".";
+        // If the loading animation has reached three dots, reset it to one dot
+        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+            loadingEl.textContent = ".";
+        }
+    }; 
+
+    const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+    
 
     const urls = [
         settings.openAIRestAPIUrl + '/v1/chat/completions',
@@ -396,7 +794,7 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCur
                     model: settings.model,
                     messages: [
                         { role: 'system', content: referenceCurrentNote + settings.system_role + prompt},
-                        ...messageHistory
+                        ...messageHistoryAtIndex
                     ],
                     max_tokens: parseInt(settings.max_tokens),
                     temperature: settings.temperature,
@@ -408,15 +806,16 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCur
 
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
-                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                const lastBotMessage = botMessages[botMessages.length - 1];
-                const messageBlock = lastBotMessage.querySelector('.messageBlock');
-                const loadingEl = lastBotMessage.querySelector("#loading");
+                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+                const targetBotMessage = targetUserMessage.nextElementSibling;
+    
+                const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+                const loadingEl = targetBotMessage?.querySelector("#loading");
             
                 if (messageBlock) {
                     if (loadingEl) {
-                        loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                        lastBotMessage.removeChild(loadingEl);
+                        clearInterval(loadingAnimationIntervalId);
+                        targetBotMessage?.removeChild(loadingEl);
                     }
                     messageBlock.innerHTML = marked(message, { breaks: true });
                     
@@ -424,13 +823,13 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCur
                     prismHighlighting(messageBlock);
                     codeBlockCopyButton(messageBlock);
                     
-                    lastBotMessage.appendChild(messageBlock);
+                    targetBotMessage?.appendChild(messageBlock);
                 }
-                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 
             }
 
-            addMessage(message, 'botMessage', settings);
+            addMessage(message, 'botMessage', settings, index);
             return;
 
         } catch (error) {
@@ -446,7 +845,7 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCur
 }
 
 // Fetch Ollama API via stream
-export async function openAIRestAPIFetchDataStream(settings: BMOSettings, referenceCurrentNoteContent: string) {
+export async function openAIRestAPIFetchDataStream(settings: BMOSettings, referenceCurrentNoteContent: string, index?: number) {
     const openAIRestAPIUrl = settings.openAIRestAPIUrl;
 
     if (!openAIRestAPIUrl) {
@@ -465,13 +864,87 @@ export async function openAIRestAPIFetchDataStream(settings: BMOSettings, refere
 
     // Removes all system commands from the message history
     const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
-        // Check if the current message or the previous one is a user message containing '/'
         const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
                                         (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
-    
-        // Include the message in the new array if it's not part of a pair to be removed
+
         return !isUserMessageWithSlash;
     });
+
+    function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; }[]) {
+        const result = [];
+        let foundUserMessage = false;
+    
+        for (let i = 0; i < messageHistory.length; i++) {
+            if (messageHistory[i].role === 'user') {
+                if (!foundUserMessage) {
+                    // First user message, add to result
+                    result.push(messageHistory[i]);
+                    foundUserMessage = true;
+                } else {
+                    // Second consecutive user message found, stop adding to result
+                    break;
+                }
+            } else {
+                // Non-user message, add to result
+                result.push(messageHistory[i]);
+                foundUserMessage = false;
+            }
+        }
+        return result;
+    }
+    
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistoryContent);
+
+        
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+    
+    if (index || index === 0) {
+
+        const botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "botMessage";
+        botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
+            getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+        const botMessageToolBarDiv = document.createElement("div");
+        botMessageToolBarDiv.className = "botMessageToolBar";
+
+        const botNameSpan = document.createElement("span"); 
+        botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+        botNameSpan.className = "chatbotName";
+
+        const messageBlockDiv = document.createElement("div");
+        messageBlockDiv.className = "messageBlock";
+
+        const loadingEl = document.createElement("span");
+        loadingEl.setAttribute("id", "loading"); 
+        loadingEl.style.display = "inline-block"; 
+        loadingEl.textContent = "...";  
+
+        botMessageToolBarDiv.appendChild(botNameSpan);
+        botMessageDiv.appendChild(botMessageToolBarDiv);
+        botMessageDiv.appendChild(messageBlockDiv);
+
+        // Dispaly loading animation
+        botMessageDiv.appendChild(loadingEl);
+
+        messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    }
+        
+    // Define a function to update the loading animation
+    const updateLoadingAnimation = () => {
+        const loadingEl = document.querySelector('#loading');
+        if (!loadingEl) {
+            return;
+        }
+        loadingEl.textContent += ".";
+        // If the loading animation has reached three dots, reset it to one dot
+        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+            loadingEl.textContent = ".";
+        }
+    }; 
+
+    const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
     try {
         const response = await fetch(url, {
@@ -483,13 +956,11 @@ export async function openAIRestAPIFetchDataStream(settings: BMOSettings, refere
                 model: settings.model,
                 messages: [
                     { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
-                    ...filteredMessageHistoryContent
+                    ...messageHistoryAtIndex
                 ],
                 stream: true,
-                options: {
-                    temperature: settings.temperature,
-                    num_predict: parseInt(settings.max_tokens),
-                },
+                temperature: settings.temperature,
+                max_tokens: parseInt(settings.max_tokens),
             }),
             signal: abortController.signal
         })
@@ -545,15 +1016,16 @@ export async function openAIRestAPIFetchDataStream(settings: BMOSettings, refere
 
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
-                const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-                const lastBotMessage = botMessages[botMessages.length - 1];
-                const messageBlock = lastBotMessage.querySelector('.messageBlock');
-                const loadingEl = lastBotMessage.querySelector("#loading");
+                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+                const targetBotMessage = targetUserMessage.nextElementSibling;
+    
+                const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+                const loadingEl = targetBotMessage?.querySelector("#loading");
 
                 if (messageBlock) {
                     if (loadingEl) {
-                        loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                        lastBotMessage.removeChild(loadingEl);
+                        clearInterval(loadingAnimationIntervalId);
+                        targetBotMessage?.removeChild(loadingEl);
                     }
 
                     messageBlock.innerHTML = marked(message, { breaks: true });
@@ -572,34 +1044,117 @@ export async function openAIRestAPIFetchDataStream(settings: BMOSettings, refere
                 });
 
                 if (!isScroll) {
-                    lastBotMessage.scrollIntoView({ behavior: 'auto', block: 'start' });
+                    targetBotMessage?.scrollIntoView({ behavior: 'auto', block: 'start' });
                 }
             }
 
         }
-        addMessage(message, 'botMessage', settings);
+        addMessage(message, 'botMessage', settings, index);
         
     } catch (error) {
-        addMessage(message, 'botMessage', settings); // This will save mid-stream conversation.
+        addMessage(message, 'botMessage', settings, index); // This will save mid-stream conversation.
         console.error('Error making API request:', error);
         throw error;
     }
 }
 
 // Request response from Anthropic 
-export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCurrentNoteContent: string) {
+export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCurrentNoteContent: string, index?: number) {
     const headers = {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
       'x-api-key': settings.apiKey,
     };
   
-    const messageHistoryString = messageHistory.map(entry => entry.content).join('\n');
     const prompt = await getPrompt(settings);
+
+    // Removes all system commands from the message history
+    const filteredMessageHistoryContent = messageHistory.filter((message, index, array) => {
+        const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
+                                        (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
+
+        return !isUserMessageWithSlash;
+    });
+
+    function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; }[]) {
+        const result = [];
+        let foundUserMessage = false;
+    
+        for (let i = 0; i < messageHistory.length; i++) {
+            if (messageHistory[i].role === 'user') {
+                if (!foundUserMessage) {
+                    // First user message, add to result
+                    result.push(messageHistory[i]);
+                    foundUserMessage = true;
+                } else {
+                    // Second consecutive user message found, stop adding to result
+                    break;
+                }
+            } else {
+                // Non-user message, add to result
+                result.push(messageHistory[i]);
+                foundUserMessage = false;
+            }
+        }
+        return result;
+    }
+    
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistoryContent);
+    const messageHistoryAtIndexString = messageHistoryAtIndex.map(entry => entry.content).join('\n');
+            
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+        
+    if (index || index === 0) {
+
+        const botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "botMessage";
+        botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
+            getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+        const botMessageToolBarDiv = document.createElement("div");
+        botMessageToolBarDiv.className = "botMessageToolBar";
+
+        const botNameSpan = document.createElement("span"); 
+        botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+        botNameSpan.className = "chatbotName";
+
+        const messageBlockDiv = document.createElement("div");
+        messageBlockDiv.className = "messageBlock";
+
+        const loadingEl = document.createElement("span");
+        loadingEl.setAttribute("id", "loading"); 
+        loadingEl.style.display = "inline-block"; 
+        loadingEl.textContent = "...";  
+
+        botMessageToolBarDiv.appendChild(botNameSpan);
+        botMessageDiv.appendChild(botMessageToolBarDiv);
+        botMessageDiv.appendChild(messageBlockDiv);
+
+        // Dispaly loading animation
+        botMessageDiv.appendChild(loadingEl);
+
+        messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    }
+
+    // Define a function to update the loading animation
+    const updateLoadingAnimation = () => {
+        const loadingEl = document.querySelector('#loading');
+        if (!loadingEl) {
+            return;
+        }
+        loadingEl.textContent += ".";
+        // If the loading animation has reached three dots, reset it to one dot
+        if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
+            loadingEl.textContent = ".";
+        }
+    }; 
+
+    const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
 
     const requestBody = {
         model: settings.model,
-        prompt:  `\n\nHuman: ${referenceCurrentNoteContent}\n\n${settings.system_role}\n\n${prompt}\n\n${messageHistoryString}\n\nAssistant:`,
+        prompt:  `\n\nHuman: ${referenceCurrentNoteContent}\n\n${settings.system_role}\n\n${prompt}\n\n${messageHistoryAtIndexString}\n\nAssistant:`,
         max_tokens_to_sample: parseInt(settings.max_tokens) || 100000,
         temperature: settings.temperature,
         stream: true,
@@ -628,28 +1183,27 @@ export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCur
 
       const messageContainerEl = document.querySelector('#messageContainer');
       if (messageContainerEl) {
-          const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-          const lastBotMessage = botMessages[botMessages.length - 1];
-          const loadingEl = lastBotMessage.querySelector("#loading");
-          
-          if (loadingEl) {
-              loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-              lastBotMessage.removeChild(loadingEl);
-          }
+        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
 
-          const messageBlock = lastBotMessage.querySelector('.messageBlock');
+        const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+        const loadingEl = targetBotMessage?.querySelector("#loading");
 
           if (messageBlock) {
-              messageBlock.innerHTML = marked(completionText);
+            if (loadingEl) {
+                clearInterval(loadingAnimationIntervalId);
+                targetBotMessage?.removeChild(loadingEl);
+            }
+            messageBlock.innerHTML = marked(completionText);
           
-              addParagraphBreaks(messageBlock);
-              prismHighlighting(messageBlock);
-              codeBlockCopyButton(messageBlock);
+            addParagraphBreaks(messageBlock);
+            prismHighlighting(messageBlock);
+            codeBlockCopyButton(messageBlock);
           }
-          lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      addMessage('\n\nAssistant: ' + completionText, 'botMessage', settings);
+      addMessage('\n\nAssistant: ' + completionText, 'botMessage', settings, index);
   
     } catch (error) {
         const messageContainerEl = document.querySelector('#messageContainer');
@@ -661,7 +1215,7 @@ export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCur
             if (messageBlock) {
 
                 messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages. We recommend clearing max_tokens for best results.';
-                addMessage(messageBlock.innerHTML, 'botMessage', settings);
+                addMessage(messageBlock.innerHTML, 'botMessage', settings, index);
 
                 const loadingEl = lastBotMessage.querySelector("#loading");
                 if (loadingEl) {

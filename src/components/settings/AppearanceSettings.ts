@@ -47,7 +47,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
     const defaultUserMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
     
     new Setting(containerEl)
-        .setName('Background color for User Messages')
+        .setName('Background Color for User Messages')
         .setDesc('Modify the background color of the userMessage element.')
         .addButton(button => button
             .setButtonText("Restore Default")
@@ -98,7 +98,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
     const defaultBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
 
     new Setting(containerEl)
-        .setName('Background color for Bot Messages')
+        .setName('Background Color for Bot Messages')
         .setDesc('Modify the background color of the botMessage element.')
         .addButton(button => button
             .setButtonText("Restore Default")

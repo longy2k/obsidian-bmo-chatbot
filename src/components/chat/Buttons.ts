@@ -1,7 +1,7 @@
 import { Modal, Notice, setIcon } from "obsidian";
 import { BMOSettings, checkActiveFile } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from "src/view";
-import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData } from "../FetchModel";
+import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData, openAIRestAPIFetchDataStream } from "../FetchModel";
 
 export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote: string) {
     const regenerateButton = document.createElement("button");
@@ -10,97 +10,190 @@ export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote
     regenerateButton.classList.add("regenerate-button");
     regenerateButton.title = "regenerate";
 
-    regenerateButton.addEventListener("click", async function () {
-        const messageContainerEl = document.querySelector('#messageContainer');
-        if (messageContainerEl) {
-            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
-            const lastBotMessage = botMessages[botMessages.length - 1];
-            const messageBlock = lastBotMessage.querySelector('.messageBlock');
-            const lastBotMessageToolBarDiv = lastBotMessage.querySelector(".botMessageToolBar");
-            if (lastBotMessageToolBarDiv) {
-                const buttonContainerDiv = lastBotMessageToolBarDiv.querySelector(".button-container");
-                if (buttonContainerDiv) {
-                    // Remove the button container div
-                    buttonContainerDiv.remove();
+    let lastClickedElement: HTMLElement | null = null;
+
+    regenerateButton.addEventListener("click", async function (event) {
+        event.stopPropagation();
+        lastClickedElement = event.target as HTMLElement;
+
+        while (lastClickedElement && !lastClickedElement.classList.contains('userMessage')) {
+            lastClickedElement = lastClickedElement.parentElement;
+        }
+
+        let index = -1;
+
+        if (lastClickedElement) {
+            const userMessages = Array.from(document.querySelectorAll('#messageContainer .userMessage'));
+            index = userMessages.indexOf(lastClickedElement) * 2;
+        }
+
+        if (index !== -1) {
+            deleteMessage(index+1);
+            if (OPENAI_MODELS.includes(settings.model)) {
+                try {
+                    await fetchOpenAIAPI(settings, referenceCurrentNote, index); 
+                }
+                catch (error) {
+                    new Notice('Error occurred while fetching completion: ' + error.message);
+                    console.log(error.message);
                 }
             }
-            if (messageBlock) {
-                messageBlock.innerHTML = '';
-                messageHistory.pop();
-
-                const loadingEl = document.createElement("span");
-                loadingEl.setAttribute("id", "loading"); 
-                loadingEl.style.display = "inline-block"; 
-                loadingEl.textContent = "..."; 
-
-                // Define a function to update the loading animation
-                const updateLoadingAnimation = () => {
-                    const loadingEl = document.querySelector('#loading');
-                    if (!loadingEl) {
-                        return;
-                    }
-                    loadingEl.textContent += ".";
-                    // If the loading animation has reached three dots, reset it to one dot
-                    if (loadingEl.textContent?.length && loadingEl.textContent.length > 3) {
-                        loadingEl.textContent = ".";
-                    }
-                };  
-
-                // Dispaly loading animation
-                lastBotMessage.appendChild(loadingEl);
-                loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-
-                const loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
-                lastBotMessage.scrollIntoView({ behavior: "smooth", block: "end" });
-
-                // Fetch OpenAI API
-                if (OPENAI_MODELS.includes(settings.model)) {
-                    try {
-                        await fetchOpenAIAPI(settings, referenceCurrentNote); 
-                    }
-                    catch (error) {
-                        new Notice('Error occurred while fetching completion: ' + error.message);
-                        console.log(error.message);
-                    }
+            else if (settings.openAIBaseModels.includes(settings.model)) {
+                try {
+                    await fetchOpenAIBaseAPI(settings, referenceCurrentNote, index); 
                 }
-                else if (settings.openAIBaseModels.includes(settings.model)) {
-                    try {
-                        await fetchOpenAIBaseAPI(settings, referenceCurrentNote); 
-                    }
-                    catch (error) {
-                        new Notice('Error occurred while fetching completion: ' + error.message);
-                        console.log(error.message);
-                    }
+                catch (error) {
+                    new Notice('Error occurred while fetching completion: ' + error.message);
+                    console.log(error.message);
                 }
-                else if (ANTHROPIC_MODELS.includes(settings.model)) {
-                    try {
-                        await requestUrlAnthropicAPI(settings, referenceCurrentNote);
-                    }
-                    catch (error) {
-                        console.error('Error:', error);
-                    }
+            }
+            else if (ANTHROPIC_MODELS.includes(settings.model)) {
+                try {
+                    await requestUrlAnthropicAPI(settings, referenceCurrentNote, index);
                 }
-                else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
-                    if (settings.allowOllamaStream) {
-                        await ollamaFetchDataStream(settings, referenceCurrentNote);
-                    }
-                    else {
-                        await ollamaFetchData(settings, referenceCurrentNote);
-                    }
+                catch (error) {
+                    console.error('Error:', error);
                 }
-                else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
-                    await openAIRestAPIFetchData(settings, referenceCurrentNote);
+            }
+            else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
+                if (settings.allowOllamaStream) {
+                    await ollamaFetchDataStream(settings, referenceCurrentNote, index);
+                }
+                else {
+                    await ollamaFetchData(settings, referenceCurrentNote, index);
+                }
+            }
+            else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
+                if (settings.allowOpenAIRestAPIStream) {
+                    await openAIRestAPIFetchDataStream(settings, referenceCurrentNote, index);
+                }
+                else {
+                    await openAIRestAPIFetchData(settings, referenceCurrentNote, index);
+                }
+            }
+        }
+        else {
+            new Notice("No models detected.");
+        }
+    });
+    return regenerateButton;
+}
+
+export function displayEditButton (settings: BMOSettings, referenceCurrentNoteContent: string, userP: HTMLParagraphElement) {
+    const editButton = document.createElement("button");
+    editButton.textContent = "edit";
+    setIcon(editButton, "edit"); // Assuming setIcon is defined elsewhere
+    editButton.classList.add("edit-button");
+    editButton.title = "edit";
+
+    let lastClickedElement: HTMLElement | null = null;
+
+    editButton.addEventListener("click", function (event) {
+        const editContainer = document.createElement("div");
+        editContainer.classList.add("edit-container");
+        const textArea = document.createElement("textarea");
+        textArea.classList.add("edit-textarea");
+        textArea.value = userP.textContent ?? ""; // Check if userP.textContent is null and provide a default value
+
+        editContainer.appendChild(textArea);
+
+        const textareaEditButton = document.createElement("button");
+        textareaEditButton.textContent = "Edit";
+        textareaEditButton.classList.add("textarea-edit-button");
+        textareaEditButton.title = "edit";
+
+        const cancelButton = document.createElement("button");
+        cancelButton.textContent = "Cancel";
+        cancelButton.classList.add("textarea-cancel-button");
+        cancelButton.title = "cancel";
+
+        event.stopPropagation();
+        lastClickedElement = event.target as HTMLElement;
+
+        while (lastClickedElement && !lastClickedElement.classList.contains('userMessage')) {
+            lastClickedElement = lastClickedElement.parentElement;
+        }
+
+        textareaEditButton.addEventListener("click", async function () {
+            userP.textContent = textArea.value;
+            editContainer.replaceWith(userP);
+
+            if (lastClickedElement) {
+                const userMessages = Array.from(document.querySelectorAll('#messageContainer .userMessage'));
+            
+                const index = userMessages.indexOf(lastClickedElement) * 2;
+            
+                if (index !== -1) {
+                    messageHistory[index].content = textArea.value;
+                    deleteMessage(index+1);
+                    // Fetch OpenAI API
+                    if (OPENAI_MODELS.includes(settings.model)) {
+                        try {
+                            await fetchOpenAIAPI(settings, referenceCurrentNoteContent, index); 
+                        }
+                        catch (error) {
+                            new Notice('Error occurred while fetching completion: ' + error.message);
+                            console.log(error.message);
+                        }
+                    }
+                    else if (settings.openAIBaseModels.includes(settings.model)) {
+                        try {
+                            await fetchOpenAIBaseAPI(settings, referenceCurrentNoteContent, index); 
+                        }
+                        catch (error) {
+                            new Notice('Error occurred while fetching completion: ' + error.message);
+                            console.log(error.message);
+                        }
+                    }
+                    else if (ANTHROPIC_MODELS.includes(settings.model)) {
+                        try {
+                            await requestUrlAnthropicAPI(settings, referenceCurrentNoteContent, index);
+                        }
+                        catch (error) {
+                            console.error('Error:', error);
+                        }
+                    }
+                    else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
+                        if (settings.allowOllamaStream) {
+                            await ollamaFetchDataStream(settings, referenceCurrentNoteContent, index);
+                        }
+                        else {
+                            await ollamaFetchData(settings, referenceCurrentNoteContent, index);
+                        }
+                    }
+                    else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
+                        if (settings.allowOpenAIRestAPIStream) {
+                            await openAIRestAPIFetchDataStream(settings, referenceCurrentNoteContent, index);
+                        }
+                        else {
+                            await openAIRestAPIFetchData(settings, referenceCurrentNoteContent, index);
+                        }
+                    }
                 }
                 else {
                     new Notice("No models detected.");
                 }
 
-                clearInterval(loadingAnimationIntervalId);
+
             }
+
+        });
+
+        cancelButton.addEventListener("click", function () {
+            editContainer.replaceWith(userP);
+        });
+
+        editContainer.appendChild(textareaEditButton);
+        editContainer.appendChild(cancelButton);
+
+        if (userP.parentNode !== null) {
+            userP.parentNode.replaceChild(editContainer, userP);
         }
     });
-    return regenerateButton;
+
+    return editButton;
 }
+
 
 export function displayUserCopyButton (userP: HTMLParagraphElement) {
     const copyButton = document.createElement("button");

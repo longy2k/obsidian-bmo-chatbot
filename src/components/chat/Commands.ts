@@ -54,7 +54,7 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
 }
 
 // Function to create and append a bot message
-function createBotMessage(settings: BMOSettings): HTMLDivElement {
+export function createBotMessage(settings: BMOSettings): HTMLDivElement {
   const messageContainer = document.querySelector("#messageContainer");
   const botMessage = document.createElement("div");
   botMessage.classList.add("botMessage");
@@ -100,6 +100,7 @@ function displayMessage(messageBlock: HTMLDivElement, messageHtml: string, setti
 
 export async function commandFalse(settings: BMOSettings, plugin: BMOGPT) {
   const messageBlock = createBotMessage(settings);
+  
 
   const formattedSettings = `
       <div class="formattedSettings">
@@ -537,7 +538,6 @@ export async function commandSave(settings: BMOSettings) {
 ---\n` + fileContent;
       }
       markdownContent += fileContent;
-      // console.log(fileContent);
   } else {
       // YAML front matter
       markdownContent += 
