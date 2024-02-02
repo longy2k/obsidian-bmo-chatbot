@@ -215,18 +215,18 @@ export function displayUserCopyButton (userP: HTMLParagraphElement) {
     return copyButton;
 }
 
-export function displayBotCopyButton (messageObj: {role: string; content: string;}, settings: BMOSettings) {
+export function displayBotCopyButton (settings: BMOSettings, message: string) {
     const copyButton = document.createElement("button");
     copyButton.textContent = "copy";
     setIcon(copyButton, "copy");
     copyButton.classList.add("copy-button");
     copyButton.title = "copy";
 
-    let messageText = messageObj.content;
+    let messageText = message;
 
     if (messageText !== null) {
         if (ANTHROPIC_MODELS.includes(settings.model)) {
-            const fullString = messageObj.content;
+            const fullString = message;
             const cleanString = fullString.split(' ').slice(1).join(' ').trim();
             messageText = cleanString;
         } 
@@ -283,14 +283,14 @@ export function copyMessageToClipboard(message: string) {
 }
 
 // Append button to editor
-export function displayAppendButton(messageObj: {role: string; content: string;}) {
+export function displayAppendButton(message: string) {
     const appendButton = document.createElement("button");
     appendButton.textContent = "append";
     setIcon(appendButton, "plus-square");
     appendButton.classList.add("append-button");
     appendButton.title = "append";
 
-    const messageText = messageObj.content;
+    const messageText = message;
 
     appendButton.addEventListener("click", async function (event) {
         if (checkActiveFile?.extension === 'md') {

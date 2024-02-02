@@ -5,10 +5,11 @@ import { colorToHex } from "./utils/ColorConverter";
 import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData, openAIRestAPIFetchDataStream } from "./components/FetchModel";
 import { executeCommand } from "./components/chat/Commands";
 import { marked } from "marked";
-import { prismHighlighting } from "./components/PrismaHighlighting";
-import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton, displayEditButton, displayTrashButton, displayUserCopyButton, regenerateUserButton, } from "./components/chat/Buttons";
+import { displayEditButton, displayTrashButton, displayUserCopyButton, regenerateUserButton, } from "./components/chat/Buttons";
 import { getActiveFileContent } from "./components/ReferenceCurrentNoteIndicator";
-import { addMessage, addParagraphBreaks } from "./components/chat/Message";
+import { addMessage } from "./components/chat/Message";
+import { displayUserMessage } from "./components/chat/UserMessage";
+import { displayBotMessage } from "./components/chat/BotMessage";
 export const VIEW_TYPE_CHATBOT = "chatbot-view";
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 
@@ -30,7 +31,6 @@ export let lastCursorPositionFile: TFile | null = null;
 export let activeEditor: Editor | null | undefined = null;
 
 let referenceCurrentNoteContent = '';
-
 
 export class BMOView extends ItemView {
     public settings: BMOSettings;
@@ -114,7 +114,9 @@ export class BMOView extends ItemView {
     
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile) {
-            await getActiveFileContent(activeFile);
+            if (this.settings.allowReferenceCurrentNote) {
+                referenceCurrentNoteContent = await getActiveFileContent(activeFile);
+            }
         }
 
         const messageContainer = chatbotContainer.createEl("div", {
@@ -140,117 +142,18 @@ export class BMOView extends ItemView {
         messageContainer.id = "messageContainer";
         
         messageHistory.forEach(async (messageData) => {   
-            const buttonContainerDiv = document.createElement("div");
-            buttonContainerDiv.className = "button-container";
-
-            const activeFile = this.app.workspace.getActiveFile();
-            if (activeFile) {
-                if (this.settings.allowReferenceCurrentNote) {
-                    referenceCurrentNoteContent = await getActiveFileContent(activeFile);
-                }
-            }
-
             if (messageData.role == "user") {
-                
-                const userMessageDiv = document.createElement("div");
-                userMessageDiv.className = "userMessage";
-                userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || 
-                    getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
-                
-                const userMessageToolBarDiv = document.createElement("div");
-                userMessageToolBarDiv.className = "userMessageToolBar";
-                
-                const userNameSpan = document.createElement("span");
-                userNameSpan.className = "userName";
-                userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
-                const userP = document.createElement("p");
-
-                const regenerateButton = regenerateUserButton(this.settings, referenceCurrentNoteContent);
-                const editButton = displayEditButton(this.settings, referenceCurrentNoteContent, userP);
-                const copyUserButton = displayUserCopyButton(userP);
-                const trashButton = displayTrashButton();
-                
-                userMessageToolBarDiv.appendChild(userNameSpan);
-                userMessageToolBarDiv.appendChild(buttonContainerDiv);
-                
-                if (!messageData.content.startsWith("/")) {
-                    buttonContainerDiv.appendChild(regenerateButton);
-                    buttonContainerDiv.appendChild(editButton);
-                }
-                buttonContainerDiv.appendChild(copyUserButton);
-                buttonContainerDiv.appendChild(trashButton);
-                userMessageDiv.appendChild(userMessageToolBarDiv);
-                userMessageDiv.appendChild(userP);
+                const userMessageDiv = displayUserMessage(this.settings, referenceCurrentNoteContent, messageData.content);
                 messageContainer.appendChild(userMessageDiv);
-
-                if (ANTHROPIC_MODELS.includes(this.settings.model)) {
-                    const fullString = messageData.content;
-                    const cleanString = fullString.split(' ').slice(1).join(' ').trim();
-                    userP.innerHTML = marked(cleanString);
-                } else {
-                    userP.innerHTML = marked(messageData.content);
-                }
-                
             }
         
             if (messageData.role == "assistant") {
-                const botMessageDiv = document.createElement("div");
-                botMessageDiv.className = "botMessage";
-                botMessageDiv.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor ||
-                    getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
-
-                const botMessageToolBarDiv = document.createElement("div");
-                botMessageToolBarDiv.className = "botMessageToolBar";
-        
-                const botNameSpan = document.createElement("span"); 
-                botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                botNameSpan.className = "chatbotName";
-        
-                const messageBlockDiv = document.createElement("div");
-                messageBlockDiv.className = "messageBlock";
-
-                let botP = '';
-
-                const messageText = messageData.content;
-                if (messageHistory.length >= 2) {
-                    if (ANTHROPIC_MODELS.includes(this.settings.model)) {
-                        const cleanString = messageText.split(' ').slice(1).join(' ').trim();
-                        botP = marked(cleanString);
-                    } else if (messageData.content.includes('div class="formattedSettings"')) {
-                        botP = messageData.content;
-                    } 
-                    else {
-                        botP = marked(messageData.content);
-                    }                                  
-                }
-
-                const newBotP = document.createElement('p');
-                newBotP.innerHTML = botP;
-
-                botMessageToolBarDiv.appendChild(botNameSpan);
-                botMessageToolBarDiv.appendChild(buttonContainerDiv);
-
-                if (!messageText.includes('div class="formattedSettings"')) {
-                    const copyBotButton = displayBotCopyButton(messageData, this.settings);
-                    const appendButton = displayAppendButton(messageData);
-                    buttonContainerDiv.appendChild(copyBotButton);
-                    buttonContainerDiv.appendChild(appendButton);
-                }
-                botMessageDiv.appendChild(botMessageToolBarDiv);
-                messageBlockDiv.appendChild(newBotP);
-                botMessageDiv.appendChild(messageBlockDiv);
+                const botMessageDiv = displayBotMessage(this.settings, messageHistory, messageData.content);
                 messageContainer.appendChild(botMessageDiv);
-                
-                prismHighlighting(messageBlockDiv);
-                codeBlockCopyButton(messageBlockDiv);
-                if (!messageData.content.includes('div class="formattedSettings"')){
-                    addParagraphBreaks(messageBlockDiv);        
-                }
+            
                 const botMessages = messageContainer.querySelectorAll(".botMessage");
                 const lastBotMessage = botMessages[botMessages.length - 1];
-
-                lastBotMessage.appendChild(messageBlockDiv);
-                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }
         });
         

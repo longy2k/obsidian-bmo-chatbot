@@ -23,8 +23,8 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
         if (!messageObj.content.includes('div class="formattedSettings"')) {
             const botMessageToolBarDiv = targetBotMessage?.querySelector(".botMessageToolBar");
             const buttonContainerDiv = document.createElement("div");
-            const copyBotButton = displayBotCopyButton(messageObj, settings);
-            const appendButton = displayAppendButton(messageObj);
+            const copyBotButton = displayBotCopyButton(settings, messageObj.content);
+            const appendButton = displayAppendButton(messageObj.content);
             buttonContainerDiv.className = "button-container";
             buttonContainerDiv.appendChild(copyBotButton);
             buttonContainerDiv.appendChild(appendButton);
