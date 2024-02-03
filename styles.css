@@ -324,10 +324,6 @@ button.regenerate-button {
 	background: blue !important;
 }
 
-.theme-light .chatbox textarea {
-	color: white;
-}
-
 /* Misc */
 
 .errorMessage {
@@ -428,4 +424,43 @@ ul#dropdownOptions li:hover {
 .chevron-icon {
 	margin-left: 0.5rem;
 	--icon-size: 1.2rem;
+}
+
+/* Light Theme */
+
+.theme-light .formattedSettings {
+	border: 1px solid #ccc;
+	background-color: white;
+	padding: 10px;
+	border-radius: 5px;
+	margin: 0.5rem;
+	font-size: 0.8rem;
+}
+
+.theme-light .formattedSettings code {
+	background-color: #ccc;
+	border-radius: 0.2rem;
+	padding: 0.16rem;
+}
+
+.theme-light .messageBlock pre {
+	position: relative;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+	font-size: 14px;
+	background-color: white;
+	padding: 5px;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+	line-height: 1.5;
+}
+
+.theme-light .messageBlock pre code {
+	padding: 5px;
+	font-weight: bold;
+	color: #222222;
+}
+
+.theme-light .chatbox textarea {
+	color: white;
 }

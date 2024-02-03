@@ -29,7 +29,6 @@ export function addAPIConnectionSettings(containerEl: HTMLElement, plugin: BMOGP
         await plugin.saveSettings();
     });
 
-    // Add your settings to settingsContainer as before
     new Setting(settingsContainer)
         .setName('API Key')
         .setDesc('Insert API Key.')
@@ -39,17 +38,35 @@ export function addAPIConnectionSettings(containerEl: HTMLElement, plugin: BMOGP
             .onChange(async (value) => {
                 plugin.settings.apiKey = value;
                 await plugin.saveSettings();
-            }));
+            })
+            .inputEl.addEventListener('focusout', async () => {
+                SettingTab.display();
+            })
+        );
 
     new Setting(settingsContainer)
         .setName('OPENAI BASE URL')
         .setDesc('Enter your custom OpenAI-base url.')
+        .addButton(button => button
+            .setButtonText("Restore Default")
+            .setIcon("rotate-cw")
+            .setClass("clickable-icon")
+            .onClick(async () => {
+                plugin.settings.openAIBaseUrl = DEFAULT_SETTINGS.openAIBaseUrl;
+                await plugin.saveSettings();
+                SettingTab.display();
+            })
+        )
         .addText(text => text
             .setPlaceholder('https://api.openai.com/v1')
             .setValue(plugin.settings.openAIBaseUrl || DEFAULT_SETTINGS.openAIBaseUrl)
             .onChange(async (value) => {
-                plugin.settings.openAIBaseUrl = value ? value : DEFAULT_SETTINGS.openAIBaseUrl;
-                await plugin.saveSettings();
-            }));
+                    plugin.settings.openAIBaseUrl = value ? value : DEFAULT_SETTINGS.openAIBaseUrl;
+                    await plugin.saveSettings();
+                })
+            .inputEl.addEventListener('focusout', async () => {
+                SettingTab.display();
+            })
+        );
 }
 
