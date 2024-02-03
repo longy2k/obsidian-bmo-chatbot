@@ -3,7 +3,8 @@ import { BMOSettings, DEFAULT_SETTINGS } from "../../main";
 import { colorToHex } from "../../utils/ColorConverter";
 import { filenameMessageHistoryJSON, messageHistory } from "../../view";
 import BMOGPT from '../../main';
-import { fetchModelRenameTitle, getAbortController } from '../FetchModel';
+import { getAbortController } from '../FetchModel';
+import { fetchModelRenameTitle } from '../editor/FetchRenameNoteTitle';
 import { addMessage } from './Message';
 
 // Commands
@@ -80,6 +81,7 @@ export function createBotMessage(settings: BMOSettings): HTMLDivElement {
 
 // Function to display the message in the Chatbot
 function displayMessage(messageBlock: HTMLDivElement, messageHtml: string, settings: BMOSettings) {
+  const index = messageHistory.length - 1;
   const messageContainer = document.querySelector("#messageContainer");
 
   if (messageContainer) {
@@ -90,7 +92,7 @@ function displayMessage(messageBlock: HTMLDivElement, messageHtml: string, setti
 
     if (messageBlock2) {
       messageBlock2.innerHTML = messageHtml;
-      addMessage(messageBlock.innerHTML, 'botMessage', settings);
+      addMessage(messageBlock.innerHTML, 'botMessage', settings, index);
 
       lastBotMessage.appendChild(messageBlock2);
       lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });

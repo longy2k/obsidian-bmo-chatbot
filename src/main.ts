@@ -1,7 +1,7 @@
 import { Plugin, TFile } from 'obsidian';
 import { BMOView, VIEW_TYPE_CHATBOT} from "./view";
 import { BMOSettingTab } from './settings';
-import { promptSelectGenerateCommand, renameTitleCommand } from './components/EditorCommands';
+import { promptSelectGenerateCommand, renameTitleCommand } from './components/editor/EditorCommands';
 
 export interface BMOSettings {
 	apiKey: string;

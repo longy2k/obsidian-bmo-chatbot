@@ -3,7 +3,7 @@ import { displayAppendButton, displayBotCopyButton } from "./Buttons";
 import { BMOSettings } from "src/main";
 
 // Add a new message to the messageHistory array and save it to the file
-export async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index?: number) {
+export async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index: number) {
     const messageObj: { role: string; content: string } = {
         role: "",
         content: ""
@@ -16,8 +16,9 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
         messageObj.role = 'assistant';  
         messageObj.content = input.trim();
 
+        // Add buttons to botMessage after fetching message
         const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetUserMessage = messageContainerElDivs[index];
         const targetBotMessage = targetUserMessage.nextElementSibling;
         
         if (!messageObj.content.includes('div class="formattedSettings"')) {
@@ -33,10 +34,7 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
 
     }
 
-
-    messageHistory.splice((index ?? messageHistory.length)+1, 0, messageObj);
-
-    // messageHistory.push(messageObj);
+    messageHistory.splice(index+1, 0, messageObj);
 
     const jsonString = JSON.stringify(messageHistory, null, 4);
 

@@ -66,3 +66,34 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
 
     return botMessageDiv;
 }
+
+export function displayLoadingBotMessage(settings: BMOSettings) {
+    const botMessageDiv = document.createElement("div");
+    botMessageDiv.className = "botMessage";
+    botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
+        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+
+    const botMessageToolBarDiv = document.createElement("div");
+    botMessageToolBarDiv.className = "botMessageToolBar";
+
+    const botNameSpan = document.createElement("span"); 
+    botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+    botNameSpan.className = "chatbotName";
+
+    const messageBlockDiv = document.createElement("div");
+    messageBlockDiv.className = "messageBlock";
+
+    const loadingEl = document.createElement("span");
+    loadingEl.setAttribute("id", "loading"); 
+    loadingEl.style.display = "inline-block"; 
+    loadingEl.textContent = "...";  
+
+    botMessageToolBarDiv.appendChild(botNameSpan);
+    botMessageDiv.appendChild(botMessageToolBarDiv);
+    botMessageDiv.appendChild(messageBlockDiv);
+
+    // Dispaly loading animation
+    botMessageDiv.appendChild(loadingEl);
+
+    return botMessageDiv;
+}

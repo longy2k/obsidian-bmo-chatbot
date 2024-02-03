@@ -1,8 +1,8 @@
 import { BMOSettings } from "src/main";
-import { fetchModelRenameTitle } from "./FetchModel";
+import { fetchModelRenameTitle } from "./FetchRenameNoteTitle";
 import { MarkdownView, Notice } from "obsidian";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
-import { fetchOpenAIAPIEditor, fetchOpenAIBaseAPIEditor, ollamaFetchDataEditor, openAIRestAPIFetchDataEditor, requestUrlAnthropicAPIEditor } from "./FetchModelEditor";
+import { fetchOpenAIAPIEditor, fetchOpenAIBaseAPIEditor, ollamaFetchDataEditor, openAIRestAPIFetchDataEditor, requestUrlAnthropicAPIEditor } from "../FetchModelEditor";
 
 export async function renameTitleCommand(settings: BMOSettings) {
     let uniqueNameFound = false;
@@ -14,6 +14,8 @@ export async function renameTitleCommand(settings: BMOSettings) {
     let fileContent = '';
   
     try {
+        new Notice("Generating title...");
+
         if (activeFile) {
         fileContent = await app.vault.read(activeFile);
         }

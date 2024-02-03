@@ -1,11 +1,8 @@
 import { ItemView, WorkspaceLeaf, Notice, TFile, MarkdownView, Editor, EditorPosition } from "obsidian";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
-import { colorToHex } from "./utils/ColorConverter";
 import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData, openAIRestAPIFetchDataStream } from "./components/FetchModel";
 import { executeCommand } from "./components/chat/Commands";
-import { marked } from "marked";
-import { displayEditButton, displayTrashButton, displayUserCopyButton, regenerateUserButton, } from "./components/chat/Buttons";
 import { getActiveFileContent } from "./components/ReferenceCurrentNoteIndicator";
 import { addMessage } from "./components/chat/Message";
 import { displayUserMessage } from "./components/chat/UserMessage";
@@ -114,9 +111,7 @@ export class BMOView extends ItemView {
     
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile) {
-            if (this.settings.allowReferenceCurrentNote) {
-                referenceCurrentNoteContent = await getActiveFileContent(activeFile);
-            }
+            referenceCurrentNoteContent = await getActiveFileContent(activeFile);
         }
 
         const messageContainer = chatbotContainer.createEl("div", {
@@ -153,7 +148,7 @@ export class BMOView extends ItemView {
             
                 const botMessages = messageContainer.querySelectorAll(".botMessage");
                 const lastBotMessage = botMessages[botMessages.length - 1];
-                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
         
@@ -188,6 +183,7 @@ export class BMOView extends ItemView {
     
     async handleKeyup(event: KeyboardEvent) {
         const input = this.textareaElement.value.trim();
+        const index = messageHistory.length - 1;
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile) {
             if (this.settings.allowReferenceCurrentNote) {
@@ -211,54 +207,19 @@ export class BMOView extends ItemView {
             }
 
             if (ANTHROPIC_MODELS.includes(this.settings.model)) {
-                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings);
+                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings, index);
             } else {
                 if (!(input === "/s" || input === "/stop")) {
-                    addMessage(input, 'userMessage', this.settings);
+                    addMessage(input, 'userMessage', this.settings, index);
                 }
             }
             
-            const userP = document.createElement("p");
-            const markdownContent = marked(input);
-            userP.innerHTML = markdownContent;
-            
-            
-            const userMessageDiv = document.createElement("div");
-            userMessageDiv.className = "userMessage";
-            userMessageDiv.style.backgroundColor = colorToHex(this.settings.userMessageBackgroundColor || 
-                getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
-            
-            const userMessageToolBarDiv = document.createElement("div");
-            userMessageToolBarDiv.className = "userMessageToolBar";
-            
-            const userNameSpan = document.createElement("span");
-            userNameSpan.className = "userName";
-            userNameSpan.textContent = this.settings.userName || DEFAULT_SETTINGS.userName;
-
-            const buttonContainerDiv = document.createElement("div");
-            buttonContainerDiv.className = "button-container";
-            
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {
-                const regenerateButton = regenerateUserButton(this.settings, referenceCurrentNoteContent);
-                const editButton = displayEditButton(this.settings, referenceCurrentNoteContent, userP);
-                const copyUserButton = displayUserCopyButton(userP);
-                const trashButton = displayTrashButton();
-
-                userMessageToolBarDiv.appendChild(userNameSpan);
-                userMessageToolBarDiv.appendChild(buttonContainerDiv);
-                if (!input.startsWith("/")) {
-                    buttonContainerDiv.appendChild(regenerateButton);
-                    buttonContainerDiv.appendChild(editButton);
-                }
-                buttonContainerDiv.appendChild(copyUserButton);
-                buttonContainerDiv.appendChild(trashButton);
-                userMessageDiv.appendChild(userMessageToolBarDiv);
-                userMessageDiv.appendChild(userP);
+                const userMessageDiv = displayUserMessage(this.settings, referenceCurrentNoteContent, input);
                 messageContainer.appendChild(userMessageDiv);
 
                 if (input.startsWith("/")) {
-    
                     executeCommand(input, this.settings, this.plugin);
                     const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
                     if (modelName) {
@@ -267,45 +228,15 @@ export class BMOView extends ItemView {
                 }   
                 else {
                     this.preventEnter = true;
-                    const botMessageDiv = document.createElement("div");
-                    botMessageDiv.className = "botMessage";
-                    botMessageDiv.style.backgroundColor = colorToHex(this.settings.botMessageBackgroundColor ||
-                        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
-
-                    const botMessageToolBarDiv = document.createElement("div");
-                    botMessageToolBarDiv.className = "botMessageToolBar";
-
-                    const botNameSpan = document.createElement("span"); 
-                    botNameSpan.textContent = this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-                    botNameSpan.className = "chatbotName";
-
-                    const messageBlockDiv = document.createElement("div");
-                    messageBlockDiv.className = "messageBlock";
-
-                    botMessageToolBarDiv.appendChild(botNameSpan);
-                    botMessageDiv.appendChild(botMessageToolBarDiv);
-                    botMessageDiv.appendChild(messageBlockDiv);
-                    messageContainer.appendChild(botMessageDiv);
-
-                    const loadingEl = document.createElement("span");
-                    loadingEl.setAttribute("id", "loading"); 
-                    loadingEl.style.display = "inline-block"; 
-                    loadingEl.textContent = "..."; 
-
-                    // Dispaly loading animation
-                    botMessageDiv.appendChild(loadingEl);
-
-                    userMessageDiv.scrollIntoView({ behavior: "smooth", block: "start" });
 
                     // Call the chatbot function with the user's input
-                    this.BMOchatbot(input)
+                    this.BMOchatbot()
                         .then(() => {
                             this.preventEnter = false;
                         })
                         .catch(() => {
                             const botParagraph = document.createElement("p");
                             botParagraph.textContent = "Oops, something went wrong. Please try again.";
-                            botMessageDiv.appendChild(botParagraph);
                         });
                 }
             }
@@ -365,7 +296,7 @@ export class BMOView extends ItemView {
         this.textareaElement.removeEventListener("blur", this.handleBlur.bind(this));
     }
 
-    async BMOchatbot(_input: string) {
+    async BMOchatbot() {
         referenceCurrentNoteContent = ''; // Clear reference current note content every time BMOchatbot is called
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile) {
@@ -396,10 +327,11 @@ export class BMOView extends ItemView {
             chatbox.disabled = true;
         } 
         else {
+            const index = messageHistory.length - 1;
             // Fetch OpenAI API
             if (OPENAI_MODELS.includes(this.settings.model)) {
                 try {
-                    await fetchOpenAIAPI(this.settings, referenceCurrentNoteContent); 
+                    await fetchOpenAIAPI(this.settings, referenceCurrentNoteContent, index); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -408,19 +340,19 @@ export class BMOView extends ItemView {
             }
             else if (this.settings.ollamaRestAPIUrl && this.settings.ollamaModels.includes(this.settings.model)) {
                 if (this.settings.allowOllamaStream) {
-                    await ollamaFetchDataStream(this.settings, referenceCurrentNoteContent);
+                    await ollamaFetchDataStream(this.settings, referenceCurrentNoteContent, index);
                 }
                 else {
-                    await ollamaFetchData(this.settings, referenceCurrentNoteContent);
+                    await ollamaFetchData(this.settings, referenceCurrentNoteContent, index);
                 }
             }
             else if (this.settings.openAIRestAPIUrl && this.settings.openAIRestAPIModels.includes(this.settings.model)){
                 try {
                     if (this.settings.allowOpenAIRestAPIStream) {
-                        await openAIRestAPIFetchDataStream(this.settings, referenceCurrentNoteContent);
+                        await openAIRestAPIFetchDataStream(this.settings, referenceCurrentNoteContent, index);
                     }
                     else {
-                        await openAIRestAPIFetchData(this.settings, referenceCurrentNoteContent);
+                        await openAIRestAPIFetchData(this.settings, referenceCurrentNoteContent, index);
                     }
                 }
                 catch (error) {
@@ -430,7 +362,7 @@ export class BMOView extends ItemView {
             }
             else if (this.plugin.settings.openAIBaseModels.includes(this.settings.model)) {
                 try {
-                    await fetchOpenAIBaseAPI(this.settings, referenceCurrentNoteContent); 
+                    await fetchOpenAIBaseAPI(this.settings, referenceCurrentNoteContent, index); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -439,7 +371,7 @@ export class BMOView extends ItemView {
             }
             else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 try {
-                    await requestUrlAnthropicAPI(this.settings, referenceCurrentNoteContent);
+                    await requestUrlAnthropicAPI(this.settings, referenceCurrentNoteContent, index);
                 }
                 catch (error) {
                     console.error('Error:', error);
@@ -450,7 +382,7 @@ export class BMOView extends ItemView {
             }
 
         }
-        console.log("BMO settings:", this.settings);
+        // console.log("BMO settings:", this.settings);
     }
 
     async onClose() {
