@@ -262,6 +262,24 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     
+    const options = {
+        mirostat: parseInt(settings.ollamaParameters.mirostat),
+        mirostat_eta: parseFloat(settings.ollamaParameters.mirostat_eta),
+        mirostat_tau: parseFloat(settings.ollamaParameters.mirostat_tau),
+        num_ctx: parseInt(settings.ollamaParameters.num_ctx),
+        num_gqa: parseInt(settings.ollamaParameters.num_gqa),
+        num_thread: parseInt(settings.ollamaParameters.num_thread),
+        repeat_last_n: parseInt(settings.ollamaParameters.repeat_last_n),
+        repeat_penalty: parseFloat(settings.ollamaParameters.repeat_penalty),
+        temperature: settings.temperature,
+        seed: parseInt(settings.ollamaParameters.seed),
+        stop: settings.ollamaParameters.stop,
+        tfs_z: parseFloat(settings.ollamaParameters.tfs_z),
+        num_predict: parseInt(settings.max_tokens) || -1,
+        top_k: parseInt(settings.ollamaParameters.top_k),
+        top_p: parseFloat(settings.ollamaParameters.top_p),
+    };
+
     try {
         const response = await requestUrl({
             url: ollamaRestAPIUrl + '/api/chat',
@@ -276,12 +294,11 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                     ...messageHistoryAtIndex
                 ],
                 stream: false,
-                options: {
-                    temperature: settings.temperature,
-                    num_predict: parseInt(settings.max_tokens),
-                },
+                options: options,
             }),
         });
+
+        // console.log(options);
 
         const message = response.json.message.content;
 
@@ -365,6 +382,24 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    const options = {
+        mirostat: parseInt(settings.ollamaParameters.mirostat),
+        mirostat_eta: parseFloat(settings.ollamaParameters.mirostat_eta),
+        mirostat_tau: parseFloat(settings.ollamaParameters.mirostat_tau),
+        num_ctx: parseInt(settings.ollamaParameters.num_ctx),
+        num_gqa: parseInt(settings.ollamaParameters.num_gqa),
+        num_thread: parseInt(settings.ollamaParameters.num_thread),
+        repeat_last_n: parseInt(settings.ollamaParameters.repeat_last_n),
+        repeat_penalty: parseFloat(settings.ollamaParameters.repeat_penalty),
+        temperature: settings.temperature,
+        seed: parseInt(settings.ollamaParameters.seed),
+        stop: settings.ollamaParameters.stop,
+        tfs_z: parseFloat(settings.ollamaParameters.tfs_z),
+        num_predict: parseInt(settings.max_tokens) || -1,
+        top_k: parseInt(settings.ollamaParameters.top_k),
+        top_p: parseFloat(settings.ollamaParameters.top_p),
+    };
+
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -378,13 +413,12 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
-                options: {
-                    temperature: settings.temperature,
-                    num_predict: parseInt(settings.max_tokens),
-                },
+                options: options,
             }),
             signal: abortController.signal
         })
+
+        // console.log(options);
         
         if (!response.ok) {
             new Notice(`HTTP error! Status: ${response.status}`);

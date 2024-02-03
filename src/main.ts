@@ -37,6 +37,22 @@ export interface BMOSettings {
 	toggleAPIConnectionSettings: boolean;
 	toggleOpenAIRestAPIUrlSettings: boolean;
 	toggleOllamaSettings: boolean;
+	toggleAdvancedSettings: boolean;
+	ollamaParameters: {
+		mirostat: string;
+		mirostat_eta: string;
+		mirostat_tau: string;
+		num_ctx: string;
+		num_gqa: string;
+		num_thread: string;
+		repeat_last_n: string;
+		repeat_penalty: string;
+		seed: string;
+		stop: string[];
+		tfs_z: string;
+		top_k: string;
+		top_p: string;
+	},
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -66,13 +82,29 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	openAIRestAPIModels: [],
 	openAIBaseModels: [],
 	allowHeader: true,
-	toggleGeneralSettings: false,
+	toggleGeneralSettings: true,
 	toggleAppearanceSettings: false,
 	toggleChatHistorySettings: false,
 	togglePromptSettings: false,
 	toggleAPIConnectionSettings: true,
 	toggleOpenAIRestAPIUrlSettings: true,
 	toggleOllamaSettings: true,
+	toggleAdvancedSettings: false,
+	ollamaParameters: {
+		mirostat: '0',
+		mirostat_eta: '0.1',
+		mirostat_tau: '5.0',
+		num_ctx: '2048',
+		num_gqa: '',
+		num_thread: '',
+		repeat_last_n: '64',
+		repeat_penalty: '1.1',
+		seed: '0',
+		stop: [],
+		tfs_z: '1.0',
+		top_k: '40',
+		top_p: '0.9',
+	},
 }
 
 export let checkActiveFile: TFile | null = null;
