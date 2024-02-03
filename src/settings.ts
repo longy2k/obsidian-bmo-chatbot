@@ -33,12 +33,15 @@ export class BMOSettingTab extends PluginSettingTab {
 		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
 
 		// Display settings
-		addAPIConnectionSettings(this.containerEl, this.plugin, this);
-		addOpenAIRestAPIUrlSettings(this.containerEl, this.plugin, this);
-		addOllamaSettings(this.containerEl, this.plugin, this);
 		addGeneralSettings(this.containerEl, this.plugin, this);
 		addAppearanceSettings(this.containerEl, this.plugin, this);		
 		addChatHistorySettings(this.containerEl, this.plugin, this);
 		addPromptSettings(this.containerEl, this.plugin, this);
+		const separator = document.createElement('hr');
+		separator.style.margin = `1rem 0`;
+		this.containerEl.appendChild(separator);
+		addAPIConnectionSettings(this.containerEl, this.plugin, this);
+		addOpenAIRestAPIUrlSettings(this.containerEl, this.plugin, this);
+		addOllamaSettings(this.containerEl, this.plugin, this);
 	}
 }

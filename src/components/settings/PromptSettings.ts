@@ -1,12 +1,37 @@
-import { Setting, SettingTab, TFolder } from "obsidian";
+import { Setting, SettingTab, TFolder, setIcon } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 
 
 // Prompt Settings
 export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
-    containerEl.createEl('h2', {text: 'Prompts'});
+    const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
+    toggleSettingContainer.createEl('h2', {text: 'Prompts'});
 
-    new Setting(containerEl)
+    const initialState = plugin.settings.togglePromptSettings;
+    const chevronIcon = toggleSettingContainer.createEl('span', { cls: 'chevron-icon' });
+    setIcon(chevronIcon, initialState ? 'chevron-down' : 'chevron-right');
+
+    // Create the settings container to be toggled
+    const settingsContainer = containerEl.createDiv({ cls: 'settingsContainer' });
+    settingsContainer.style.display = initialState ? 'block' : 'none';
+
+    // Toggle visibility
+    toggleSettingContainer.addEventListener('click', async () => {
+        const isOpen = settingsContainer.style.display !== 'none';
+        if (isOpen) {
+            setIcon(chevronIcon, 'chevron-right'); // Close state
+            settingsContainer.style.display = 'none';
+            plugin.settings.togglePromptSettings = false;
+
+        } else {
+            setIcon(chevronIcon, 'chevron-down'); // Open state
+            settingsContainer.style.display = 'block';
+            plugin.settings.togglePromptSettings = true;
+        }
+        await plugin.saveSettings();
+    });
+
+    new Setting(settingsContainer)
         .setName('Prompt Folder Path')
         .setDesc('Reference your prompts from a specified folder.')
         .addText(text => text
@@ -37,7 +62,7 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             })
         );
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Prompt')
         .setDesc('Select a prompt.')
         .addDropdown(dropdown => {

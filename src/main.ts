@@ -30,6 +30,13 @@ export interface BMOSettings {
 	openAIRestAPIModels: string[];
 	openAIBaseModels: string[];
 	allowHeader: boolean;
+	toggleGeneralSettings: boolean;
+	toggleAppearanceSettings: boolean;
+	toggleChatHistorySettings: boolean;
+	togglePromptSettings: boolean;
+	toggleAPIConnectionSettings: boolean;
+	toggleOpenAIRestAPIUrlSettings: boolean;
+	toggleOllamaSettings: boolean;
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -59,6 +66,13 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	openAIRestAPIModels: [],
 	openAIBaseModels: [],
 	allowHeader: true,
+	toggleGeneralSettings: false,
+	toggleAppearanceSettings: false,
+	toggleChatHistorySettings: false,
+	togglePromptSettings: false,
+	toggleAPIConnectionSettings: true,
+	toggleOpenAIRestAPIUrlSettings: true,
+	toggleOllamaSettings: true,
 }
 
 export let checkActiveFile: TFile | null = null;

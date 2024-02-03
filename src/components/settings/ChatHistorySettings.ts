@@ -1,10 +1,35 @@
-import { Setting, SettingTab } from "obsidian";
+import { Setting, SettingTab, setIcon } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 
 export function addChatHistorySettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
-    containerEl.createEl('h2', {text: 'Chat History'});
+    const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
+    toggleSettingContainer.createEl('h2', {text: 'Chat History'});
 
-    new Setting(containerEl)
+    const initialState = plugin.settings.toggleChatHistorySettings;
+    const chevronIcon = toggleSettingContainer.createEl('span', { cls: 'chevron-icon' });
+    setIcon(chevronIcon, initialState ? 'chevron-down' : 'chevron-right');
+
+    // Create the settings container to be toggled
+    const settingsContainer = containerEl.createDiv({ cls: 'settingsContainer' });
+    settingsContainer.style.display = initialState ? 'block' : 'none';
+
+    // Toggle visibility
+    toggleSettingContainer.addEventListener('click', async () => {
+        const isOpen = settingsContainer.style.display !== 'none';
+        if (isOpen) {
+            setIcon(chevronIcon, 'chevron-right'); // Close state
+            settingsContainer.style.display = 'none';
+            plugin.settings.toggleChatHistorySettings = false;
+
+        } else {
+            setIcon(chevronIcon, 'chevron-down'); // Open state
+            settingsContainer.style.display = 'block';
+            plugin.settings.toggleChatHistorySettings = true;
+        }
+        await plugin.saveSettings();
+    });
+
+    new Setting(settingsContainer)
         .setName('Chat History Folder Path')
         .setDesc('Save your chat history in a specified folder.')
         .addText(text => text
@@ -16,7 +41,7 @@ export function addChatHistorySettings(containerEl: HTMLElement, plugin: BMOGPT,
             })
         );
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Template File Path')
         .setDesc('Insert your template file path.')
         .addText(text => text
@@ -53,7 +78,7 @@ export function addChatHistorySettings(containerEl: HTMLElement, plugin: BMOGPT,
             })
         );
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Allow Rename Note Title')
         .setDesc('Allow model to rename the note title when saving chat history.')
         .addToggle((toggle) =>

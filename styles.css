@@ -412,3 +412,20 @@ ul#dropdownOptions li:hover {
 	border-radius: 0.2rem;
 	padding: 0.16rem;
 }
+
+/* Toggle Settings Container */
+.toggleSettingContainer {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	justify-content: space-between;
+}
+
+.settingsContainer {
+	margin: 0rem 1.4rem;
+}
+
+.chevron-icon {
+	margin-left: 0.5rem;
+	--icon-size: 1.2rem;
+}

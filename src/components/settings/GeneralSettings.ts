@@ -1,10 +1,35 @@
-import { DropdownComponent, Notice, Setting, SettingTab } from "obsidian";
+import { DropdownComponent, Notice, Setting, SettingTab, setIcon } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
 import { fetchOllamaModels, fetchOpenAIBaseModels, fetchOpenAIRestAPIModels } from "../FetchModelList";
 
 export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
-    containerEl.createEl('h2', {text: 'General'});
+    const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
+    toggleSettingContainer.createEl('h2', {text: 'General'});
+
+    const initialState = plugin.settings.toggleGeneralSettings;
+    const chevronIcon = toggleSettingContainer.createEl('span', { cls: 'chevron-icon' });
+    setIcon(chevronIcon, initialState ? 'chevron-down' : 'chevron-right');
+
+    // Create the settings container to be toggled
+    const settingsContainer = containerEl.createDiv({ cls: 'settingsContainer' });
+    settingsContainer.style.display = initialState ? 'block' : 'none';
+
+    // Toggle visibility
+    toggleSettingContainer.addEventListener('click', async () => {
+        const isOpen = settingsContainer.style.display !== 'none';
+        if (isOpen) {
+            setIcon(chevronIcon, 'chevron-right'); // Close state
+            settingsContainer.style.display = 'none';
+            plugin.settings.toggleGeneralSettings = false;
+
+        } else {
+            setIcon(chevronIcon, 'chevron-down'); // Open state
+            settingsContainer.style.display = 'block';
+            plugin.settings.toggleGeneralSettings = true;
+        }
+        await plugin.saveSettings();
+    });
 
     // Function to add options to dropdown
     const addOptionsToDropdown = (dropdown: DropdownComponent, models: string[]) => {
@@ -13,7 +38,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
         });
     };
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Model')
         .setDesc('Choose a model.')
         .addDropdown(async dropdown => {
@@ -91,7 +116,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                 })
         });
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('System')
         .setDesc('System role prompt.')
         .addTextArea(text => text
@@ -103,7 +128,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             })
         );
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Max Tokens')
         .setDesc(descLink('The maximum number of tokens, or words, that the model is allowed to generate in its output.', 'https://platform.openai.com/tokenizer'))
         .addText(text => text
@@ -115,7 +140,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             })
         );
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Temperature')
         .setDesc('Temperature controls how random the generated output is. Lower values make the text more predictable, while higher values make it more creative and unpredictable.')
         .addSlider(slider => slider
@@ -128,7 +153,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             })
         );
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Allow Reference Current Note')
         .setDesc('Allow chatbot to reference current active note during conversation.')
         .addToggle((toggle) =>

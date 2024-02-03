@@ -1,11 +1,36 @@
-import { ColorComponent, Setting, SettingTab } from "obsidian";
+import { ColorComponent, Setting, SettingTab, setIcon } from "obsidian";
 import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
 import { colorToHex } from "src/utils/ColorConverter";
 
 export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
-    containerEl.createEl('h2', {text: 'Appearance'});
+    const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
+    toggleSettingContainer.createEl('h2', {text: 'Appearance'});
+
+    const initialState = plugin.settings.toggleAppearanceSettings;
+    const chevronIcon = toggleSettingContainer.createEl('span', { cls: 'chevron-icon' });
+    setIcon(chevronIcon, initialState ? 'chevron-down' : 'chevron-right');
+
+    // Create the settings container to be toggled
+    const settingsContainer = containerEl.createDiv({ cls: 'settingsContainer' });
+    settingsContainer.style.display = initialState ? 'block' : 'none';
+
+    // Toggle visibility
+    toggleSettingContainer.addEventListener('click', async () => {
+        const isOpen = settingsContainer.style.display !== 'none';
+        if (isOpen) {
+            setIcon(chevronIcon, 'chevron-right'); // Close state
+            settingsContainer.style.display = 'none';
+            plugin.settings.toggleAppearanceSettings = false;
+
+        } else {
+            setIcon(chevronIcon, 'chevron-down'); // Open state
+            settingsContainer.style.display = 'block';
+            plugin.settings.toggleAppearanceSettings = true;
+        }
+        await plugin.saveSettings();
+    });
     
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('User Name')
         .setDesc('Create a username.')
         .addText(text => text
@@ -22,7 +47,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
             })
         );
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Chatbot Name')
         .setDesc('Name your chatbot.')
         .addText(text => text
@@ -46,7 +71,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
     let colorPicker1: ColorComponent;
     const defaultUserMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim();
     
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Background Color for User Messages')
         .setDesc('Modify the background color of the userMessage element.')
         .addButton(button => button
@@ -97,7 +122,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
     let colorPicker2: ColorComponent;
     const defaultBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim();
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
         .setName('Background Color for Bot Messages')
         .setDesc('Modify the background color of the botMessage element.')
         .addButton(button => button
@@ -144,7 +169,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
         });
     });
 
-    new Setting(containerEl)
+    new Setting(settingsContainer)
     .setName('Allow Header')
     .setDesc('Display chatbot name and model name in header.')
     .addToggle((toggle) =>
