@@ -1,5 +1,5 @@
 # BMO Chatbot for Obsidian
-Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) with OpenAI, Ollama, LM Studio, OpenRouter, and Mistral AI.
+Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) with OpenAI's ChatGPT, Ollama, LM Studio, OpenRouter, and Mistral AI for Obsidian.
 
 ![Screenshot-1](README_images/Screenshot-1.png)
 <p align="center">
