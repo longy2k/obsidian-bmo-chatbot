@@ -46,7 +46,7 @@ export async function fetchOllamaModels(plugin: BMOGPT) {
 		return models;
 
 	} catch (error) {
-		console.error('Error:', error);
+		console.error(error);
 	}
 }
 

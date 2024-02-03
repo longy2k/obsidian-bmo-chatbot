@@ -25,7 +25,11 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
     let message = '';
     let isScroll = false;
 
-    const prompt = await getPrompt(settings);
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -141,7 +145,11 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
-    const prompt = await getPrompt(settings);
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -223,7 +231,11 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
         return;
     }
 
-    const prompt = await getPrompt(settings);
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -322,7 +334,11 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
 
     let isScroll = false;
 
-    const prompt = await getPrompt(settings);
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -455,7 +471,11 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
 
 // Request response from openai-based rest api url
 export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCurrentNote: string, index: number) {
-    const prompt = await getPrompt(settings);
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -568,7 +588,11 @@ export async function openAIRestAPIFetchDataStream(settings: BMOSettings, refere
 
     let isScroll = false;
 
-    const prompt = await getPrompt(settings);
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -715,7 +739,11 @@ export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCur
       'x-api-key': settings.apiKey,
     };
   
-    const prompt = await getPrompt(settings);
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
