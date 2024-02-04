@@ -59,7 +59,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	apiKey: '',
 	max_tokens: '',
 	model: '',
-	system_role: '',
+	system_role: 'You are a helpful assistant.',
 	temperature: 1.00,
 	userName: 'USER',
 	chatbotName: 'BMO',

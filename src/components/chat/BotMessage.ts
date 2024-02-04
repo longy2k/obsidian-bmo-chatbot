@@ -6,6 +6,8 @@ import { marked } from "marked";
 import { prismHighlighting } from "../PrismaHighlighting";
 import { addParagraphBreaks } from "./Message";
 
+let loadingAnimationIntervalId: string | number | NodeJS.Timeout | undefined;
+
 export function displayBotMessage(settings: BMOSettings, messageHistory: { role: string; content: string }[], message: string) {
     const botMessageDiv = document.createElement("div");
     botMessageDiv.className = "botMessage";
@@ -94,6 +96,31 @@ export function displayLoadingBotMessage(settings: BMOSettings) {
 
     // Dispaly loading animation
     botMessageDiv.appendChild(loadingEl);
+
+    // Function to update the loading animation
+    const updateLoadingAnimation = () => {
+        const loadingEl = document.querySelector('#loading');
+        if (!loadingEl) {
+            return;
+        }
+        loadingEl.textContent += ".";
+        // Reset to one dot if the animation has reached three dots
+        if (loadingEl.textContent && loadingEl.textContent.length > 3) {
+            loadingEl.textContent = ".";
+        }
+    };
+
+    // Function to start or restart the loading animation
+    const loadingElementAnimation = () => {
+        // Clear any existing interval to prevent speeding up
+        if (loadingAnimationIntervalId !== undefined) {
+            clearInterval(loadingAnimationIntervalId);
+        }
+        // Set a new interval and store its ID
+        loadingAnimationIntervalId = setInterval(updateLoadingAnimation, 500);
+    };
+
+    loadingElementAnimation();
 
     return botMessageDiv;
 }
