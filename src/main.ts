@@ -99,7 +99,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		num_thread: '',
 		repeat_last_n: '64',
 		repeat_penalty: '1.1',
-		seed: '0',
+		seed: '',
 		stop: [],
 		tfs_z: '1.0',
 		top_k: '40',

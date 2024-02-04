@@ -199,7 +199,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setName('num_gqa')
     .setDesc('The number of GQA groups in the transformer layer. Required for some models, for example it is 8 for llama2:70b.')
     .addText(text => text
-        .setPlaceholder('')
+        .setPlaceholder('0')
         .setValue(plugin.settings.ollamaParameters.num_gqa || DEFAULT_SETTINGS.ollamaParameters.num_gqa)
         .onChange(async (value) => {
             // Parse the input value as an integer
@@ -223,7 +223,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setName('num_thread')
     .setDesc('Sets the number of threads to use during computation. By default, Ollama will detect this for optimal performance. It is recommended to set this value to the number of physical CPU cores your system has (as opposed to the logical number of cores).')
     .addText(text => text
-        .setPlaceholder('')
+        .setPlaceholder('0')
         .setValue(plugin.settings.ollamaParameters.num_thread || DEFAULT_SETTINGS.ollamaParameters.num_thread)
         .onChange(async (value) => {
             // Parse the input value as an integer
@@ -300,7 +300,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
 
     new Setting(advancedSettingsContainer)
     .setName('seed')
-    .setDesc('Sets the random number seed to use for generation. Setting this to a specific number will make the model generate the same text for the same prompt. (Default: 0)')
+    .setDesc('Sets the random number seed to use for generation. Setting this to a specific number will make the model generate the same text for the same prompt.')
     .addText(text => text
         .setPlaceholder('0')
         .setValue(plugin.settings.ollamaParameters.seed || DEFAULT_SETTINGS.ollamaParameters.seed)
