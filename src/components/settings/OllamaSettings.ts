@@ -429,4 +429,42 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         })
     );
 
+    new Setting(advancedSettingsContainer)
+    .setName('keep_alive')
+    .setDesc('If set to a positive duration (e.g. 20m, 1hr or 30), the model will stay loaded for the provided duration in seconds. If set to a negative duration (e.g. -1), the model will stay loaded indefinitely. If set to 0, the model will be unloaded immediately once finished. If not set, the model will stay loaded for 5 minutes by default.')
+    .addText(text => text
+        .setPlaceholder('30s')
+        .setValue(plugin.settings.ollamaParameters.keep_alive || DEFAULT_SETTINGS.ollamaParameters.keep_alive)
+        .onChange(async (value) => {
+            // Regular expression to validate the input value and capture the number and unit
+            const match = value.match(/^(-?\d+)(m|hr|h)?$/);
+            
+            if (match) {
+                const num = parseInt(match[1]);
+                const unit = match[2];
+
+                // Convert to seconds based on the unit
+                let seconds;
+                if (unit === 'm') {
+                    seconds = num * 60; // Convert minutes to seconds
+                } else if (unit === 'hr' || unit === 'h') {
+                    seconds = num * 3600; // Convert hours to seconds
+                } else {
+                    seconds = num; // Assume it's already in seconds if no unit
+                }
+
+                // Store the value in seconds
+                plugin.settings.ollamaParameters.keep_alive = seconds.toString();
+            } else {
+                // If the input is invalid, revert to the default setting
+                plugin.settings.ollamaParameters.keep_alive = DEFAULT_SETTINGS.ollamaParameters.keep_alive;
+            }
+
+            await plugin.saveSettings();
+        })
+        .inputEl.addEventListener('focusout', async () => {
+            SettingTab.display();
+        })
+    );
+
 }

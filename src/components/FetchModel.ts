@@ -231,6 +231,7 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                     ...messageHistoryAtIndex
                 ],
                 stream: false,
+                keep_alive: parseInt(settings.ollamaParameters.keep_alive),
                 options: ollamaParametersOptions(settings),
             }),
         });
@@ -317,6 +318,7 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
+                keep_alive: parseInt(settings.ollamaParameters.keep_alive),
                 options: ollamaParametersOptions(settings),
             }),
             signal: abortController.signal

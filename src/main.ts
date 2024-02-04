@@ -52,6 +52,7 @@ export interface BMOSettings {
 		tfs_z: string;
 		top_k: string;
 		top_p: string;
+		keep_alive: string;
 	},
 }
 
@@ -91,6 +92,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	toggleOllamaSettings: true,
 	toggleAdvancedSettings: false,
 	ollamaParameters: {
+		keep_alive: '',
 		mirostat: '0',
 		mirostat_eta: '0.1',
 		mirostat_tau: '5.0',
