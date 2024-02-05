@@ -2,9 +2,12 @@ import { Notice, requestUrl } from "obsidian";
 import OpenAI from "openai";
 import { BMOSettings } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
+import { getActiveFileContent, getCurrentNoteContent } from "./ReferenceCurrentNote";
 
 // Rename note title based on specified model
-export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurrentNoteContent: string) {
+export async function fetchModelRenameTitle(settings: BMOSettings) {
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
     
     const prompt = `You are a title generator. You will give succinct titles that does not contain backslashes,
                     forward slashes, or colons. Please generate one title as your response.\n\n`;

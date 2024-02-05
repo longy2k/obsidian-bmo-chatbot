@@ -9,11 +9,12 @@ import { addMessage, addParagraphBreaks } from "./chat/Message";
 import { codeBlockCopyButton } from "./chat/Buttons";
 import { getPrompt } from "./chat/Prompt";
 import { displayLoadingBotMessage } from "./chat/BotMessage";
+import { getActiveFileContent, getCurrentNoteContent } from "./editor/ReferenceCurrentNote";
 
 let abortController = new AbortController();
 
 // Fetch OpenAI API Chat
-export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNoteContent: string, index: number) {
+export async function fetchOpenAIAPI(settings: BMOSettings, index: number) {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
         baseURL: settings.openAIBaseUrl,
@@ -41,6 +42,9 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
 
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
         const stream = await openai.chat.completions.create({
@@ -122,7 +126,7 @@ export async function fetchOpenAIAPI(settings: BMOSettings, referenceCurrentNote
 }
 
 // Fetch OpenAI-Based API
-export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrentNote: string, index: number) {
+export async function fetchOpenAIBaseAPI(settings: BMOSettings, index: number) {
     const openai = new OpenAI({
         apiKey: settings.apiKey,
         baseURL: settings.openAIBaseUrl,
@@ -146,12 +150,15 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
     try {
         const completion = await openai.chat.completions.create({
             model: settings.model,
             max_tokens: parseInt(settings.max_tokens),
             messages: [
-                { role: 'system', content: referenceCurrentNote + settings.system_role + prompt},
+                { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
                 ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
         });
@@ -193,7 +200,7 @@ export async function fetchOpenAIBaseAPI(settings: BMOSettings, referenceCurrent
 
 // Request response from Ollama
 // NOTE: Abort does not work for requestUrl
-export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNoteContent: string, index: number) {
+export async function ollamaFetchData(settings: BMOSettings, index: number) {
     const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
 
     if (!ollamaRestAPIUrl) {
@@ -217,6 +224,9 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
     try {
         const response = await requestUrl({
             url: ollamaRestAPIUrl + '/api/chat',
@@ -235,8 +245,6 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
                 options: ollamaParametersOptions(settings),
             }),
         });
-
-        // console.log(ollamaParametersOptions(settings));
 
         const message = response.json.message.content;
 
@@ -273,7 +281,7 @@ export async function ollamaFetchData(settings: BMOSettings, referenceCurrentNot
 }
 
 // Fetch Ollama API via stream
-export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurrentNoteContent: string, index: number) {
+export async function ollamaFetchDataStream(settings: BMOSettings, index: number) {
     const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
 
     if (!ollamaRestAPIUrl) {
@@ -305,6 +313,9 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -323,8 +334,6 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
             }),
             signal: abortController.signal
         })
-
-        // console.log(ollamaParametersOptions(settings));
         
         if (!response.ok) {
             new Notice(`HTTP error! Status: ${response.status}`);
@@ -409,7 +418,7 @@ export async function ollamaFetchDataStream(settings: BMOSettings, referenceCurr
 }
 
 // Request response from openai-based rest api url
-export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCurrentNote: string, index: number) {
+export async function openAIRestAPIFetchData(settings: BMOSettings, index: number) {
     let prompt = await getPrompt(settings);
 
     if (prompt == undefined) {
@@ -426,6 +435,9 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCur
 
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
     
     const urls = [
         settings.openAIRestAPIUrl + '/v1/chat/completions',
@@ -446,7 +458,7 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCur
                 body: JSON.stringify({
                     model: settings.model,
                     messages: [
-                        { role: 'system', content: referenceCurrentNote + settings.system_role + prompt},
+                        { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
                         ...messageHistoryAtIndex
                     ],
                     max_tokens: parseInt(settings.max_tokens),
@@ -497,7 +509,7 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, referenceCur
 }
 
 // Fetch Ollama API via stream
-export async function openAIRestAPIFetchDataStream(settings: BMOSettings, referenceCurrentNoteContent: string, index: number) {
+export async function openAIRestAPIFetchDataStream(settings: BMOSettings, index: number) {
     const openAIRestAPIUrl = settings.openAIRestAPIUrl;
 
     if (!openAIRestAPIUrl) {
@@ -528,6 +540,9 @@ export async function openAIRestAPIFetchDataStream(settings: BMOSettings, refere
 
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
         const response = await fetch(url, {
@@ -641,7 +656,7 @@ export async function openAIRestAPIFetchDataStream(settings: BMOSettings, refere
 }
 
 // Request response from Anthropic 
-export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCurrentNoteContent: string, index: number) {
+export async function requestUrlAnthropicAPI(settings: BMOSettings, index: number) {
     const headers = {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
@@ -666,6 +681,9 @@ export async function requestUrlAnthropicAPI(settings: BMOSettings, referenceCur
 
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
 
     const requestBody = {
         model: settings.model,

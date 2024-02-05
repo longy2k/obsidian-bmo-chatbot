@@ -4,7 +4,7 @@ import { displayEditButton, displayTrashButton, displayUserCopyButton, regenerat
 import { ANTHROPIC_MODELS } from "src/view";
 import { marked } from "marked";
 
-export function displayUserMessage(settings: BMOSettings, referenceCurrentNoteContent: string, message: string) {
+export function displayUserMessage(settings: BMOSettings, message: string) {
     const userMessageDiv = document.createElement("div");
     userMessageDiv.className = "userMessage";
     userMessageDiv.style.backgroundColor = colorToHex(settings.userMessageBackgroundColor || 
@@ -21,8 +21,8 @@ export function displayUserMessage(settings: BMOSettings, referenceCurrentNoteCo
     userNameSpan.textContent = settings.userName || DEFAULT_SETTINGS.userName;
     const userP = document.createElement("p");
 
-    const regenerateButton = regenerateUserButton(settings, referenceCurrentNoteContent);
-    const editButton = displayEditButton(settings, referenceCurrentNoteContent, userP);
+    const regenerateButton = regenerateUserButton(settings);
+    const editButton = displayEditButton(settings, userP);
     const copyUserButton = displayUserCopyButton(userP);
     const trashButton = displayTrashButton();
     

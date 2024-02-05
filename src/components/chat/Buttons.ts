@@ -3,7 +3,7 @@ import { BMOSettings, checkActiveFile } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from "src/view";
 import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData, openAIRestAPIFetchDataStream } from "../FetchModel";
 
-export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote: string) {
+export function regenerateUserButton(settings: BMOSettings) {
     const regenerateButton = document.createElement("button");
     regenerateButton.textContent = "regenerate";
     setIcon(regenerateButton, "refresh-ccw");
@@ -31,7 +31,7 @@ export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote
             deleteMessage(index+1);
             if (OPENAI_MODELS.includes(settings.model)) {
                 try {
-                    await fetchOpenAIAPI(settings, referenceCurrentNote, index); 
+                    await fetchOpenAIAPI(settings, index); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -40,7 +40,7 @@ export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote
             }
             else if (settings.openAIBaseModels.includes(settings.model)) {
                 try {
-                    await fetchOpenAIBaseAPI(settings, referenceCurrentNote, index); 
+                    await fetchOpenAIBaseAPI(settings, index); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -49,7 +49,7 @@ export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote
             }
             else if (ANTHROPIC_MODELS.includes(settings.model)) {
                 try {
-                    await requestUrlAnthropicAPI(settings, referenceCurrentNote, index);
+                    await requestUrlAnthropicAPI(settings, index);
                 }
                 catch (error) {
                     console.error('Error:', error);
@@ -57,18 +57,18 @@ export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote
             }
             else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
                 if (settings.allowOllamaStream) {
-                    await ollamaFetchDataStream(settings, referenceCurrentNote, index);
+                    await ollamaFetchDataStream(settings, index);
                 }
                 else {
-                    await ollamaFetchData(settings, referenceCurrentNote, index);
+                    await ollamaFetchData(settings, index);
                 }
             }
             else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
                 if (settings.allowOpenAIRestAPIStream) {
-                    await openAIRestAPIFetchDataStream(settings, referenceCurrentNote, index);
+                    await openAIRestAPIFetchDataStream(settings, index);
                 }
                 else {
-                    await openAIRestAPIFetchData(settings, referenceCurrentNote, index);
+                    await openAIRestAPIFetchData(settings, index);
                 }
             }
         }
@@ -79,7 +79,7 @@ export function regenerateUserButton(settings: BMOSettings, referenceCurrentNote
     return regenerateButton;
 }
 
-export function displayEditButton (settings: BMOSettings, referenceCurrentNoteContent: string, userP: HTMLParagraphElement) {
+export function displayEditButton (settings: BMOSettings, userP: HTMLParagraphElement) {
     const editButton = document.createElement("button");
     editButton.textContent = "edit";
     setIcon(editButton, "edit"); // Assuming setIcon is defined elsewhere
@@ -129,7 +129,7 @@ export function displayEditButton (settings: BMOSettings, referenceCurrentNoteCo
                     // Fetch OpenAI API
                     if (OPENAI_MODELS.includes(settings.model)) {
                         try {
-                            await fetchOpenAIAPI(settings, referenceCurrentNoteContent, index); 
+                            await fetchOpenAIAPI(settings, index); 
                         }
                         catch (error) {
                             new Notice('Error occurred while fetching completion: ' + error.message);
@@ -138,7 +138,7 @@ export function displayEditButton (settings: BMOSettings, referenceCurrentNoteCo
                     }
                     else if (settings.openAIBaseModels.includes(settings.model)) {
                         try {
-                            await fetchOpenAIBaseAPI(settings, referenceCurrentNoteContent, index); 
+                            await fetchOpenAIBaseAPI(settings, index); 
                         }
                         catch (error) {
                             new Notice('Error occurred while fetching completion: ' + error.message);
@@ -147,7 +147,7 @@ export function displayEditButton (settings: BMOSettings, referenceCurrentNoteCo
                     }
                     else if (ANTHROPIC_MODELS.includes(settings.model)) {
                         try {
-                            await requestUrlAnthropicAPI(settings, referenceCurrentNoteContent, index);
+                            await requestUrlAnthropicAPI(settings, index);
                         }
                         catch (error) {
                             console.error('Error:', error);
@@ -155,18 +155,18 @@ export function displayEditButton (settings: BMOSettings, referenceCurrentNoteCo
                     }
                     else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
                         if (settings.allowOllamaStream) {
-                            await ollamaFetchDataStream(settings, referenceCurrentNoteContent, index);
+                            await ollamaFetchDataStream(settings, index);
                         }
                         else {
-                            await ollamaFetchData(settings, referenceCurrentNoteContent, index);
+                            await ollamaFetchData(settings, index);
                         }
                     }
                     else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
                         if (settings.allowOpenAIRestAPIStream) {
-                            await openAIRestAPIFetchDataStream(settings, referenceCurrentNoteContent, index);
+                            await openAIRestAPIFetchDataStream(settings, index);
                         }
                         else {
-                            await openAIRestAPIFetchData(settings, referenceCurrentNoteContent, index);
+                            await openAIRestAPIFetchData(settings, index);
                         }
                     }
                 }

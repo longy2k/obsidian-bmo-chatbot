@@ -3,7 +3,7 @@ import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
 import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData, openAIRestAPIFetchDataStream } from "./components/FetchModel";
 import { executeCommand } from "./components/chat/Commands";
-import { getActiveFileContent } from "./components/ReferenceCurrentNoteIndicator";
+import { getActiveFileContent } from "./components/editor/ReferenceCurrentNote";
 import { addMessage } from "./components/chat/Message";
 import { displayUserMessage } from "./components/chat/UserMessage";
 import { displayBotMessage } from "./components/chat/BotMessage";
@@ -26,8 +26,6 @@ export let lastCursorPosition: EditorPosition = {
 
 export let lastCursorPositionFile: TFile | null = null;
 export let activeEditor: Editor | null | undefined = null;
-
-let referenceCurrentNoteContent = '';
 
 export class BMOView extends ItemView {
     public settings: BMOSettings;
@@ -52,8 +50,6 @@ export class BMOView extends ItemView {
     }
     
     async onOpen(): Promise<void> {
-        this.registerEvent(this.app.workspace.on("file-open", this.handleFileOpenEvent.bind(this)));
-
         const container = this.containerEl.children[1];
         container.empty();
         const chatbotContainer = container.createEl("div", {
@@ -95,7 +91,6 @@ export class BMOView extends ItemView {
                 id: "referenceCurrentNote"
             }
         });
-    
 
         referenceCurrentNoteElement.appendChild(spanElement);
 
@@ -109,11 +104,6 @@ export class BMOView extends ItemView {
             }
         }
     
-        const activeFile = this.app.workspace.getActiveFile();
-        if (activeFile) {
-            referenceCurrentNoteContent = await getActiveFileContent(activeFile);
-        }
-
         const messageContainer = chatbotContainer.createEl("div", {
             attr: {
                 id: "messageContainer",
@@ -138,7 +128,7 @@ export class BMOView extends ItemView {
         
         messageHistory.forEach(async (messageData) => {   
             if (messageData.role == "user") {
-                const userMessageDiv = displayUserMessage(this.settings, referenceCurrentNoteContent, messageData.content);
+                const userMessageDiv = displayUserMessage(this.settings, messageData.content);
                 messageContainer.appendChild(userMessageDiv);
             }
         
@@ -176,20 +166,10 @@ export class BMOView extends ItemView {
         this.textareaElement.addEventListener("input", this.handleInput.bind(this));
         this.textareaElement.addEventListener("blur", this.handleBlur.bind(this));
     }
-
-    async handleFileOpenEvent(file: TFile) {
-        await getActiveFileContent(file);
-    }
     
     async handleKeyup(event: KeyboardEvent) {
         const input = this.textareaElement.value.trim();
         const index = messageHistory.length - 1;
-        const activeFile = this.app.workspace.getActiveFile();
-        if (activeFile) {
-            if (this.settings.allowReferenceCurrentNote) {
-                referenceCurrentNoteContent = await getActiveFileContent(activeFile);
-            }
-        }
 
         // Only allow /stop command to be executed during fetch
         if (this.settings.allowOllamaStream || !this.settings.ollamaModels.includes(this.settings.model)) {
@@ -216,7 +196,7 @@ export class BMOView extends ItemView {
             
             const messageContainer = document.querySelector("#messageContainer");
             if (messageContainer) {
-                const userMessageDiv = displayUserMessage(this.settings, referenceCurrentNoteContent, input);
+                const userMessageDiv = displayUserMessage(this.settings, input);
                 messageContainer.appendChild(userMessageDiv);
 
                 if (input.startsWith("/")) {
@@ -270,7 +250,8 @@ export class BMOView extends ItemView {
     }
 
     addCursorLogging() {
-        const updateCursorPosition = () => {
+        const updateCursorPosition = async () => {
+            await getActiveFileContent(this.settings); 
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
             if (view) {
                 const cursor = view.editor.getCursor();
@@ -296,15 +277,8 @@ export class BMOView extends ItemView {
         this.textareaElement.removeEventListener("blur", this.handleBlur.bind(this));
     }
 
-    async BMOchatbot() {
-        referenceCurrentNoteContent = ''; // Clear reference current note content every time BMOchatbot is called
-        const activeFile = this.app.workspace.getActiveFile();
-        if (activeFile) {
-            if (this.settings.allowReferenceCurrentNote) {
-                referenceCurrentNoteContent = await getActiveFileContent(activeFile);
-            }
-        }
-
+    async BMOchatbot() {        
+        await getActiveFileContent(this.settings);
         const messageContainerEl = document.querySelector('#messageContainer');
         const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
 
@@ -331,7 +305,7 @@ export class BMOView extends ItemView {
             // Fetch OpenAI API
             if (OPENAI_MODELS.includes(this.settings.model)) {
                 try {
-                    await fetchOpenAIAPI(this.settings, referenceCurrentNoteContent, index); 
+                    await fetchOpenAIAPI(this.settings, index); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -340,19 +314,19 @@ export class BMOView extends ItemView {
             }
             else if (this.settings.ollamaRestAPIUrl && this.settings.ollamaModels.includes(this.settings.model)) {
                 if (this.settings.allowOllamaStream) {
-                    await ollamaFetchDataStream(this.settings, referenceCurrentNoteContent, index);
+                    await ollamaFetchDataStream(this.settings, index);
                 }
                 else {
-                    await ollamaFetchData(this.settings, referenceCurrentNoteContent, index);
+                    await ollamaFetchData(this.settings, index);
                 }
             }
             else if (this.settings.openAIRestAPIUrl && this.settings.openAIRestAPIModels.includes(this.settings.model)){
                 try {
                     if (this.settings.allowOpenAIRestAPIStream) {
-                        await openAIRestAPIFetchDataStream(this.settings, referenceCurrentNoteContent, index);
+                        await openAIRestAPIFetchDataStream(this.settings, index);
                     }
                     else {
-                        await openAIRestAPIFetchData(this.settings, referenceCurrentNoteContent, index);
+                        await openAIRestAPIFetchData(this.settings, index);
                     }
                 }
                 catch (error) {
@@ -362,7 +336,7 @@ export class BMOView extends ItemView {
             }
             else if (this.plugin.settings.openAIBaseModels.includes(this.settings.model)) {
                 try {
-                    await fetchOpenAIBaseAPI(this.settings, referenceCurrentNoteContent, index); 
+                    await fetchOpenAIBaseAPI(this.settings, index); 
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
@@ -371,7 +345,7 @@ export class BMOView extends ItemView {
             }
             else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
                 try {
-                    await requestUrlAnthropicAPI(this.settings, referenceCurrentNoteContent, index);
+                    await requestUrlAnthropicAPI(this.settings, index);
                 }
                 catch (error) {
                     console.error('Error:', error);
