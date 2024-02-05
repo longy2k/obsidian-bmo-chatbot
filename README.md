@@ -75,10 +75,8 @@ To start using the plugin, enable it in your settings menu and enter your OpenAI
 - OpenAI
   - gpt-3.5-turbo
   - gpt-3.5-turbo-1106
-    - Newest gpt-3.5-turbo model with a context window of 16,385 tokens, replacing gpt-3.5-turbo-16k.
-    - Same pricing as gpt-3.5-turbo.
   - gpt-4 (Context window: 8,192 tokens)
-  - gpt-4-1106-preview (Context window: 128,000 tokens)
+  - gpt-4-turbo-preview (Context window: 128,000 tokens)
 - Any self-hosted models using [Ollama](https://ollama.ai).
   - See [instructions](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
 - Any self-hosted models using OpenAI's REST API URL endpoints.
