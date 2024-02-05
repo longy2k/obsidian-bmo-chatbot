@@ -255,7 +255,7 @@ export async function ollamaFetchData(settings: BMOSettings, index: number) {
 
             const messageBlock = targetBotMessage?.querySelector('.messageBlock');
             const loadingEl = targetBotMessage?.querySelector("#loading");
-        
+            
             if (messageBlock) {
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
