@@ -121,7 +121,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
         .setDesc('System role prompt.')
         .addTextArea(text => text
             .setPlaceholder('You are a helpful assistant.')
-            .setValue(plugin.settings.system_role !== undefined ? plugin.settings.system_role : "You are a helpful assistant who responds in markdown.")
+            .setValue(plugin.settings.system_role !== undefined ? plugin.settings.system_role : DEFAULT_SETTINGS.system_role)
             .onChange(async (value) => {
                 plugin.settings.system_role = value !== undefined ? value : DEFAULT_SETTINGS.system_role;
                 await plugin.saveSettings();

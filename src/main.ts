@@ -18,6 +18,7 @@ export interface BMOSettings {
 	templateFilePath: string;
 	promptFolderPath: string;
 	prompt: string;
+	system_role_prompt_select_generate: string;
 	openAIBaseUrl: string;
 	ollamaRestAPIUrl: string;
 	allowOllamaStream: boolean;
@@ -32,6 +33,7 @@ export interface BMOSettings {
 	allowHeader: boolean;
 	toggleGeneralSettings: boolean;
 	toggleAppearanceSettings: boolean;
+	toggleEditorSettings: boolean;
 	toggleChatHistorySettings: boolean;
 	togglePromptSettings: boolean;
 	toggleAPIConnectionSettings: boolean;
@@ -71,6 +73,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	templateFilePath: '',
 	promptFolderPath: '',
 	prompt: '',
+	system_role_prompt_select_generate: 'You are a helpful assistant who responds in markdown.',
 	openAIBaseUrl: 'https://api.openai.com/v1',
 	ollamaRestAPIUrl: '',
 	allowOllamaStream: false,
@@ -85,6 +88,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	allowHeader: true,
 	toggleGeneralSettings: true,
 	toggleAppearanceSettings: false,
+	toggleEditorSettings: false,
 	toggleChatHistorySettings: false,
 	togglePromptSettings: false,
 	toggleAPIConnectionSettings: true,

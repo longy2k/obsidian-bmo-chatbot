@@ -10,11 +10,13 @@ export async function fetchOpenAIAPIEditor(settings: BMOSettings, selectionStrin
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
+    console.log(settings.system_role_prompt_select_generate);
+
     const completion = await openai.chat.completions.create({
         model: settings.model,
         max_tokens: parseInt(settings.max_tokens),
         messages: [
-            { role: 'system', content:  settings.system_role},
+            { role: 'system', content:  settings.system_role_prompt_select_generate},
             { role: 'user', content: selectionString}
         ],
     });
@@ -35,7 +37,7 @@ export async function fetchOpenAIBaseAPIEditor(settings: BMOSettings, selectionS
         model: settings.model,
         max_tokens: parseInt(settings.max_tokens),
         messages: [
-            { role: 'system', content: settings.system_role },
+            { role: 'system', content: settings.system_role_prompt_select_generate },
             { role: 'user', content: selectionString}
         ],
     });
@@ -53,7 +55,7 @@ export async function ollamaFetchDataEditor(settings: BMOSettings, selectionStri
     if (!ollamaRestAPIUrl) {
         return;
     }
-    
+
     try {
         const response = await requestUrl({
             url: ollamaRestAPIUrl + '/api/chat',
@@ -64,7 +66,7 @@ export async function ollamaFetchDataEditor(settings: BMOSettings, selectionStri
             body: JSON.stringify({
                 model: settings.model,
                 messages: [
-                    { role: 'system', content: settings.system_role },
+                    { role: 'system', content: settings.system_role_prompt_select_generate },
                     { role: 'user', content: selectionString}
                 ],
                 stream: false,
@@ -107,7 +109,7 @@ export async function openAIRestAPIFetchDataEditor(settings: BMOSettings, select
                 body: JSON.stringify({
                     model: settings.model,
                     messages: [
-                        { role: 'system', content: settings.system_role },
+                        { role: 'system', content: settings.system_role_prompt_select_generate },
                         { role: 'user', content: selectionString}
                     ],
                     max_tokens: parseInt(settings.max_tokens),
@@ -140,7 +142,7 @@ export async function requestUrlAnthropicAPIEditor(settings: BMOSettings, select
 
     const requestBody = {
         model: settings.model,
-        prompt:  `\n\nHuman: ${settings.system_role}\n\n${selectionString}\n\nAssistant:`,
+        prompt:  `\n\nHuman: ${settings.system_role_prompt_select_generate}\n\n${selectionString}\n\nAssistant:`,
         max_tokens_to_sample: parseInt(settings.max_tokens) || 100000,
         temperature: settings.temperature,
         stream: false,

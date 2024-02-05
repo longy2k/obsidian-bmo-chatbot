@@ -2,12 +2,11 @@ import { Notice, requestUrl } from "obsidian";
 import OpenAI from "openai";
 import { BMOSettings } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
-import { getActiveFileContent, getCurrentNoteContent } from "./ReferenceCurrentNote";
+// import { getActiveFileContent, getCurrentNoteContent } from "./ReferenceCurrentNote";
 
 // Rename note title based on specified model
-export async function fetchModelRenameTitle(settings: BMOSettings) {
-    await getActiveFileContent(settings);
-    const referenceCurrentNoteContent = getCurrentNoteContent();
+export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurrentNoteContent: string) {
+    const clearYamlContent = referenceCurrentNoteContent.replace(/---[\s\S]+?---/, '').trim();
     
     const prompt = `You are a title generator. You will give succinct titles that does not contain backslashes,
                     forward slashes, or colons. Please generate one title as your response.\n\n`;
@@ -25,7 +24,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings) {
                 model: settings.model,
                 max_tokens: 40,
                 messages: [
-                    { role: 'system', content: prompt + referenceCurrentNoteContent},
+                    { role: 'system', content: prompt + clearYamlContent},
                 ],
             });
 
@@ -91,7 +90,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings) {
                 const url = settings.ollamaRestAPIUrl + '/api/generate';
     
                 const requestBody = {
-                    prompt: prompt + '\n\n' + referenceCurrentNoteContent + '\n\n',
+                    prompt: prompt + '\n\n' + clearYamlContent + '\n\n',
                     model: settings.model,
                     stream: false,
                     options: {
@@ -131,7 +130,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings) {
                         body: JSON.stringify({
                             model: settings.model,
                             messages: [
-                                { role: 'system', content: prompt + referenceCurrentNoteContent},
+                                { role: 'system', content: prompt + clearYamlContent},
                             ],
                             max_tokens: 40,
                             temperature: settings.temperature,

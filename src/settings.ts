@@ -7,6 +7,7 @@ import { addOllamaSettings } from './components/settings/OllamaSettings';
 import { addAPIConnectionSettings } from './components/settings/ConnectionSettings';
 import { addPromptSettings } from './components/settings/PromptSettings';
 import { addOpenAIRestAPIUrlSettings } from './components/settings/OpenAIRestAPISettings';
+import { addEditorSettings } from './components/settings/EditorSettings';
 
 export class BMOSettingTab extends PluginSettingTab {
 	plugin: BMOGPT;
@@ -34,12 +35,15 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		// Display settings
 		addGeneralSettings(this.containerEl, this.plugin, this);
-		addAppearanceSettings(this.containerEl, this.plugin, this);		
+		addAppearanceSettings(this.containerEl, this.plugin, this);
+		addEditorSettings(this.containerEl, this.plugin, this);		
 		addChatHistorySettings(this.containerEl, this.plugin, this);
 		addPromptSettings(this.containerEl, this.plugin, this);
+
 		const separator = document.createElement('hr');
 		separator.style.margin = `1rem 0`;
 		this.containerEl.appendChild(separator);
+
 		addAPIConnectionSettings(this.containerEl, this.plugin, this);
 		addOpenAIRestAPIUrlSettings(this.containerEl, this.plugin, this);
 		addOllamaSettings(this.containerEl, this.plugin, this);
