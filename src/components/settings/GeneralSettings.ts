@@ -142,7 +142,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
         .setName('Temperature')
         .setDesc('Temperature controls how random the generated output is. Lower values make the text more predictable, while higher values make it more creative and unpredictable.')
         .addSlider(slider => slider
-            .setLimits(0, 1, 0.05)
+            .setLimits(0, 2, 0.05)
             .setValue(plugin.settings.temperature !== undefined ? plugin.settings.temperature : DEFAULT_SETTINGS.temperature)
             .setDynamicTooltip()
             .onChange(async (value) => {
