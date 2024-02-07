@@ -186,7 +186,7 @@ export default class BMOGPT extends Plugin {
             },
             hotkeys: [
 				{
-					modifiers: ['Mod'],
+					modifiers: ['Mod', 'Shift'],
 					key: '=',
 				},
             ],

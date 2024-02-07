@@ -70,7 +70,6 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                     });
                 }
                 catch (error) {
-                    // console.error('Error:', error);
                     new Notice('Ollama connection error.');
                 }
             }
@@ -85,7 +84,6 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                     });
                 }
                 catch (error) {
-                    // console.error('Error:', error);
                     new Notice('OpenAI REST API URL connection error.');
                 }
             }
