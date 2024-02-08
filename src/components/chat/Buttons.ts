@@ -1,7 +1,7 @@
 import { Modal, Notice, setIcon } from "obsidian";
 import { BMOSettings, checkActiveFile } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from "src/view";
-import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData, openAIRestAPIFetchDataStream } from "../FetchModel";
+import { fetchOpenAIAPIDataStream, fetchOpenAIAPIData, fetchOllamaData, fetchOllamaDataStream, fetchAnthropicAPIData, fetchRESTAPIURLData, fetchRESTAPIURLDataStream, fetchMistralDataStream, fetchMistralData, fetchGoogleGeminiData } from "../FetchModel";
 
 export function regenerateUserButton(settings: BMOSettings) {
     const regenerateButton = document.createElement("button");
@@ -29,46 +29,63 @@ export function regenerateUserButton(settings: BMOSettings) {
 
         if (index !== -1) {
             deleteMessage(index+1);
-            if (OPENAI_MODELS.includes(settings.model)) {
+            if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                 try {
-                    await fetchOpenAIAPI(settings, index); 
+                    if (settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
+                        await fetchOpenAIAPIDataStream(settings, index); 
+                    } else {
+                        await fetchOpenAIAPIData(settings, index);
+                    }
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
                     console.log(error.message);
                 }
             }
-            else if (settings.openAIBaseModels.includes(settings.model)) {
-                try {
-                    await fetchOpenAIBaseAPI(settings, index); 
+            else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
+                if (settings.OllamaConnection.allowOllamaStream) {
+                    await fetchOllamaDataStream(settings, index);
                 }
-                catch (error) {
-                    new Notice('Error occurred while fetching completion: ' + error.message);
-                    console.log(error.message);
+                else {
+                    await fetchOllamaData(settings, index);
                 }
             }
-            else if (ANTHROPIC_MODELS.includes(settings.model)) {
+            else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
+                if (settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
+                    await fetchRESTAPIURLDataStream(settings, index);
+                }
+                else {
+                    await fetchRESTAPIURLData(settings, index);
+                }
+            }
+            else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
                 try {
-                    await requestUrlAnthropicAPI(settings, index);
+                    if (settings.APIConnections.mistral.allowStream) {
+                        await fetchMistralDataStream(settings, index);
+                    }
+                    else {
+                        await fetchMistralData(settings, index);
+                    }
                 }
                 catch (error) {
                     console.error('Error:', error);
                 }
             }
-            else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
-                if (settings.allowOllamaStream) {
-                    await ollamaFetchDataStream(settings, index);
+            else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
+                try {
+                    await fetchGoogleGeminiData(settings, index);
                 }
-                else {
-                    await ollamaFetchData(settings, index);
+                catch (error) {
+                    console.error('Error:', error);
+                
                 }
             }
-            else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
-                if (settings.allowOpenAIRestAPIStream) {
-                    await openAIRestAPIFetchDataStream(settings, index);
+            else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
+                try {
+                    await fetchAnthropicAPIData(settings, index);
                 }
-                else {
-                    await openAIRestAPIFetchData(settings, index);
+                catch (error) {
+                    console.error('Error:', error);
                 }
             }
         }
@@ -127,54 +144,69 @@ export function displayEditButton (settings: BMOSettings, userP: HTMLParagraphEl
                     messageHistory[index].content = textArea.value;
                     deleteMessage(index+1);
                     // Fetch OpenAI API
-                    if (OPENAI_MODELS.includes(settings.model)) {
+                    if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                         try {
-                            await fetchOpenAIAPI(settings, index); 
+                            if (settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
+                                await fetchOpenAIAPIDataStream(settings, index); 
+                            } else {
+                                await fetchOpenAIAPIData(settings, index);
+                            }
                         }
                         catch (error) {
                             new Notice('Error occurred while fetching completion: ' + error.message);
                             console.log(error.message);
                         }
                     }
-                    else if (settings.openAIBaseModels.includes(settings.model)) {
+                    else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
                         try {
-                            await fetchOpenAIBaseAPI(settings, index); 
-                        }
-                        catch (error) {
-                            new Notice('Error occurred while fetching completion: ' + error.message);
-                            console.log(error.message);
-                        }
-                    }
-                    else if (ANTHROPIC_MODELS.includes(settings.model)) {
-                        try {
-                            await requestUrlAnthropicAPI(settings, index);
+                            await fetchAnthropicAPIData(settings, index);
                         }
                         catch (error) {
                             console.error('Error:', error);
                         }
                     }
-                    else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
-                        if (settings.allowOllamaStream) {
-                            await ollamaFetchDataStream(settings, index);
+                    else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
+                        if (settings.OllamaConnection.allowOllamaStream) {
+                            await fetchOllamaDataStream(settings, index);
                         }
                         else {
-                            await ollamaFetchData(settings, index);
+                            await fetchOllamaData(settings, index);
                         }
                     }
-                    else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
-                        if (settings.allowOpenAIRestAPIStream) {
-                            await openAIRestAPIFetchDataStream(settings, index);
+                    else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
+                        try {
+                            if (settings.APIConnections.mistral.allowStream) {
+                                await fetchMistralDataStream(settings, index);
+                            }
+                            else {
+                                await fetchMistralData(settings, index);
+                            }
+                        }
+                        catch (error) {
+                            console.error('Error:', error);
+                        }
+                    }
+                    else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
+                        try {
+                            await fetchGoogleGeminiData(settings, index);
+                        }
+                        catch (error) {
+                            console.error('Error:', error);
+                        
+                        }
+                    }
+                    else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
+                        if (settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
+                            await fetchRESTAPIURLDataStream(settings, index);
                         }
                         else {
-                            await openAIRestAPIFetchData(settings, index);
+                            await fetchRESTAPIURLData(settings, index);
                         }
                     }
                 }
                 else {
                     new Notice("No models detected.");
                 }
-
-
             }
 
         });
@@ -225,7 +257,7 @@ export function displayBotCopyButton (settings: BMOSettings, message: string) {
     let messageText = message;
 
     if (messageText !== null) {
-        if (ANTHROPIC_MODELS.includes(settings.model)) {
+        if (ANTHROPIC_MODELS.includes(settings.general.model)) {
             const fullString = message;
             const cleanString = fullString.split(' ').slice(1).join(' ').trim();
             messageText = cleanString;

@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, Notice, TFile, MarkdownView, Editor, EditorPosition } from "obsidian";
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
-import { fetchOpenAIAPI, fetchOpenAIBaseAPI, ollamaFetchData, ollamaFetchDataStream, requestUrlAnthropicAPI, openAIRestAPIFetchData, openAIRestAPIFetchDataStream } from "./components/FetchModel";
+import { fetchOpenAIAPIDataStream, fetchOpenAIAPIData, fetchOllamaData, fetchOllamaDataStream, fetchAnthropicAPIData, fetchRESTAPIURLData, fetchRESTAPIURLDataStream, fetchMistralData, fetchMistralDataStream, fetchGoogleGeminiData } from "./components/FetchModel";
 import { executeCommand } from "./components/chat/Commands";
 import { getActiveFileContent } from "./components/editor/ReferenceCurrentNote";
 import { addMessage } from "./components/chat/Message";
@@ -65,14 +65,14 @@ export class BMOView extends ItemView {
         });
         
         const chatbotNameHeading = chatbotContainer.createEl("h1", { 
-            text: this.settings.chatbotName || DEFAULT_SETTINGS.chatbotName,
+            text: this.settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName,
             attr: {
                 id: "chatbotNameHeading"
             }
         });
 
         const modelName = chatbotContainer.createEl("p", {
-            text: "Model: " + this.settings.model || DEFAULT_SETTINGS.model,
+            text: "Model: " + this.settings.general.model || DEFAULT_SETTINGS.general.model,
             attr: {
                 id: "modelName"
             }
@@ -97,7 +97,7 @@ export class BMOView extends ItemView {
         referenceCurrentNoteElement.style.display = 'none';
         
         if (referenceCurrentNoteElement) {
-            if (this.settings.allowReferenceCurrentNote) {
+            if (this.settings.general.allowReferenceCurrentNote) {
                 referenceCurrentNoteElement.style.display = 'block';
             } else {
                 referenceCurrentNoteElement.style.display = 'none';
@@ -113,7 +113,7 @@ export class BMOView extends ItemView {
         header.appendChild(chatbotNameHeading);
         header.appendChild(modelName);
 
-        if (this.settings.allowHeader) {
+        if (this.settings.appearance.allowHeader) {
             header.style.display = 'block';
         }
         else {
@@ -172,7 +172,7 @@ export class BMOView extends ItemView {
         const index = messageHistory.length - 1;
 
         // Only allow /stop command to be executed during fetch
-        if (this.settings.allowOllamaStream || !this.settings.ollamaModels.includes(this.settings.model)) {
+        if (this.settings.OllamaConnection.allowOllamaStream || !this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
             if ((input === "/s" || input === "/stop") && event.key === "Enter") {
                 this.preventEnter = false;
                 executeCommand(input, this.settings, this.plugin);
@@ -186,7 +186,7 @@ export class BMOView extends ItemView {
                 return;
             }
 
-            if (ANTHROPIC_MODELS.includes(this.settings.model)) {
+            if (ANTHROPIC_MODELS.includes(this.settings.general.model)) {
                 addMessage('\n\nHuman: ' + input, 'userMessage', this.settings, index);
             } else {
                 if (!(input === "/s" || input === "/stop")) {
@@ -203,7 +203,7 @@ export class BMOView extends ItemView {
                     executeCommand(input, this.settings, this.plugin);
                     const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
                     if (modelName) {
-                        modelName.textContent = 'Model: ' + this.settings.model.toLowerCase();
+                        modelName.textContent = 'Model: ' + this.settings.general.model.toLowerCase();
                     }
                 }   
                 else {
@@ -285,7 +285,7 @@ export class BMOView extends ItemView {
         const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
 
         // If apiKey does not exist.
-        if (!this.settings.apiKey && OPENAI_MODELS.includes(this.settings.model)) {
+        if (!this.settings.APIConnections.openAI.APIKey && OPENAI_MODELS.includes(this.settings.general.model)) {
             new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
             if (chatbotNameHeading){
                 chatbotNameHeading.textContent = "ERROR";
@@ -303,30 +303,13 @@ export class BMOView extends ItemView {
         else {
             const index = messageHistory.length - 1;
             // Fetch OpenAI API
-            if (OPENAI_MODELS.includes(this.settings.model)) {
+            if (OPENAI_MODELS.includes(this.settings.general.model) || (this.settings.APIConnections.openAI.openAIBaseModels.includes(this.settings.general.model) && this.settings.APIConnections.openAI.openAIBaseUrl !== DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl)) {
                 try {
-                    await fetchOpenAIAPI(this.settings, index); 
-                }
-                catch (error) {
-                    new Notice('Error occurred while fetching completion: ' + error.message);
-                    console.log(error.message);
-                }
-            }
-            else if (this.settings.ollamaRestAPIUrl && this.settings.ollamaModels.includes(this.settings.model)) {
-                if (this.settings.allowOllamaStream) {
-                    await ollamaFetchDataStream(this.settings, index);
-                }
-                else {
-                    await ollamaFetchData(this.settings, index);
-                }
-            }
-            else if (this.settings.openAIRestAPIUrl && this.settings.openAIRestAPIModels.includes(this.settings.model)){
-                try {
-                    if (this.settings.allowOpenAIRestAPIStream) {
-                        await openAIRestAPIFetchDataStream(this.settings, index);
+                    if (this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
+                        await fetchOpenAIAPIDataStream(this.settings, index); 
                     }
                     else {
-                        await openAIRestAPIFetchData(this.settings, index);
+                        await fetchOpenAIAPIData(this.settings, index); 
                     }
                 }
                 catch (error) {
@@ -334,25 +317,56 @@ export class BMOView extends ItemView {
                     console.log(error.message);
                 }
             }
-            else if (this.plugin.settings.openAIBaseModels.includes(this.settings.model)) {
+            else if (this.settings.OllamaConnection.RESTAPIURL && this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
+                if (this.settings.OllamaConnection.allowOllamaStream) {
+                    await fetchOllamaDataStream(this.settings, index);
+                }
+                else {
+                    await fetchOllamaData(this.settings, index);
+                }
+            }
+            else if (this.settings.RESTAPIURLConnection.RESTAPIURL && this.settings.RESTAPIURLConnection.RESTAPIURLModels.includes(this.settings.general.model)){
                 try {
-                    await fetchOpenAIBaseAPI(this.settings, index); 
+                    if (this.settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
+                        await fetchRESTAPIURLDataStream(this.settings, index);
+                    }
+                    else {
+                        await fetchRESTAPIURLData(this.settings, index);
+                    }
                 }
                 catch (error) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
                     console.log(error.message);
                 }
             }
-            else if (ANTHROPIC_MODELS.includes(this.settings.model)) {
+            else if (this.settings.APIConnections.mistral.mistralModels.includes(this.settings.general.model)) {
                 try {
-                    await requestUrlAnthropicAPI(this.settings, index);
+                    if (this.settings.APIConnections.mistral.allowStream) {
+                        await fetchMistralDataStream(this.settings, index);
+                    }
+                    else {
+                        await fetchMistralData(this.settings, index);
+                    }
                 }
                 catch (error) {
                     console.error('Error:', error);
                 }
             }
-            else {
-                new Notice("No models detected.");
+            else if (this.settings.APIConnections.googleGemini.geminiModels.includes(this.settings.general.model)) {
+                try {
+                    await fetchGoogleGeminiData(this.settings, index);
+                }
+                catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+            else if (ANTHROPIC_MODELS.includes(this.settings.general.model)) {
+                try {
+                    await fetchAnthropicAPIData(this.settings, index);
+                }
+                catch (error) {
+                    console.error('Error:', error);
+                }
             }
 
         }

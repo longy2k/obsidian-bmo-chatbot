@@ -13,11 +13,85 @@ import { getActiveFileContent, getCurrentNoteContent } from "./editor/ReferenceC
 
 let abortController = new AbortController();
 
-// Fetch OpenAI API Chat
-export async function fetchOpenAIAPI(settings: BMOSettings, index: number) {
+// Fetch OpenAI-Based API
+export async function fetchOpenAIAPIData(settings: BMOSettings, index: number) {
     const openai = new OpenAI({
-        apiKey: settings.apiKey,
-        baseURL: settings.openAIBaseUrl,
+        apiKey: settings.APIConnections.openAI.APIKey,
+        baseURL: settings.APIConnections.openAI.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
+
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
+
+    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    const botMessageDiv = displayLoadingBotMessage(settings);
+    
+    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
+    try {
+        const completion = await openai.chat.completions.create({
+            model: settings.general.model,
+            max_tokens: parseInt(settings.general.max_tokens),
+            stream: false,
+            messages: [
+                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                ...messageHistoryAtIndex as ChatCompletionMessageParam[]
+            ],
+        });
+
+        const message = completion.choices[0].message.content;
+        
+        if (messageContainerEl) {
+            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+            const targetBotMessage = targetUserMessage.nextElementSibling;
+
+            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+            const loadingEl = targetBotMessage?.querySelector("#loading");
+
+            if (messageBlock) {
+                if (loadingEl) {
+                    targetBotMessage?.removeChild(loadingEl);
+                }
+
+                messageBlock.innerHTML = marked(message || '', { breaks: true });
+
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                targetBotMessage?.appendChild(messageBlock);
+            }
+            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (message != null) {
+            addMessage(message, 'botMessage', settings, index);
+        }
+
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
+    }
+}
+
+// Fetch OpenAI-Based API Chat
+export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: number) {
+    const openai = new OpenAI({
+        apiKey: settings.APIConnections.openAI.APIKey,
+        baseURL: settings.APIConnections.openAI.openAIBaseUrl,
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
@@ -48,11 +122,11 @@ export async function fetchOpenAIAPI(settings: BMOSettings, index: number) {
 
     try {
         const stream = await openai.chat.completions.create({
-            model: settings.model,
-            max_tokens: parseInt(settings.max_tokens),
-            temperature: settings.temperature,
+            model: settings.general.model,
+            max_tokens: parseInt(settings.general.max_tokens),
+            temperature: settings.general.temperature,
             messages: [
-                { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
+                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
                 ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
             stream: true,
@@ -125,85 +199,12 @@ export async function fetchOpenAIAPI(settings: BMOSettings, index: number) {
     }
 }
 
-// Fetch OpenAI-Based API
-export async function fetchOpenAIBaseAPI(settings: BMOSettings, index: number) {
-    const openai = new OpenAI({
-        apiKey: settings.apiKey,
-        baseURL: settings.openAIBaseUrl,
-        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
-    });
-
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
-
-    const filteredMessageHistory = filterMessageHistory(messageHistory);
-    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
-
-    const messageContainerEl = document.querySelector('#messageContainer');
-    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
-
-    const botMessageDiv = displayLoadingBotMessage(settings);
-    
-    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
-    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    await getActiveFileContent(settings);
-    const referenceCurrentNoteContent = getCurrentNoteContent();
-
-    try {
-        const completion = await openai.chat.completions.create({
-            model: settings.model,
-            max_tokens: parseInt(settings.max_tokens),
-            messages: [
-                { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
-                ...messageHistoryAtIndex as ChatCompletionMessageParam[]
-            ],
-        });
-
-        const message = completion.choices[0].message.content;
-        
-        if (messageContainerEl) {
-            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
-            const targetBotMessage = targetUserMessage.nextElementSibling;
-
-            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-            const loadingEl = targetBotMessage?.querySelector("#loading");
-
-            if (messageBlock) {
-                if (loadingEl) {
-                    targetBotMessage?.removeChild(loadingEl);
-                }
-
-                messageBlock.innerHTML = marked(message || '', { breaks: true });
-
-                addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
-                
-                targetBotMessage?.appendChild(messageBlock);
-            }
-            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        if (message != null) {
-            addMessage(message, 'botMessage', settings, index);
-        }
-
-    } catch (error) {
-        console.error('Error making API request:', error);
-        throw error;
-    }
-}
-
 // Request response from Ollama
 // NOTE: Abort does not work for requestUrl
-export async function ollamaFetchData(settings: BMOSettings, index: number) {
-    const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
+export async function fetchOllamaData(settings: BMOSettings, index: number) {
+    const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
-    if (!ollamaRestAPIUrl) {
+    if (!ollamaRESTAPIURL) {
         return;
     }
 
@@ -229,19 +230,19 @@ export async function ollamaFetchData(settings: BMOSettings, index: number) {
 
     try {
         const response = await requestUrl({
-            url: ollamaRestAPIUrl + '/api/chat',
+            url: ollamaRESTAPIURL + '/api/chat',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                model: settings.model,
+                model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
                     ...messageHistoryAtIndex
                 ],
                 stream: false,
-                keep_alive: parseInt(settings.ollamaParameters.keep_alive),
+                keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
                 options: ollamaParametersOptions(settings),
             }),
         });
@@ -281,14 +282,14 @@ export async function ollamaFetchData(settings: BMOSettings, index: number) {
 }
 
 // Fetch Ollama API via stream
-export async function ollamaFetchDataStream(settings: BMOSettings, index: number) {
-    const ollamaRestAPIUrl = settings.ollamaRestAPIUrl;
+export async function fetchOllamaDataStream(settings: BMOSettings, index: number) {
+    const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
-    if (!ollamaRestAPIUrl) {
+    if (!ollamaRESTAPIURL) {
         return;
     }
 
-    const url = ollamaRestAPIUrl + '/api/chat';
+    const url = ollamaRESTAPIURL + '/api/chat';
 
     abortController = new AbortController();
 
@@ -323,13 +324,13 @@ export async function ollamaFetchDataStream(settings: BMOSettings, index: number
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                model: settings.model,
+                model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
-                keep_alive: parseInt(settings.ollamaParameters.keep_alive),
+                keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
                 options: ollamaParametersOptions(settings),
             }),
             signal: abortController.signal
@@ -418,7 +419,7 @@ export async function ollamaFetchDataStream(settings: BMOSettings, index: number
 }
 
 // Request response from openai-based rest api url
-export async function openAIRestAPIFetchData(settings: BMOSettings, index: number) {
+export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) {
     let prompt = await getPrompt(settings);
 
     if (prompt == undefined) {
@@ -440,8 +441,8 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, index: numbe
     const referenceCurrentNoteContent = getCurrentNoteContent();
     
     const urls = [
-        settings.openAIRestAPIUrl + '/v1/chat/completions',
-        settings.openAIRestAPIUrl + '/api/v1/chat/completions'
+        settings.RESTAPIURLConnection.RESTAPIURL + '/v1/chat/completions',
+        settings.RESTAPIURLConnection.RESTAPIURL + '/api/v1/chat/completions'
     ];
 
     let lastError = null;
@@ -453,21 +454,20 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, index: numbe
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${settings.apiKey}`
+                    'Authorization': `Bearer ${settings.RESTAPIURLConnection.APIKey}`
                 },
                 body: JSON.stringify({
-                    model: settings.model,
+                    model: settings.general.model,
                     messages: [
-                        { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
+                        { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
                         ...messageHistoryAtIndex
                     ],
-                    max_tokens: parseInt(settings.max_tokens),
-                    temperature: settings.temperature,
+                    max_tokens: parseInt(settings.general.max_tokens),
+                    temperature: settings.general.temperature,
                 }),
             });
 
             const message = response.json.choices[0].message.content;
-
 
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
@@ -508,15 +508,15 @@ export async function openAIRestAPIFetchData(settings: BMOSettings, index: numbe
     }
 }
 
-// Fetch Ollama API via stream
-export async function openAIRestAPIFetchDataStream(settings: BMOSettings, index: number) {
-    const openAIRestAPIUrl = settings.openAIRestAPIUrl;
+// Fetch REST API via stream
+export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: number) {
+    const RESTAPIURL = settings.RESTAPIURLConnection.RESTAPIURL;
 
-    if (!openAIRestAPIUrl) {
+    if (!RESTAPIURL) {
         return;
     }
 
-    const url = openAIRestAPIUrl + '/v1/chat/completions';
+    const url = RESTAPIURL + '/v1/chat/completions';
 
     abortController = new AbortController();
 
@@ -549,16 +549,17 @@ export async function openAIRestAPIFetchDataStream(settings: BMOSettings, index:
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.RESTAPIURLConnection.APIKey}`
             },
             body: JSON.stringify({
-                model: settings.model,
+                model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.system_role + prompt},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
-                temperature: settings.temperature,
-                max_tokens: parseInt(settings.max_tokens),
+                temperature: settings.general.temperature,
+                max_tokens: parseInt(settings.general.max_tokens),
             }),
             signal: abortController.signal
         })
@@ -655,12 +656,336 @@ export async function openAIRestAPIFetchDataStream(settings: BMOSettings, index:
     }
 }
 
+// Request response from Mistral
+export async function fetchMistralData(settings: BMOSettings, index: number) {
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
+
+    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+    
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    const botMessageDiv = displayLoadingBotMessage(settings);
+
+    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
+    try {
+        const response = await requestUrl({
+            url: 'https://api.mistral.ai/v1/chat/completions',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.APIConnections.mistral.APIKey}`
+            },
+            body: JSON.stringify({
+                model: settings.general.model,
+                messages: [
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                    ...messageHistoryAtIndex
+                ],
+                max_tokens: parseInt(settings.general.max_tokens),
+                temperature: settings.general.temperature,
+            }),
+        });
+
+        const message = response.json.choices[0].message.content;
+
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+            const targetBotMessage = targetUserMessage.nextElementSibling;
+
+            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+            const loadingEl = targetBotMessage?.querySelector("#loading");
+        
+            if (messageBlock) {
+                if (loadingEl) {
+                    targetBotMessage?.removeChild(loadingEl);
+                }
+                messageBlock.innerHTML = marked(message, { breaks: true });
+                
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                targetBotMessage?.appendChild(messageBlock);
+            }
+            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+        }
+
+        addMessage(message, 'botMessage', settings, index);
+        return;
+
+    } catch (error) {
+        console.error(error);
+    }
+
+}
+
+// Fetch Mistral API via stream
+export async function fetchMistralDataStream(settings: BMOSettings, index: number) {
+    abortController = new AbortController();
+
+    let message = '';
+
+    let isScroll = false;
+
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
+
+    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    const botMessageDiv = displayLoadingBotMessage(settings);
+
+    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
+    try {
+        const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.APIConnections.mistral.APIKey}`
+            },
+            body: JSON.stringify({
+                model: settings.general.model,
+                messages: [
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                    ...messageHistoryAtIndex
+                ],
+                stream: true,
+                temperature: settings.general.temperature,
+                max_tokens: parseInt(settings.general.max_tokens),
+            }),
+            signal: abortController.signal
+        })
+
+        
+        if (!response.ok) {
+            new Notice(`HTTP error! Status: ${response.status}`);
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        if (!response.body) {
+            new Notice(`Response body is null or undefined.`);
+            throw new Error('Response body is null or undefined.');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let reading = true;
+
+        while (reading) {
+            const { done, value } = await reader.read();
+            if (done) {
+                reading = false;
+                break;
+            }
+
+            const chunk = decoder.decode(value, { stream: false }) || "";
+
+            // console.log("chunk",chunk);
+            
+            const parts = chunk.split('\n');
+
+            // console.log("parts", parts)
+
+            for (const part of parts.filter(Boolean)) { // Filter out empty parts
+                // Check if chunk contains 'data: [DONE]'
+                if (part.includes("data: [DONE]")) {
+                    break;
+                }
+                
+                let parsedChunk;
+                try {
+                    parsedChunk = JSON.parse(part.replace(/^data: /, ''));
+                    if ((parsedChunk.choices[0].finish_reason !== 'stop')) {
+                        const content = parsedChunk.choices[0].delta.content;
+                        message += content;
+                    }
+                } catch (err) {
+                    console.error('Error parsing JSON:', err);
+                    console.log('Part with error:', part);
+                    parsedChunk = {response: '{_e_}'};
+                }
+            }
+
+            const messageContainerEl = document.querySelector('#messageContainer');
+            if (messageContainerEl) {
+                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+                const targetBotMessage = targetUserMessage.nextElementSibling;
+    
+                const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+                const loadingEl = targetBotMessage?.querySelector("#loading");
+
+                if (messageBlock) {
+                    if (loadingEl) {
+                        targetBotMessage?.removeChild(loadingEl);
+                    }
+
+                    messageBlock.innerHTML = marked(message, { breaks: true });
+
+                    addParagraphBreaks(messageBlock);
+                    prismHighlighting(messageBlock);
+                    codeBlockCopyButton(messageBlock);
+
+                }
+
+                messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
+                    // If the user scrolls up or down, stop auto-scrolling
+                    if (event.deltaY < 0 || event.deltaY > 0) {
+                        isScroll = true;
+                    }
+                });
+
+                if (!isScroll) {
+                    targetBotMessage?.scrollIntoView({ behavior: 'auto', block: 'start' });
+                }
+            }
+
+        }
+        addMessage(message, 'botMessage', settings, index);
+        
+    } catch (error) {
+        addMessage(message, 'botMessage', settings, index); // This will save mid-stream conversation.
+        console.error('Error making API request:', error);
+        throw error;
+    }
+}
+
+export async function fetchGoogleGeminiData(settings: BMOSettings, index: number) {
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
+
+    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+    
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    const botMessageDiv = displayLoadingBotMessage(settings);
+
+    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
+    // Function to convert messageHistory to Google Gemini format
+    const convertMessageHistory = (messageHistory: { role: string; content: string }[], referenceCurrentNoteContent: string) => {
+        // Clone the messageHistory to avoid mutating the original array
+        const modifiedMessageHistory = [...messageHistory];
+        
+        // Find the last user message index
+        const lastUserMessageIndex = modifiedMessageHistory.map((message, index) => ({ role: message.role, index }))
+                                                    .filter(message => message.role === "user")
+                                                    .map(message => message.index)
+                                                    .pop();
+
+        // Append referenceCurrentNoteContent to the last user message, if found
+        if (lastUserMessageIndex !== undefined) {
+            modifiedMessageHistory[lastUserMessageIndex].content += "\n\n" + referenceCurrentNoteContent + "\n\n" + settings.general.system_role + "\n\n" + prompt;
+        }
+
+        const contents = modifiedMessageHistory.map(({ role, content }) => ({
+            role: role === "assistant" ? "model" : role, // Convert "assistant" to "model"
+            parts: [{ text: content }]
+        }));
+
+        return { contents };
+    };
+    
+    // Use the function to convert your message history
+    const convertedMessageHistory = convertMessageHistory(messageHistoryAtIndex, referenceCurrentNoteContent);
+
+    try {        
+        // Assuming settings.APIConnections.googleGemini.APIKey contains your API key
+        const API_KEY = settings.APIConnections.googleGemini.APIKey;
+        
+        const response = await requestUrl({
+            url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [
+                    ...convertedMessageHistory.contents,
+                ],
+                generationConfig: {
+                    stopSequences: '',
+                    temperature: settings.general.temperature,
+                    maxOutputTokens: settings.general.max_tokens,
+                    topP: 0.8,
+                    topK: 10
+                }
+            }),
+        });
+        
+        const message = response.json.candidates[0].content.parts[0].text;
+
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+            const targetBotMessage = targetUserMessage.nextElementSibling;
+
+            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+            const loadingEl = targetBotMessage?.querySelector("#loading");
+        
+            if (messageBlock) {
+                if (loadingEl) {
+                    targetBotMessage?.removeChild(loadingEl);
+                }
+                messageBlock.innerHTML = marked(message, { breaks: true });
+                
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                targetBotMessage?.appendChild(messageBlock);
+            }
+            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+        }
+
+        addMessage(message, 'botMessage', settings, index);
+        return;
+
+    } catch (error) {
+        console.error(error);
+    }
+
+}
+
 // Request response from Anthropic 
-export async function requestUrlAnthropicAPI(settings: BMOSettings, index: number) {
+export async function fetchAnthropicAPIData(settings: BMOSettings, index: number) {
     const headers = {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
-      'x-api-key': settings.apiKey,
+      'x-api-key': settings.APIConnections.anthropic.APIKey,
     };
   
     let prompt = await getPrompt(settings);
@@ -686,10 +1011,10 @@ export async function requestUrlAnthropicAPI(settings: BMOSettings, index: numbe
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     const requestBody = {
-        model: settings.model,
-        prompt:  `\n\nHuman: ${referenceCurrentNoteContent}\n\n${settings.system_role}\n\n${prompt}\n\n${messageHistoryAtIndexString}\n\nAssistant:`,
-        max_tokens_to_sample: parseInt(settings.max_tokens) || 100000,
-        temperature: settings.temperature,
+        model: settings.general.model,
+        prompt:  `\n\nHuman: ${referenceCurrentNoteContent}\n\n${settings.general.system_role}\n\n${prompt}\n\n${messageHistoryAtIndexString}\n\nAssistant:`,
+        max_tokens_to_sample: parseInt(settings.general.max_tokens) || 100000,
+        temperature: settings.general.temperature,
         stream: true,
     };
   
@@ -768,21 +1093,21 @@ export function getAbortController() {
 
 function ollamaParametersOptions(settings: BMOSettings) {
     return {
-        mirostat: parseInt(settings.ollamaParameters.mirostat),
-        mirostat_eta: parseFloat(settings.ollamaParameters.mirostat_eta),
-        mirostat_tau: parseFloat(settings.ollamaParameters.mirostat_tau),
-        num_ctx: parseInt(settings.ollamaParameters.num_ctx),
-        num_gqa: parseInt(settings.ollamaParameters.num_gqa),
-        num_thread: parseInt(settings.ollamaParameters.num_thread),
-        repeat_last_n: parseInt(settings.ollamaParameters.repeat_last_n),
-        repeat_penalty: parseFloat(settings.ollamaParameters.repeat_penalty),
-        temperature: settings.temperature,
-        seed: parseInt(settings.ollamaParameters.seed),
-        stop: settings.ollamaParameters.stop,
-        tfs_z: parseFloat(settings.ollamaParameters.tfs_z),
-        num_predict: parseInt(settings.max_tokens) || -1,
-        top_k: parseInt(settings.ollamaParameters.top_k),
-        top_p: parseFloat(settings.ollamaParameters.top_p),
+        mirostat: parseInt(settings.OllamaConnection.ollamaParameters.mirostat),
+        mirostat_eta: parseFloat(settings.OllamaConnection.ollamaParameters.mirostat_eta),
+        mirostat_tau: parseFloat(settings.OllamaConnection.ollamaParameters.mirostat_tau),
+        num_ctx: parseInt(settings.OllamaConnection.ollamaParameters.num_ctx),
+        num_gqa: parseInt(settings.OllamaConnection.ollamaParameters.num_gqa),
+        num_thread: parseInt(settings.OllamaConnection.ollamaParameters.num_thread),
+        repeat_last_n: parseInt(settings.OllamaConnection.ollamaParameters.repeat_last_n),
+        repeat_penalty: parseFloat(settings.OllamaConnection.ollamaParameters.repeat_penalty),
+        temperature: settings.general.temperature,
+        seed: parseInt(settings.OllamaConnection.ollamaParameters.seed),
+        stop: settings.OllamaConnection.ollamaParameters.stop,
+        tfs_z: parseFloat(settings.OllamaConnection.ollamaParameters.tfs_z),
+        num_predict: parseInt(settings.general.max_tokens) || -1,
+        top_k: parseInt(settings.OllamaConnection.ollamaParameters.top_k),
+        top_p: parseFloat(settings.OllamaConnection.ollamaParameters.top_p),
     };
 }
 

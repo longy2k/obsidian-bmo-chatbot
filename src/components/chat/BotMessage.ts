@@ -10,8 +10,8 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
     const botMessageDiv = document.createElement("div");
     botMessageDiv.className = "botMessage";
     
-    botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
-        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+    botMessageDiv.style.backgroundColor = colorToHex(settings.appearance.botMessageBackgroundColor ||
+        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim());
 
     const botMessageToolBarDiv = document.createElement("div");
     botMessageToolBarDiv.className = "botMessageToolBar";
@@ -20,14 +20,14 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
     buttonContainerDiv.className = "button-container";
 
     const botNameSpan = document.createElement("span"); 
-    botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+    botNameSpan.textContent = settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName;
     botNameSpan.className = "chatbotName";
 
     let botP = '';
 
     const messageText = message;
     if (messageHistory.length >= 2) {
-        if (ANTHROPIC_MODELS.includes(settings.model)) {
+        if (ANTHROPIC_MODELS.includes(settings.general.model)) {
             const cleanString = messageText.split(' ').slice(1).join(' ').trim();
             botP = marked(cleanString);
         } else if (message.includes('div class="formattedSettings"')) {
@@ -70,14 +70,14 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
 export function displayLoadingBotMessage(settings: BMOSettings) {
     const botMessageDiv = document.createElement("div");
     botMessageDiv.className = "botMessage";
-    botMessageDiv.style.backgroundColor = colorToHex(settings.botMessageBackgroundColor ||
-        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim());
+    botMessageDiv.style.backgroundColor = colorToHex(settings.appearance.botMessageBackgroundColor ||
+        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim());
 
     const botMessageToolBarDiv = document.createElement("div");
     botMessageToolBarDiv.className = "botMessageToolBar";
 
     const botNameSpan = document.createElement("span"); 
-    botNameSpan.textContent = settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
+    botNameSpan.textContent = settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName;
     botNameSpan.className = "chatbotName";
 
     const messageBlockDiv = document.createElement("div");

@@ -14,6 +14,7 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
   switch (command) {
       case '/commands':
       case '/help':
+      case '/h':
           commandHelp(settings);
           break;
       case '/model':
@@ -36,7 +37,7 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
           commandSystem(input, settings, plugin);
           break;
       case '/append':
-          commandAppend();
+          commandAppend(settings);
           break;
       case '/save':
           commandSave(settings);
@@ -60,15 +61,13 @@ export function createBotMessage(settings: BMOSettings): HTMLDivElement {
   const botMessage = document.createElement("div");
   botMessage.classList.add("botMessage");
   botMessage.style.backgroundColor = colorToHex(
-    settings.botMessageBackgroundColor ||
-      getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.botMessageBackgroundColor).trim()
+    settings.appearance.botMessageBackgroundColor ||
+      getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim()
   );
   messageContainer?.appendChild(botMessage);
 
   const botNameSpan = document.createElement("span");
-  botNameSpan.textContent =
-  settings.chatbotName || DEFAULT_SETTINGS.chatbotName;
-  // botNameSpan.setAttribute("id", "chatbotName");
+  botNameSpan.textContent = settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName;
   botNameSpan.className = "chatbotName";
   botMessage.appendChild(botNameSpan);
 
@@ -150,7 +149,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
     // Loop through allModels and create list items
     const modelListItems = settings.allModels.map(model => `<li>${model}</li>`).join('');
 
-    let currentModel = settings.model;
+    let currentModel = settings.general.model;
 
     // Check if currentModel is empty, and set it to "Empty" if it is
     if (!currentModel) {
@@ -181,12 +180,12 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
     }
 
     if (Object.entries(modelAliases).find(([key, val]) => key === inputModel)){
-      settings.model = modelAliases[inputModel];
-      messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${settings.model}</strong></p></div>`;
+      settings.general.model = modelAliases[inputModel];
+      messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${settings.general.model}</strong></p></div>`;
     }
     else if (Object.entries(modelAliases).find(([key, val]) => val === inputModel)) {
-      settings.model = modelAliases[Object.keys(modelAliases).find(key => modelAliases[key] === inputModel) || ''];
-      messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${settings.model}</strong></p></div>`;
+      settings.general.model = modelAliases[Object.keys(modelAliases).find(key => modelAliases[key] === inputModel) || ''];
+      messageHtml = `<div class="formattedSettings"><p><strong>Updated Model to ${settings.general.model}</strong></p></div>`;
     }
     else {
       messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
@@ -202,13 +201,13 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 // `/prompt "[VALUE]"` to change prompt.
 export async function commandPrompt(input: string, settings: BMOSettings, plugin: BMOGPT) {
 
-  if (!settings.promptFolderPath) {
+  if (!settings.prompts.promptFolderPath) {
     new Notice("Prompt folder path not set.");
     return;
   }
 
   // Fetching files from the specified folder
-  const files = app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.promptFolderPath));
+  const files = app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.prompts.promptFolderPath));
 
   const messageBlock = createBotMessage(settings);
 
@@ -224,7 +223,7 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
       return `<li>${fileNameWithoutExtension}</li>`;
     }).join('');
 
-    let currentPrompt = settings.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+    let currentPrompt = settings.prompts.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
 
     // Check if currentPrompt is empty, and set it to "Empty" if it is
     if (!currentPrompt) {
@@ -255,7 +254,7 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
 
     // Set to default or empty if the input is 'clear' or 'c'
     if (inputValue === 'clear' || inputValue === 'c') {
-      settings.prompt = ''; // Set to default or empty
+      settings.prompts.prompt = ''; // Set to default or empty
       messageHtml = `<div class="formattedSettings"><p><strong>Prompt cleared.</strong></p></div>`;
       displayMessage(messageBlock, messageHtml, settings);
       await plugin.saveSettings();
@@ -273,13 +272,13 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
     let currentModel;
     if (promptAliases[inputValue]) {
       // If input matches a key in promptAliases
-      settings.prompt = promptAliases[inputValue] + '.md';
-      currentModel = settings.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+      settings.prompts.prompt = promptAliases[inputValue] + '.md';
+      currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
       messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentModel}</strong></p></div>`;
     } else if (Object.values(promptAliases).includes(inputValue)) {
       // If input matches a value in promptAliases
-      settings.prompt = inputValue + '.md';
-      currentModel = settings.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+      settings.prompts.prompt = inputValue + '.md';
+      currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
       messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentModel}</strong></p></div>`;
     } else {
       // If the input prompt does not exist
@@ -303,7 +302,7 @@ export async function commandReference(input: string, settings: BMOSettings, plu
   const inputValue = input.split(' ')[1]?.toLowerCase();
 
   if (inputValue === "true" || inputValue === "on") {
-    settings.allowReferenceCurrentNote = true;
+    settings.general.allowReferenceCurrentNote = true;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'block';
       }
@@ -313,7 +312,7 @@ export async function commandReference(input: string, settings: BMOSettings, plu
           </div>
       `;
   } else if (inputValue === "false" || inputValue === "off") {
-    settings.allowReferenceCurrentNote = false;
+    settings.general.allowReferenceCurrentNote = false;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'none';
       }
@@ -343,8 +342,8 @@ export async function commandTemperature(input: string, settings: BMOSettings, p
   let temperatureSettingMessage: string;
 
   if (settings && !isNaN(floatValue) && floatValue >= 0.00 && floatValue <= 1.00) {
-    settings.temperature = parseFloat((Math.round(floatValue / 0.05) * 0.05).toFixed(2));
-      temperatureSettingMessage = `${settings.temperature}`;
+    settings.general.temperature = parseFloat((Math.round(floatValue / 0.05) * 0.05).toFixed(2));
+      temperatureSettingMessage = `${settings.general.temperature}`;
   } else {
       temperatureSettingMessage = "Invalid.";
   }
@@ -372,7 +371,7 @@ export async function commandMaxTokens(input: string, settings: BMOSettings, plu
   
       if (!isNaN(inputValue) && inputValue >= 0) {
           // Update max_tokens with the valid integer value
-          settings.max_tokens = inputValue.toString();
+          settings.general.max_tokens = inputValue.toString();
           maxTokensSettingMessage = `Max tokens updated: ${inputValue}`;
       } else {
           // Input is not a valid integer
@@ -380,7 +379,7 @@ export async function commandMaxTokens(input: string, settings: BMOSettings, plu
       }
   } else {
       // Clear max_tokens and inform the user
-      settings.max_tokens = "";
+      settings.general.max_tokens = "";
       maxTokensSettingMessage = "Max tokens cleared.";
   }
   
@@ -403,7 +402,7 @@ export async function commandSystem(input: string, settings: BMOSettings, plugin
 
   if (systemPromptValue !== null) {
       if (systemPromptValue[1]) {
-        settings.system_role = systemPromptValue[1];
+        settings.general.system_role = systemPromptValue[1];
           formattedSettings += `
               <div class="formattedSettings">
                   <p><strong>System updated: "${systemPromptValue[1]}"</strong></p>
@@ -411,7 +410,7 @@ export async function commandSystem(input: string, settings: BMOSettings, plugin
           `;
       }
   } else {
-    settings.system_role = "";
+    settings.general.system_role = "";
       formattedSettings += `
           <div class="formattedSettings">
               <p><strong>System cleared.</strong></p>
@@ -423,7 +422,8 @@ export async function commandSystem(input: string, settings: BMOSettings, plugin
   await plugin.saveSettings();
 }
 
-export async function commandAppend() {
+// `/append` to append current chat history to current active note.
+export async function commandAppend(settings: BMOSettings) {
   let markdownContent = '';
 
   const activeFile = app.workspace.getActiveFile();
@@ -477,6 +477,16 @@ export async function commandAppend() {
           })
           .join('\n');
 
+          const messageBlock = createBotMessage(settings);
+
+          const formattedSettings = `
+            <div class="formattedSettings">
+              <p><strong>Message history appended.</strong></p>
+            </div>
+          `;
+        
+          displayMessage(messageBlock, formattedSettings, settings);
+
       } catch (error) {
         console.error("Error processing message history:", error);
       }
@@ -496,7 +506,12 @@ export async function commandAppend() {
 
 // `/save` to save current chat history to a note.
 export async function commandSave(settings: BMOSettings) {
-  let folderName = settings.chatHistoryPath;
+
+  let folderName = settings.chatHistory.chatHistoryPath;
+  // Check if the folder exists, create it if not
+  if (!await app.vault.adapter.exists(folderName)) {
+    await app.vault.createFolder(folderName);
+  }
   const baseFileName = 'Chat History';
   const fileExtension = '.md';
 
@@ -524,7 +539,7 @@ export async function commandSave(settings: BMOSettings) {
         modelName = modelNameElement.textContent.replace('Model: ', '').toLowerCase();
     }
 
-    const templateFile = allFiles.find(file => file.path.toLowerCase() === settings.templateFilePath.toLowerCase());
+    const templateFile = allFiles.find(file => file.path.toLowerCase() === settings.chatHistory.templateFilePath.toLowerCase());
 
     if (templateFile) {
       let fileContent = await app.vault.read(templateFile);
@@ -595,19 +610,24 @@ export async function commandSave(settings: BMOSettings) {
           })
           .join('\n');
 
+          const messageBlock = createBotMessage(settings);
+
+          const formattedSettings = `
+            <div class="formattedSettings">
+              <p><strong>Message history saved.</strong></p>
+            </div>
+          `;
+        
+          displayMessage(messageBlock, formattedSettings, settings);
+
       } catch (error) {
         console.error("Error processing message history:", error);
       }
     }
 
-    // Check if the folder exists, create it if not
-    if (!await app.vault.adapter.exists(folderName)) {
-      await app.vault.createFolder(folderName);
-    }
-
     let fileName = '';
 
-    if (settings.allowRenameNoteTitle) {
+    if (settings.chatHistory.allowRenameNoteTitle) {
       let uniqueNameFound = false;
       let modelRenameTitle;
 

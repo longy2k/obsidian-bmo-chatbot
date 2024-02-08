@@ -6,7 +6,7 @@ let referenceCurrentNoteContent = '';
 export async function getActiveFileContent(settings: BMOSettings) {
     const dotElement = document.querySelector('.dotIndicator');
     referenceCurrentNoteContent = '';
-    if (settings.allowReferenceCurrentNote === true) {
+    if (settings.general.allowReferenceCurrentNote === true) {
         if (dotElement) {
             (dotElement as HTMLElement).style.backgroundColor = '#da2c2c';
             referenceCurrentNoteContent = '';

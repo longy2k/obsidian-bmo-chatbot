@@ -36,6 +36,7 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
 
     messageHistory.splice(index+1, 0, messageObj);
 
+
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {

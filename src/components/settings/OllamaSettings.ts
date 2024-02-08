@@ -5,7 +5,7 @@ import { addDescriptionLink } from "src/utils/DescriptionLink";
 // Ollama Settings
 export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
-    toggleSettingContainer.createEl('h2', {text: 'Ollama Local LLMs'});
+    toggleSettingContainer.createEl('h2', {text: 'Ollama Connection'});
 
     const initialState = plugin.settings.toggleOllamaSettings;
     const chevronIcon = toggleSettingContainer.createEl('span', { cls: 'chevron-icon' });
@@ -36,9 +36,10 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .setDesc(addDescriptionLink('Enter your REST API URL using', 'https://ollama.ai/', '', 'Ollama'))
         .addText(text => text
             .setPlaceholder('http://localhost:11434')
-            .setValue(plugin.settings.ollamaRestAPIUrl || DEFAULT_SETTINGS.ollamaRestAPIUrl)
+            .setValue(plugin.settings.OllamaConnection.RESTAPIURL || DEFAULT_SETTINGS.OllamaConnection.RESTAPIURL)
             .onChange(async (value) => {
-                    plugin.settings.ollamaRestAPIUrl = value ? value : DEFAULT_SETTINGS.ollamaRestAPIUrl;
+                    plugin.settings.OllamaConnection.ollamaModels = [];
+                    plugin.settings.OllamaConnection.RESTAPIURL = value ? value : DEFAULT_SETTINGS.OllamaConnection.RESTAPIURL;
                     await plugin.saveSettings();
                 })
             .inputEl.addEventListener('focusout', async () => {
@@ -50,8 +51,8 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .setName('Allow Stream')
         .setDesc(addDescriptionLink('Allow Ollama models to stream response. Additional setup required: ', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/How-to-setup-with-Ollama', '', '[Instructions]'))
         .addToggle((toggle) =>
-            toggle.setValue(plugin.settings.allowOllamaStream).onChange((value) => {
-                plugin.settings.allowOllamaStream = value;
+            toggle.setValue(plugin.settings.OllamaConnection.allowOllamaStream).onChange((value) => {
+                plugin.settings.OllamaConnection.allowOllamaStream = value;
                 plugin.saveSettings();
             })
         );
@@ -90,16 +91,16 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .setDesc('Enable Mirostat sampling for controlling perplexity. (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)')
         .addText(text => text
             .setPlaceholder('0')
-            .setValue(plugin.settings.ollamaParameters.mirostat || DEFAULT_SETTINGS.ollamaParameters.mirostat)
+            .setValue(plugin.settings.OllamaConnection.ollamaParameters.mirostat || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat)
             .onChange(async (value) => {
                 // Parse the input value as an integer
                 const intValue = parseInt(value, 10); // 10 is the radix parameter to ensure parsing is done in base 10
                 
                 // Check if the parsed value is a valid integer, if not, fallback to the default URL
                 if (isNaN(intValue)) {
-                    plugin.settings.ollamaParameters.mirostat = DEFAULT_SETTINGS.ollamaParameters.mirostat;
+                    plugin.settings.OllamaConnection.ollamaParameters.mirostat = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat;
                 } else {
-                    plugin.settings.ollamaParameters.mirostat = intValue.toString();
+                    plugin.settings.OllamaConnection.ollamaParameters.mirostat = intValue.toString();
                 }
     
                 await plugin.saveSettings();
@@ -114,7 +115,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Influences how quickly the algorithm responds to feedback from the generated text. A lower learning rate will result in slower adjustments, while a higher learning rate will make the algorithm more responsive. (Default: 0.1)')
     .addText(text => text
         .setPlaceholder('0.1')
-        .setValue(plugin.settings.ollamaParameters.mirostat_eta || DEFAULT_SETTINGS.ollamaParameters.mirostat_eta)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_eta)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
@@ -123,14 +124,14 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             if (!isNaN(floatValue)) {
                 if (parseInt(value) === floatValue) {
                     // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.ollamaParameters.mirostat_eta = floatValue + ".0";
+                    plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = floatValue + ".0";
                 } else {
                     // It's already a float, so just use it directly
-                    plugin.settings.ollamaParameters.mirostat_eta = floatValue.toString();
+                    plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = floatValue.toString();
                 }
             } else {
                 // Fallback to the default value if input is not a valid number
-                plugin.settings.ollamaParameters.mirostat_eta = DEFAULT_SETTINGS.ollamaParameters.mirostat_eta;
+                plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_eta;
             }
 
             await plugin.saveSettings();
@@ -145,7 +146,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Controls the balance between coherence and diversity of the output. A lower value will result in more focused and coherent text. (Default: 5.0)')
     .addText(text => text
         .setPlaceholder('5.0')
-        .setValue(plugin.settings.ollamaParameters.mirostat_tau || DEFAULT_SETTINGS.ollamaParameters.mirostat_tau)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_tau)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
@@ -154,14 +155,14 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             if (!isNaN(floatValue)) {
                 if (parseInt(value) === floatValue) {
                     // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.ollamaParameters.mirostat_tau = floatValue + ".0";
+                    plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau = floatValue + ".0";
                 } else {
                     // It's already a float, so just use it directly
-                    plugin.settings.ollamaParameters.mirostat_tau = floatValue.toString();
+                    plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau = floatValue.toString();
                 }
             } else {
                 // Fallback to the default value if input is not a valid number
-                plugin.settings.ollamaParameters.mirostat_tau = DEFAULT_SETTINGS.ollamaParameters.mirostat_tau;
+                plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_tau;
             }
 
             await plugin.saveSettings();
@@ -176,16 +177,16 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Sets the size of the context window used to generate the next token. (Default: 2048)')
     .addText(text => text
         .setPlaceholder('2048')
-        .setValue(plugin.settings.ollamaParameters.num_ctx || DEFAULT_SETTINGS.ollamaParameters.num_ctx)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.num_ctx || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.num_ctx)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const intValue = parseInt(value, 10); // 10 is the radix parameter to ensure parsing is done in base 10
             
             // Check if the parsed value is a valid integer, if not, fallback to the default URL
             if (isNaN(intValue)) {
-                plugin.settings.ollamaParameters.num_ctx = DEFAULT_SETTINGS.ollamaParameters.num_ctx;
+                plugin.settings.OllamaConnection.ollamaParameters.num_ctx = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.num_ctx;
             } else {
-                plugin.settings.ollamaParameters.num_ctx = intValue.toString();
+                plugin.settings.OllamaConnection.ollamaParameters.num_ctx = intValue.toString();
             }
 
             await plugin.saveSettings();
@@ -200,16 +201,16 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('The number of GQA groups in the transformer layer. Required for some models, for example it is 8 for llama2:70b.')
     .addText(text => text
         .setPlaceholder('0')
-        .setValue(plugin.settings.ollamaParameters.num_gqa || DEFAULT_SETTINGS.ollamaParameters.num_gqa)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.num_gqa || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.num_gqa)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const intValue = parseInt(value, 10); // 10 is the radix parameter to ensure parsing is done in base 10
             
             // Check if the parsed value is a valid integer, if not, fallback to the default URL
             if (isNaN(intValue)) {
-                plugin.settings.ollamaParameters.num_gqa = DEFAULT_SETTINGS.ollamaParameters.num_gqa;
+                plugin.settings.OllamaConnection.ollamaParameters.num_gqa = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.num_gqa;
             } else {
-                plugin.settings.ollamaParameters.num_gqa = intValue.toString();
+                plugin.settings.OllamaConnection.ollamaParameters.num_gqa = intValue.toString();
             }
 
             await plugin.saveSettings();
@@ -224,16 +225,16 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Sets the number of threads to use during computation. By default, Ollama will detect this for optimal performance. It is recommended to set this value to the number of physical CPU cores your system has (as opposed to the logical number of cores).')
     .addText(text => text
         .setPlaceholder('0')
-        .setValue(plugin.settings.ollamaParameters.num_thread || DEFAULT_SETTINGS.ollamaParameters.num_thread)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.num_thread || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.num_thread)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const intValue = parseInt(value, 10); // 10 is the radix parameter to ensure parsing is done in base 10
             
             // Check if the parsed value is a valid integer, if not, fallback to the default URL
             if (isNaN(intValue)) {
-                plugin.settings.ollamaParameters.num_thread = DEFAULT_SETTINGS.ollamaParameters.num_thread;
+                plugin.settings.OllamaConnection.ollamaParameters.num_thread = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.num_thread;
             } else {
-                plugin.settings.ollamaParameters.num_thread = intValue.toString();
+                plugin.settings.OllamaConnection.ollamaParameters.num_thread = intValue.toString();
             }
 
             await plugin.saveSettings();
@@ -248,16 +249,16 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Sets how far back for the model to look back to prevent repetition. (Default: 64, 0 = disabled, -1 = num_ctx)')
     .addText(text => text
         .setPlaceholder('64')
-        .setValue(plugin.settings.ollamaParameters.repeat_last_n || DEFAULT_SETTINGS.ollamaParameters.repeat_last_n)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.repeat_last_n || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.repeat_last_n)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const intValue = parseInt(value, 10); // 10 is the radix parameter to ensure parsing is done in base 10
             
             // Check if the parsed value is a valid integer, if not, fallback to the default URL
             if (isNaN(intValue)) {
-                plugin.settings.ollamaParameters.repeat_last_n = DEFAULT_SETTINGS.ollamaParameters.repeat_last_n;
+                plugin.settings.OllamaConnection.ollamaParameters.repeat_last_n = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.repeat_last_n;
             } else {
-                plugin.settings.ollamaParameters.repeat_last_n = intValue.toString();
+                plugin.settings.OllamaConnection.ollamaParameters.repeat_last_n = intValue.toString();
             }
 
             await plugin.saveSettings();
@@ -272,7 +273,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Sets how strongly to penalize repetitions. A higher value (e.g., 1.5) will penalize repetitions more strongly, while a lower value (e.g., 0.9) will be more lenient. (Default: 1.1)')
     .addText(text => text
         .setPlaceholder('1.1')
-        .setValue(plugin.settings.ollamaParameters.repeat_penalty || DEFAULT_SETTINGS.ollamaParameters.repeat_penalty)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.repeat_penalty || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.repeat_penalty)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
@@ -281,14 +282,14 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             if (!isNaN(floatValue)) {
                 if (parseInt(value) === floatValue) {
                     // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.ollamaParameters.repeat_penalty = floatValue + ".0";
+                    plugin.settings.OllamaConnection.ollamaParameters.repeat_penalty = floatValue + ".0";
                 } else {
                     // It's already a float, so just use it directly
-                    plugin.settings.ollamaParameters.repeat_penalty = floatValue.toString();
+                    plugin.settings.OllamaConnection.ollamaParameters.repeat_penalty = floatValue.toString();
                 }
             } else {
                 // Fallback to the default value if input is not a valid number
-                plugin.settings.ollamaParameters.repeat_penalty = DEFAULT_SETTINGS.ollamaParameters.repeat_penalty;
+                plugin.settings.OllamaConnection.ollamaParameters.repeat_penalty = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.repeat_penalty;
             }
 
             await plugin.saveSettings();
@@ -303,16 +304,16 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Sets the random number seed to use for generation. Setting this to a specific number will make the model generate the same text for the same prompt.')
     .addText(text => text
         .setPlaceholder('0')
-        .setValue(plugin.settings.ollamaParameters.seed || DEFAULT_SETTINGS.ollamaParameters.seed)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.seed || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.seed)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const intValue = parseInt(value, 10); // 10 is the radix parameter to ensure parsing is done in base 10
             
             // Check if the parsed value is a valid integer, if not, fallback to the default URL
             if (isNaN(intValue)) {
-                plugin.settings.ollamaParameters.seed = DEFAULT_SETTINGS.ollamaParameters.seed;
+                plugin.settings.OllamaConnection.ollamaParameters.seed = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.seed;
             } else {
-                plugin.settings.ollamaParameters.seed = intValue.toString();
+                plugin.settings.OllamaConnection.ollamaParameters.seed = intValue.toString();
             }
 
             await plugin.saveSettings();
@@ -327,13 +328,13 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Sets the stop sequences to use. When this pattern is encountered, the LLM will stop generating text and return. Multiple stop patterns may be set by specifying them as a comma-separated list in the input field.')
     .addText(text => text
         .setPlaceholder('stop, \\n, user:')
-        .setValue(plugin.settings.ollamaParameters.stop && Array.isArray(plugin.settings.ollamaParameters.stop) 
-                   ? plugin.settings.ollamaParameters.stop.join(", ") 
-                   : DEFAULT_SETTINGS.ollamaParameters.stop.join(", "))
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.stop && Array.isArray(plugin.settings.OllamaConnection.ollamaParameters.stop) 
+                   ? plugin.settings.OllamaConnection.ollamaParameters.stop.join(", ") 
+                   : DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.stop.join(", "))
         .onChange(async (value) => {
                 // Split the input string by commas, trim whitespace, and ensure it's always stored as an array
-                const stopsArray = value ? value.split(',').map(s => s.trim()) : [...DEFAULT_SETTINGS.ollamaParameters.stop];
-                plugin.settings.ollamaParameters.stop = stopsArray;
+                const stopsArray = value ? value.split(',').map(s => s.trim()) : [...DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.stop];
+                plugin.settings.OllamaConnection.ollamaParameters.stop = stopsArray;
                 await plugin.saveSettings();
             })
         .inputEl.addEventListener('focusout', async () => {
@@ -348,7 +349,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Tail free sampling is used to reduce the impact of less probable tokens from the output. A higher value (e.g., 2.0) will reduce the impact more, while a value of 1.0 disables this setting. (default: 1)')
     .addText(text => text
         .setPlaceholder('1.0')
-        .setValue(plugin.settings.ollamaParameters.tfs_z || DEFAULT_SETTINGS.ollamaParameters.tfs_z)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.tfs_z || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.tfs_z)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
@@ -357,14 +358,14 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             if (!isNaN(floatValue)) {
                 if (parseInt(value) === floatValue) {
                     // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.ollamaParameters.tfs_z = floatValue + ".0";
+                    plugin.settings.OllamaConnection.ollamaParameters.tfs_z = floatValue + ".0";
                 } else {
                     // It's already a float, so just use it directly
-                    plugin.settings.ollamaParameters.tfs_z = floatValue.toString();
+                    plugin.settings.OllamaConnection.ollamaParameters.tfs_z = floatValue.toString();
                 }
             } else {
                 // Fallback to the default value if input is not a valid number
-                plugin.settings.ollamaParameters.tfs_z = DEFAULT_SETTINGS.ollamaParameters.tfs_z;
+                plugin.settings.OllamaConnection.ollamaParameters.tfs_z = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.tfs_z;
             }
 
             await plugin.saveSettings();
@@ -379,16 +380,16 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Reduces the probability of generating nonsense. A higher value (e.g. 100) will give more diverse answers, while a lower value (e.g. 10) will be more conservative. (Default: 40)')
     .addText(text => text
         .setPlaceholder('40')
-        .setValue(plugin.settings.ollamaParameters.top_k || DEFAULT_SETTINGS.ollamaParameters.top_k)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.top_k || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.top_k)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const intValue = parseInt(value, 10); // 10 is the radix parameter to ensure parsing is done in base 10
             
             // Check if the parsed value is a valid integer, if not, fallback to the default URL
             if (isNaN(intValue)) {
-                plugin.settings.ollamaParameters.top_k = DEFAULT_SETTINGS.ollamaParameters.top_k;
+                plugin.settings.OllamaConnection.ollamaParameters.top_k = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.top_k;
             } else {
-                plugin.settings.ollamaParameters.top_k = intValue.toString();
+                plugin.settings.OllamaConnection.ollamaParameters.top_k = intValue.toString();
             }
 
             await plugin.saveSettings();
@@ -403,7 +404,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('Works together with top-k. A higher value (e.g., 0.95) will lead to more diverse text, while a lower value (e.g., 0.5) will generate more focused and conservative text. (Default: 0.9)')
     .addText(text => text
         .setPlaceholder('1.0')
-        .setValue(plugin.settings.ollamaParameters.top_p || DEFAULT_SETTINGS.ollamaParameters.top_p)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.top_p || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.top_p)
         .onChange(async (value) => {
             // Parse the input value as an integer
             const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
@@ -412,14 +413,14 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             if (!isNaN(floatValue)) {
                 if (parseInt(value) === floatValue) {
                     // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.ollamaParameters.top_p = floatValue + ".0";
+                    plugin.settings.OllamaConnection.ollamaParameters.top_p = floatValue + ".0";
                 } else {
                     // It's already a float, so just use it directly
-                    plugin.settings.ollamaParameters.top_p = floatValue.toString();
+                    plugin.settings.OllamaConnection.ollamaParameters.top_p = floatValue.toString();
                 }
             } else {
                 // Fallback to the default value if input is not a valid number
-                plugin.settings.ollamaParameters.top_p = DEFAULT_SETTINGS.ollamaParameters.top_p;
+                plugin.settings.OllamaConnection.ollamaParameters.top_p = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.top_p;
             }
 
             await plugin.saveSettings();
@@ -434,7 +435,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setDesc('If set to a positive duration (e.g. 20m, 1hr or 30), the model will stay loaded for the provided duration in seconds. If set to a negative duration (e.g. -1), the model will stay loaded indefinitely. If set to 0, the model will be unloaded immediately once finished. If not set, the model will stay loaded for 5 minutes by default.')
     .addText(text => text
         .setPlaceholder('30s')
-        .setValue(plugin.settings.ollamaParameters.keep_alive || DEFAULT_SETTINGS.ollamaParameters.keep_alive)
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.keep_alive || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.keep_alive)
         .onChange(async (value) => {
             // Regular expression to validate the input value and capture the number and unit
             const match = value.match(/^(-?\d+)(m|hr|h)?$/);
@@ -454,10 +455,10 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
                 }
 
                 // Store the value in seconds
-                plugin.settings.ollamaParameters.keep_alive = seconds.toString();
+                plugin.settings.OllamaConnection.ollamaParameters.keep_alive = seconds.toString();
             } else {
                 // If the input is invalid, revert to the default setting
-                plugin.settings.ollamaParameters.keep_alive = DEFAULT_SETTINGS.ollamaParameters.keep_alive;
+                plugin.settings.OllamaConnection.ollamaParameters.keep_alive = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.keep_alive;
             }
 
             await plugin.saveSettings();

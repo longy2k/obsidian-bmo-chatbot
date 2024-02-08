@@ -6,7 +6,7 @@ import { addChatHistorySettings } from './components/settings/ChatHistorySetting
 import { addOllamaSettings } from './components/settings/OllamaSettings';
 import { addAPIConnectionSettings } from './components/settings/ConnectionSettings';
 import { addPromptSettings } from './components/settings/PromptSettings';
-import { addOpenAIRestAPIUrlSettings } from './components/settings/OpenAIRestAPISettings';
+import { addRESTAPIURLSettings } from './components/settings/OpenAIRestAPISettings';
 import { addEditorSettings } from './components/settings/EditorSettings';
 
 export class BMOSettingTab extends PluginSettingTab {
@@ -44,8 +44,8 @@ export class BMOSettingTab extends PluginSettingTab {
 		separator.style.margin = `1rem 0`;
 		this.containerEl.appendChild(separator);
 
-		addAPIConnectionSettings(this.containerEl, this.plugin, this);
-		addOpenAIRestAPIUrlSettings(this.containerEl, this.plugin, this);
 		addOllamaSettings(this.containerEl, this.plugin, this);
+		addRESTAPIURLSettings(this.containerEl, this.plugin, this);
+		addAPIConnectionSettings(this.containerEl, this.plugin, this);
 	}
 }

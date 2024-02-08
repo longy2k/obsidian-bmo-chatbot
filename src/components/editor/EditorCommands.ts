@@ -1,8 +1,8 @@
-import { BMOSettings } from "src/main";
+import { BMOSettings, DEFAULT_SETTINGS } from "src/main";
 import { fetchModelRenameTitle } from "./FetchRenameNoteTitle";
 import { MarkdownView, Notice } from "obsidian";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
-import { fetchOpenAIAPIEditor, fetchOpenAIBaseAPIEditor, ollamaFetchDataEditor, openAIRestAPIFetchDataEditor, requestUrlAnthropicAPIEditor } from "../FetchModelEditor";
+import { fetchOpenAIBaseAPIDataEditor, fetchOllamaDataEditor, fetchRESTAPIURLDataEditor, fetchAnthropicAPIDataEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor } from "../FetchModelEditor";
 
 export async function renameTitleCommand(settings: BMOSettings) {
     let uniqueNameFound = false;
@@ -54,11 +54,11 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     const select = view.editor.getSelection();
     if (view && select && select.trim() !== "") {
-        // Fetch OpenAI API
-        if (OPENAI_MODELS.includes(settings.model)) {
+        // Fetch OpenAI API with selected models.
+        if (OPENAI_MODELS.includes(settings.general.model)) {
             try {
                 new Notice("Generating...");
-                const response = await fetchOpenAIAPIEditor(settings, select); 
+                const response = await fetchOpenAIBaseAPIDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);
@@ -77,21 +77,10 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
                 console.log(error.message);
             }
         }
-        else if (ANTHROPIC_MODELS.includes(settings.model)) {
+        else if ((settings.APIConnections.openAI.openAIBaseUrl != DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl) && settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)){
             try {
                 new Notice("Generating...");
-                const response = await requestUrlAnthropicAPIEditor(settings, select); 
-                view.editor.replaceSelection(response);
-            }
-            catch (error) {
-                new Notice('Error occurred while fetching completion: ' + error.message);
-                console.log(error.message);
-            }
-        }
-        else if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
-            try {
-                new Notice("Generating...");
-                const response = await ollamaFetchDataEditor(settings, select); 
+                const response = await fetchOpenAIBaseAPIDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);
@@ -110,10 +99,87 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
                 console.log(error.message);
             }
         }
-        else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)){
+        else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
             try {
                 new Notice("Generating...");
-                const response = await openAIRestAPIFetchDataEditor(settings, select); 
+                const response = await fetchAnthropicAPIDataEditor(settings, select); 
+                view.editor.replaceSelection(response);
+            }
+            catch (error) {
+                new Notice('Error occurred while fetching completion: ' + error.message);
+                console.log(error.message);
+            }
+        }
+        else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
+            try {
+                new Notice("Generating...");
+                const response = await fetchOllamaDataEditor(settings, select); 
+                // Replace the current selection with the response
+                const cursorStart = view.editor.getCursor('from');
+                view.editor.replaceSelection(response);
+
+                // Calculate new cursor position based on the length of the response
+                const cursorEnd = { 
+                    line: cursorStart.line, 
+                    ch: cursorStart.ch + response?.length 
+                };
+
+                // Keep the new text selected
+                view.editor.setSelection(cursorStart, cursorEnd);
+            }
+            catch (error) {
+                new Notice('Error occurred while fetching completion: ' + error.message);
+                console.log(error.message);
+            }
+        }
+        else if (settings.RESTAPIURLConnection.RESTAPIURL && settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
+            try {
+                new Notice("Generating...");
+                const response = await fetchRESTAPIURLDataEditor(settings, select); 
+                // Replace the current selection with the response
+                const cursorStart = view.editor.getCursor('from');
+                view.editor.replaceSelection(response);
+
+                // Calculate new cursor position based on the length of the response
+                const cursorEnd = { 
+                    line: cursorStart.line, 
+                    ch: cursorStart.ch + response?.length 
+                };
+
+                // Keep the new text selected
+                view.editor.setSelection(cursorStart, cursorEnd);
+            }
+            catch (error) {
+                new Notice('Error occurred while fetching completion: ' + error.message);
+                console.log(error.message);
+            }
+        }
+        else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
+            try {
+                new Notice("Generating...");
+                const response = await fetchMistralDataEditor(settings, select); 
+                // Replace the current selection with the response
+                const cursorStart = view.editor.getCursor('from');
+                view.editor.replaceSelection(response);
+
+                // Calculate new cursor position based on the length of the response
+                const cursorEnd = { 
+                    line: cursorStart.line, 
+                    ch: cursorStart.ch + response?.length 
+                };
+
+                // Keep the new text selected
+                view.editor.setSelection(cursorStart, cursorEnd);
+            }
+            catch (error) {
+                new Notice('Error occurred while fetching completion: ' + error.message);
+                console.log(error.message);
+            }
+        }
+        else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
+            try {
+                new Notice("Generating...");
+                const response = await fetchGoogleGeminiDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);
@@ -133,28 +199,6 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
             }
         }
         new Notice("Generation complete.");
-    }
-    else if (settings.openAIBaseModels.includes(settings.model)) {
-        try {
-            new Notice("Generating...");
-            const response = await fetchOpenAIBaseAPIEditor(settings, select); 
-            // Replace the current selection with the response
-            const cursorStart = view.editor.getCursor('from');
-            view.editor.replaceSelection(response);
-
-            // Calculate new cursor position based on the length of the response
-            const cursorEnd = { 
-                line: cursorStart.line, 
-                ch: cursorStart.ch + response?.length 
-            };
-
-            // Keep the new text selected
-            view.editor.setSelection(cursorStart, cursorEnd);
-        }
-        catch (error) {
-            new Notice('Error occurred while fetching completion: ' + error.message);
-            console.log(error.message);
-        }
     }
     else {
         new Notice("No text selected.");    

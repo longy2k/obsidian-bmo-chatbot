@@ -36,11 +36,11 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .setDesc('Reference your prompts from a specified folder.')
         .addText(text => text
             .setPlaceholder('BMO/Prompts/')
-            .setValue(plugin.settings.promptFolderPath || DEFAULT_SETTINGS.promptFolderPath)
+            .setValue(plugin.settings.prompts.promptFolderPath || DEFAULT_SETTINGS.prompts.promptFolderPath)
             .onChange(async (value) => {
-                plugin.settings.promptFolderPath = value ? value : DEFAULT_SETTINGS.promptFolderPath;
+                plugin.settings.prompts.promptFolderPath = value ? value : DEFAULT_SETTINGS.prompts.promptFolderPath;
                 if (value) {
-                    let folderPath = plugin.settings.promptFolderPath.trim();
+                    let folderPath = plugin.settings.prompts.promptFolderPath.trim();
                     
                     // Remove trailing '/' if it exists
                     if (folderPath.endsWith('/')) {
@@ -68,9 +68,9 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .addDropdown(dropdown => {
             dropdown.addOption('', '--EMPTY--');
 
-            if (plugin.settings.promptFolderPath !== '') {
+            if (plugin.settings.prompts.promptFolderPath !== '') {
                 // Fetching files from the specified folder
-                const files = app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.promptFolderPath));
+                const files = app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.prompts.promptFolderPath));
         
                 // Sorting the files array alphabetically by file name
                 files.sort((a, b) => a.name.localeCompare(b.name));
@@ -86,9 +86,9 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             dropdown.setValue('');
 
             dropdown
-            .setValue(plugin.settings.prompt || DEFAULT_SETTINGS.prompt)
+            .setValue(plugin.settings.prompts.prompt || DEFAULT_SETTINGS.prompts.prompt)
             .onChange(async (value) => {
-                plugin.settings.prompt = value ? value : DEFAULT_SETTINGS.prompt;
+                plugin.settings.prompts.prompt = value ? value : DEFAULT_SETTINGS.prompts.prompt;
                 await plugin.saveSettings();
             })
         });

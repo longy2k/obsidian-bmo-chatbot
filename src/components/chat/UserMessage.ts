@@ -7,8 +7,8 @@ import { marked } from "marked";
 export function displayUserMessage(settings: BMOSettings, message: string) {
     const userMessageDiv = document.createElement("div");
     userMessageDiv.className = "userMessage";
-    userMessageDiv.style.backgroundColor = colorToHex(settings.userMessageBackgroundColor || 
-        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.userMessageBackgroundColor).trim());
+    userMessageDiv.style.backgroundColor = colorToHex(settings.appearance.userMessageBackgroundColor || 
+        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.userMessageBackgroundColor).trim());
 
     const userMessageToolBarDiv = document.createElement("div");
     userMessageToolBarDiv.className = "userMessageToolBar";
@@ -18,7 +18,7 @@ export function displayUserMessage(settings: BMOSettings, message: string) {
 
     const userNameSpan = document.createElement("span");
     userNameSpan.className = "userName";
-    userNameSpan.textContent = settings.userName || DEFAULT_SETTINGS.userName;
+    userNameSpan.textContent = settings.appearance.userName || DEFAULT_SETTINGS.appearance.userName;
     const userP = document.createElement("p");
 
     const regenerateButton = regenerateUserButton(settings);
@@ -39,7 +39,7 @@ export function displayUserMessage(settings: BMOSettings, message: string) {
     userMessageDiv.appendChild(userMessageToolBarDiv);
     userMessageDiv.appendChild(userP);
 
-    if (ANTHROPIC_MODELS.includes(settings.model)) {
+    if (ANTHROPIC_MODELS.includes(settings.general.model)) {
         const fullString = message;
         const cleanString = fullString.split(' ').slice(1).join(' ').trim();
         userP.innerHTML = marked(cleanString);

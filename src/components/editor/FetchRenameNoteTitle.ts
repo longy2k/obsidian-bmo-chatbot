@@ -2,29 +2,28 @@ import { Notice, requestUrl } from "obsidian";
 import OpenAI from "openai";
 import { BMOSettings } from "src/main";
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
-// import { getActiveFileContent, getCurrentNoteContent } from "./ReferenceCurrentNote";
 
 // Rename note title based on specified model
 export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurrentNoteContent: string) {
     const clearYamlContent = referenceCurrentNoteContent.replace(/---[\s\S]+?---/, '').trim();
     
     const prompt = `You are a title generator. You will give succinct titles that does not contain backslashes,
-                    forward slashes, or colons. Please generate one title as your response.\n\n`;
+                    forward slashes, or colons. Generate a title as your response.\n\n`;
 
     try {
-        if (OPENAI_MODELS.includes(settings.model) || settings.openAIBaseModels.includes(settings.model)) {
-
+        if (OPENAI_MODELS.includes(settings.general.model) || (settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model))) {
             const openai = new OpenAI({
-                apiKey: settings.apiKey,
-                baseURL: settings.openAIBaseUrl,
+                apiKey: settings.APIConnections.openAI.APIKey,
+                baseURL: settings.APIConnections.openAI.openAIBaseUrl,
                 dangerouslyAllowBrowser: true, // apiKey is stored within data.json
             });
 
             const chatCompletion = await openai.chat.completions.create({
-                model: settings.model,
+                model: settings.general.model,
                 max_tokens: 40,
                 messages: [
                     { role: 'system', content: prompt + clearYamlContent},
+                    { role: 'user', content: ''}
                 ],
             });
 
@@ -36,18 +35,162 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
 
             return title;
         }
-        else if(ANTHROPIC_MODELS.includes(settings.model)) {
+        else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
+            const url = settings.OllamaConnection.RESTAPIURL + '/api/generate';
+
+            const requestBody = {
+                prompt: prompt + '\n\n' + clearYamlContent + '\n\n',
+                model: settings.general.model,
+                stream: false,
+                options: {
+                    temperature: settings.general.temperature,
+                    num_predict: 25,
+                },
+            };
+    
+            const response = await requestUrl({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            const parseText = JSON.parse(response.text);
+            let title = parseText.response;
+
+            // Remove backslashes, forward slashes, colons, and quotes
+            if (title) {
+                title = title.replace(/[\\/:"]/g, '');
+            }
+
+            return title;
+        }
+        else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)) {
+            const urls = [
+                settings.RESTAPIURLConnection.RESTAPIURL + '/v1/chat/completions',
+                settings.RESTAPIURLConnection.RESTAPIURL + '/api/v1/chat/completions'
+            ];
+        
+            let lastError = null;
+
+        
+            for (const url of urls) {
+                try {
+                    const response = await requestUrl({
+                        url: url,
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.RESTAPIURLConnection.APIKey}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.general.model,
+                            messages: [
+                                { role: 'system', content: prompt + clearYamlContent},
+                                { role: 'user', content: '\n'}
+                            ],
+                            max_tokens: 40,
+                        }),
+                    });
+        
+                    let title = response.json.choices[0].message.content;
+                    // let title = chatCompletion.choices[0].message.content;
+                    // Remove backslashes, forward slashes, colons, and quotes
+                    if (title) {
+                        title = title.replace(/[\\/:"]/g, '');
+                    }
+                    return title;
+        
+                } catch (error) {
+                    lastError = error; // Store the last error and continue
+                }
+            }
+            
+            // If all requests failed, throw the last encountered error
+            if (lastError) {
+                console.error('Error making API request:', lastError);
+                throw lastError;
+            }
+
+        }
+        else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
+            try {
+                const response = await requestUrl({
+                    url: 'https://api.mistral.ai/v1/chat/completions',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${settings.APIConnections.mistral.APIKey}`
+                    },
+                    body: JSON.stringify({
+                        model: settings.general.model,
+                        messages: [
+                            { role: 'system', content: prompt + clearYamlContent},
+                            { role: 'user', content: '\n'}
+                        ],
+                        max_tokens: 40,
+                    }),
+                });
+    
+                let title = response.json.choices[0].message.content;
+                // let title = chatCompletion.choices[0].message.content;
+                // Remove backslashes, forward slashes, colons, and quotes
+                if (title) {
+                    title = title.replace(/[\\/:"]/g, '');
+                }
+                return title;
+    
+            } catch (error) {
+                console.error(error);
+            }
+
+        }
+        else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
+            try {        
+                // Assuming settings.APIConnections.googleGemini.APIKey contains your API key
+                const API_KEY = settings.APIConnections.googleGemini.APIKey;
+        
+                const requestBody = {
+                    contents: [{
+                        parts: [
+                            {text: prompt + clearYamlContent}
+                        ]
+                    }],
+                }
+                
+                const response = await requestUrl({
+                    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+                
+                let title = response.json.candidates[0].content.parts[0].text;
+                // Remove backslashes, forward slashes, colons, and quotes
+                if (title) {
+                    title = title.replace(/[\\/:"]/g, '');
+                }
+                return title;
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        else if(ANTHROPIC_MODELS.includes(settings.general.model)) {
             const headers = {
                 'anthropic-version': '2023-06-01',
                 'content-type': 'application/json',
-                'x-api-key': settings.apiKey,
+                'x-api-key': settings.APIConnections.anthropic.APIKey,
               };
           
               const requestBody = {
-                  model: settings.model,
+                  model: settings.general.model,
                   prompt:  `\n\nHuman: ${prompt}\n\nAssistant:`,
                   max_tokens_to_sample: 40,
-                  temperature: settings.temperature,
+                  temperature: settings.general.temperature,
                   stream: true,
               };
             
@@ -86,65 +229,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
               }
         }
         else {
-            if (settings.ollamaRestAPIUrl && settings.ollamaModels.includes(settings.model)) {
-                const url = settings.ollamaRestAPIUrl + '/api/generate';
-    
-                const requestBody = {
-                    prompt: prompt + '\n\n' + clearYamlContent + '\n\n',
-                    model: settings.model,
-                    stream: false,
-                    options: {
-                        temperature: settings.temperature,
-                        num_predict: 25,
-                    },
-                };
-        
-                const response = await requestUrl({
-                    url,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody),
-                });
-    
-                const parseText = JSON.parse(response.text);
-                let title = parseText.response;
-    
-                // Remove backslashes, forward slashes, colons, and quotes
-                if (title) {
-                    title = title.replace(/[\\/:"]/g, '');
-                }
-    
-                return title;
-            }
-            else if (settings.openAIRestAPIUrl && settings.openAIRestAPIModels.includes(settings.model)) {
-                try {
-                    const response = await requestUrl({
-                        url: settings.openAIRestAPIUrl + '/v1/chat/completions',
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${settings.apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: settings.model,
-                            messages: [
-                                { role: 'system', content: prompt + clearYamlContent},
-                            ],
-                            max_tokens: 40,
-                            temperature: settings.temperature,
-                        }),
-                    });
-        
-                    const message = response.json.choices[0].message.content;
-                    return message;
-        
-                } catch (error) {
-                    console.error('Error making API request:', error);
-                    throw error;
-                }
-            }
+            throw new Error('Invalid model selected for renaming note title. Please check your settings.');
         }
     } catch (error) {
         console.log("ERROR");

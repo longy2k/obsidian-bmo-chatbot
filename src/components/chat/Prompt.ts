@@ -2,11 +2,11 @@ import { BMOSettings } from "src/main";
 
 export async function getPrompt(settings: BMOSettings) {
 
-    if (settings.prompt.trim() === '') {
+    if (settings.prompts.prompt.trim() === '') {
         return;
     }
 
-    const promptFilePath = settings.promptFolderPath + '/' + settings.prompt;
+    const promptFilePath = settings.prompts.promptFolderPath + '/' + settings.prompts.prompt;
 
     try {
         // Await the reading of the file and return its content
