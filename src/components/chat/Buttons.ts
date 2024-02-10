@@ -96,7 +96,7 @@ export function regenerateUserButton(settings: BMOSettings) {
     return regenerateButton;
 }
 
-export function displayEditButton (settings: BMOSettings, userP: HTMLParagraphElement) {
+export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagraphElement) {
     const editButton = document.createElement("button");
     editButton.textContent = "edit";
     setIcon(editButton, "edit"); // Assuming setIcon is defined elsewhere
@@ -226,6 +226,94 @@ export function displayEditButton (settings: BMOSettings, userP: HTMLParagraphEl
     return editButton;
 }
 
+export function displayBotEditButton (settings: BMOSettings, botP: HTMLParagraphElement) {
+    const editButton = document.createElement("button");
+    editButton.textContent = "edit";
+    setIcon(editButton, "edit"); // Assuming setIcon is defined elsewhere
+    editButton.classList.add("edit-button");
+    editButton.title = "edit";
+
+    let lastClickedElement: HTMLElement | null = null;
+
+    editButton.addEventListener("click", function (event) {
+        const editContainer = document.createElement("div");
+        editContainer.classList.add("edit-container");
+        const textArea = document.createElement("textarea");
+        textArea.classList.add("edit-textarea");
+        textArea.value = botP.textContent ?? ""; // Check if botP.textContent is null and provide a default value
+
+        const textareaEditButton = document.createElement("button");
+        textareaEditButton.textContent = "Edit";
+        textareaEditButton.classList.add("textarea-edit-button");
+        textareaEditButton.title = "edit";
+
+        const cancelButton = document.createElement("button");
+        cancelButton.textContent = "Cancel";
+        cancelButton.classList.add("textarea-cancel-button");
+        cancelButton.title = "cancel";
+
+        editContainer.appendChild(textArea);
+
+        event.stopPropagation();
+        lastClickedElement = event.target as HTMLElement;
+
+        while (lastClickedElement && !lastClickedElement.classList.contains('botMessage')) {
+            lastClickedElement = lastClickedElement.parentElement;
+        }
+
+        // Assuming lastClickedElement is the element that was clicked
+        const messageBlock = lastClickedElement?.querySelector('.messageBlock');
+        // Assuming editContainer and textArea are already defined
+        if (messageBlock) {
+            // If messageBlock exists, proceed to append textArea to editContainer
+            messageBlock.innerHTML = '';
+            messageBlock.appendChild(editContainer);
+        } else {
+            // If messageBlock doesn't exist, you might want to handle this case
+            console.log('messageBlock not found');
+        }
+
+        textareaEditButton.addEventListener("click", async function () {
+            botP.textContent = textArea.value;
+            editContainer.replaceWith(botP);
+
+            if (lastClickedElement) {
+                const allMessages = Array.from(document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage'));
+                
+                const index = allMessages.indexOf(lastClickedElement);
+            
+                if (index !== -1) {
+                    messageHistory[index].content = textArea.value;
+
+                    const jsonString = JSON.stringify(messageHistory, null, 4);
+
+                    try {
+                        await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+                    } catch (error) {
+                        console.error("Error writing to message history file:", error);
+                    }
+                }
+                else {
+                    new Notice("No models detected.");
+                }
+            }
+
+        });
+
+        cancelButton.addEventListener("click", function () {
+            editContainer.replaceWith(botP);
+        });
+
+        editContainer.appendChild(textareaEditButton);
+        editContainer.appendChild(cancelButton);
+
+        if (botP.parentNode !== null) {
+            botP.parentNode.replaceChild(editContainer, botP);
+        }
+    });
+
+    return editButton;
+}
 
 export function displayUserCopyButton (userP: HTMLParagraphElement) {
     const copyButton = document.createElement("button");

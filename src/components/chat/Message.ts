@@ -1,5 +1,5 @@
 import { filenameMessageHistoryJSON, messageHistory } from "src/view";
-import { displayAppendButton, displayBotCopyButton } from "./Buttons";
+import { displayAppendButton, displayBotCopyButton, displayBotEditButton } from "./Buttons";
 import { BMOSettings } from "src/main";
 
 // Add a new message to the messageHistory array and save it to the file
@@ -20,16 +20,22 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
         const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
         const targetUserMessage = messageContainerElDivs[index];
         const targetBotMessage = targetUserMessage.nextElementSibling;
+
+        const botMessageToolBarDiv = targetBotMessage?.querySelector(".botMessageToolBar");
+        const buttonContainerDiv = document.createElement("div");
+        buttonContainerDiv.className = "button-container";
+        botMessageToolBarDiv?.appendChild(buttonContainerDiv);
+
+        const newBotP = document.createElement('p');
+        newBotP.innerHTML = messageObj.content;
         
         if (!messageObj.content.includes('div class="formattedSettings"')) {
-            const botMessageToolBarDiv = targetBotMessage?.querySelector(".botMessageToolBar");
-            const buttonContainerDiv = document.createElement("div");
+            const editButton = displayBotEditButton(settings, newBotP);
             const copyBotButton = displayBotCopyButton(settings, messageObj.content);
             const appendButton = displayAppendButton(messageObj.content);
-            buttonContainerDiv.className = "button-container";
+            buttonContainerDiv.appendChild(editButton);
             buttonContainerDiv.appendChild(copyBotButton);
             buttonContainerDiv.appendChild(appendButton);
-            botMessageToolBarDiv?.appendChild(buttonContainerDiv);
         }
 
     }

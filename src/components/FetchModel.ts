@@ -175,7 +175,6 @@ export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: num
                 break;
             }
         }
-
         addMessage(message, 'botMessage', settings, index);
 
     } catch (error) {

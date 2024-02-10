@@ -1,6 +1,6 @@
 import { BMOSettings, DEFAULT_SETTINGS } from "src/main";
 import { colorToHex } from "src/utils/ColorConverter";
-import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton } from "./Buttons";
+import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton, displayBotEditButton } from "./Buttons";
 import { ANTHROPIC_MODELS } from "src/view";
 import { marked } from "marked";
 import { prismHighlighting } from "../PrismaHighlighting";
@@ -38,6 +38,8 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
         }                                  
     }
 
+    botP = botP.replace(/<p>/g, '').replace(/<\/p>/g, '');
+
     const newBotP = document.createElement('p');
     newBotP.innerHTML = botP;
 
@@ -45,8 +47,10 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
     botMessageToolBarDiv.appendChild(buttonContainerDiv);
 
     if (!messageText.includes('div class="formattedSettings"')) {
+        const editButton = displayBotEditButton(settings, newBotP);
         const copyBotButton = displayBotCopyButton(settings, message);
         const appendButton = displayAppendButton(message);
+        buttonContainerDiv.appendChild(editButton);
         buttonContainerDiv.appendChild(copyBotButton);
         buttonContainerDiv.appendChild(appendButton);
     }

@@ -193,6 +193,7 @@ export default class BMOGPT extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
+		// BUG??
         this.registerEvent(
             this.app.workspace.on('active-leaf-change', () => {
                 this.handleFileSwitch();

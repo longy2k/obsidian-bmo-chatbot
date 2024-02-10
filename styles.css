@@ -207,7 +207,8 @@ button.regenerate-button {
 	height: 1.2rem;
 }
 
-.botMessageToolBar button.copy-button {
+.botMessageToolBar button.copy-button,
+.botMessageToolBar button.edit-button {
 	padding: 0 3px;
 	background-color: transparent !important;
 	box-shadow: none !important;
@@ -254,7 +255,8 @@ button.regenerate-button {
 .userMessage .copy-button,
 .userMessage .trash-button,
 .botMessage .append-button,
-.botMessage .copy-button {
+.botMessage .copy-button,
+.botMessage .edit-button {
 	visibility: hidden;
 	opacity: 0;
 }
@@ -265,7 +267,8 @@ button.regenerate-button {
 .userMessage:hover .copy-button,
 .userMessage:hover .trash-button,
 .botMessage:hover .append-button,
-.botMessage:hover .copy-button {
+.botMessage:hover .copy-button,
+.botMessage:hover .edit-button {
 	visibility: visible;
 	opacity: 1;
 }
