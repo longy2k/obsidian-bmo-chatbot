@@ -461,7 +461,7 @@ export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) 
                         { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
                         ...messageHistoryAtIndex
                     ],
-                    max_tokens: parseInt(settings.general.max_tokens),
+                    max_tokens: parseInt(settings.general.max_tokens) || 4096,
                     temperature: settings.general.temperature,
                 }),
             });
@@ -558,7 +558,7 @@ export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: nu
                 ],
                 stream: true,
                 temperature: settings.general.temperature,
-                max_tokens: parseInt(settings.general.max_tokens),
+                max_tokens: parseInt(settings.general.max_tokens) || 4096,
             }),
             signal: abortController.signal
         })
@@ -691,7 +691,7 @@ export async function fetchMistralData(settings: BMOSettings, index: number) {
                     { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
                     ...messageHistoryAtIndex
                 ],
-                max_tokens: parseInt(settings.general.max_tokens),
+                max_tokens: parseInt(settings.general.max_tokens) || 4096,
                 temperature: settings.general.temperature,
             }),
         });
@@ -774,7 +774,7 @@ export async function fetchMistralDataStream(settings: BMOSettings, index: numbe
                 ],
                 stream: true,
                 temperature: settings.general.temperature,
-                max_tokens: parseInt(settings.general.max_tokens),
+                max_tokens: parseInt(settings.general.max_tokens) || 4096,
             }),
             signal: abortController.signal
         })
@@ -937,7 +937,7 @@ export async function fetchGoogleGeminiData(settings: BMOSettings, index: number
                 generationConfig: {
                     stopSequences: '',
                     temperature: settings.general.temperature,
-                    maxOutputTokens: settings.general.max_tokens,
+                    maxOutputTokens: settings.general.max_tokens || 4096,
                     topP: 0.8,
                     topK: 10
                 }
