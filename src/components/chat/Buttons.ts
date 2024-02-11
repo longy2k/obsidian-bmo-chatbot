@@ -269,7 +269,6 @@ export function displayBotEditButton (settings: BMOSettings, botP: HTMLParagraph
             messageBlock.innerHTML = '';
             messageBlock.appendChild(editContainer);
         } else {
-            // If messageBlock doesn't exist, you might want to handle this case
             console.log('messageBlock not found');
         }
 

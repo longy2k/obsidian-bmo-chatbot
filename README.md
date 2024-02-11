@@ -1,5 +1,5 @@
 # BMO Chatbot for Obsidian
-Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) with OpenAI's ChatGPT, Ollama, LM Studio, OpenRouter, and Mistral AI for Obsidian.
+Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, OpenAI's ChatGPT, Mistral AI, and more for Obsidian.
 
 ![Screenshot-1](README_images/Screenshot-1.png)
 <p align="center">
@@ -72,21 +72,19 @@ To start using the plugin, enable it in your settings menu and enter your OpenAI
 - `/stop` or `/s` - Stop fetching response.
 
 ## Supported Models
-- OpenAI
-  - gpt-3.5-turbo
-  - gpt-3.5-turbo-1106
-  - gpt-4 (Context window: 8,192 tokens)
-  - gpt-4-turbo-preview (Context window: 128,000 tokens)
 - Any self-hosted models using [Ollama](https://ollama.ai).
   - See [instructions](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
 - Any self-hosted models using OpenAI's REST API URL endpoints.
   - [LM Studio](https://lmstudio.ai/) 
   - [LocalAI](https://github.com/mudler/LocalAI)
-
-## Other Supported Models (Low Support)
-I would like to continue supporting Anthropic's models, but I no longer have access to the API.
-
-- Anthropic
+- OpenAI
+  - gpt-3.5-turbo
+  - gpt-3.5-turbo-1106
+  - gpt-4 (Context window: 8,192 tokens)
+  - gpt-4-turbo-preview (Context window: 128,000 tokens)
+- Mistral AI's models
+- Google Gemini Pro
+- Anthropic (Low Support: I no longer have access to the API.)
   - claude-instant-1.2
   - claude-2.0
   - claude-2.1
