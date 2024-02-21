@@ -88,8 +88,14 @@ export async function fetchRESTAPIURLModels(plugin: BMOGPT) {
             });
 
             // Check if the response is valid
-            if (response.json && response.json.data) {
-                const models = response.json.data.map((model: { id: number; }) => model.id);
+            if (response.json && (response.json.data || Array.isArray(response.json))) {
+				let models;
+				if (Array.isArray(response.json)) {
+					models = response.json.map((model: { id: number; }) => model.id);
+				} else {
+					models = response.json.data.map((model: { id: number; }) => model.id);
+				}
+
                 plugin.settings.RESTAPIURLConnection.RESTAPIURLModels = models;
                 return models;
             }
