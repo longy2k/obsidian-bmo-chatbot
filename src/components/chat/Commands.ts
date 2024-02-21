@@ -3,7 +3,7 @@ import { BMOSettings, DEFAULT_SETTINGS } from "../../main";
 import { colorToHex } from "../../utils/ColorConverter";
 import { filenameMessageHistoryJSON, messageHistory } from "../../view";
 import BMOGPT from '../../main';
-import { getAbortController } from '../FetchModel';
+import { getAbortController } from '../FetchModelResponse';
 import { fetchModelRenameTitle } from '../editor/FetchRenameNoteTitle';
 import { addMessage } from './Message';
 
