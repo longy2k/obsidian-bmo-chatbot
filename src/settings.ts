@@ -24,12 +24,12 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('h1', {text: 'BMO Chatbot Settings'});
 
-		const changeLogLink = containerEl.createEl("a", {
-			text: "Changelog",
-			href: "https://github.com/longy2k/obsidian-bmo-chatbot/releases",
+		const changeLogLink = containerEl.createEl('a', {
+			text: 'Changelog',
+			href: 'https://github.com/longy2k/obsidian-bmo-chatbot/releases',
 		});
 
-		changeLogLink.style.fontSize = "0.8rem"; 
+		changeLogLink.style.fontSize = '0.8rem'; 
 
 		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
 
@@ -41,7 +41,7 @@ export class BMOSettingTab extends PluginSettingTab {
 		addPromptSettings(this.containerEl, this.plugin, this);
 
 		const separator = document.createElement('hr');
-		separator.style.margin = `1rem 0`;
+		separator.style.margin = '1rem 0';
 		this.containerEl.appendChild(separator);
 
 		addOllamaSettings(this.containerEl, this.plugin, this);

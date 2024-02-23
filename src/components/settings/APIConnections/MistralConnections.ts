@@ -1,5 +1,5 @@
-import { Setting, SettingTab, setIcon } from "obsidian";
-import BMOGPT from "src/main";
+import { Setting, SettingTab, setIcon } from 'obsidian';
+import BMOGPT from 'src/main';
 
 export function addMistralConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
@@ -34,7 +34,7 @@ export function addMistralConnectionSettings(containerEl: HTMLElement, plugin: B
     .setDesc('Insert Mistral API Key.')
     .addText(text => text
         .setPlaceholder('insert-api-key')
-        .setValue(plugin.settings.APIConnections.mistral.APIKey ? `${plugin.settings.APIConnections.mistral.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.mistral.APIKey.slice(-4)}` : "")
+        .setValue(plugin.settings.APIConnections.mistral.APIKey ? `${plugin.settings.APIConnections.mistral.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.mistral.APIKey.slice(-4)}` : '')
         .onChange(async (value) => {
             plugin.settings.APIConnections.mistral.APIKey = value;
             await plugin.saveSettings();

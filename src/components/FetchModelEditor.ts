@@ -1,6 +1,6 @@
-import { requestUrl } from "obsidian";
-import OpenAI from "openai";
-import { BMOSettings } from "src/main";
+import { requestUrl } from 'obsidian';
+import OpenAI from 'openai';
+import { BMOSettings } from 'src/main';
 
 // Fetch OpenAI-Based API Editor
 export async function fetchOpenAIBaseAPIDataEditor(settings: BMOSettings, selectionString: string) {

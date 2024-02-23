@@ -1,5 +1,5 @@
-import { Setting, SettingTab, setIcon } from "obsidian";
-import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
+import { Setting, SettingTab, setIcon } from 'obsidian';
+import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 
 export function addOpenAIConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
@@ -34,7 +34,7 @@ export function addOpenAIConnectionSettings(containerEl: HTMLElement, plugin: BM
     .setDesc('Insert OpenAI API Key.')
     .addText(text => text
         .setPlaceholder('insert-api-key')
-        .setValue(plugin.settings.APIConnections.openAI.APIKey ? `${plugin.settings.APIConnections.openAI.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.openAI.APIKey.slice(-4)}` : "")
+        .setValue(plugin.settings.APIConnections.openAI.APIKey ? `${plugin.settings.APIConnections.openAI.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.openAI.APIKey.slice(-4)}` : '')
         .onChange(async (value) => {
             plugin.settings.APIConnections.openAI.APIKey = value;
             await plugin.saveSettings();
@@ -48,9 +48,9 @@ export function addOpenAIConnectionSettings(containerEl: HTMLElement, plugin: BM
         .setName('OpenAI-Based URL')
         .setDesc('Enter your custom OpenAI-Based URL.')
         .addButton(button => button
-            .setButtonText("Restore Default")
-            .setIcon("rotate-cw")
-            .setClass("clickable-icon")
+            .setButtonText('Restore Default')
+            .setIcon('rotate-cw')
+            .setClass('clickable-icon')
             .onClick(async () => {
                 plugin.settings.APIConnections.openAI.openAIBaseModels = [];
                 plugin.settings.APIConnections.openAI.openAIBaseUrl = DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl;

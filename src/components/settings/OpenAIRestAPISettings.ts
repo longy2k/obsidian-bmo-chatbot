@@ -1,6 +1,6 @@
-import { Setting, SettingTab, setIcon } from "obsidian";
-import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
-import { addDescriptionLink } from "src/utils/DescriptionLink";
+import { Setting, SettingTab, setIcon } from 'obsidian';
+import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
+import { addDescriptionLink } from 'src/utils/DescriptionLink';
 
 // OpenAI-Based REST API URL Connection Settings
 export function addRESTAPIURLSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -36,7 +36,7 @@ export function addRESTAPIURLSettings(containerEl: HTMLElement, plugin: BMOGPT, 
     .setDesc('Insert API Key (Optional).')
     .addText(text => text
         .setPlaceholder('insert-api-key')
-        .setValue(plugin.settings.RESTAPIURLConnection.APIKey ? `${plugin.settings.RESTAPIURLConnection.APIKey.slice(0, 6)}-...${plugin.settings.RESTAPIURLConnection.APIKey.slice(-4)}` : "")
+        .setValue(plugin.settings.RESTAPIURLConnection.APIKey ? `${plugin.settings.RESTAPIURLConnection.APIKey.slice(0, 6)}-...${plugin.settings.RESTAPIURLConnection.APIKey.slice(-4)}` : '')
         .onChange(async (value) => {
             plugin.settings.RESTAPIURLConnection.RESTAPIURLModels = [];
             plugin.settings.RESTAPIURLConnection.APIKey = value;

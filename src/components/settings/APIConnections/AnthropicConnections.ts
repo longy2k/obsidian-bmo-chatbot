@@ -1,5 +1,5 @@
-import { Setting, SettingTab, setIcon } from "obsidian";
-import BMOGPT from "src/main";
+import { Setting, SettingTab, setIcon } from 'obsidian';
+import BMOGPT from 'src/main';
 
 export function addAnthropicConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
@@ -34,7 +34,7 @@ export function addAnthropicConnectionSettings(containerEl: HTMLElement, plugin:
     .setDesc('Insert Anthropic API Key.')
     .addText(text => text
         .setPlaceholder('insert-api-key')
-        .setValue(plugin.settings.APIConnections.anthropic.APIKey ? `${plugin.settings.APIConnections.anthropic.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.anthropic.APIKey.slice(-4)}` : "")
+        .setValue(plugin.settings.APIConnections.anthropic.APIKey ? `${plugin.settings.APIConnections.anthropic.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.anthropic.APIKey.slice(-4)}` : '')
         .onChange(async (value) => {
             plugin.settings.APIConnections.anthropic.APIKey = value;
             await plugin.saveSettings();

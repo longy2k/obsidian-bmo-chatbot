@@ -1,7 +1,7 @@
-import { DropdownComponent, Notice, Setting, SettingTab, setIcon } from "obsidian";
-import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
-import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
-import { fetchGoogleGeminiModels, fetchMistralModels, fetchOllamaModels, fetchOpenAIBaseModels, fetchRESTAPIURLModels } from "../FetchModelList";
+import { DropdownComponent, Notice, Setting, SettingTab, setIcon } from 'obsidian';
+import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
+import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
+import { fetchGoogleGeminiModels, fetchMistralModels, fetchOllamaModels, fetchOpenAIBaseModels, fetchRESTAPIURLModels } from '../FetchModelList';
 
 export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });

@@ -1,5 +1,5 @@
 import { Plugin, TFile } from 'obsidian';
-import { BMOView, VIEW_TYPE_CHATBOT} from "./view";
+import { BMOView, VIEW_TYPE_CHATBOT} from './view';
 import { BMOSettingTab } from './settings';
 import { promptSelectGenerateCommand, renameTitleCommand } from './components/editor/EditorCommands';
 
@@ -205,7 +205,7 @@ export default class BMOGPT extends Plugin {
 			(leaf) => new BMOView(leaf, this.settings, this)
 		);
 
-		this.addRibbonIcon("bot", "BMO Chatbot", () => {
+		this.addRibbonIcon('bot', 'BMO Chatbot', () => {
 			this.activateView();
 		});
 
@@ -314,7 +314,7 @@ export default class BMOGPT extends Plugin {
 			this.app.workspace.getLeavesOfType(VIEW_TYPE_CHATBOT)[0]
 		);
 	
-		const messageContainer = document.querySelector("#messageContainer");
+		const messageContainer = document.querySelector('#messageContainer');
 		if (messageContainer) {
 			messageContainer.scroll({
 				top: messageContainer.scrollHeight, 

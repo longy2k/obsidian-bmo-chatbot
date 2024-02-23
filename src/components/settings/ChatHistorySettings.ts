@@ -1,5 +1,5 @@
-import { Setting, SettingTab, setIcon } from "obsidian";
-import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
+import { Setting, SettingTab, setIcon } from 'obsidian';
+import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 
 export function addChatHistorySettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
@@ -65,14 +65,14 @@ export function addChatHistorySettings(containerEl: HTMLElement, plugin: BMOGPT,
                         
                     if (fileExists) {
                         // console.log("File exists in vault!");
-                        text.inputEl.style.borderColor = "";
+                        text.inputEl.style.borderColor = '';
                     } else {
                         // console.log("File does not exist in vault.");
-                        text.inputEl.style.borderColor = "red";
+                        text.inputEl.style.borderColor = 'red';
                     }
                 } else {
                     // If the input is empty, reset the border color
-                    text.inputEl.style.borderColor = "";
+                    text.inputEl.style.borderColor = '';
                     plugin.settings.chatHistory.templateFilePath = DEFAULT_SETTINGS.chatHistory.templateFilePath;
                 }
             })

@@ -1,6 +1,6 @@
-import { Setting, SettingTab, setIcon } from "obsidian";
-import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
-import { addDescriptionLink } from "src/utils/DescriptionLink";
+import { Setting, SettingTab, setIcon } from 'obsidian';
+import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
+import { addDescriptionLink } from 'src/utils/DescriptionLink';
 
 
 export async function addEditorSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {

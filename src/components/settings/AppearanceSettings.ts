@@ -1,6 +1,6 @@
-import { ColorComponent, Setting, SettingTab, setIcon } from "obsidian";
-import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
-import { colorToHex } from "src/utils/ColorConverter";
+import { ColorComponent, Setting, SettingTab, setIcon } from 'obsidian';
+import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
+import { colorToHex } from 'src/utils/ColorConverter';
 
 export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
@@ -75,9 +75,9 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
         .setName('Background Color for User Messages')
         .setDesc('Modify the background color of the userMessage element.')
         .addButton(button => button
-            .setButtonText("Restore Default")
-            .setIcon("rotate-cw")
-            .setClass("clickable-icon")
+            .setButtonText('Restore Default')
+            .setIcon('rotate-cw')
+            .setClass('clickable-icon')
             .onClick(async () => {
                 const defaultValue = colorToHex(defaultUserMessageBackgroundColor);
                 colorPicker1.setValue(defaultValue);
@@ -98,7 +98,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
 
             let defaultValue = plugin.settings.appearance.userMessageBackgroundColor;
 
-            if (plugin.settings.appearance.userMessageBackgroundColor == "--background-primary") {
+            if (plugin.settings.appearance.userMessageBackgroundColor == '--background-primary') {
                 defaultValue = colorToHex(defaultUserMessageBackgroundColor);
             }
 
@@ -126,9 +126,9 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
         .setName('Background Color for Bot Messages')
         .setDesc('Modify the background color of the botMessage element.')
         .addButton(button => button
-            .setButtonText("Restore Default")
-            .setIcon("rotate-cw")
-            .setClass("clickable-icon")
+            .setButtonText('Restore Default')
+            .setIcon('rotate-cw')
+            .setClass('clickable-icon')
             .onClick(async () => {
                 const defaultValue = colorToHex(defaultBotMessageBackgroundColor);
                 colorPicker2.setValue(defaultValue);
@@ -149,7 +149,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
 
             let defaultValue = plugin.settings.appearance.botMessageBackgroundColor;
 
-            if (plugin.settings.appearance.botMessageBackgroundColor == "--background-secondary") {
+            if (plugin.settings.appearance.botMessageBackgroundColor == '--background-secondary') {
                 defaultValue = colorToHex(defaultBotMessageBackgroundColor);
             }
 
@@ -182,15 +182,15 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
 
                 if (header) {
                     header.style.display = 'block';
-                    referenceCurrentNoteElement.style.margin = `-0.5rem 0 0.5rem 0`;
+                    referenceCurrentNoteElement.style.margin = '-0.5rem 0 0.5rem 0';
                 }
             } else {
                 const header = document.querySelector('#header') as HTMLElement;
                 const messageContainer = document.querySelector('#messageContainer') as HTMLElement;
                 if (header) {
                     header.style.display = 'none';
-                    messageContainer.style.maxHeight = `calc(100% - 60px)`;
-                    referenceCurrentNoteElement.style.margin = `0.5rem 0 0.5rem 0`;
+                    messageContainer.style.maxHeight = 'calc(100% - 60px)';
+                    referenceCurrentNoteElement.style.margin = '0.5rem 0 0.5rem 0';
                 }
             }
             plugin.saveSettings();

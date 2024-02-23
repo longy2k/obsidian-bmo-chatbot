@@ -1,17 +1,17 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, MarkdownView, Editor, EditorPosition } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, TFile, MarkdownView, Editor, EditorPosition } from 'obsidian';
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
-import { fetchOpenAIAPIDataStream, fetchOpenAIAPIData, fetchOllamaData, fetchOllamaDataStream, fetchAnthropicAPIData, fetchRESTAPIURLData, fetchRESTAPIURLDataStream, fetchMistralData, fetchMistralDataStream, fetchGoogleGeminiData } from "./components/FetchModelResponse";
-import { executeCommand } from "./components/chat/Commands";
-import { getActiveFileContent } from "./components/editor/ReferenceCurrentNote";
-import { addMessage } from "./components/chat/Message";
-import { displayUserMessage } from "./components/chat/UserMessage";
-import { displayBotMessage } from "./components/chat/BotMessage";
-export const VIEW_TYPE_CHATBOT = "chatbot-view";
+import { fetchOpenAIAPIDataStream, fetchOpenAIAPIData, fetchOllamaData, fetchOllamaDataStream, fetchAnthropicAPIData, fetchRESTAPIURLData, fetchRESTAPIURLDataStream, fetchMistralData, fetchMistralDataStream, fetchGoogleGeminiData } from './components/FetchModelResponse';
+import { executeCommand } from './components/chat/Commands';
+import { getActiveFileContent } from './components/editor/ReferenceCurrentNote';
+import { addMessage } from './components/chat/Message';
+import { displayUserMessage } from './components/chat/UserMessage';
+import { displayBotMessage } from './components/chat/BotMessage';
+export const VIEW_TYPE_CHATBOT = 'chatbot-view';
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 
-export const ANTHROPIC_MODELS = ["claude-instant-1.2", "claude-2.0", "claude-2.1"];
-export const OPENAI_MODELS = ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-4", "gpt-4-turbo-preview"];
+export const ANTHROPIC_MODELS = ['claude-instant-1.2', 'claude-2.0', 'claude-2.1'];
+export const OPENAI_MODELS = ['gpt-3.5-turbo', 'gpt-3.5-turbo-1106', 'gpt-4', 'gpt-4-turbo-preview'];
 
 export let messageHistory: { role: string; content: string }[] = [];
 
@@ -46,49 +46,49 @@ export class BMOView extends ItemView {
     }
 
     getDisplayText() {
-        return "BMO Chatbot";
+        return 'BMO Chatbot';
     }
     
     async onOpen(): Promise<void> {
         const container = this.containerEl.children[1];
         container.empty();
-        const chatbotContainer = container.createEl("div", {
+        const chatbotContainer = container.createEl('div', {
             attr: {
-                class: "chatbotContainer",
+                class: 'chatbotContainer',
             },
         });
 
-        const header = chatbotContainer.createEl("div", {
+        const header = chatbotContainer.createEl('div', {
             attr: {
-                id: "header",
+                id: 'header',
             },
         });
         
-        const chatbotNameHeading = chatbotContainer.createEl("h1", { 
+        const chatbotNameHeading = chatbotContainer.createEl('h1', { 
             text: this.settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName,
             attr: {
-                id: "chatbotNameHeading"
+                id: 'chatbotNameHeading'
             }
         });
 
-        const modelName = chatbotContainer.createEl("p", {
-            text: "Model: " + this.settings.general.model || DEFAULT_SETTINGS.general.model,
+        const modelName = chatbotContainer.createEl('p', {
+            text: 'Model: ' + this.settings.general.model || DEFAULT_SETTINGS.general.model,
             attr: {
-                id: "modelName"
+                id: 'modelName'
             }
         });
 
-        const spanElement = chatbotContainer.createEl("span", {
+        const spanElement = chatbotContainer.createEl('span', {
             attr: {
-                class: "dotIndicator",
-                id: "markDownBoolean"
+                class: 'dotIndicator',
+                id: 'markDownBoolean'
             }
         });
         
-        const referenceCurrentNoteElement = chatbotContainer.createEl("p", {
-            text: "Reference Current Note",
+        const referenceCurrentNoteElement = chatbotContainer.createEl('p', {
+            text: 'Reference Current Note',
             attr: {
-                id: "referenceCurrentNote"
+                id: 'referenceCurrentNote'
             }
         });
 
@@ -104,9 +104,9 @@ export class BMOView extends ItemView {
             }
         }
     
-        const messageContainer = chatbotContainer.createEl("div", {
+        const messageContainer = chatbotContainer.createEl('div', {
             attr: {
-                id: "messageContainer",
+                id: 'messageContainer',
             },
         });
 
@@ -118,42 +118,42 @@ export class BMOView extends ItemView {
         }
         else {
             header.style.display = 'none';
-            messageContainer.style.maxHeight = `calc(100% - 60px)`;
-            referenceCurrentNoteElement.style.margin = `0.5rem 0 0.5rem 0`;
+            messageContainer.style.maxHeight = 'calc(100% - 60px)';
+            referenceCurrentNoteElement.style.margin = '0.5rem 0 0.5rem 0';
         }
         
         await loadData();
         
-        messageContainer.id = "messageContainer";
+        messageContainer.id = 'messageContainer';
         
         messageHistory.forEach(async (messageData) => {   
-            if (messageData.role == "user") {
+            if (messageData.role == 'user') {
                 const userMessageDiv = displayUserMessage(this.settings, messageData.content);
                 messageContainer.appendChild(userMessageDiv);
             }
         
-            if (messageData.role == "assistant") {
+            if (messageData.role == 'assistant') {
                 const botMessageDiv = displayBotMessage(this.settings, messageHistory, messageData.content);
                 messageContainer.appendChild(botMessageDiv);
             
-                const botMessages = messageContainer.querySelectorAll(".botMessage");
+                const botMessages = messageContainer.querySelectorAll('.botMessage');
                 const lastBotMessage = botMessages[botMessages.length - 1];
                 lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
         
-        const parentElement = document.getElementById("parentElementId");
+        const parentElement = document.getElementById('parentElementId');
         parentElement?.appendChild(messageContainer);
 
-        const chatbox = chatbotContainer.createEl("div", {
+        const chatbox = chatbotContainer.createEl('div', {
             attr: {
-                class: "chatbox",
+                class: 'chatbox',
             }
         });
 
-        const textarea = document.createElement("textarea");
-        textarea.setAttribute("contenteditable", true.toString());
-        textarea.setAttribute("placeholder", "Start typing...");
+        const textarea = document.createElement('textarea');
+        textarea.setAttribute('contenteditable', true.toString());
+        textarea.setAttribute('placeholder', 'Start typing...');
         chatbox.appendChild(textarea);
         
         this.textareaElement = textarea as HTMLTextAreaElement;
@@ -161,10 +161,10 @@ export class BMOView extends ItemView {
     }
 
     addEventListeners() {
-        this.textareaElement.addEventListener("keyup", this.handleKeyup.bind(this));
-        this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
-        this.textareaElement.addEventListener("input", this.handleInput.bind(this));
-        this.textareaElement.addEventListener("blur", this.handleBlur.bind(this));
+        this.textareaElement.addEventListener('keyup', this.handleKeyup.bind(this));
+        this.textareaElement.addEventListener('keydown', this.handleKeydown.bind(this));
+        this.textareaElement.addEventListener('input', this.handleInput.bind(this));
+        this.textareaElement.addEventListener('blur', this.handleBlur.bind(this));
     }
     
     async handleKeyup(event: KeyboardEvent) {
@@ -173,13 +173,13 @@ export class BMOView extends ItemView {
 
         // Only allow /stop command to be executed during fetch
         if (this.settings.OllamaConnection.allowOllamaStream || !this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
-            if ((input === "/s" || input === "/stop") && event.key === "Enter") {
+            if ((input === '/s' || input === '/stop') && event.key === 'Enter') {
                 this.preventEnter = false;
                 executeCommand(input, this.settings, this.plugin);
             }
         }
 
-        if (this.preventEnter === false && !event.shiftKey && event.key === "Enter") {
+        if (this.preventEnter === false && !event.shiftKey && event.key === 'Enter') {
             loadData();
             event.preventDefault();
             if (input.length === 0) {
@@ -189,17 +189,17 @@ export class BMOView extends ItemView {
             if (ANTHROPIC_MODELS.includes(this.settings.general.model)) {
                 addMessage('\n\nHuman: ' + input, 'userMessage', this.settings, index);
             } else {
-                if (!(input === "/s" || input === "/stop")) {
+                if (!(input === '/s' || input === '/stop')) {
                     addMessage(input, 'userMessage', this.settings, index);
                 }
             }
             
-            const messageContainer = document.querySelector("#messageContainer");
+            const messageContainer = document.querySelector('#messageContainer');
             if (messageContainer) {
                 const userMessageDiv = displayUserMessage(this.settings, input);
                 messageContainer.appendChild(userMessageDiv);
 
-                if (input.startsWith("/")) {
+                if (input.startsWith('/')) {
                     executeCommand(input, this.settings, this.plugin);
                     const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
                     if (modelName) {
@@ -215,33 +215,33 @@ export class BMOView extends ItemView {
                             this.preventEnter = false;
                         })
                         .catch(() => {
-                            const botParagraph = document.createElement("p");
-                            botParagraph.textContent = "Oops, something went wrong. Please try again.";
+                            const botParagraph = document.createElement('p');
+                            botParagraph.textContent = 'Oops, something went wrong. Please try again.';
                         });
                 }
             }
 
-            this.textareaElement.value = "";
-            this.textareaElement.style.height = "29px";
-            this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,""); // remove newlines only at beginning or end of input
+            this.textareaElement.value = '';
+            this.textareaElement.style.height = '29px';
+            this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,''); // remove newlines only at beginning or end of input
             this.textareaElement.setSelectionRange(0, 0);
             }
     }
 
     handleKeydown(event: KeyboardEvent) {
-        if (event.key === "Enter" && !event.shiftKey) {
+        if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
         }
     }
 
     handleInput(event: Event) {
-        this.textareaElement.style.height = "29px";
-        this.textareaElement.style.height = this.textareaElement.scrollHeight + "px";
+        this.textareaElement.style.height = '29px';
+        this.textareaElement.style.height = this.textareaElement.scrollHeight + 'px';
     }
 
     handleBlur(event: Event) {
         if (!this.textareaElement.value) {
-            this.textareaElement.style.height = "29px";
+            this.textareaElement.style.height = '29px';
         }
     }
 
@@ -271,10 +271,10 @@ export class BMOView extends ItemView {
 
     
     cleanup() {
-        this.textareaElement.removeEventListener("keyup", this.handleKeyup.bind(this));
-        this.textareaElement.addEventListener("keydown", this.handleKeydown.bind(this));
-        this.textareaElement.removeEventListener("input", this.handleInput.bind(this));
-        this.textareaElement.removeEventListener("blur", this.handleBlur.bind(this));
+        this.textareaElement.removeEventListener('keyup', this.handleKeyup.bind(this));
+        this.textareaElement.addEventListener('keydown', this.handleKeydown.bind(this));
+        this.textareaElement.removeEventListener('input', this.handleInput.bind(this));
+        this.textareaElement.removeEventListener('blur', this.handleBlur.bind(this));
     }
 
     async BMOchatbot() {        
@@ -286,17 +286,17 @@ export class BMOView extends ItemView {
 
         // If apiKey does not exist.
         if (!this.settings.APIConnections.openAI.APIKey && OPENAI_MODELS.includes(this.settings.general.model)) {
-            new Notice("API key not found. Please add your OpenAI API key in the plugin settings.");
+            new Notice('API key not found. Please add your OpenAI API key in the plugin settings.');
             if (chatbotNameHeading){
-                chatbotNameHeading.textContent = "ERROR";
+                chatbotNameHeading.textContent = 'ERROR';
             }
 
             const lastDiv = messageContainerEl?.lastElementChild as HTMLDivElement;
             const errorMessage = document.createElement('p');
-            errorMessage.textContent = "API key not found. Please add your OpenAI API key in the plugin settings.";
+            errorMessage.textContent = 'API key not found. Please add your OpenAI API key in the plugin settings.';
             errorMessage.classList.add('errorMessage');
             const chatbotNameError = lastDiv.querySelector('.chatbotName') as HTMLDivElement;
-            chatbotNameError.textContent = "ERROR";
+            chatbotNameError.textContent = 'ERROR';
             lastDiv.appendChild(errorMessage);
             chatbox.disabled = true;
         } 
@@ -389,13 +389,13 @@ async function loadData() {
         try {
             const fileContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
 
-            if (fileContent.trim() === "") {
+            if (fileContent.trim() === '') {
                 messageHistory = [];
             } else {
                 messageHistory = JSON.parse(fileContent);
             }
         } catch (error) {
-            console.error("Error processing message history:", error);
+            console.error('Error processing message history:', error);
         }
     } else {
         messageHistory = [];

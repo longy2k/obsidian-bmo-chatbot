@@ -1,15 +1,15 @@
-import { Notice, requestUrl } from "obsidian";
-import { BMOSettings } from "../main";
-import { messageHistory } from "../view";
-import OpenAI from "openai";
-import { ChatCompletionMessageParam } from "openai/resources/chat";
-import { marked } from "marked";
-import { prismHighlighting } from "src/components/PrismaHighlighting";
-import { addMessage, addParagraphBreaks } from "./chat/Message";
-import { codeBlockCopyButton } from "./chat/Buttons";
-import { getPrompt } from "./chat/Prompt";
-import { displayLoadingBotMessage } from "./chat/BotMessage";
-import { getActiveFileContent, getCurrentNoteContent } from "./editor/ReferenceCurrentNote";
+import { Notice, requestUrl } from 'obsidian';
+import { BMOSettings } from '../main';
+import { messageHistory } from '../view';
+import OpenAI from 'openai';
+import { ChatCompletionMessageParam } from 'openai/resources/chat';
+import { marked } from 'marked';
+import { prismHighlighting } from 'src/components/PrismaHighlighting';
+import { addMessage, addParagraphBreaks } from './chat/Message';
+import { codeBlockCopyButton } from './chat/Buttons';
+import { getPrompt } from './chat/Prompt';
+import { displayLoadingBotMessage } from './chat/BotMessage';
+import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
 
 let abortController = new AbortController();
 
@@ -59,7 +59,7 @@ export async function fetchOpenAIAPIData(settings: BMOSettings, index: number) {
             const targetBotMessage = targetUserMessage.nextElementSibling;
 
             const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-            const loadingEl = targetBotMessage?.querySelector("#loading");
+            const loadingEl = targetBotMessage?.querySelector('#loading');
 
             if (messageBlock) {
                 if (loadingEl) {
@@ -144,7 +144,7 @@ export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: num
             if (messageContainerEl) {
                 
                 const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-                const loadingEl = targetBotMessage?.querySelector("#loading");
+                const loadingEl = targetBotMessage?.querySelector('#loading');
 
                 if (messageBlock) {
                     if (loadingEl) {
@@ -180,7 +180,7 @@ export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: num
     } catch (error) {
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
-            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            const botMessages = messageContainerEl.querySelectorAll('.botMessage');
             const lastBotMessage = botMessages[botMessages.length - 1];
             const messageBlock = lastBotMessage.querySelector('.messageBlock');
             if (messageBlock) {
@@ -188,7 +188,7 @@ export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: num
                 addMessage(messageBlock.innerHTML, 'botMessage', settings, index);
                 const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
                 const targetBotMessage = targetUserMessage.nextElementSibling;
-                const loadingEl = targetBotMessage?.querySelector("#loading");
+                const loadingEl = targetBotMessage?.querySelector('#loading');
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
@@ -254,7 +254,7 @@ export async function fetchOllamaData(settings: BMOSettings, index: number) {
             const targetBotMessage = targetUserMessage.nextElementSibling;
 
             const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-            const loadingEl = targetBotMessage?.querySelector("#loading");
+            const loadingEl = targetBotMessage?.querySelector('#loading');
 
             if (messageBlock) {
                 if (loadingEl) {
@@ -341,7 +341,7 @@ export async function fetchOllamaDataStream(settings: BMOSettings, index: number
         }
 
         if (!response.body) {
-            new Notice(`Response body is null or undefined.`);
+            new Notice('Response body is null or undefined.');
             throw new Error('Response body is null or undefined.');
         }
 
@@ -356,7 +356,7 @@ export async function fetchOllamaDataStream(settings: BMOSettings, index: number
                 break;
             }
 
-            const chunk = decoder.decode(value, { stream: true }) || "";
+            const chunk = decoder.decode(value, { stream: true }) || '';
             // Splitting the chunk to parse JSON messages separately
             const parts = chunk.split('\n');
             for (const part of parts.filter(Boolean)) { // Filter out empty parts
@@ -380,7 +380,7 @@ export async function fetchOllamaDataStream(settings: BMOSettings, index: number
                 const targetBotMessage = targetUserMessage.nextElementSibling;
     
                 const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-                const loadingEl = targetBotMessage?.querySelector("#loading");
+                const loadingEl = targetBotMessage?.querySelector('#loading');
 
                 if (messageBlock) {
                     if (loadingEl) {
@@ -474,7 +474,7 @@ export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) 
                 const targetBotMessage = targetUserMessage.nextElementSibling;
     
                 const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-                const loadingEl = targetBotMessage?.querySelector("#loading");
+                const loadingEl = targetBotMessage?.querySelector('#loading');
             
                 if (messageBlock) {
                     if (loadingEl) {
@@ -570,7 +570,7 @@ export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: nu
         }
 
         if (!response.body) {
-            new Notice(`Response body is null or undefined.`);
+            new Notice('Response body is null or undefined.');
             throw new Error('Response body is null or undefined.');
         }
 
@@ -585,10 +585,10 @@ export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: nu
                 break;
             }
 
-            const chunk = decoder.decode(value, { stream: false }) || "";
+            const chunk = decoder.decode(value, { stream: false }) || '';
 
             // Check if chunk contains 'data: [DONE]'
-            if (chunk.includes("data: [DONE]")) {
+            if (chunk.includes('data: [DONE]')) {
                 break;
             }
             
@@ -618,7 +618,7 @@ export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: nu
                 const targetBotMessage = targetUserMessage.nextElementSibling;
     
                 const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-                const loadingEl = targetBotMessage?.querySelector("#loading");
+                const loadingEl = targetBotMessage?.querySelector('#loading');
 
                 if (messageBlock) {
                     if (loadingEl) {
@@ -704,7 +704,7 @@ export async function fetchMistralData(settings: BMOSettings, index: number) {
             const targetBotMessage = targetUserMessage.nextElementSibling;
 
             const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-            const loadingEl = targetBotMessage?.querySelector("#loading");
+            const loadingEl = targetBotMessage?.querySelector('#loading');
         
             if (messageBlock) {
                 if (loadingEl) {
@@ -786,7 +786,7 @@ export async function fetchMistralDataStream(settings: BMOSettings, index: numbe
         }
 
         if (!response.body) {
-            new Notice(`Response body is null or undefined.`);
+            new Notice('Response body is null or undefined.');
             throw new Error('Response body is null or undefined.');
         }
 
@@ -801,7 +801,7 @@ export async function fetchMistralDataStream(settings: BMOSettings, index: numbe
                 break;
             }
 
-            const chunk = decoder.decode(value, { stream: false }) || "";
+            const chunk = decoder.decode(value, { stream: false }) || '';
 
             // console.log("chunk",chunk);
             
@@ -811,7 +811,7 @@ export async function fetchMistralDataStream(settings: BMOSettings, index: numbe
 
             for (const part of parts.filter(Boolean)) { // Filter out empty parts
                 // Check if chunk contains 'data: [DONE]'
-                if (part.includes("data: [DONE]")) {
+                if (part.includes('data: [DONE]')) {
                     break;
                 }
                 
@@ -835,7 +835,7 @@ export async function fetchMistralDataStream(settings: BMOSettings, index: numbe
                 const targetBotMessage = targetUserMessage.nextElementSibling;
     
                 const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-                const loadingEl = targetBotMessage?.querySelector("#loading");
+                const loadingEl = targetBotMessage?.querySelector('#loading');
 
                 if (messageBlock) {
                     if (loadingEl) {
@@ -900,17 +900,17 @@ export async function fetchGoogleGeminiData(settings: BMOSettings, index: number
         
         // Find the last user message index
         const lastUserMessageIndex = modifiedMessageHistory.map((message, index) => ({ role: message.role, index }))
-                                                    .filter(message => message.role === "user")
+                                                    .filter(message => message.role === 'user')
                                                     .map(message => message.index)
                                                     .pop();
 
         // Append referenceCurrentNoteContent to the last user message, if found
         if (lastUserMessageIndex !== undefined) {
-            modifiedMessageHistory[lastUserMessageIndex].content += "\n\n" + referenceCurrentNoteContent + "\n\n" + settings.general.system_role + "\n\n" + prompt;
+            modifiedMessageHistory[lastUserMessageIndex].content += '\n\n' + referenceCurrentNoteContent + '\n\n' + settings.general.system_role + '\n\n' + prompt;
         }
 
         const contents = modifiedMessageHistory.map(({ role, content }) => ({
-            role: role === "assistant" ? "model" : role, // Convert "assistant" to "model"
+            role: role === 'assistant' ? 'model' : role, // Convert "assistant" to "model"
             parts: [{ text: content }]
         }));
 
@@ -952,7 +952,7 @@ export async function fetchGoogleGeminiData(settings: BMOSettings, index: number
             const targetBotMessage = targetUserMessage.nextElementSibling;
 
             const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-            const loadingEl = targetBotMessage?.querySelector("#loading");
+            const loadingEl = targetBotMessage?.querySelector('#loading');
         
             if (messageBlock) {
                 if (loadingEl) {
@@ -1044,7 +1044,7 @@ export async function fetchAnthropicAPIData(settings: BMOSettings, index: number
         const targetBotMessage = targetUserMessage.nextElementSibling;
 
         const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-        const loadingEl = targetBotMessage?.querySelector("#loading");
+        const loadingEl = targetBotMessage?.querySelector('#loading');
 
           if (messageBlock) {
             if (loadingEl) {
@@ -1064,7 +1064,7 @@ export async function fetchAnthropicAPIData(settings: BMOSettings, index: number
     } catch (error) {
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
-            const botMessages = messageContainerEl.querySelectorAll(".botMessage");
+            const botMessages = messageContainerEl.querySelectorAll('.botMessage');
             const lastBotMessage = botMessages[botMessages.length - 1];
             const messageBlock = lastBotMessage.querySelector('.messageBlock');
 
@@ -1073,7 +1073,7 @@ export async function fetchAnthropicAPIData(settings: BMOSettings, index: number
                 messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages. We recommend clearing max_tokens for best results.';
                 addMessage(messageBlock.innerHTML, 'botMessage', settings, index);
 
-                const loadingEl = lastBotMessage.querySelector("#loading");
+                const loadingEl = lastBotMessage.querySelector('#loading');
                 if (loadingEl) {
                     loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
                     lastBotMessage.removeChild(loadingEl);

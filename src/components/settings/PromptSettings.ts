@@ -1,5 +1,5 @@
-import { Setting, SettingTab, TFolder, setIcon } from "obsidian";
-import BMOGPT, { DEFAULT_SETTINGS } from "src/main";
+import { Setting, SettingTab, TFolder, setIcon } from 'obsidian';
+import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 
 
 // Prompt Settings
@@ -50,9 +50,9 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
                     const folder = app.vault.getAbstractFileByPath(folderPath);
                     
                     if (folder && folder instanceof TFolder) {
-                        text.inputEl.style.borderColor = ""; 
+                        text.inputEl.style.borderColor = ''; 
                     } else {
-                        text.inputEl.style.borderColor = "red"; 
+                        text.inputEl.style.borderColor = 'red'; 
                     }
                 }
                 await plugin.saveSettings();

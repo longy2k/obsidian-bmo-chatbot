@@ -1,6 +1,6 @@
-import { requestUrl } from "obsidian";
-import OpenAI from "openai";
-import BMOGPT from "src/main";
+import { requestUrl } from 'obsidian';
+import OpenAI from 'openai';
+import BMOGPT from 'src/main';
 
 export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
     const openai = new OpenAI({
