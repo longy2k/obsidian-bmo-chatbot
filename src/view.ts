@@ -370,7 +370,7 @@ export class BMOView extends ItemView {
             }
 
         }
-        // console.log("BMO settings:", this.settings);
+        console.log('BMO settings:', this.settings);
     }
 
     async onClose() {

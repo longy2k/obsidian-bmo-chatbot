@@ -1,7 +1,7 @@
 import { Notice } from 'obsidian';
-import { BMOSettings, DEFAULT_SETTINGS } from "../../main";
-import { colorToHex } from "../../utils/ColorConverter";
-import { filenameMessageHistoryJSON, messageHistory } from "../../view";
+import { BMOSettings, DEFAULT_SETTINGS } from '../../main';
+import { colorToHex } from '../../utils/ColorConverter';
+import { filenameMessageHistoryJSON, messageHistory } from '../../view';
 import BMOGPT from '../../main';
 import { getAbortController } from '../FetchModelResponse';
 import { fetchModelRenameTitle } from '../editor/FetchRenameNoteTitle';
@@ -57,22 +57,22 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
 
 // Function to create and append a bot message
 export function createBotMessage(settings: BMOSettings): HTMLDivElement {
-  const messageContainer = document.querySelector("#messageContainer");
-  const botMessage = document.createElement("div");
-  botMessage.classList.add("botMessage");
+  const messageContainer = document.querySelector('#messageContainer');
+  const botMessage = document.createElement('div');
+  botMessage.classList.add('botMessage');
   botMessage.style.backgroundColor = colorToHex(
     settings.appearance.botMessageBackgroundColor ||
       getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim()
   );
   messageContainer?.appendChild(botMessage);
 
-  const botNameSpan = document.createElement("span");
+  const botNameSpan = document.createElement('span');
   botNameSpan.textContent = settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName;
-  botNameSpan.className = "chatbotName";
+  botNameSpan.className = 'chatbotName';
   botMessage.appendChild(botNameSpan);
 
-  const messageBlock = document.createElement("div");
-  messageBlock.classList.add("messageBlock");
+  const messageBlock = document.createElement('div');
+  messageBlock.classList.add('messageBlock');
   botMessage.appendChild(messageBlock);
 
   return messageBlock;
@@ -81,13 +81,13 @@ export function createBotMessage(settings: BMOSettings): HTMLDivElement {
 // Function to display the message in the Chatbot
 function displayMessage(messageBlock: HTMLDivElement, messageHtml: string, settings: BMOSettings) {
   const index = messageHistory.length - 1;
-  const messageContainer = document.querySelector("#messageContainer");
+  const messageContainer = document.querySelector('#messageContainer');
 
   if (messageContainer) {
-    const botMessages = messageContainer.querySelectorAll(".botMessage");
+    const botMessages = messageContainer.querySelectorAll('.botMessage');
     const lastBotMessage = botMessages[botMessages.length - 1];
 
-    const messageBlock2 = lastBotMessage.querySelector(".messageBlock");
+    const messageBlock2 = lastBotMessage.querySelector('.messageBlock');
 
     if (messageBlock2) {
       messageBlock2.innerHTML = messageHtml;
@@ -153,7 +153,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 
     // Check if currentModel is empty, and set it to "Empty" if it is
     if (!currentModel) {
-      currentModel = "Empty";
+      currentModel = 'Empty';
     }
   
     const formattedSettings = 
@@ -170,7 +170,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
   if (input.split(' ')[1] !== undefined) {
     const inputModel = input.split(' ')[1].replace(/^"(.*)"$/, '$1');
 
-    let messageHtml = "";
+    let messageHtml = '';
 
     const modelAliases: { [key: string]: string } = {};
 
@@ -189,7 +189,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
     }
     else {
       messageHtml = `<div class="formattedSettings"><p><strong>Model '${inputModel}' does not exist for this API key.</strong></p></div>`;
-      new Notice("Invalid model.");
+      new Notice('Invalid model.');
     }
 
     displayMessage(messageBlock, messageHtml, settings);
@@ -202,7 +202,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 export async function commandPrompt(input: string, settings: BMOSettings, plugin: BMOGPT) {
 
   if (!settings.prompts.promptFolderPath) {
-    new Notice("Prompt folder path not set.");
+    new Notice('Prompt folder path not set.');
     return;
   }
 
@@ -219,15 +219,15 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
 
     // Loop through files and create list items, removing the file extension
     const fileListItems = files.map(file => {
-      const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, ""); // Removing the last dot and what follows
+      const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, ''); // Removing the last dot and what follows
       return `<li>${fileNameWithoutExtension}</li>`;
     }).join('');
 
-    let currentPrompt = settings.prompts.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+    let currentPrompt = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
 
     // Check if currentPrompt is empty, and set it to "Empty" if it is
     if (!currentPrompt) {
-      currentPrompt = "Empty";
+      currentPrompt = 'Empty';
     }
 
     const formattedSettings = 
@@ -244,18 +244,18 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
   // Check if the user has specified a prompt after the "/prompt" command
   if (input.startsWith('/prompt ')) {
     let inputValue = input.substring('/prompt '.length).trim();
-    let messageHtml = "";
+    let messageHtml = '';
 
     // Remove quotation marks if present
     if ((inputValue.startsWith('"') && inputValue.endsWith('"')) ||
-        (inputValue.startsWith("'") && inputValue.endsWith("'"))) {
+        (inputValue.startsWith('\'') && inputValue.endsWith('\''))) {
       inputValue = inputValue.substring(1, inputValue.length - 1);
     }
 
     // Set to default or empty if the input is 'clear' or 'c'
     if (inputValue === 'clear' || inputValue === 'c') {
       settings.prompts.prompt = ''; // Set to default or empty
-      messageHtml = `<div class="formattedSettings"><p><strong>Prompt cleared.</strong></p></div>`;
+      messageHtml = '<div class="formattedSettings"><p><strong>Prompt cleared.</strong></p></div>';
       displayMessage(messageBlock, messageHtml, settings);
       await plugin.saveSettings();
       return settings;
@@ -265,7 +265,7 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
     
     // Create aliases for each file (prompt)
     for (let i = 1; i <= files.length; i++) {
-      const fileNameWithoutExtension = files[i - 1].name.replace(/\.[^/.]+$/, "");
+      const fileNameWithoutExtension = files[i - 1].name.replace(/\.[^/.]+$/, '');
       promptAliases[i.toString()] = fileNameWithoutExtension;
     }
 
@@ -273,17 +273,17 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
     if (promptAliases[inputValue]) {
       // If input matches a key in promptAliases
       settings.prompts.prompt = promptAliases[inputValue] + '.md';
-      currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+      currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
       messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentModel}</strong></p></div>`;
     } else if (Object.values(promptAliases).includes(inputValue)) {
       // If input matches a value in promptAliases
       settings.prompts.prompt = inputValue + '.md';
-      currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ""); // Removing the file extension
+      currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
       messageHtml = `<div class="formattedSettings"><p><strong>Updated Prompt to ${currentModel}</strong></p></div>`;
     } else {
       // If the input prompt does not exist
       messageHtml = `<div class="formattedSettings"><p><strong>Prompt '${inputValue}' does not exist.</strong></p></div>`;
-      new Notice("Invalid prompt.");
+      new Notice('Invalid prompt.');
     }
 
     displayMessage(messageBlock, messageHtml, settings);
@@ -301,7 +301,7 @@ export async function commandReference(input: string, settings: BMOSettings, plu
   const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');
   const inputValue = input.split(' ')[1]?.toLowerCase();
 
-  if (inputValue === "true" || inputValue === "on") {
+  if (inputValue === 'true' || inputValue === 'on') {
     settings.general.allowReferenceCurrentNote = true;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'block';
@@ -311,7 +311,7 @@ export async function commandReference(input: string, settings: BMOSettings, plu
             <p><strong>Reference updated: on</strong></p>
           </div>
       `;
-  } else if (inputValue === "false" || inputValue === "off") {
+  } else if (inputValue === 'false' || inputValue === 'off') {
     settings.general.allowReferenceCurrentNote = false;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'none';
@@ -341,11 +341,17 @@ export async function commandTemperature(input: string, settings: BMOSettings, p
   const floatValue = parseFloat(inputValue);
   let temperatureSettingMessage: string;
 
-  if (settings && !isNaN(floatValue) && floatValue >= 0.00 && floatValue <= 1.00) {
-    settings.general.temperature = parseFloat((Math.round(floatValue / 0.05) * 0.05).toFixed(2));
-      temperatureSettingMessage = `${settings.general.temperature}`;
+  if (settings && !isNaN(floatValue)) {
+    if (floatValue < 0.00) {
+      settings.general.temperature = '0.00';
+    } else if (floatValue > 2.00) {
+      settings.general.temperature = '2.00';
+    } else {
+      settings.general.temperature = floatValue.toFixed(2);
+    }
+    temperatureSettingMessage = `${settings.general.temperature}`;
   } else {
-      temperatureSettingMessage = "Invalid.";
+    temperatureSettingMessage = 'Invalid.';
   }
 
   const formattedSettings = `
@@ -375,12 +381,12 @@ export async function commandMaxTokens(input: string, settings: BMOSettings, plu
           maxTokensSettingMessage = `Max tokens updated: ${inputValue}`;
       } else {
           // Input is not a valid integer
-          maxTokensSettingMessage = "Max tokens update: invalid";
+          maxTokensSettingMessage = 'Max tokens update: invalid';
       }
   } else {
       // Clear max_tokens and inform the user
-      settings.general.max_tokens = "";
-      maxTokensSettingMessage = "Max tokens cleared.";
+      settings.general.max_tokens = '';
+      maxTokensSettingMessage = 'Max tokens cleared.';
   }
   
   formattedSettings += `
@@ -410,7 +416,7 @@ export async function commandSystem(input: string, settings: BMOSettings, plugin
           `;
       }
   } else {
-    settings.general.system_role = "";
+    settings.general.system_role = '';
       formattedSettings += `
           <div class="formattedSettings">
               <p><strong>System cleared.</strong></p>
@@ -488,7 +494,7 @@ export async function commandAppend(settings: BMOSettings) {
           displayMessage(messageBlock, formattedSettings, settings);
 
       } catch (error) {
-        console.error("Error processing message history:", error);
+        console.error('Error processing message history:', error);
       }
     }
     
@@ -496,10 +502,10 @@ export async function commandAppend(settings: BMOSettings) {
 
     // Save the updated content back to the active file
     await app.vault.modify(activeFile, updatedContent);
-    new Notice("Appended conversation.");
+    new Notice('Appended conversation.');
   }
   else {
-    new Notice("No active Markdown file detected.");
+    new Notice('No active Markdown file detected.');
   }
 }
 
@@ -521,11 +527,11 @@ export async function commandSave(settings: BMOSettings) {
   
   // Create a datetime string to append to the file name
   const now = new Date();
-  const dateTimeStamp = now.getFullYear() + "-" 
-                        + (now.getMonth() + 1).toString().padStart(2, '0') + "-" 
-                        + now.getDate().toString().padStart(2, '0') + " " 
-                        + now.getHours().toString().padStart(2, '0') + "-" 
-                        + now.getMinutes().toString().padStart(2, '0') + "-" 
+  const dateTimeStamp = now.getFullYear() + '-' 
+                        + (now.getMonth() + 1).toString().padStart(2, '0') + '-' 
+                        + now.getDate().toString().padStart(2, '0') + ' ' 
+                        + now.getHours().toString().padStart(2, '0') + '-' 
+                        + now.getMinutes().toString().padStart(2, '0') + '-' 
                         + now.getSeconds().toString().padStart(2, '0');
 
   try {
@@ -621,7 +627,7 @@ export async function commandSave(settings: BMOSettings) {
           displayMessage(messageBlock, formattedSettings, settings);
 
       } catch (error) {
-        console.error("Error processing message history:", error);
+        console.error('Error processing message history:', error);
       }
     }
 
@@ -654,7 +660,7 @@ export async function commandSave(settings: BMOSettings) {
     // Create the new note with formatted Markdown content
     const file = await app.vault.create(fileName, markdownContent);
     if (file) {
-      new Notice("Saved conversation.");
+      new Notice('Saved conversation.');
 
       // Open the newly created note in a new pane
       app.workspace.openLinkText(fileName, '', true, { active: true });

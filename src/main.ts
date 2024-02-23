@@ -8,7 +8,7 @@ export interface BMOSettings {
 		model: string,
 		system_role: string,
 		max_tokens: string,
-		temperature: number,
+		temperature: string,
 		allowReferenceCurrentNote: boolean,
 	},
 	appearance: {
@@ -99,7 +99,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		model: '',
 		system_role: 'You are a helpful assistant.',
 		max_tokens: '',
-		temperature: 1.00,
+		temperature: '1.00',
 		allowReferenceCurrentNote: false,
 	},
 	appearance: {

@@ -1,7 +1,7 @@
-import { Notice, requestUrl } from "obsidian";
-import OpenAI from "openai";
-import { BMOSettings } from "src/main";
-import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
+import { Notice, requestUrl } from 'obsidian';
+import OpenAI from 'openai';
+import { BMOSettings } from 'src/main';
+import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
 
 // Rename note title based on specified model
 export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurrentNoteContent: string) {
@@ -43,7 +43,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                 model: settings.general.model,
                 stream: false,
                 options: {
-                    temperature: settings.general.temperature,
+                    temperature: parseInt(settings.general.temperature),
                     num_predict: 25,
                 },
             };
@@ -190,7 +190,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                   model: settings.general.model,
                   prompt:  `\n\nHuman: ${prompt}\n\nAssistant:`,
                   max_tokens_to_sample: 40,
-                  temperature: settings.general.temperature,
+                  temperature: parseInt(settings.general.temperature),
                   stream: true,
               };
             
@@ -232,7 +232,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
             throw new Error('Invalid model selected for renaming note title. Please check your settings.');
         }
     } catch (error) {
-        console.log("ERROR");
+        console.log('ERROR');
         throw new Error(error.response?.data?.error || error.message);
     }
 }

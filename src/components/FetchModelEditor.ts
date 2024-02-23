@@ -48,7 +48,7 @@ export async function fetchOllamaDataEditor(settings: BMOSettings, selectionStri
                 ],
                 stream: false,
                 options: {
-                    temperature: settings.general.temperature,
+                    temperature: parseInt(settings.general.temperature),
                     num_predict: parseInt(settings.general.max_tokens),
                 },
             }),
@@ -90,7 +90,7 @@ export async function fetchRESTAPIURLDataEditor(settings: BMOSettings, selection
                         { role: 'user', content: selectionString}
                     ],
                     max_tokens: parseInt(settings.general.max_tokens),
-                    temperature: settings.general.temperature,
+                    temperature: parseInt(settings.general.temperature),
                 }),
             });
 
@@ -125,7 +125,7 @@ export async function fetchMistralDataEditor(settings: BMOSettings, selectionStr
                     { role: 'user', content: selectionString}
                 ],
                 max_tokens: parseInt(settings.general.max_tokens),
-                temperature: settings.general.temperature,
+                temperature: parseInt(settings.general.temperature),
             }),
         });
 
@@ -179,7 +179,7 @@ export async function fetchAnthropicAPIDataEditor(settings: BMOSettings, selecti
         model: settings.general.model,
         prompt:  `\n\nHuman: ${settings.editor.system_role_prompt_select_generate}\n\n${selectionString}\n\nAssistant:`,
         max_tokens_to_sample: parseInt(settings.general.max_tokens) || 100000,
-        temperature: settings.general.temperature,
+        temperature: parseInt(settings.general.temperature),
         stream: false,
     };
   

@@ -169,13 +169,33 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
     new Setting(settingsContainer)
         .setName('Temperature')
         .setDesc('Temperature controls how random the generated output is. Lower values make the text more predictable, while higher values make it more creative and unpredictable.')
-        .addSlider(slider => slider
-            .setLimits(0, 2, 0.05)
-            .setValue(plugin.settings.general.temperature !== undefined ? plugin.settings.general.temperature : DEFAULT_SETTINGS.general.temperature)
-            .setDynamicTooltip()
+        .addText(text => text
+            .setPlaceholder('1.00')
+            .setValue(plugin.settings.general.temperature)
             .onChange(async (value) => {
-                plugin.settings.general.temperature = value;
+                const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
+
+                // Determine if the float value is an integer
+                if (!isNaN(floatValue)) {
+                    if (!isNaN(floatValue)) {
+                        if (floatValue < 0) {
+                            plugin.settings.general.temperature = '0.00';
+                        } else if (floatValue > 2) {
+                            plugin.settings.general.temperature = '2.00';
+                        } else {
+                            plugin.settings.general.temperature = floatValue.toFixed(2);
+                        }
+                    } else {
+                        plugin.settings.general.temperature = DEFAULT_SETTINGS.general.temperature;
+                    }
+                } else {
+                    // Fallback to the default value if input is not a valid number
+                    plugin.settings.general.temperature = DEFAULT_SETTINGS.general.temperature;
+                }
                 await plugin.saveSettings();
+            })
+            .inputEl.addEventListener('focusout', async () => {
+                SettingTab.display();
             })
         );
 

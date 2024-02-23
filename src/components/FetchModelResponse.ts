@@ -124,7 +124,7 @@ export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: num
         const stream = await openai.chat.completions.create({
             model: settings.general.model,
             max_tokens: parseInt(settings.general.max_tokens),
-            temperature: settings.general.temperature,
+            temperature: parseInt(settings.general.temperature),
             messages: [
                 { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
                 ...messageHistoryAtIndex as ChatCompletionMessageParam[]
@@ -462,7 +462,7 @@ export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) 
                         ...messageHistoryAtIndex
                     ],
                     max_tokens: parseInt(settings.general.max_tokens) || 4096,
-                    temperature: settings.general.temperature,
+                    temperature: parseInt(settings.general.temperature),
                 }),
             });
 
@@ -557,7 +557,7 @@ export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: nu
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
-                temperature: settings.general.temperature,
+                temperature: parseInt(settings.general.temperature),
                 max_tokens: parseInt(settings.general.max_tokens) || 4096,
             }),
             signal: abortController.signal
@@ -692,7 +692,7 @@ export async function fetchMistralData(settings: BMOSettings, index: number) {
                     ...messageHistoryAtIndex
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || 4096,
-                temperature: settings.general.temperature,
+                temperature: parseInt(settings.general.temperature),
             }),
         });
 
@@ -773,7 +773,7 @@ export async function fetchMistralDataStream(settings: BMOSettings, index: numbe
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
-                temperature: settings.general.temperature,
+                temperature: parseInt(settings.general.temperature),
                 max_tokens: parseInt(settings.general.max_tokens) || 4096,
             }),
             signal: abortController.signal
@@ -936,7 +936,7 @@ export async function fetchGoogleGeminiData(settings: BMOSettings, index: number
                 ],
                 generationConfig: {
                     stopSequences: '',
-                    temperature: settings.general.temperature,
+                    temperature: parseInt(settings.general.temperature),
                     maxOutputTokens: settings.general.max_tokens || 4096,
                     topP: 0.8,
                     topK: 10
@@ -1013,7 +1013,7 @@ export async function fetchAnthropicAPIData(settings: BMOSettings, index: number
         model: settings.general.model,
         prompt:  `\n\nHuman: ${referenceCurrentNoteContent}\n\n${settings.general.system_role}\n\n${prompt}\n\n${messageHistoryAtIndexString}\n\nAssistant:`,
         max_tokens_to_sample: parseInt(settings.general.max_tokens) || 100000,
-        temperature: settings.general.temperature,
+        temperature: parseInt(settings.general.temperature),
         stream: true,
     };
   
@@ -1100,7 +1100,7 @@ function ollamaParametersOptions(settings: BMOSettings) {
         num_thread: parseInt(settings.OllamaConnection.ollamaParameters.num_thread),
         repeat_last_n: parseInt(settings.OllamaConnection.ollamaParameters.repeat_last_n),
         repeat_penalty: parseFloat(settings.OllamaConnection.ollamaParameters.repeat_penalty),
-        temperature: settings.general.temperature,
+        temperature: parseInt(settings.general.temperature),
         seed: parseInt(settings.OllamaConnection.ollamaParameters.seed),
         stop: settings.OllamaConnection.ollamaParameters.stop,
         tfs_z: parseFloat(settings.OllamaConnection.ollamaParameters.tfs_z),
