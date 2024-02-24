@@ -95,7 +95,6 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                 }
             }
             if (plugin.settings.APIConnections.mistral.APIKey !== '') {
-                console.log('Mistral API Key:');
                 const mistralModels = await fetchMistralModels(plugin);
                 try {
                     mistralModels.forEach((model: string) => {

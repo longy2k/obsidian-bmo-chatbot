@@ -154,6 +154,11 @@ export class BMOView extends ItemView {
         const textarea = document.createElement('textarea');
         textarea.setAttribute('contenteditable', true.toString());
         textarea.setAttribute('placeholder', 'Start typing...');
+
+        textarea.style.backgroundColor = this.settings.appearance.chatBoxBackgroundColor || DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
+        textarea.style.borderColor = this.settings.appearance.chatBoxBackgroundColor || DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
+        chatbox.style.backgroundColor = this.settings.appearance.chatBoxBorderColor || DEFAULT_SETTINGS.appearance.chatBoxBorderColor;
+
         chatbox.appendChild(textarea);
         
         this.textareaElement = textarea as HTMLTextAreaElement;
@@ -168,7 +173,7 @@ export class BMOView extends ItemView {
     }
     
     async handleKeyup(event: KeyboardEvent) {
-        const input = this.textareaElement.value.trim();
+        const input = this.textareaElement.value;
         const index = messageHistory.length - 1;
 
         // Only allow /stop command to be executed during fetch

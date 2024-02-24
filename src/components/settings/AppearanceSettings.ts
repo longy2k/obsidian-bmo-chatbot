@@ -72,7 +72,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
     const defaultUserMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.userMessageBackgroundColor).trim();
     
     new Setting(settingsContainer)
-        .setName('Background Color for User Messages')
+        .setName('User Message Background Color')
         .setDesc('Modify the background color of the userMessage element.')
         .addButton(button => button
             .setButtonText('Restore Default')
@@ -123,7 +123,7 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
     const defaultBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim();
 
     new Setting(settingsContainer)
-        .setName('Background Color for Bot Messages')
+        .setName('Bot Message Background Color')
         .setDesc('Modify the background color of the botMessage element.')
         .addButton(button => button
             .setButtonText('Restore Default')
@@ -164,6 +164,94 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
                             const element = botMessage as HTMLElement;
                             element.style.backgroundColor = hexValue;
                         });
+                    }
+            await plugin.saveSettings();
+        });
+    });
+
+    let colorPicker3: ColorComponent;
+    const defaultChatBoxBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor).trim();
+
+    new Setting(settingsContainer)
+        .setName('Chatbox Background Color')
+        .setDesc('Modify the background color of the chatbox.')
+        .addButton(button => button
+            .setButtonText('Restore Default')
+            .setIcon('rotate-cw')
+            .setClass('clickable-icon')
+            .onClick(async () => {
+                const defaultValue = colorToHex(defaultChatBoxBackgroundColor);
+                colorPicker3.setValue(defaultValue);
+    
+                const textarea = document.querySelector('.chatbox textarea');
+                if (textarea) {
+                    const element = textarea as HTMLElement;
+                    element.style.backgroundColor = defaultValue;
+                }
+            })
+        )
+        .addColorPicker((color) => {
+            colorPicker3 = color;
+
+            let defaultValue = plugin.settings.appearance.chatBoxBackgroundColor;
+
+            if (defaultValue == '--interactive-accent') {
+                defaultValue = colorToHex(defaultChatBoxBackgroundColor);
+            }
+
+            color.setValue(defaultValue)
+                .onChange(async (value) => {
+                    const hexValue = colorToHex(value);
+                    plugin.settings.appearance.chatBoxBackgroundColor = hexValue;
+                    const textarea = document.querySelector('.chatbox textarea');
+                    if (textarea) {
+                        const element = textarea as HTMLElement;
+                        element.style.backgroundColor = hexValue;
+                        element.style.borderColor = hexValue;
+                    }
+            await plugin.saveSettings();
+        });
+    });
+
+    let colorPicker4: ColorComponent;
+    const defaultChatBoxBorderColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.chatBoxBorderColor).trim();
+
+    new Setting(settingsContainer)
+        .setName('Chatbox Border Color')
+        .setDesc('Modify the border color of the chatbox.')
+        .addButton(button => button
+            .setButtonText('Restore Default')
+            .setIcon('rotate-cw')
+            .setClass('clickable-icon')
+            .onClick(async () => {
+                const defaultValue = colorToHex(defaultChatBoxBorderColor);
+                colorPicker4.setValue(defaultValue);
+    
+                const textarea = document.querySelector('.chatbox');
+                if (textarea) {
+                    const element = textarea as HTMLElement;
+                    element.style.backgroundColor = defaultValue;
+                }
+            })
+        )
+        .addColorPicker((color) => {
+            colorPicker4 = color;
+
+            let defaultValue = plugin.settings.appearance.chatBoxBorderColor;
+
+            if (plugin.settings.appearance.chatBoxBorderColor == '--interactive-accent') {
+                defaultValue = colorToHex(defaultChatBoxBorderColor);
+            }
+
+            color.setValue(defaultValue)
+                .onChange(async (value) => {
+                    const hexValue = colorToHex(value);
+                    plugin.settings.appearance.chatBoxBorderColor = hexValue;
+                    const textarea = document.querySelector('.chatbox');
+                    if (textarea) {
+                        const element = textarea as HTMLElement;
+                        element.style.backgroundColor = hexValue;
+                        element.style.borderColor = hexValue;
                     }
             await plugin.saveSettings();
         });

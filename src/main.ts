@@ -14,9 +14,10 @@ export interface BMOSettings {
 	appearance: {
 		userName: string,
 		chatbotName: string,
-		chatbotContainerBackgroundColor: string,
 		userMessageBackgroundColor: string,
 		botMessageBackgroundColor: string,
+		chatBoxBackgroundColor: string,
+		chatBoxBorderColor: string,
 		allowHeader: boolean,
 	},
 	editor: {
@@ -105,9 +106,10 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	appearance: {
 		userName: 'USER',
 		chatbotName: 'BMO',
-		chatbotContainerBackgroundColor: '--background-secondary',
 		userMessageBackgroundColor: '--background-primary',
 		botMessageBackgroundColor: '--background-secondary',
+		chatBoxBackgroundColor: '--interactive-accent',
+		chatBoxBorderColor: '--interactive-accent',
 		allowHeader: true,
 	},
 	editor: {
@@ -288,7 +290,7 @@ export default class BMOGPT extends Plugin {
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE_CHATBOT);
 	
 		const rightLeaf = this.app.workspace.getRightLeaf(false);
-		await rightLeaf.setViewState({
+		await rightLeaf?.setViewState({
 			type: VIEW_TYPE_CHATBOT,
 			active: true,
 		});
