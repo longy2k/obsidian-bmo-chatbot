@@ -49,7 +49,7 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
     if (!message.includes('commandBotMessage') && !message.includes('errorBotMessage')) {
         const editButton = displayBotEditButton(settings, newBotP);
         const copyBotButton = displayBotCopyButton(settings, message);
-        const appendButton = displayAppendButton(message);
+        const appendButton = displayAppendButton(settings, message);
         buttonContainerDiv.appendChild(editButton);
         buttonContainerDiv.appendChild(copyBotButton);
         buttonContainerDiv.appendChild(appendButton);

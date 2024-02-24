@@ -32,7 +32,7 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
         if (!messageObj.content.includes('div class="commandBotMessage"') && !messageObj.content.includes('errorBotMessage')) {
             const editButton = displayBotEditButton(settings, newBotP);
             const copyBotButton = displayBotCopyButton(settings, messageObj.content);
-            const appendButton = displayAppendButton(messageObj.content);
+            const appendButton = displayAppendButton(settings, messageObj.content);
             buttonContainerDiv.appendChild(editButton);
             buttonContainerDiv.appendChild(copyBotButton);
             buttonContainerDiv.appendChild(appendButton);
