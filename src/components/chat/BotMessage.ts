@@ -30,7 +30,7 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
         if (ANTHROPIC_MODELS.includes(settings.general.model)) {
             const cleanString = messageText.split(' ').slice(1).join(' ').trim();
             botP = marked(cleanString);
-        } else if (message.includes('formattedSettings') || message.includes('displayErrorBotMessage')) {
+        } else if (message.includes('commandBotMessage') || message.includes('errorBotMessage')) {
             botP = message;
         } 
         else {
@@ -46,7 +46,7 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
     const messageBlockDiv = document.createElement('div');
     messageBlockDiv.className = 'messageBlock';
 
-    if (!message.includes('formattedSettings' || 'displayErrorBotMessage')) {
+    if (!message.includes('commandBotMessage') && !message.includes('errorBotMessage')) {
         const editButton = displayBotEditButton(settings, newBotP);
         const copyBotButton = displayBotCopyButton(settings, message);
         const appendButton = displayAppendButton(message);
@@ -115,11 +115,11 @@ export function displayCommandBotMessage(settings: BMOSettings, messageHistory: 
     const messageBlockDiv = document.createElement('div');
     messageBlockDiv.className = 'messageBlock';
 
-    const displayErrorBotMessageDiv = document.createElement('div');
-    displayErrorBotMessageDiv.className = 'formattedSettings';
-    displayErrorBotMessageDiv.innerHTML = message;
+    const displayCommandBotMessageDiv = document.createElement('div');
+    displayCommandBotMessageDiv.className = 'commandBotMessage';
+    displayCommandBotMessageDiv.innerHTML = message;
 
-    messageBlockDiv.appendChild(displayErrorBotMessageDiv);
+    messageBlockDiv.appendChild(displayCommandBotMessageDiv);
     botMessageToolBarDiv.appendChild(botNameSpan);
     botMessageDiv.appendChild(botMessageToolBarDiv);
     botMessageDiv.appendChild(messageBlockDiv);
@@ -148,17 +148,17 @@ export function displayErrorBotMessage(settings: BMOSettings, messageHistory: { 
     messageBlockDiv.className = 'messageBlock';
 
     const displayErrorBotMessageDiv = document.createElement('div');
-    displayErrorBotMessageDiv.className = 'displayErrorBotMessage';
+    displayErrorBotMessageDiv.className = 'errorBotMessage';
 
     const BotP = document.createElement('p');
     BotP.textContent = message;
 
     console.error(message);
 
+    messageBlockDiv.appendChild(displayErrorBotMessageDiv);
+    displayErrorBotMessageDiv.appendChild(BotP);
     botMessageToolBarDiv.appendChild(botNameSpan);
     botMessageDiv.appendChild(botMessageToolBarDiv);
-    displayErrorBotMessageDiv.appendChild(BotP);
-    messageBlockDiv.appendChild(displayErrorBotMessageDiv);
     botMessageDiv.appendChild(messageBlockDiv);
 
     const index = messageHistory.length - 1;

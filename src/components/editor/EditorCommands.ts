@@ -1,8 +1,8 @@
-import { BMOSettings, DEFAULT_SETTINGS } from "src/main";
-import { fetchModelRenameTitle } from "./FetchRenameNoteTitle";
-import { MarkdownView, Notice } from "obsidian";
-import { ANTHROPIC_MODELS, OPENAI_MODELS } from "src/view";
-import { fetchOpenAIBaseAPIDataEditor, fetchOllamaDataEditor, fetchRESTAPIURLDataEditor, fetchAnthropicAPIDataEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor } from "../FetchModelEditor";
+import { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
+import { fetchModelRenameTitle } from './FetchRenameNoteTitle';
+import { MarkdownView, Notice } from 'obsidian';
+import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
+import { fetchOpenAIBaseAPIDataEditor, fetchOllamaDataEditor, fetchRESTAPIURLDataEditor, fetchAnthropicAPIDataEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor } from '../FetchModelEditor';
 
 export async function renameTitleCommand(settings: BMOSettings) {
     let uniqueNameFound = false;
@@ -14,7 +14,7 @@ export async function renameTitleCommand(settings: BMOSettings) {
     let fileContent = '';
   
     try {
-        new Notice("Generating title...");
+        new Notice('Generating title...');
 
         if (activeFile) {
         fileContent = await app.vault.read(activeFile);
@@ -43,7 +43,7 @@ export async function renameTitleCommand(settings: BMOSettings) {
         app.vault.rename(activeFile, fileName);
         }
 
-        new Notice("Renamed note title.");
+        new Notice('Renamed note title.');
     } catch (error) {
         console.error(error);
     }
@@ -53,11 +53,11 @@ export async function renameTitleCommand(settings: BMOSettings) {
 export async function promptSelectGenerateCommand(settings: BMOSettings) {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     const select = view.editor.getSelection();
-    if (view && select && select.trim() !== "") {
+    if (view && select && select.trim() !== '') {
         // Fetch OpenAI API with selected models.
         if (OPENAI_MODELS.includes(settings.general.model)) {
             try {
-                new Notice("Generating...");
+                new Notice('Generating...');
                 const response = await fetchOpenAIBaseAPIDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -79,7 +79,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         }
         else if ((settings.APIConnections.openAI.openAIBaseUrl != DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl) && settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)){
             try {
-                new Notice("Generating...");
+                new Notice('Generating...');
                 const response = await fetchOpenAIBaseAPIDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -101,7 +101,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         }
         else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
             try {
-                new Notice("Generating...");
+                new Notice('Generating...');
                 const response = await fetchAnthropicAPIDataEditor(settings, select); 
                 view.editor.replaceSelection(response);
             }
@@ -112,7 +112,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         }
         else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
             try {
-                new Notice("Generating...");
+                new Notice('Generating...');
                 const response = await fetchOllamaDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -134,7 +134,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         }
         else if (settings.RESTAPIURLConnection.RESTAPIURL && settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
             try {
-                new Notice("Generating...");
+                new Notice('Generating...');
                 const response = await fetchRESTAPIURLDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -156,7 +156,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         }
         else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
             try {
-                new Notice("Generating...");
+                new Notice('Generating...');
                 const response = await fetchMistralDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -178,7 +178,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         }
         else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
             try {
-                new Notice("Generating...");
+                new Notice('Generating...');
                 const response = await fetchGoogleGeminiDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -198,9 +198,9 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
                 console.log(error.message);
             }
         }
-        new Notice("Generation complete.");
+        new Notice('Generation complete.');
     }
     else {
-        new Notice("No text selected.");    
+        new Notice('No text selected.');    
     }
 }

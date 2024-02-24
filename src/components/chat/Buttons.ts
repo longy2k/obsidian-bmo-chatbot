@@ -1,18 +1,18 @@
-import { Modal, Notice, setIcon } from "obsidian";
-import { BMOSettings, checkActiveFile } from "src/main";
-import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from "src/view";
-import { fetchOpenAIAPIDataStream, fetchOpenAIAPIData, fetchOllamaData, fetchOllamaDataStream, fetchAnthropicAPIData, fetchRESTAPIURLData, fetchRESTAPIURLDataStream, fetchMistralDataStream, fetchMistralData, fetchGoogleGeminiData } from "../FetchModelResponse";
+import { Modal, Notice, setIcon } from 'obsidian';
+import { BMOSettings, checkActiveFile } from 'src/main';
+import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
+import { fetchOpenAIAPIDataStream, fetchOpenAIAPIData, fetchOllamaData, fetchOllamaDataStream, fetchAnthropicAPIData, fetchRESTAPIURLData, fetchRESTAPIURLDataStream, fetchMistralDataStream, fetchMistralData, fetchGoogleGeminiData } from '../FetchModelResponse';
 
 export function regenerateUserButton(settings: BMOSettings) {
-    const regenerateButton = document.createElement("button");
-    regenerateButton.textContent = "regenerate";
-    setIcon(regenerateButton, "refresh-ccw");
-    regenerateButton.classList.add("regenerate-button");
-    regenerateButton.title = "regenerate";
+    const regenerateButton = document.createElement('button');
+    regenerateButton.textContent = 'regenerate';
+    setIcon(regenerateButton, 'refresh-ccw');
+    regenerateButton.classList.add('regenerate-button');
+    regenerateButton.title = 'regenerate';
 
     let lastClickedElement: HTMLElement | null = null;
 
-    regenerateButton.addEventListener("click", async function (event) {
+    regenerateButton.addEventListener('click', async function (event) {
         event.stopPropagation();
         lastClickedElement = event.target as HTMLElement;
 
@@ -90,39 +90,39 @@ export function regenerateUserButton(settings: BMOSettings) {
             }
         }
         else {
-            new Notice("No models detected.");
+            new Notice('No models detected.');
         }
     });
     return regenerateButton;
 }
 
 export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagraphElement) {
-    const editButton = document.createElement("button");
-    editButton.textContent = "edit";
-    setIcon(editButton, "edit"); // Assuming setIcon is defined elsewhere
-    editButton.classList.add("edit-button");
-    editButton.title = "edit";
+    const editButton = document.createElement('button');
+    editButton.textContent = 'edit';
+    setIcon(editButton, 'edit'); // Assuming setIcon is defined elsewhere
+    editButton.classList.add('edit-button');
+    editButton.title = 'edit';
 
     let lastClickedElement: HTMLElement | null = null;
 
-    editButton.addEventListener("click", function (event) {
-        const editContainer = document.createElement("div");
-        editContainer.classList.add("edit-container");
-        const textArea = document.createElement("textarea");
-        textArea.classList.add("edit-textarea");
-        textArea.value = userP.textContent ?? ""; // Check if userP.textContent is null and provide a default value
+    editButton.addEventListener('click', function (event) {
+        const editContainer = document.createElement('div');
+        editContainer.classList.add('edit-container');
+        const textArea = document.createElement('textarea');
+        textArea.classList.add('edit-textarea');
+        textArea.value = userP.textContent ?? ''; // Check if userP.textContent is null and provide a default value
 
         editContainer.appendChild(textArea);
 
-        const textareaEditButton = document.createElement("button");
-        textareaEditButton.textContent = "Edit";
-        textareaEditButton.classList.add("textarea-edit-button");
-        textareaEditButton.title = "edit";
+        const textareaEditButton = document.createElement('button');
+        textareaEditButton.textContent = 'Edit';
+        textareaEditButton.classList.add('textarea-edit-button');
+        textareaEditButton.title = 'edit';
 
-        const cancelButton = document.createElement("button");
-        cancelButton.textContent = "Cancel";
-        cancelButton.classList.add("textarea-cancel-button");
-        cancelButton.title = "cancel";
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = 'Cancel';
+        cancelButton.classList.add('textarea-cancel-button');
+        cancelButton.title = 'cancel';
 
         event.stopPropagation();
         lastClickedElement = event.target as HTMLElement;
@@ -131,7 +131,7 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
             lastClickedElement = lastClickedElement.parentElement;
         }
 
-        textareaEditButton.addEventListener("click", async function () {
+        textareaEditButton.addEventListener('click', async function () {
             userP.textContent = textArea.value;
             editContainer.replaceWith(userP);
 
@@ -205,13 +205,13 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     }
                 }
                 else {
-                    new Notice("No models detected.");
+                    new Notice('No models detected.');
                 }
             }
 
         });
 
-        cancelButton.addEventListener("click", function () {
+        cancelButton.addEventListener('click', function () {
             editContainer.replaceWith(userP);
         });
 
@@ -227,30 +227,30 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
 }
 
 export function displayBotEditButton (settings: BMOSettings, botP: HTMLParagraphElement) {
-    const editButton = document.createElement("button");
-    editButton.textContent = "edit";
-    setIcon(editButton, "edit"); // Assuming setIcon is defined elsewhere
-    editButton.classList.add("edit-button");
-    editButton.title = "edit";
+    const editButton = document.createElement('button');
+    editButton.textContent = 'edit';
+    setIcon(editButton, 'edit'); // Assuming setIcon is defined elsewhere
+    editButton.classList.add('edit-button');
+    editButton.title = 'edit';
 
     let lastClickedElement: HTMLElement | null = null;
 
-    editButton.addEventListener("click", function (event) {
-        const editContainer = document.createElement("div");
-        editContainer.classList.add("edit-container");
-        const textArea = document.createElement("textarea");
-        textArea.classList.add("edit-textarea");
-        textArea.value = botP.textContent ?? ""; // Check if botP.textContent is null and provide a default value
+    editButton.addEventListener('click', function (event) {
+        const editContainer = document.createElement('div');
+        editContainer.classList.add('edit-container');
+        const textArea = document.createElement('textarea');
+        textArea.classList.add('edit-textarea');
+        textArea.value = botP.textContent ?? ''; // Check if botP.textContent is null and provide a default value
 
-        const textareaEditButton = document.createElement("button");
-        textareaEditButton.textContent = "Edit";
-        textareaEditButton.classList.add("textarea-edit-button");
-        textareaEditButton.title = "edit";
+        const textareaEditButton = document.createElement('button');
+        textareaEditButton.textContent = 'Edit';
+        textareaEditButton.classList.add('textarea-edit-button');
+        textareaEditButton.title = 'edit';
 
-        const cancelButton = document.createElement("button");
-        cancelButton.textContent = "Cancel";
-        cancelButton.classList.add("textarea-cancel-button");
-        cancelButton.title = "cancel";
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = 'Cancel';
+        cancelButton.classList.add('textarea-cancel-button');
+        cancelButton.title = 'cancel';
 
         editContainer.appendChild(textArea);
 
@@ -272,7 +272,7 @@ export function displayBotEditButton (settings: BMOSettings, botP: HTMLParagraph
             console.log('messageBlock not found');
         }
 
-        textareaEditButton.addEventListener("click", async function () {
+        textareaEditButton.addEventListener('click', async function () {
             botP.textContent = textArea.value;
             editContainer.replaceWith(botP);
 
@@ -289,17 +289,17 @@ export function displayBotEditButton (settings: BMOSettings, botP: HTMLParagraph
                     try {
                         await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
                     } catch (error) {
-                        console.error("Error writing to message history file:", error);
+                        console.error('Error writing to message history file:', error);
                     }
                 }
                 else {
-                    new Notice("No models detected.");
+                    new Notice('No models detected.');
                 }
             }
 
         });
 
-        cancelButton.addEventListener("click", function () {
+        cancelButton.addEventListener('click', function () {
             editContainer.replaceWith(botP);
         });
 
@@ -315,13 +315,13 @@ export function displayBotEditButton (settings: BMOSettings, botP: HTMLParagraph
 }
 
 export function displayUserCopyButton (userP: HTMLParagraphElement) {
-    const copyButton = document.createElement("button");
-    copyButton.textContent = "copy";
-    setIcon(copyButton, "copy");
-    copyButton.classList.add("copy-button");
-    copyButton.title = "copy";
+    const copyButton = document.createElement('button');
+    copyButton.textContent = 'copy';
+    setIcon(copyButton, 'copy');
+    copyButton.classList.add('copy-button');
+    copyButton.title = 'copy';
 
-    copyButton.addEventListener("click", function () {
+    copyButton.addEventListener('click', function () {
         const messageText = userP.textContent;
 
         if (messageText !== null) {
@@ -335,11 +335,11 @@ export function displayUserCopyButton (userP: HTMLParagraphElement) {
 }
 
 export function displayBotCopyButton (settings: BMOSettings, message: string) {
-    const copyButton = document.createElement("button");
-    copyButton.textContent = "copy";
-    setIcon(copyButton, "copy");
-    copyButton.classList.add("copy-button");
-    copyButton.title = "copy";
+    const copyButton = document.createElement('button');
+    copyButton.textContent = 'copy';
+    setIcon(copyButton, 'copy');
+    copyButton.classList.add('copy-button');
+    copyButton.title = 'copy';
 
     let messageText = message;
 
@@ -354,7 +354,7 @@ export function displayBotCopyButton (settings: BMOSettings, message: string) {
         console.error('Message content is null. Cannot copy.');
     }
 
-    copyButton.addEventListener("click", function () {
+    copyButton.addEventListener('click', function () {
         if (messageText !== null) {
             copyMessageToClipboard(messageText);
             new Notice('Copied bot message.');
@@ -369,15 +369,15 @@ export function displayBotCopyButton (settings: BMOSettings, message: string) {
 export function codeBlockCopyButton(messageBlock: { querySelectorAll: (arg0: string) =>  NodeListOf<HTMLElement>; }) {
     const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
     codeBlocks.forEach((codeElement: HTMLElement) => {
-        const copyButton = document.createElement("button");
-        copyButton.textContent = "copy";
-        setIcon(copyButton, "copy");
-        copyButton.classList.add("copy-button");
-        copyButton.title = "copy";
+        const copyButton = document.createElement('button');
+        copyButton.textContent = 'copy';
+        setIcon(copyButton, 'copy');
+        copyButton.classList.add('copy-button');
+        copyButton.title = 'copy';
         if (codeElement.parentNode) {
             codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
         }
-        copyButton.addEventListener("click", () => {
+        copyButton.addEventListener('click', () => {
             // Extract the language from the class attribute
             const language = codeElement.getAttribute('class')?.replace('language-', '') || '';
             // Format the code text in markdown code block syntax
@@ -386,8 +386,8 @@ export function codeBlockCopyButton(messageBlock: { querySelectorAll: (arg0: str
                 navigator.clipboard.writeText(codeText).then(() => {
                     new Notice('Copied codeblock.');
                 }, (err) => {
-                    console.error("Failed to copy code: ", err);
-                    new Notice("Failed to copy code: ", err);
+                    console.error('Failed to copy code: ', err);
+                    new Notice('Failed to copy code: ', err);
                 });
             }
         });
@@ -403,15 +403,15 @@ export function copyMessageToClipboard(message: string) {
 
 // Append button to editor
 export function displayAppendButton(message: string) {
-    const appendButton = document.createElement("button");
-    appendButton.textContent = "append";
-    setIcon(appendButton, "plus-square");
-    appendButton.classList.add("append-button");
-    appendButton.title = "append";
+    const appendButton = document.createElement('button');
+    appendButton.textContent = 'append';
+    setIcon(appendButton, 'plus-square');
+    appendButton.classList.add('append-button');
+    appendButton.title = 'append';
 
     const messageText = message;
 
-    appendButton.addEventListener("click", async function (event) {
+    appendButton.addEventListener('click', async function (event) {
         if (checkActiveFile?.extension === 'md') {
             // Check if the active file is different from the file of the last cursor position
             if ((checkActiveFile !== lastCursorPositionFile)) {
@@ -425,10 +425,10 @@ export function displayAppendButton(message: string) {
             }
 
             event.stopPropagation();
-            new Notice("Appended response.");
+            new Notice('Appended response.');
         }
         else {
-            new Notice("No active Markdown file detected.");
+            new Notice('No active Markdown file detected.');
         }
     });
 
@@ -436,15 +436,15 @@ export function displayAppendButton(message: string) {
 }
 
 export function displayTrashButton () {
-    const trashButton = document.createElement("button");
-    trashButton.textContent = "trash";
-    setIcon(trashButton, "trash");
-    trashButton.classList.add("trash-button");
-    trashButton.title = "trash";
+    const trashButton = document.createElement('button');
+    trashButton.textContent = 'trash';
+    setIcon(trashButton, 'trash');
+    trashButton.classList.add('trash-button');
+    trashButton.title = 'trash';
 
     let lastClickedElement: HTMLElement | null = null;
 
-    trashButton.addEventListener("click", function (event) {
+    trashButton.addEventListener('click', function (event) {
         event.stopPropagation();
         lastClickedElement = event.target as HTMLElement;
 
@@ -468,8 +468,8 @@ export function displayTrashButton () {
                 </div>
                 `;
 
-                const confirmDeleteButton = modal.contentEl.querySelector("#confirmDelete");
-                confirmDeleteButton?.addEventListener("click", async function () {
+                const confirmDeleteButton = modal.contentEl.querySelector('#confirmDelete');
+                confirmDeleteButton?.addEventListener('click', async function () {
                     deleteMessage(index);
                     new Notice('Message deleted.');
                     // hideAllDropdowns();
@@ -502,7 +502,7 @@ export async function deleteMessage(index: number) {
     }
 
     // Update the messageHistory by removing the specified index and potentially the next one
-    if (messageHistory[index + 1] && messageHistory[index + 1].role === "assistant") {
+    if (messageHistory[index + 1] && messageHistory[index + 1].role === 'assistant') {
         messageHistory.splice(index, 2);
     } else {
         messageHistory.splice(index, 1);

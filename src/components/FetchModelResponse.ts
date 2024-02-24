@@ -1126,7 +1126,7 @@ function filterMessageHistory(messageHistory: { role: string; content: string }[
             }
         }
         // Check for assistant message with displayErrorBotMessage
-        else if (message.role === 'assistant' && message.content.includes('displayErrorBotMessage')) {
+        else if (message.role === 'assistant' && message.content.includes('errorBotMessage')) {
             skipIndexes.add(index); // Skip this message
             if (index > 0) {
                 skipIndexes.add(index - 1); // Also skip previous message if it exists

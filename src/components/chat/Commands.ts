@@ -90,7 +90,7 @@ export async function commandFalse(settings: BMOSettings, plugin: BMOGPT) {
 // `/help` for help commands
 export function commandHelp(settings: BMOSettings) {
 
-  const formattedSettings =
+  const commandBotMessage =
   `<h2>Commands</h2>
   <p><code>/model "[MODEL-NAME]" or [VALUE]</code> - List or change model.</p>
   <p><code>/prompt "[PROMPT-NAME]" or [VALUE]</code> - List or change prompt.</p>
@@ -105,7 +105,7 @@ export function commandHelp(settings: BMOSettings) {
   <p><code>/stop</code> or <code>/s</code> - [STREAMING MODELS ONLY]: Stop fetching response.</p>`;
 
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
   messageContainer.appendChild(botMessageDiv);
 }
 
@@ -125,12 +125,12 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
       currentModel = 'Empty';
     }
   
-    const formattedSettings = 
+    const commandBotMessage = 
     `<h2>Models</h2>
     <p><b>Current Model:</b> ${currentModel}</p>
     <ol>${modelListItems}</ol>`;
 
-    const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+    const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
     messageContainer.appendChild(botMessageDiv);
   }
 
@@ -147,19 +147,19 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 
     if (Object.entries(modelAliases).find(([key, val]) => key === inputModel)){
       settings.general.model = modelAliases[inputModel];
-      const formattedSettings = `Updated Model to <b>${settings.general.model}</b>`;
-      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+      const commandBotMessage = `Updated Model to <b>${settings.general.model}</b>`;
+      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
     }
     else if (Object.entries(modelAliases).find(([key, val]) => val === inputModel)) {
       settings.general.model = modelAliases[Object.keys(modelAliases).find(key => modelAliases[key] === inputModel) || ''];
-      const formattedSettings = `Updated Model to <b>${settings.general.model}</b>`;
-      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+      const commandBotMessage = `Updated Model to <b>${settings.general.model}</b>`;
+      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
     }
     else {
-      const formattedSettings = `Model '${inputModel}' does not exist for this API key.`;
-      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+      const commandBotMessage = `Model '${inputModel}' does not exist for this API key.`;
+      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
       new Notice('Invalid model.');
     }
@@ -175,9 +175,9 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
 
   if (!settings.prompts.promptFolderPath) {
     new Notice('Prompt folder path not set.');
-    const formattedSettings = '<p>Prompt folder path not set.</p>';
+    const commandBotMessage = '<p>Prompt folder path not set.</p>';
 
-    const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+    const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
     messageContainer.appendChild(botMessageDiv);
     return;
   }
@@ -204,19 +204,19 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
       currentPrompt = 'Empty';
     }
 
-    const formattedSettings = 
+    const commandBotMessage = 
     `<h2>Prompts</h2>
       <p><b>Current prompt:</b> ${currentPrompt}</p>
       <ol>${fileListItems}</ol>`;
 
-    const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+    const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
     messageContainer.appendChild(botMessageDiv);
 
     return;
   }
 
   // Check if the user has specified a prompt after the "/prompt" command
-  if (input.startsWith('/prompt ')) {
+  if (input.startsWith('/prompt')) {
     let inputValue = input.substring('/prompt '.length).trim();
 
     // Remove quotation marks if present
@@ -228,8 +228,8 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
     // Set to default or empty if the input is 'clear' or 'c'
     if (inputValue === 'clear' || inputValue === 'c') {
       settings.prompts.prompt = ''; // Set to default or empty
-      const formattedSettings = 'Prompt cleared.';
-      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+      const commandBotMessage = 'Prompt cleared.';
+      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
 
       await plugin.saveSettings();
@@ -249,20 +249,20 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
       // If input matches a key in promptAliases
       settings.prompts.prompt = promptAliases[inputValue] + '.md';
       currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
-      const formattedSettings = `<b>Updated Prompt to</b> '${currentModel}'`;
-      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+      const commandBotMessage = `<b>Updated Prompt to</b> '${currentModel}'`;
+      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
     } else if (Object.values(promptAliases).includes(inputValue)) {
       // If input matches a value in promptAliases
       settings.prompts.prompt = inputValue + '.md';
       currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
-      const formattedSettings = `<b>Updated Prompt to</b> '${currentModel}'`;
-      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+      const commandBotMessage = `<b>Updated Prompt to</b> '${currentModel}'`;
+      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
     } else {
       // If the input prompt does not exist
-      const formattedSettings = `Prompt '${inputValue}' does not exist.`;
-      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+      const commandBotMessage = `Prompt '${inputValue}' does not exist.`;
+      const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
       new Notice('Invalid prompt.');
     }
@@ -275,7 +275,7 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
 
 // `/ref` to turn on/off referenceCurrentNote.
 export async function commandReference(input: string, settings: BMOSettings, plugin: BMOGPT) {
-  let formattedSettings = '';
+  let commandBotMessage = '';
   const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');
   const inputValue = input.split(' ')[1]?.toLowerCase();
 
@@ -284,19 +284,19 @@ export async function commandReference(input: string, settings: BMOSettings, plu
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'block';
       }
-      formattedSettings += '<p><strong>Reference updated: on</strong></p>';
+      commandBotMessage += '<p><strong>Reference updated: on</strong></p>';
   } else if (inputValue === 'false' || inputValue === 'off') {
     settings.general.allowReferenceCurrentNote = false;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'none';
       }
-      formattedSettings += '<p><strong>Reference updated: off</strong></p>';
+      commandBotMessage += '<p><strong>Reference updated: off</strong></p>';
   } else {
-    formattedSettings += '<p><strong>Invalid command.</strong></p>';
+    commandBotMessage += '<p><strong>Type `/ref on` or `/ref off` to turn on/off reference current note.</strong></p>';
   }
 
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
   messageContainer.appendChild(botMessageDiv);
 
   await plugin.saveSettings();
@@ -316,15 +316,15 @@ export async function commandTemperature(input: string, settings: BMOSettings, p
     } else {
       settings.general.temperature = floatValue.toFixed(2);
     }
-    temperatureSettingMessage = `${settings.general.temperature}`;
+    temperatureSettingMessage = `Temperature updated: ${settings.general.temperature}`;
   } else {
-    temperatureSettingMessage = 'Invalid.';
+    temperatureSettingMessage = `Current temperature: ${settings.general.temperature}`;
   }
 
-  const formattedSettings = `<p><strong>Temperature updated: ${temperatureSettingMessage}</strong></p>`;
+  const commandBotMessage = `<p><strong>${temperatureSettingMessage}</strong></p>`;
 
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
   messageContainer.appendChild(botMessageDiv);
 
   await plugin.saveSettings();
@@ -332,31 +332,38 @@ export async function commandTemperature(input: string, settings: BMOSettings, p
 
 // `/maxtokens` to change max_tokens.
 export async function commandMaxTokens(input: string, settings: BMOSettings, plugin: BMOGPT) {
-  let formattedSettings = '';
-  const maxTokensValue = input.split(' ')[1];
+  let commandBotMessage = '';
+  const commandParts = input.split(' ');
+  const commandAction = commandParts[1] ? commandParts[1].toLowerCase() : '';
   let maxTokensSettingMessage: string;
 
-  if (maxTokensValue !== undefined && maxTokensValue !== '') {
-      const inputValue = parseInt(maxTokensValue);
-  
-      if (!isNaN(inputValue) && inputValue >= 0) {
-          // Update max_tokens with the valid integer value
-          settings.general.max_tokens = inputValue.toString();
-          maxTokensSettingMessage = `Max tokens updated: ${inputValue}`;
-      } else {
-          // Input is not a valid integer
-          maxTokensSettingMessage = 'Max tokens update: invalid';
-      }
+  // Check for clear command first
+  if (commandAction === 'c' || commandAction === 'clear') {
+    settings.general.max_tokens = '';
+    maxTokensSettingMessage = 'Max tokens cleared.';
+  } else if (commandAction !== '') {
+    const inputValue = parseInt(commandAction);
+
+    if (!isNaN(inputValue) && inputValue >= 0) {
+      // Update max_tokens with the valid integer value
+      settings.general.max_tokens = inputValue.toString();
+      maxTokensSettingMessage = `Max tokens updated: ${inputValue}`;
+    } else {
+      // Input is not a valid integer or is negative
+      maxTokensSettingMessage = 'Max tokens update: invalid';
+    }
   } else {
-      // Clear max_tokens and inform the user
-      settings.general.max_tokens = '';
-      maxTokensSettingMessage = 'Max tokens cleared.';
+    // No action specified
+    if (settings.general.max_tokens === '') {
+      maxTokensSettingMessage = 'Current max tokens: Empty';
+    } else {
+      maxTokensSettingMessage = `Current max tokens: ${settings.general.max_tokens}`;
+    }
   }
   
-  formattedSettings += `<p><strong>${maxTokensSettingMessage}</strong></p>`;
-
+  commandBotMessage += `<p><strong>${maxTokensSettingMessage}</strong></p>`;
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
   messageContainer.appendChild(botMessageDiv);
 
   await plugin.saveSettings();
@@ -364,21 +371,34 @@ export async function commandMaxTokens(input: string, settings: BMOSettings, plu
 
 // `/system "[VALUE]"` to change system prompt
 export async function commandSystem(input: string, settings: BMOSettings, plugin: BMOGPT) {
-  let formattedSettings = '';
-  const systemPromptValue = input.match(/"([^"]+)"/);
+  let commandBotMessage = '';
+  const commandParts = input.split(' ');
+  const commandAction = commandParts[1] ? commandParts[1].toLowerCase() : '';
+  let systemSettingMessage: string;
 
-  if (systemPromptValue !== null) {
-      if (systemPromptValue[1]) {
-        settings.general.system_role = systemPromptValue[1];
-          formattedSettings += `<p><strong>System updated: "${systemPromptValue[1]}"</strong></p>`;
-      }
-  } else {
+  // Check for clear command first
+  if (commandAction === 'c' || commandAction === 'clear') {
     settings.general.system_role = '';
-      formattedSettings += '<p><strong>System cleared.</strong></p>';
-  }
+    systemSettingMessage = 'System cleared.';
+  } else if (commandAction !== '') {
+    const systemPromptValue = input.match(/['"]([^'"]+)['"]/) || [null, commandAction];
 
+    if (systemPromptValue[1] !== null) {
+      // Update system_role with the provided value
+      settings.general.system_role = systemPromptValue[1];
+      systemSettingMessage = `System updated: "${systemPromptValue[1]}"`;
+    } else {
+      // Handle case where no valid system value is provided
+      systemSettingMessage = `Current system: "${settings.general.system_role}"`;
+    }
+  } else {
+    // No action specified
+    systemSettingMessage = `Current system: "${settings.general.system_role}"`;
+  }
+  
+  commandBotMessage += `<p><strong>${systemSettingMessage}</strong></p>`;
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+  const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
   messageContainer.appendChild(botMessageDiv);
 
   await plugin.saveSettings();
@@ -419,33 +439,36 @@ export async function commandAppend(settings: BMOSettings) {
         // Filter out messages starting with '/', and the assistant's response immediately following it
         let skipNext = false;
         markdownContent += messages
-          .filter((message: { role: string; content: string; }, index: number, array: string | any[]) => {
-            if (skipNext && message.role === 'assistant') {
-              skipNext = false;
-              return false;
-            }
-            if (message.content.startsWith('/')) {
-              // Check if next message is also from user and starts with '/'
-              skipNext = index + 1 < array.length && array[index + 1].role === 'assistant';
-              return false;
-            }
-            return true;
-          })
-          .map((message: { role: string; content: string; }) => {
-            let roleText = message.role.toUpperCase();
-            roleText = roleText === 'USER' ? userNameText : roleText;
-            roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
-            return `###### ${roleText}\n${message.content}\n`;
-          })
-          .join('\n');
+        .filter((messageHistory: { role: string; content: string; }, index: number, array: { role: string; content: string; }[]) => {
+          if (skipNext && messageHistory.role === 'assistant') {
+            skipNext = false;
+            return false;
+          }
+          if (messageHistory.content.startsWith('/') || messageHistory.content.includes('errorBotMessage')) {
+            // Check if next message is also from user and starts with '/' or if current assistant message contains "displayErrorBotMessage"
+            skipNext = (index + 1 < array.length && array[index + 1].role === 'assistant') || messageHistory.role === 'assistant';
+            return false;
+          }
+          return true;
+        })
+        .map((message: { role: string; content: string; }) => {
+          let roleText = message.role.toUpperCase();
+          roleText = roleText === 'USER' ? userNameText : roleText;
+          roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
+          return `###### ${roleText}\n${message.content}\n`;
+        })
+        .join('\n');
 
-          const formattedSettings = '<p><strong>Message history appended.</strong></p>';
+          const commandBotMessage = '<p><strong>Message history appended.</strong></p>';
 
           const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-          const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+          const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
           messageContainer.appendChild(botMessageDiv);
 
       } catch (error) {
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayCommandBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
         console.error('Error processing message history:', error);
       }
     }
@@ -547,33 +570,36 @@ export async function commandSave(settings: BMOSettings) {
         // Filter out messages starting with '/', and the assistant's response immediately following it
         let skipNext = false;
         markdownContent += messages
-          .filter((message: { role: string; content: string; }, index: number, array: string | any[]) => {
-            if (skipNext && message.role === 'assistant') {
-              skipNext = false;
-              return false;
-            }
-            if (message.content.startsWith('/')) {
-              // Check if next message is also from user and starts with '/'
-              skipNext = index + 1 < array.length && array[index + 1].role === 'assistant';
-              return false;
-            }
-            return true;
-          })
-          .map((message: { role: string; content: string; }) => {
-            let roleText = message.role.toUpperCase();
-            roleText = roleText === 'USER' ? userNameText : roleText;
-            roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
-            return `###### ${roleText}\n${message.content}\n`;
-          })
-          .join('\n');
+        .filter((messageHistory: { role: string; content: string; }, index: number, array: { role: string; content: string; }[]) => {
+          if (skipNext && messageHistory.role === 'assistant') {
+            skipNext = false;
+            return false;
+          }
+          if (messageHistory.content.startsWith('/') || messageHistory.content.includes('errorBotMessage')) {
+            // Check if next message is also from user and starts with '/' or if current assistant message contains "displayErrorBotMessage"
+            skipNext = (index + 1 < array.length && array[index + 1].role === 'assistant') || messageHistory.role === 'assistant';
+            return false;
+          }
+          return true;
+        })
+        .map((message: { role: string; content: string; }) => {
+          let roleText = message.role.toUpperCase();
+          roleText = roleText === 'USER' ? userNameText : roleText;
+          roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
+          return `###### ${roleText}\n${message.content}\n`;
+        })
+        .join('\n');
 
-          const formattedSettings = '<p><strong>Message history saved.</strong></p>';
+          const commandBotMessage = '<p><strong>Message history saved.</strong></p>';
 
           const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-          const botMessageDiv = displayCommandBotMessage(settings, messageHistory, formattedSettings);
+          const botMessageDiv = displayCommandBotMessage(settings, messageHistory, commandBotMessage);
           messageContainer.appendChild(botMessageDiv);
 
       } catch (error) {
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayCommandBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
         console.error('Error processing message history:', error);
       }
     }

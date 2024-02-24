@@ -429,7 +429,7 @@ ul#dropdownOptions li:hover {
 	cursor: pointer;
 }
 
-.formattedSettings {
+.commandBotMessage {
 	border: 1px solid #ccc;
 	background-color: #282c34;
 	padding: 10px;
@@ -438,15 +438,15 @@ ul#dropdownOptions li:hover {
 	font-size: 0.8rem;
 }
 
-.formattedSettings h2 {
+.commandBotMessage h2 {
 	margin: 8px 0 12px 0;
 }
 
-.formattedSettings p {
+.commandBotMessage p {
 	padding: 0.1rem 0;
 }
 
-.formattedSettings code {
+.commandBotMessage code {
 	background-color: #4d5158;
 	border-radius: 0.2rem;
 	padding: 0.16rem;
@@ -454,7 +454,7 @@ ul#dropdownOptions li:hover {
 
 /* Display Error Bot Message Style */
 
-.displayErrorBotMessage {
+.errorBotMessage {
 	color: #f30000;
 	border: 1px solid #ccc;
 	background-color: #282c34;
@@ -483,7 +483,7 @@ ul#dropdownOptions li:hover {
 
 /* Light Theme */
 
-.theme-light .formattedSettings {
+.theme-light .commandBotMessage {
 	border: 1px solid #ccc;
 	background-color: white;
 	padding: 10px;
@@ -492,7 +492,7 @@ ul#dropdownOptions li:hover {
 	font-size: 0.8rem;
 }
 
-.theme-light .formattedSettings code {
+.theme-light .commandBotMessage code {
 	background-color: #ccc;
 	border-radius: 0.2rem;
 	padding: 0.16rem;

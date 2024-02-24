@@ -201,6 +201,13 @@ export class BMOView extends ItemView {
 
                 if (input.startsWith('/')) {
                     executeCommand(input, this.settings, this.plugin);
+
+                    if (input !== '/c' && input !== '/clear') {
+                        const botMessages = messageContainer.querySelectorAll('.botMessage');
+                        const lastBotMessage = botMessages[botMessages.length - 1];
+                        lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    
                     const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
                     if (modelName) {
                         modelName.textContent = 'Model: ' + this.settings.general.model.toLowerCase();
@@ -215,8 +222,9 @@ export class BMOView extends ItemView {
                             this.preventEnter = false;
                         })
                         .catch(() => {
-                            const botParagraph = document.createElement('p');
-                            botParagraph.textContent = 'Oops, something went wrong. Please try again.';
+                            const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+                            const botMessageDiv = displayErrorBotMessage(this.settings, messageHistory, 'Oops, something went wrong. Please try again.');
+                            messageContainer.appendChild(botMessageDiv);
                         });
                 }
             }

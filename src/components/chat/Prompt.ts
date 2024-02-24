@@ -1,4 +1,4 @@
-import { BMOSettings } from "src/main";
+import { BMOSettings } from 'src/main';
 
 export async function getPrompt(settings: BMOSettings) {
 
