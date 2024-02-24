@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, MarkdownView, Editor, EditorPosition } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, MarkdownView, Editor, EditorPosition } from 'obsidian';
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
 import { fetchOpenAIAPIDataStream, fetchOpenAIAPIData, fetchOllamaData, fetchOllamaDataStream, fetchAnthropicAPIData, fetchRESTAPIURLData, fetchRESTAPIURLDataStream, fetchMistralData, fetchMistralDataStream, fetchGoogleGeminiData } from './components/FetchModelResponse';
@@ -6,7 +6,7 @@ import { executeCommand } from './components/chat/Commands';
 import { getActiveFileContent } from './components/editor/ReferenceCurrentNote';
 import { addMessage } from './components/chat/Message';
 import { displayUserMessage } from './components/chat/UserMessage';
-import { displayBotMessage } from './components/chat/BotMessage';
+import { displayBotMessage, displayErrorBotMessage } from './components/chat/BotMessage';
 export const VIEW_TYPE_CHATBOT = 'chatbot-view';
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 
@@ -279,42 +279,28 @@ export class BMOView extends ItemView {
 
     async BMOchatbot() {        
         await getActiveFileContent(this.settings);
-        const messageContainerEl = document.querySelector('#messageContainer');
-        const chatbotNameHeading = document.querySelector('#chatbotNameHeading');
+        const index = messageHistory.length - 1;
 
-        const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
+        // If model does not exist.
+        if (this.settings.general.model === '') {
+            const errorMessage = 'Model not found.';
 
-        // If apiKey does not exist.
-        if (!this.settings.APIConnections.openAI.APIKey && OPENAI_MODELS.includes(this.settings.general.model)) {
-            new Notice('API key not found. Please add your OpenAI API key in the plugin settings.');
-            if (chatbotNameHeading){
-                chatbotNameHeading.textContent = 'ERROR';
-            }
+            const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+            const botMessageDiv = displayErrorBotMessage(this.settings, messageHistory, errorMessage);
+            messageContainer.appendChild(botMessageDiv);
 
-            const lastDiv = messageContainerEl?.lastElementChild as HTMLDivElement;
-            const errorMessage = document.createElement('p');
-            errorMessage.textContent = 'API key not found. Please add your OpenAI API key in the plugin settings.';
-            errorMessage.classList.add('errorMessage');
-            const chatbotNameError = lastDiv.querySelector('.chatbotName') as HTMLDivElement;
-            chatbotNameError.textContent = 'ERROR';
-            lastDiv.appendChild(errorMessage);
-            chatbox.disabled = true;
+            const botMessages = messageContainer.querySelectorAll('.botMessage');
+            const lastBotMessage = botMessages[botMessages.length - 1];
+            lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } 
         else {
-            const index = messageHistory.length - 1;
             // Fetch OpenAI API
             if (OPENAI_MODELS.includes(this.settings.general.model) || (this.settings.APIConnections.openAI.openAIBaseModels.includes(this.settings.general.model) && this.settings.APIConnections.openAI.openAIBaseUrl !== DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl)) {
-                try {
-                    if (this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
-                        await fetchOpenAIAPIDataStream(this.settings, index); 
-                    }
-                    else {
-                        await fetchOpenAIAPIData(this.settings, index); 
-                    }
+                if (this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
+                    await fetchOpenAIAPIDataStream(this.settings, index); 
                 }
-                catch (error) {
-                    new Notice('Error occurred while fetching completion: ' + error.message);
-                    console.log(error.message);
+                else {
+                    await fetchOpenAIAPIData(this.settings, index); 
                 }
             }
             else if (this.settings.OllamaConnection.RESTAPIURL && this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
@@ -326,51 +312,41 @@ export class BMOView extends ItemView {
                 }
             }
             else if (this.settings.RESTAPIURLConnection.RESTAPIURL && this.settings.RESTAPIURLConnection.RESTAPIURLModels.includes(this.settings.general.model)){
-                try {
-                    if (this.settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
-                        await fetchRESTAPIURLDataStream(this.settings, index);
-                    }
-                    else {
-                        await fetchRESTAPIURLData(this.settings, index);
-                    }
+                if (this.settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
+                    await fetchRESTAPIURLDataStream(this.settings, index);
                 }
-                catch (error) {
-                    new Notice('Error occurred while fetching completion: ' + error.message);
-                    console.log(error.message);
+                else {
+                    await fetchRESTAPIURLData(this.settings, index);
                 }
             }
             else if (this.settings.APIConnections.mistral.mistralModels.includes(this.settings.general.model)) {
-                try {
-                    if (this.settings.APIConnections.mistral.allowStream) {
-                        await fetchMistralDataStream(this.settings, index);
-                    }
-                    else {
-                        await fetchMistralData(this.settings, index);
-                    }
+                if (this.settings.APIConnections.mistral.allowStream) {
+                    await fetchMistralDataStream(this.settings, index);
                 }
-                catch (error) {
-                    console.error('Error:', error);
+                else {
+                    await fetchMistralData(this.settings, index);
                 }
             }
             else if (this.settings.APIConnections.googleGemini.geminiModels.includes(this.settings.general.model)) {
-                try {
-                    await fetchGoogleGeminiData(this.settings, index);
-                }
-                catch (error) {
-                    console.error('Error:', error);
-                }
+                await fetchGoogleGeminiData(this.settings, index);
             }
             else if (ANTHROPIC_MODELS.includes(this.settings.general.model)) {
-                try {
-                    await fetchAnthropicAPIData(this.settings, index);
-                }
-                catch (error) {
-                    console.error('Error:', error);
-                }
+                await fetchAnthropicAPIData(this.settings, index);
+            }
+            else {
+                const errorMessage = 'Connection not found.';
+
+                const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+                const botMessageDiv = displayErrorBotMessage(this.settings, messageHistory, errorMessage);
+                messageContainer.appendChild(botMessageDiv);
+
+                const botMessages = messageContainer.querySelectorAll('.botMessage');
+                const lastBotMessage = botMessages[botMessages.length - 1];
+                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
 
         }
-        console.log('BMO settings:', this.settings);
+        // console.log('BMO settings:', this.settings);
     }
 
     async onClose() {

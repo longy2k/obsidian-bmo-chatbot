@@ -8,7 +8,7 @@ import { prismHighlighting } from 'src/components/PrismaHighlighting';
 import { addMessage, addParagraphBreaks } from './chat/Message';
 import { codeBlockCopyButton } from './chat/Buttons';
 import { getPrompt } from './chat/Prompt';
-import { displayLoadingBotMessage } from './chat/BotMessage';
+import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
 import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
 
 let abortController = new AbortController();
@@ -82,8 +82,13 @@ export async function fetchOpenAIAPIData(settings: BMOSettings, index: number) {
         }
 
     } catch (error) {
-        console.error('Error making API request:', error);
-        throw error;
+        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
+
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
     }
 }
 
@@ -117,6 +122,9 @@ export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: num
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+    const targetBotMessage = targetUserMessage.nextElementSibling;
+
     await getActiveFileContent(settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
@@ -131,9 +139,6 @@ export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: num
             ],
             stream: true,
         });
-
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
-        const targetBotMessage = targetUserMessage.nextElementSibling;
 
         for await (const part of stream) {
 
@@ -178,23 +183,13 @@ export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: num
         addMessage(message, 'botMessage', settings, index);
 
     } catch (error) {
-        const messageContainerEl = document.querySelector('#messageContainer');
-        if (messageContainerEl) {
-            const botMessages = messageContainerEl.querySelectorAll('.botMessage');
-            const lastBotMessage = botMessages[botMessages.length - 1];
-            const messageBlock = lastBotMessage.querySelector('.messageBlock');
-            if (messageBlock) {
-                messageBlock.innerHTML = marked(error.response?.data?.error || error.message);
-                addMessage(messageBlock.innerHTML, 'botMessage', settings, index);
-                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
-                const targetBotMessage = targetUserMessage.nextElementSibling;
-                const loadingEl = targetBotMessage?.querySelector('#loading');
-                if (loadingEl) {
-                    targetBotMessage?.removeChild(loadingEl);
-                }
-            }
-        }
-        throw new Error(error.response?.data?.error || error.message);
+        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
+
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
     }
 }
 
@@ -248,7 +243,6 @@ export async function fetchOllamaData(settings: BMOSettings, index: number) {
 
         const message = response.json.message.content;
 
-        const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
             const targetUserMessage = messageContainerElDivs[index];
             const targetBotMessage = targetUserMessage.nextElementSibling;
@@ -275,8 +269,13 @@ export async function fetchOllamaData(settings: BMOSettings, index: number) {
         addMessage(message, 'botMessage', settings, index);
 
     } catch (error) {
-        console.error('Error making API request:', error);
-        throw error;
+        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
+
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
     }
 }
 
@@ -412,8 +411,8 @@ export async function fetchOllamaDataStream(settings: BMOSettings, index: number
         
     } catch (error) {
         addMessage(message, 'botMessage', settings, index); // This will save mid-stream conversation.
-        console.error('Error making API request:', error);
-        throw error;
+        new Notice(error);
+        console.error(error);
     }
 }
 
@@ -502,8 +501,13 @@ export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) 
 
     // If all requests failed, throw the last encountered error
     if (lastError) {
-        console.error('Error making API request:', lastError);
-        throw lastError;
+        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
+
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, lastError);
+        messageContainer.appendChild(botMessageDiv);
     }
 }
 
@@ -650,8 +654,8 @@ export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: nu
         
     } catch (error) {
         addMessage(message, 'botMessage', settings, index); // This will save mid-stream conversation.
-        console.error('Error making API request:', error);
-        throw error;
+        new Notice(error);
+        console.error(error);
     }
 }
 
@@ -726,7 +730,13 @@ export async function fetchMistralData(settings: BMOSettings, index: number) {
         return;
 
     } catch (error) {
-        console.error(error);
+        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
+
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
     }
 
 }
@@ -867,8 +877,8 @@ export async function fetchMistralDataStream(settings: BMOSettings, index: numbe
         
     } catch (error) {
         addMessage(message, 'botMessage', settings, index); // This will save mid-stream conversation.
-        console.error('Error making API request:', error);
-        throw error;
+        new Notice(error);
+        console.error(error);
     }
 }
 
@@ -974,7 +984,13 @@ export async function fetchGoogleGeminiData(settings: BMOSettings, index: number
         return;
 
     } catch (error) {
-        console.error(error);
+        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
+
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
     }
 
 }
@@ -1040,7 +1056,7 @@ export async function fetchAnthropicAPIData(settings: BMOSettings, index: number
 
       const messageContainerEl = document.querySelector('#messageContainer');
       if (messageContainerEl) {
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetUserMessage = messageContainerElDivs[index];
         const targetBotMessage = targetUserMessage.nextElementSibling;
 
         const messageBlock = targetBotMessage?.querySelector('.messageBlock');
@@ -1062,26 +1078,13 @@ export async function fetchAnthropicAPIData(settings: BMOSettings, index: number
       addMessage('\n\nAssistant: ' + completionText, 'botMessage', settings, index);
   
     } catch (error) {
-        const messageContainerEl = document.querySelector('#messageContainer');
-        if (messageContainerEl) {
-            const botMessages = messageContainerEl.querySelectorAll('.botMessage');
-            const lastBotMessage = botMessages[botMessages.length - 1];
-            const messageBlock = lastBotMessage.querySelector('.messageBlock');
+        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
 
-            if (messageBlock) {
-
-                messageBlock.innerHTML = 'Max tokens overflow. Please reduce max_tokens or clear chat messages. We recommend clearing max_tokens for best results.';
-                addMessage(messageBlock.innerHTML, 'botMessage', settings, index);
-
-                const loadingEl = lastBotMessage.querySelector('#loading');
-                if (loadingEl) {
-                    loadingEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    lastBotMessage.removeChild(loadingEl);
-                }
-            }
-        }
-      console.error('Error making API request:', error);
-      throw error;
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
     }
 }
 
@@ -1111,12 +1114,30 @@ function ollamaParametersOptions(settings: BMOSettings) {
 }
 
 function filterMessageHistory(messageHistory: { role: string; content: string }[]) {
-    const filteredMessageHistory = messageHistory.filter((message, index, array) => {
-        const isUserMessageWithSlash = (message.role === 'user' && message.content.includes('/')) || 
-                                        (array[index - 1]?.role === 'user' && array[index - 1]?.content.includes('/'));
+    const skipIndexes = new Set(); // Store indexes of messages to skip
 
-        return !isUserMessageWithSlash;
+    messageHistory.forEach((message, index, array) => {
+        // Check for user message with slash
+        if (message.role === 'user' && message.content.includes('/')) {
+            skipIndexes.add(index); // Skip this message
+            // Check if next message is from the assistant and skip it as well
+            if (index + 1 < array.length && array[index + 1].role === 'assistant') {
+                skipIndexes.add(index + 1);
+            }
+        }
+        // Check for assistant message with displayErrorBotMessage
+        else if (message.role === 'assistant' && message.content.includes('displayErrorBotMessage')) {
+            skipIndexes.add(index); // Skip this message
+            if (index > 0) {
+                skipIndexes.add(index - 1); // Also skip previous message if it exists
+            }
+        }
     });
+
+    // Filter the message history, skipping marked messages
+    const filteredMessageHistory = messageHistory.filter((_, index) => !skipIndexes.has(index));
+
+    // console.log('Filtered message history:', filteredMessageHistory);
 
     return filteredMessageHistory;
 }

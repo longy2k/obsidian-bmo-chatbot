@@ -95,6 +95,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                 }
             }
             if (plugin.settings.APIConnections.mistral.APIKey !== '') {
+                console.log('Mistral API Key:');
                 const mistralModels = await fetchMistralModels(plugin);
                 try {
                     mistralModels.forEach((model: string) => {
@@ -119,7 +120,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                     });
                 }
                 catch (error) {
-                    new Notice('Mistral connection error.');
+                    new Notice('Google Gemini connection error.');
                 }
             }
             if (plugin.settings.APIConnections.anthropic.APIKey) {

@@ -452,6 +452,18 @@ ul#dropdownOptions li:hover {
 	padding: 0.16rem;
 }
 
+/* Display Error Bot Message Style */
+
+.displayErrorBotMessage {
+	color: #f30000;
+	border: 1px solid #ccc;
+	background-color: #282c34;
+	padding: 10px;
+	border-radius: 5px;
+	margin: 0.5rem;
+	font-size: 0.8rem;
+}
+
 /* Toggle Settings Container */
 .toggleSettingContainer {
 	display: flex;
