@@ -77,6 +77,7 @@ export interface BMOSettings {
 		}
 		anthropic: {
 			APIKey: string,
+			anthropicModels: string[],
 		}
 	},
 	toggleGeneralSettings: boolean,
@@ -169,6 +170,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		},
 		anthropic: {
 			APIKey: '',
+			anthropicModels: [],
 		}
 	},
 	toggleGeneralSettings: true,

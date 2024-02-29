@@ -33,9 +33,9 @@ export function addAPIConnectionSettings(containerEl: HTMLElement, plugin: BMOGP
         await plugin.saveSettings();
     });
 
-    addOpenAIConnectionSettings(settingsContainer, plugin, SettingTab);
-    addMistralConnectionSettings(settingsContainer, plugin, SettingTab);
-    addGoogleGeminiConnectionSettings(settingsContainer, plugin, SettingTab);
     addAnthropicConnectionSettings(settingsContainer, plugin, SettingTab);
+    addGoogleGeminiConnectionSettings(settingsContainer, plugin, SettingTab);
+    addMistralConnectionSettings(settingsContainer, plugin, SettingTab);
+    addOpenAIConnectionSettings(settingsContainer, plugin, SettingTab);
 }
 

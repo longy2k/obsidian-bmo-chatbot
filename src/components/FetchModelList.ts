@@ -1,6 +1,7 @@
 import { requestUrl } from 'obsidian';
 import OpenAI from 'openai';
 import BMOGPT from 'src/main';
+import { OPENAI_MODELS } from 'src/view';
 
 export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
     const openai = new OpenAI({
@@ -11,10 +12,16 @@ export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
 
 	const list = await openai.models.list();
 
-	const models = list.data.map((model) => model.id);
-	plugin.settings.APIConnections.openAI.openAIBaseModels = models;
+    if (openai.baseURL == 'https://api.openai.com/v1') {
+        plugin.settings.APIConnections.openAI.openAIBaseModels = OPENAI_MODELS;
+        return OPENAI_MODELS;
+    }
+    else {
+        const models = list.data.map((model) => model.id);
+        plugin.settings.APIConnections.openAI.openAIBaseModels = models;
+        return models;
+    }
 
-	return models;
 }
 
 // Fetch OLLAMA models from OLLAMA REST API
@@ -58,57 +65,37 @@ export async function fetchRESTAPIURLModels(plugin: BMOGPT) {
     try {
         new URL(RESTAPIURL);
     } catch (error) {
-        console.error('Invalid OpenAI Rest API URL:', RESTAPIURL);
+        console.error('Invalid REST API URL:', RESTAPIURL);
         return;
     }
 
-    const urls = [
-        RESTAPIURL + '/v1/models',
-        RESTAPIURL + '/api/v1/models'
-    ];
+    try {
+        const response = await requestUrl({
+            url: RESTAPIURL + '/models',
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${plugin.settings.RESTAPIURLConnection.APIKey}`
+            },
+        });
 
-    let lastError = null;
-
-    for (const url of urls) {
-        try {
-            // Initialize headers with Content-Type only
-            const headers: { 'Content-Type': string; Authorization?: string } = {
-                'Content-Type': 'application/json'
-            };
-
-            // If APIKey is provided, add Authorization header
-            if (plugin.settings.RESTAPIURLConnection.APIKey) {
-                headers.Authorization = `Bearer ${plugin.settings.RESTAPIURLConnection.APIKey}`;
+        // Check if the response is valid
+        if (response.json && (response.json.data || Array.isArray(response.json))) {
+            let models;
+            if (Array.isArray(response.json)) {
+                models = response.json.map((model: { id: number; }) => model.id);
+            } else {
+                models = response.json.data.map((model: { id: number; }) => model.id);
             }
 
-            const response = await requestUrl({
-                url: url,
-                method: 'GET',
-                headers: headers,
-            });
-
-            // Check if the response is valid
-            if (response.json && (response.json.data || Array.isArray(response.json))) {
-				let models;
-				if (Array.isArray(response.json)) {
-					models = response.json.map((model: { id: number; }) => model.id);
-				} else {
-					models = response.json.data.map((model: { id: number; }) => model.id);
-				}
-
-                plugin.settings.RESTAPIURLConnection.RESTAPIURLModels = models;
-                return models;
-            }
-        } catch (error) {
-            lastError = error; // Store the last error and continue
+            plugin.settings.RESTAPIURLConnection.RESTAPIURLModels = models;
+            return models;
         }
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
     }
-
-    // If all requests failed, throw the last encountered error
-    if (lastError) {
-        console.error('Error making API request:', lastError);
-        throw lastError; // Removed the Notice for simplicity, add back if needed in your environment.
-    }
+    
 }
 
 export async function fetchMistralModels(plugin: BMOGPT) {
@@ -158,6 +145,4 @@ export async function fetchGoogleGeminiModels(plugin: BMOGPT) {
         console.error(error);
     }
 }
-
-
 

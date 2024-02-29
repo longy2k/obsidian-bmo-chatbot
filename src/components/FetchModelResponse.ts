@@ -437,77 +437,64 @@ export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) 
 
     await getActiveFileContent(settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
-    
-    const urls = [
-        settings.RESTAPIURLConnection.RESTAPIURL + '/v1/chat/completions',
-        settings.RESTAPIURLConnection.RESTAPIURL + '/api/v1/chat/completions'
-    ];
+ 
+    try {
+        const response = await requestUrl({
+            url: settings.RESTAPIURLConnection.RESTAPIURL + '/chat/completions',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.RESTAPIURLConnection.APIKey}`
+            },
+            body: JSON.stringify({
+                model: settings.general.model,
+                messages: [
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                    ...messageHistoryAtIndex
+                ],
+                max_tokens: parseInt(settings.general.max_tokens) || 4096,
+                temperature: parseInt(settings.general.temperature),
+            }),
+        });
 
-    let lastError = null;
+        const message = response.json.choices[0].message.content;
 
-    for (const url of urls) {
-        try {
-            const response = await requestUrl({
-                url: url,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${settings.RESTAPIURLConnection.APIKey}`
-                },
-                body: JSON.stringify({
-                    model: settings.general.model,
-                    messages: [
-                        { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
-                        ...messageHistoryAtIndex
-                    ],
-                    max_tokens: parseInt(settings.general.max_tokens) || 4096,
-                    temperature: parseInt(settings.general.temperature),
-                }),
-            });
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+            const targetBotMessage = targetUserMessage.nextElementSibling;
 
-            const message = response.json.choices[0].message.content;
-
-            const messageContainerEl = document.querySelector('#messageContainer');
-            if (messageContainerEl) {
-                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
-                const targetBotMessage = targetUserMessage.nextElementSibling;
-    
-                const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-                const loadingEl = targetBotMessage?.querySelector('#loading');
-            
-                if (messageBlock) {
-                    if (loadingEl) {
-                        targetBotMessage?.removeChild(loadingEl);
-                    }
-                    messageBlock.innerHTML = marked(message, { breaks: true });
-                    
-                    addParagraphBreaks(messageBlock);
-                    prismHighlighting(messageBlock);
-                    codeBlockCopyButton(messageBlock);
-                    
-                    targetBotMessage?.appendChild(messageBlock);
+            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+            const loadingEl = targetBotMessage?.querySelector('#loading');
+        
+            if (messageBlock) {
+                if (loadingEl) {
+                    targetBotMessage?.removeChild(loadingEl);
                 }
-                targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                messageBlock.innerHTML = marked(message, { breaks: true });
                 
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                targetBotMessage?.appendChild(messageBlock);
             }
-
-            addMessage(message, 'botMessage', settings, index);
-            return;
-
-        } catch (error) {
-            lastError = error; // Store the last error and continue
+            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
         }
-    }
 
-    // If all requests failed, throw the last encountered error
-    if (lastError) {
+        addMessage(message, 'botMessage', settings, index);
+        return;
+
+    } catch (error) {
         const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
         const targetBotMessage = targetUserMessage.nextElementSibling;
         targetBotMessage?.remove();
 
         const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, lastError);
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
+
     }
 }
 

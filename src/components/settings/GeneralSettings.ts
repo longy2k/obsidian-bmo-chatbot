@@ -1,6 +1,6 @@
 import { DropdownComponent, Notice, Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
-import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
+import { ANTHROPIC_MODELS } from 'src/view';
 import { fetchGoogleGeminiModels, fetchMistralModels, fetchOllamaModels, fetchOpenAIBaseModels, fetchRESTAPIURLModels } from '../FetchModelList';
 
 export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -31,107 +31,13 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
         await plugin.saveSettings();
     });
 
-    // Function to add options to dropdown
-    const addOptionsToDropdown = (dropdown: DropdownComponent, models: string[]) => {
-        models.forEach(model => {
-        dropdown.addOption(model, model);
-        });
-    };
-
     new Setting(settingsContainer)
         .setName('Model')
         .setDesc('Choose a model.')
         .addDropdown(async dropdown => {
-            plugin.settings.allModels = [];
-            if (plugin.settings.APIConnections.openAI.APIKey && (plugin.settings.APIConnections.openAI.openAIBaseUrl === DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl)) {
-                addOptionsToDropdown(dropdown, OPENAI_MODELS);
-                for (const model of OPENAI_MODELS) {
-                    if (!plugin.settings.allModels.includes(model)) {
-                        plugin.settings.allModels.push(model);
-                    }
-                }
-            }
-            if (plugin.settings.OllamaConnection.RESTAPIURL !== '') {
-                const ollamaModels = await fetchOllamaModels(plugin);
-                try {
-                    ollamaModels.forEach((model: string) => {
-                        dropdown.addOption(model, model);
-                        if (!plugin.settings.allModels.includes(model)) {
-                            plugin.settings.allModels.push(model);
-                        }
-                    });
-                }
-                catch (error) {
-                    new Notice('Ollama connection error.');
-                }
-            }
-            if (plugin.settings.RESTAPIURLConnection.RESTAPIURL !== '') {
-                const RESTAPIURLModels = await fetchRESTAPIURLModels(plugin);
-                try {
-                    RESTAPIURLModels.forEach((model: string) => {
-                        dropdown.addOption(model, model);
-                        if (!plugin.settings.allModels.includes(model)) {
-                            plugin.settings.allModels.push(model);
-                        }
-                    });
-                }
-                catch (error) {
-                    new Notice('OpenAI REST API URL connection error.');
-                }
-            }
-            if (plugin.settings.APIConnections.openAI.APIKey && (plugin.settings.APIConnections.openAI.openAIBaseUrl !== DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl)) {
-                const openAIModels = await fetchOpenAIBaseModels(plugin);
-                try {
-                    openAIModels.forEach((model: string) => {
-                        dropdown.addOption(model, model);
-                        if (!plugin.settings.allModels.includes(model)) {
-                            plugin.settings.allModels.push(model);
-                        }
-                    });
-                }
-                catch (error) {
-                    console.error('Error:', error);
-                    new Notice('OpenAI-based url connection error.');
-                }
-            }
-            if (plugin.settings.APIConnections.mistral.APIKey !== '') {
-                const mistralModels = await fetchMistralModels(plugin);
-                try {
-                    mistralModels.forEach((model: string) => {
-                        dropdown.addOption(model, model);
-                        if (!plugin.settings.allModels.includes(model)) {
-                            plugin.settings.allModels.push(model);
-                        }
-                    });
-                }
-                catch (error) {
-                    new Notice('Mistral connection error.');
-                }
-            }
-            if (plugin.settings.APIConnections.googleGemini.APIKey) {
-                const googleGeminiModels = await fetchGoogleGeminiModels(plugin);
-                try {
-                    googleGeminiModels.forEach((model: string) => {
-                        dropdown.addOption(model, model);
-                        if (!plugin.settings.allModels.includes(model)) {
-                            plugin.settings.allModels.push(model);
-                        }
-                    });
-                }
-                catch (error) {
-                    new Notice('Google Gemini connection error.');
-                }
-            }
-            if (plugin.settings.APIConnections.anthropic.APIKey) {
-                addOptionsToDropdown(dropdown, ANTHROPIC_MODELS);
-                for (const model of ANTHROPIC_MODELS) {
-                    if (!plugin.settings.allModels.includes(model)) {
-                        plugin.settings.allModels.push(model);
-                    }
-                }
-            }
+            await populateDropdownWithModels(plugin, dropdown);
             dropdown
-                .setValue(plugin.settings.general.model || DEFAULT_SETTINGS.general.model)
+                .setValue(plugin.settings.general.model)
                 .onChange(async (value) => {
                     plugin.settings.general.model = value;
                     await plugin.saveSettings();
@@ -234,3 +140,62 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
         return frag;
     }
 }
+
+async function populateDropdownWithModels(plugin: BMOGPT, dropdown: DropdownComponent) {
+    // Initialize an empty array to store all unique models
+    plugin.settings.allModels = [];
+
+    // Helper function to fetch models based on the source type
+    async function fetchModels(sourceType: string) {
+        switch (sourceType) {
+            case 'ollama':
+                return await fetchOllamaModels(plugin);
+            case 'RESTAPIURL':
+                return await fetchRESTAPIURLModels(plugin);
+            case 'anthropic':
+                return ANTHROPIC_MODELS;
+            case 'googleGemini':
+                return await fetchGoogleGeminiModels(plugin);
+            case 'mistral':
+                return await fetchMistralModels(plugin);
+            case 'openAI':
+                return await fetchOpenAIBaseModels(plugin);
+            default:
+                return [];
+        }
+    }
+
+    // Helper function to add models to the dropdown and allModels array
+    function addModelsToDropdownAndList(models: string[]) {
+        models.forEach((model) => {
+            dropdown.addOption(model, model);
+            if (!plugin.settings.allModels.includes(model)) {
+                plugin.settings.allModels.push(model);
+            }
+        });
+    }
+
+    // Define model sources and conditions for fetching
+    const modelSources = [
+        { type: 'ollama', condition: plugin.settings.OllamaConnection.RESTAPIURL },
+        { type: 'RESTAPIURL', condition: plugin.settings.RESTAPIURLConnection.RESTAPIURL },
+        { type: 'anthropic', condition: plugin.settings.APIConnections.anthropic.APIKey },
+        { type: 'googleGemini', condition: plugin.settings.APIConnections.googleGemini.APIKey },
+        { type: 'mistral', condition: plugin.settings.APIConnections.mistral.APIKey },
+        { type: 'openAI', condition: plugin.settings.APIConnections.openAI.APIKey },
+    ];
+
+    // Process each source to fetch and add models
+    for (const { type, condition } of modelSources) {
+        if (condition) {
+            try {
+                const models = await fetchModels(type);
+                addModelsToDropdownAndList(models);
+            } catch (error) {
+                console.error(`Error fetching models from ${type}:`, error);
+                new Notice(`${type.charAt(0).toUpperCase() + type.slice(1)} connection error.`);
+            }
+        }
+    }
+}
+
