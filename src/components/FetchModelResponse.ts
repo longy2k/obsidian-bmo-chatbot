@@ -1,5 +1,5 @@
 import { Notice, requestUrl } from 'obsidian';
-import { BMOSettings } from '../main';
+import BMOGPT, { BMOSettings } from '../main';
 import { messageHistory } from '../view';
 import { ChatCompletionMessageParam } from 'openai/resources/chat';
 import { marked } from 'marked';
@@ -15,7 +15,7 @@ let abortController = new AbortController();
 
 // Fetch response from Ollama
 // NOTE: Abort does not work for requestUrl
-export async function fetchOllamaResponse(settings: BMOSettings, index: number) {
+export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
     if (!ollamaRESTAPIURL) {
@@ -82,7 +82,7 @@ export async function fetchOllamaResponse(settings: BMOSettings, index: number) 
             
         }
 
-        addMessage(message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);
 
     } catch (error) {
         const targetUserMessage = messageContainerElDivs[index];
@@ -90,13 +90,13 @@ export async function fetchOllamaResponse(settings: BMOSettings, index: number) 
         targetBotMessage?.remove();
 
         const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
     }
 }
 
 // Fetch response from Ollama (stream)
-export async function fetchOllamaResponseStream(settings: BMOSettings, index: number) {
+export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
     if (!ollamaRESTAPIURL) {
@@ -219,17 +219,17 @@ export async function fetchOllamaResponseStream(settings: BMOSettings, index: nu
             }
 
         }
-        addMessage(message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);
         
     } catch (error) {
-        addMessage(message, 'botMessage', settings, index); // This will save mid-stream conversation.
+        addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
         new Notice(error);
         console.error(error);
     }
 }
 
 // Fetch response from openai-based rest api url
-export async function fetchRESTAPIURLResponse(settings: BMOSettings, index: number) {
+export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
@@ -291,7 +291,7 @@ export async function fetchRESTAPIURLResponse(settings: BMOSettings, index: numb
             
         }
 
-        addMessage(message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);
         return;
 
     } catch (error) {
@@ -300,14 +300,14 @@ export async function fetchRESTAPIURLResponse(settings: BMOSettings, index: numb
         targetBotMessage?.remove();
 
         const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
 
     }
 }
 
 // Fetch response from openai-based rest api url (stream)
-export async function fetchRESTAPIURLResponseStream(settings: BMOSettings, index: number) {
+export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const RESTAPIURL = settings.RESTAPIURLConnection.RESTAPIURL;
 
     if (!RESTAPIURL) {
@@ -441,17 +441,17 @@ export async function fetchRESTAPIURLResponseStream(settings: BMOSettings, index
             }
 
         }
-        addMessage(message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);
         
     } catch (error) {
-        addMessage(message, 'botMessage', settings, index); // This will save mid-stream conversation.
+        addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
         new Notice(error);
         console.error(error);
     }
 }
 
 // Fetch response from Anthropic
-export async function fetchAnthropicResponse(settings: BMOSettings, index: number) {
+export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
@@ -514,7 +514,7 @@ export async function fetchAnthropicResponse(settings: BMOSettings, index: numbe
             
         }
 
-        addMessage(message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);
         return;
 
     } catch (error) {
@@ -523,14 +523,14 @@ export async function fetchAnthropicResponse(settings: BMOSettings, index: numbe
         targetBotMessage?.remove();
 
         const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
     }
 
 }
 
 // Fetch response from Google Gemini
-export async function fetchGoogleGeminiResponse(settings: BMOSettings, index: number) {
+export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
@@ -624,7 +624,7 @@ export async function fetchGoogleGeminiResponse(settings: BMOSettings, index: nu
             
         }
 
-        addMessage(message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);
         return;
 
     } catch (error) {
@@ -633,14 +633,14 @@ export async function fetchGoogleGeminiResponse(settings: BMOSettings, index: nu
         targetBotMessage?.remove();
 
         const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
     }
 
 }
 
 // Fetch response from Mistral
-export async function fetchMistralResponse(settings: BMOSettings, index: number) {
+export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const prompt = await getPrompt(settings);
     
     const filteredMessageHistory = filterMessageHistory(messageHistory);
@@ -702,7 +702,7 @@ export async function fetchMistralResponse(settings: BMOSettings, index: number)
             
         }
 
-        addMessage(message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);
         return;
 
     } catch (error) {
@@ -711,14 +711,14 @@ export async function fetchMistralResponse(settings: BMOSettings, index: number)
         targetBotMessage?.remove();
 
         const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
     }
 
 }
 
 // Fetch response Mistral (stream)
-export async function fetchMistralResponseStream(settings: BMOSettings, index: number) {
+export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
     abortController = new AbortController();
 
     let message = '';
@@ -845,17 +845,17 @@ export async function fetchMistralResponseStream(settings: BMOSettings, index: n
             }
 
         }
-        addMessage(message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);
         
     } catch (error) {
-        addMessage(message, 'botMessage', settings, index); // This will save mid-stream conversation.
+        addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
         new Notice(error);
         console.error(error);
     }
 }
 
 // Fetch OpenAI-Based API
-export async function fetchOpenAIAPIResponse(settings: BMOSettings, index: number) {
+export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const openai = new OpenAI({
         apiKey: settings.APIConnections.openAI.APIKey,
         baseURL: settings.APIConnections.openAI.openAIBaseUrl,
@@ -915,7 +915,7 @@ export async function fetchOpenAIAPIResponse(settings: BMOSettings, index: numbe
         }
 
         if (message != null) {
-            addMessage(message, 'botMessage', settings, index);
+            addMessage(plugin, message, 'botMessage', settings, index);
         }
 
     } catch (error) {
@@ -924,13 +924,13 @@ export async function fetchOpenAIAPIResponse(settings: BMOSettings, index: numbe
         targetBotMessage?.remove();
 
         const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
     }
 }
 
 // Fetch OpenAI-Based API Stream
-export async function fetchOpenAIAPIResponseStream(settings: BMOSettings, index: number) {
+export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const openai = new OpenAI({
         apiKey: settings.APIConnections.openAI.APIKey,
         baseURL: settings.APIConnections.openAI.openAIBaseUrl,
@@ -1013,7 +1013,7 @@ export async function fetchOpenAIAPIResponseStream(settings: BMOSettings, index:
                 break;
             }
         }
-        addMessage(message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);
 
     } catch (error) {
         const targetUserMessage = messageContainerElDivs[index];
@@ -1021,7 +1021,7 @@ export async function fetchOpenAIAPIResponseStream(settings: BMOSettings, index:
         targetBotMessage?.remove();
 
         const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
     }
 }

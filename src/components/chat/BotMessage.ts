@@ -1,4 +1,4 @@
-import { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
+import BMOGPT, { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
 import { colorToHex } from 'src/utils/ColorConverter';
 import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton, displayBotEditButton } from './Buttons';
 import { ANTHROPIC_MODELS } from 'src/view';
@@ -6,7 +6,7 @@ import { marked } from 'marked';
 import { prismHighlighting } from '../PrismaHighlighting';
 import { addMessage, addParagraphBreaks } from './Message';
 
-export function displayBotMessage(settings: BMOSettings, messageHistory: { role: string; content: string }[], message: string) {
+export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, messageHistory: { role: string; content: string }[], message: string) {
     const botMessageDiv = document.createElement('div');
     botMessageDiv.className = 'botMessage';
     
@@ -47,9 +47,9 @@ export function displayBotMessage(settings: BMOSettings, messageHistory: { role:
     messageBlockDiv.className = 'messageBlock';
 
     if (!message.includes('commandBotMessage') && !message.includes('errorBotMessage')) {
-        const editButton = displayBotEditButton(settings, newBotP);
+        const editButton = displayBotEditButton(plugin, settings, newBotP);
         const copyBotButton = displayBotCopyButton(settings, message);
-        const appendButton = displayAppendButton(settings, message);
+        const appendButton = displayAppendButton(plugin, settings, message);
         buttonContainerDiv.appendChild(editButton);
         buttonContainerDiv.appendChild(copyBotButton);
         buttonContainerDiv.appendChild(appendButton);
@@ -99,7 +99,7 @@ export function displayLoadingBotMessage(settings: BMOSettings) {
     return botMessageDiv;
 }
 
-export function displayCommandBotMessage(settings: BMOSettings, messageHistory: { role: string; content: string }[], message: string){
+export function displayCommandBotMessage(plugin: BMOGPT, settings: BMOSettings, messageHistory: { role: string; content: string }[], message: string){
     const botMessageDiv = document.createElement('div');
     botMessageDiv.className = 'botMessage';
     botMessageDiv.style.backgroundColor = colorToHex(settings.appearance.botMessageBackgroundColor ||
@@ -126,12 +126,12 @@ export function displayCommandBotMessage(settings: BMOSettings, messageHistory: 
 
     const index = messageHistory.length - 1;
 
-    addMessage(messageBlockDiv.innerHTML, 'botMessage', this.settings, index);
+    addMessage(plugin, messageBlockDiv.innerHTML, 'botMessage', this.settings, index);
 
     return botMessageDiv;
 }
 
-export function displayErrorBotMessage(settings: BMOSettings, messageHistory: { role: string; content: string }[], message: string){
+export function displayErrorBotMessage(plugin: BMOGPT, settings: BMOSettings, messageHistory: { role: string; content: string }[], message: string){
     const botMessageDiv = document.createElement('div');
     botMessageDiv.className = 'botMessage';
     botMessageDiv.style.backgroundColor = colorToHex(settings.appearance.botMessageBackgroundColor ||
@@ -163,7 +163,7 @@ export function displayErrorBotMessage(settings: BMOSettings, messageHistory: { 
 
     const index = messageHistory.length - 1;
 
-    addMessage(messageBlockDiv.innerHTML, 'botMessage', this.settings, index);
+    addMessage(plugin, messageBlockDiv.innerHTML, 'botMessage', this.settings, index);
 
     return botMessageDiv;
 }

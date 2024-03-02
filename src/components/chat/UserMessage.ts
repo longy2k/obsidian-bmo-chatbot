@@ -1,9 +1,9 @@
-import { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
+import BMOGPT, { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
 import { colorToHex } from 'src/utils/ColorConverter';
 import { displayUserEditButton, displayTrashButton, displayUserCopyButton, regenerateUserButton } from './Buttons';
 import { marked } from 'marked';
 
-export function displayUserMessage(settings: BMOSettings, message: string) {
+export function displayUserMessage(plugin: BMOGPT, settings: BMOSettings, message: string) {
     const userMessageDiv = document.createElement('div');
     userMessageDiv.className = 'userMessage';
     userMessageDiv.style.backgroundColor = colorToHex(settings.appearance.userMessageBackgroundColor || 
@@ -20,10 +20,10 @@ export function displayUserMessage(settings: BMOSettings, message: string) {
     userNameSpan.textContent = settings.appearance.userName || DEFAULT_SETTINGS.appearance.userName;
     const userP = document.createElement('p');
 
-    const regenerateButton = regenerateUserButton(settings);
-    const editButton = displayUserEditButton(settings, userP);
+    const regenerateButton = regenerateUserButton(plugin, settings);
+    const editButton = displayUserEditButton(plugin, settings, userP);
     const copyUserButton = displayUserCopyButton(userP);
-    const trashButton = displayTrashButton();
+    const trashButton = displayTrashButton(plugin);
     
     userMessageToolBarDiv.appendChild(userNameSpan);
     userMessageToolBarDiv.appendChild(buttonContainerDiv);

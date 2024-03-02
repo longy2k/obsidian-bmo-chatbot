@@ -122,18 +122,18 @@ export class BMOView extends ItemView {
             referenceCurrentNoteElement.style.margin = '0.5rem 0 0.5rem 0';
         }
         
-        await loadData();
+        await loadData(this.plugin);
         
         messageContainer.id = 'messageContainer';
         
         messageHistory.forEach(async (messageData) => {   
             if (messageData.role == 'user') {
-                const userMessageDiv = displayUserMessage(this.settings, messageData.content);
+                const userMessageDiv = displayUserMessage(this.plugin, this.settings, messageData.content);
                 messageContainer.appendChild(userMessageDiv);
             }
         
             if (messageData.role == 'assistant') {
-                const botMessageDiv = displayBotMessage(this.settings, messageHistory, messageData.content);
+                const botMessageDiv = displayBotMessage(this.plugin, this.settings, messageHistory, messageData.content);
                 messageContainer.appendChild(botMessageDiv);
             
                 const botMessages = messageContainer.querySelectorAll('.botMessage');
@@ -185,19 +185,19 @@ export class BMOView extends ItemView {
         }
 
         if (this.preventEnter === false && !event.shiftKey && event.key === 'Enter') {
-            loadData();
+            loadData(this.plugin);
             event.preventDefault();
             if (input.length === 0) {
                 return;
             }
 
             if (!(input === '/s' || input === '/stop')) {
-                addMessage(input, 'userMessage', this.settings, index);
+                addMessage(this.plugin, input, 'userMessage', this.settings, index);
             }
             
             const messageContainer = document.querySelector('#messageContainer');
             if (messageContainer) {
-                const userMessageDiv = displayUserMessage(this.settings, input);
+                const userMessageDiv = displayUserMessage(this.plugin, this.settings, input);
                 messageContainer.appendChild(userMessageDiv);
 
                 if (input.startsWith('/')) {
@@ -224,7 +224,7 @@ export class BMOView extends ItemView {
                         })
                         .catch(() => {
                             const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-                            const botMessageDiv = displayErrorBotMessage(this.settings, messageHistory, 'Oops, something went wrong. Please try again.');
+                            const botMessageDiv = displayErrorBotMessage(this.plugin, this.settings, messageHistory, 'Oops, something went wrong. Please try again.');
                             messageContainer.appendChild(botMessageDiv);
                         });
                 }
@@ -261,11 +261,11 @@ export class BMOView extends ItemView {
     addCursorLogging() {
         const updateCursorPosition = async () => {
             await getActiveFileContent(this.settings); 
-            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
             if (view) {
                 const cursor = view.editor.getCursor();
-                lastCursorPositionFile = this.app.workspace.getActiveFile();
-                if (cursor != null && this.app.workspace.activeEditor != null) {
+                lastCursorPositionFile = this.plugin.app.workspace.getActiveFile();
+                if (cursor != null && this.plugin.app.workspace.activeEditor != null) {
                     lastCursorPosition = cursor;
                     activeEditor = view.editor;
                 }
@@ -295,7 +295,7 @@ export class BMOView extends ItemView {
             const errorMessage = 'Model not found.';
 
             const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-            const botMessageDiv = displayErrorBotMessage(this.settings, messageHistory, errorMessage);
+            const botMessageDiv = displayErrorBotMessage(this.plugin, this.settings, messageHistory, errorMessage);
             messageContainer.appendChild(botMessageDiv);
 
             const botMessages = messageContainer.querySelectorAll('.botMessage');
@@ -306,47 +306,47 @@ export class BMOView extends ItemView {
             // Fetch OpenAI API
             if (this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
                 if (this.settings.OllamaConnection.allowOllamaStream) {
-                    await fetchOllamaResponseStream(this.settings, index);
+                    await fetchOllamaResponseStream(this.plugin, this.settings, index);
                 }
                 else {
-                    await fetchOllamaResponse(this.settings, index);
+                    await fetchOllamaResponse(this.plugin, this.settings, index);
                 }
             }
             else if (this.settings.RESTAPIURLConnection.RESTAPIURLModels.includes(this.settings.general.model)){
                 if (this.settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
-                    await fetchRESTAPIURLResponseStream(this.settings, index);
+                    await fetchRESTAPIURLResponseStream(this.plugin, this.settings, index);
                 }
                 else {
-                    await fetchRESTAPIURLResponse(this.settings, index);
+                    await fetchRESTAPIURLResponse(this.plugin, this.settings, index);
                 }
             }
             else if (ANTHROPIC_MODELS.includes(this.settings.general.model)) {
-                await fetchAnthropicResponse(this.settings, index);
+                await fetchAnthropicResponse(this.plugin, this.settings, index);
             }
             else if (this.settings.APIConnections.mistral.mistralModels.includes(this.settings.general.model)) {
                 if (this.settings.APIConnections.mistral.allowStream) {
-                    await fetchMistralResponseStream(this.settings, index);
+                    await fetchMistralResponseStream(this.plugin, this.settings, index);
                 }
                 else {
-                    await fetchMistralResponse(this.settings, index);
+                    await fetchMistralResponse(this.plugin, this.settings, index);
                 }
             }
             else if (this.settings.APIConnections.googleGemini.geminiModels.includes(this.settings.general.model)) {
-                await fetchGoogleGeminiResponse(this.settings, index);
+                await fetchGoogleGeminiResponse(this.plugin, this.settings, index);
             }
             else if (this.settings.APIConnections.openAI.openAIBaseModels.includes(this.settings.general.model)) {
                 if (this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
-                    await fetchOpenAIAPIResponseStream(this.settings, index); 
+                    await fetchOpenAIAPIResponseStream(this.plugin, this.settings, index); 
                 }
                 else {
-                    await fetchOpenAIAPIResponse(this.settings, index); 
+                    await fetchOpenAIAPIResponse(this.plugin, this.settings, index); 
                 }
             }
             else {
                 const errorMessage = 'Connection not found.';
 
                 const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-                const botMessageDiv = displayErrorBotMessage(this.settings, messageHistory, errorMessage);
+                const botMessageDiv = displayErrorBotMessage(this.plugin, this.settings, messageHistory, errorMessage);
                 messageContainer.appendChild(botMessageDiv);
 
                 const botMessages = messageContainer.querySelectorAll('.botMessage');
@@ -365,14 +365,14 @@ export class BMOView extends ItemView {
 }
 
 // Create data folder and load JSON file
-async function loadData() {
-    if (!await this.app.vault.adapter.exists('./.obsidian/plugins/bmo-chatbot/data/')) {
-        this.app.vault.adapter.mkdir('./.obsidian/plugins/bmo-chatbot/data/');
+async function loadData(plugin: BMOGPT) {
+    if (!await plugin.app.vault.adapter.exists('./.obsidian/plugins/bmo-chatbot/data/')) {
+        plugin.app.vault.adapter.mkdir('./.obsidian/plugins/bmo-chatbot/data/');
     }
 
-    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+    if (await plugin.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
         try {
-            const fileContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
+            const fileContent = await plugin.app.vault.adapter.read(filenameMessageHistoryJSON);
 
             if (fileContent.trim() === '') {
                 messageHistory = [];

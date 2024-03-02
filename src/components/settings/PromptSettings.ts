@@ -47,7 +47,7 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
                         folderPath = folderPath.substring(0, folderPath.length - 1);
                     }
                     
-                    const folder = app.vault.getAbstractFileByPath(folderPath);
+                    const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
                     
                     if (folder && folder instanceof TFolder) {
                         text.inputEl.style.borderColor = ''; 
@@ -70,7 +70,7 @@ export function addPromptSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
 
             if (plugin.settings.prompts.promptFolderPath !== '') {
                 // Fetching files from the specified folder
-                const files = app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.prompts.promptFolderPath));
+                const files = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.prompts.promptFolderPath));
         
                 // Sorting the files array alphabetically by file name
                 files.sort((a, b) => a.name.localeCompare(b.name));

@@ -57,7 +57,7 @@ export function addChatHistorySettings(containerEl: HTMLElement, plugin: BMOGPT,
 
                     await plugin.saveSettings();
 
-                    const allFiles = app.vault.getFiles(); // Retrieve all files from the vault
+                    const allFiles = plugin.app.vault.getFiles(); // Retrieve all files from the vault
 
                     // Check if the specified file path (including directories) exists in the array of files
                     const fileExists = allFiles.some(file => 

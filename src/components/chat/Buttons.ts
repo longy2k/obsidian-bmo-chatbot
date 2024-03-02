@@ -1,10 +1,10 @@
 import { Modal, Notice, setIcon } from 'obsidian';
-import { BMOSettings, checkActiveFile } from 'src/main';
+import BMOGPT, { BMOSettings, checkActiveFile } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
 import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse } from '../FetchModelResponse';
 import { getActiveFileContent } from '../editor/ReferenceCurrentNote';
 
-export function regenerateUserButton(settings: BMOSettings) {
+export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
     const regenerateButton = document.createElement('button');
     regenerateButton.textContent = 'regenerate';
     setIcon(regenerateButton, 'refresh-ccw');
@@ -29,13 +29,13 @@ export function regenerateUserButton(settings: BMOSettings) {
         }
 
         if (index !== -1) {
-            deleteMessage(index+1);
+            deleteMessage(plugin, index+1);
             if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                 try {
                     if (settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
-                        await fetchOpenAIAPIResponseStream(settings, index); 
+                        await fetchOpenAIAPIResponseStream(plugin, settings, index); 
                     } else {
-                        await fetchOpenAIAPIResponse(settings, index);
+                        await fetchOpenAIAPIResponse(plugin, settings, index);
                     }
                 }
                 catch (error) {
@@ -45,27 +45,27 @@ export function regenerateUserButton(settings: BMOSettings) {
             }
             else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
                 if (settings.OllamaConnection.allowOllamaStream) {
-                    await fetchOllamaResponseStream(settings, index);
+                    await fetchOllamaResponseStream(plugin, settings, index);
                 }
                 else {
-                    await fetchOllamaResponse(settings, index);
+                    await fetchOllamaResponse(plugin, settings, index);
                 }
             }
             else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
                 if (settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
-                    await fetchRESTAPIURLResponseStream(settings, index);
+                    await fetchRESTAPIURLResponseStream(plugin, settings, index);
                 }
                 else {
-                    await fetchRESTAPIURLResponse(settings, index);
+                    await fetchRESTAPIURLResponse(plugin, settings, index);
                 }
             }
             else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
                 try {
                     if (settings.APIConnections.mistral.allowStream) {
-                        await fetchMistralResponseStream(settings, index);
+                        await fetchMistralResponseStream(plugin, settings, index);
                     }
                     else {
-                        await fetchMistralResponse(settings, index);
+                        await fetchMistralResponse(plugin, settings, index);
                     }
                 }
                 catch (error) {
@@ -74,7 +74,7 @@ export function regenerateUserButton(settings: BMOSettings) {
             }
             else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
                 try {
-                    await fetchGoogleGeminiResponse(settings, index);
+                    await fetchGoogleGeminiResponse(plugin, settings, index);
                 }
                 catch (error) {
                     console.error('Error:', error);
@@ -83,7 +83,7 @@ export function regenerateUserButton(settings: BMOSettings) {
             }
             else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
                 try {
-                    await fetchAnthropicResponse(settings, index);
+                    await fetchAnthropicResponse(plugin, settings, index);
                 }
                 catch (error) {
                     console.error('Error:', error);
@@ -97,7 +97,7 @@ export function regenerateUserButton(settings: BMOSettings) {
     return regenerateButton;
 }
 
-export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagraphElement) {
+export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, userP: HTMLParagraphElement) {
     const editButton = document.createElement('button');
     editButton.textContent = 'edit';
     setIcon(editButton, 'edit'); // Assuming setIcon is defined elsewhere
@@ -143,14 +143,14 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
             
                 if (index !== -1) {
                     messageHistory[index].content = textArea.value;
-                    deleteMessage(index+1);
+                    deleteMessage(plugin, index+1);
                     // Fetch OpenAI API
                     if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                         try {
                             if (settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
-                                await fetchOpenAIAPIResponseStream(settings, index); 
+                                await fetchOpenAIAPIResponseStream(plugin, settings, index); 
                             } else {
-                                await fetchOpenAIAPIResponse(settings, index);
+                                await fetchOpenAIAPIResponse(plugin, settings, index);
                             }
                         }
                         catch (error) {
@@ -160,7 +160,7 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     }
                     else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
                         try {
-                            await fetchAnthropicResponse(settings, index);
+                            await fetchAnthropicResponse(plugin, settings, index);
                         }
                         catch (error) {
                             console.error('Error:', error);
@@ -168,19 +168,19 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     }
                     else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
                         if (settings.OllamaConnection.allowOllamaStream) {
-                            await fetchOllamaResponseStream(settings, index);
+                            await fetchOllamaResponseStream(plugin, settings, index);
                         }
                         else {
-                            await fetchOllamaResponse(settings, index);
+                            await fetchOllamaResponse(plugin, settings, index);
                         }
                     }
                     else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
                         try {
                             if (settings.APIConnections.mistral.allowStream) {
-                                await fetchMistralResponseStream(settings, index);
+                                await fetchMistralResponseStream(plugin, settings, index);
                             }
                             else {
-                                await fetchMistralResponse(settings, index);
+                                await fetchMistralResponse(plugin, settings, index);
                             }
                         }
                         catch (error) {
@@ -189,7 +189,7 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     }
                     else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
                         try {
-                            await fetchGoogleGeminiResponse(settings, index);
+                            await fetchGoogleGeminiResponse(plugin, settings, index);
                         }
                         catch (error) {
                             console.error('Error:', error);
@@ -198,10 +198,10 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     }
                     else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
                         if (settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
-                            await fetchRESTAPIURLResponseStream(settings, index);
+                            await fetchRESTAPIURLResponseStream(plugin, settings, index);
                         }
                         else {
-                            await fetchRESTAPIURLResponse(settings, index);
+                            await fetchRESTAPIURLResponse(plugin, settings, index);
                         }
                     }
                 }
@@ -227,7 +227,7 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
     return editButton;
 }
 
-export function displayBotEditButton (settings: BMOSettings, botP: HTMLParagraphElement) {
+export function displayBotEditButton (plugin: BMOGPT, settings: BMOSettings, botP: HTMLParagraphElement) {
     const editButton = document.createElement('button');
     editButton.textContent = 'edit';
     setIcon(editButton, 'edit'); // Assuming setIcon is defined elsewhere
@@ -288,7 +288,7 @@ export function displayBotEditButton (settings: BMOSettings, botP: HTMLParagraph
                     const jsonString = JSON.stringify(messageHistory, null, 4);
 
                     try {
-                        await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+                        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
                     } catch (error) {
                         console.error('Error writing to message history file:', error);
                     }
@@ -403,7 +403,7 @@ export function copyMessageToClipboard(message: string) {
 }
 
 // Append button to editor
-export function displayAppendButton(settings: BMOSettings, message: string) {
+export function displayAppendButton(plugin: BMOGPT, settings: BMOSettings, message: string) {
     const appendButton = document.createElement('button');
     appendButton.textContent = 'append';
     setIcon(appendButton, 'plus-square');
@@ -418,9 +418,9 @@ export function displayAppendButton(settings: BMOSettings, message: string) {
             if ((checkActiveFile !== lastCursorPositionFile)) {
                 // Append to the bottom of the file
                 getActiveFileContent(settings);
-                const existingContent = await app.vault.read(checkActiveFile);
+                const existingContent = await plugin.app.vault.read(checkActiveFile);
                 const updatedContent = existingContent + '\n' + messageText;
-                app.vault.modify(checkActiveFile, updatedContent);
+                plugin.app.vault.modify(checkActiveFile, updatedContent);
             } else {
                 // Append at the last cursor position
                 activeEditor?.replaceRange(messageText, lastCursorPosition);
@@ -437,7 +437,7 @@ export function displayAppendButton(settings: BMOSettings, message: string) {
     return appendButton;
 }
 
-export function displayTrashButton () {
+export function displayTrashButton (plugin: BMOGPT) {
     const trashButton = document.createElement('button');
     trashButton.textContent = 'trash';
     setIcon(trashButton, 'trash');
@@ -460,7 +460,7 @@ export function displayTrashButton () {
             const index = userMessages.indexOf(lastClickedElement) * 2;
         
             if (index !== -1) {
-                const modal = new Modal(app);
+                const modal = new Modal(plugin.app);
                 
                 modal.contentEl.innerHTML = `
                 <div class="modal-content">
@@ -472,7 +472,7 @@ export function displayTrashButton () {
 
                 const confirmDeleteButton = modal.contentEl.querySelector('#confirmDelete');
                 confirmDeleteButton?.addEventListener('click', async function () {
-                    deleteMessage(index);
+                    deleteMessage(plugin, index);
                     new Notice('Message deleted.');
                     // hideAllDropdowns();
                     modal.close();
@@ -486,7 +486,7 @@ export function displayTrashButton () {
     return trashButton;
 }
 
-export async function deleteMessage(index: number) {
+export async function deleteMessage(plugin: BMOGPT, index: number) {
     const messageContainer = document.querySelector('#messageContainer');
 
     const divElements = messageContainer?.querySelectorAll('div.botMessage, div.userMessage');
@@ -513,7 +513,7 @@ export async function deleteMessage(index: number) {
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {
-        await app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
     } catch (error) {
         console.error('Error writing messageHistory.json', error);
     }

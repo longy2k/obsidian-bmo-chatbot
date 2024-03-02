@@ -1,9 +1,9 @@
 import { filenameMessageHistoryJSON, messageHistory } from 'src/view';
 import { displayAppendButton, displayBotCopyButton, displayBotEditButton } from './Buttons';
-import { BMOSettings } from 'src/main';
+import BMOGPT, { BMOSettings } from 'src/main';
 
 // Add a new message to the messageHistory array and save it to the file
-export async function addMessage(input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index: number) {
+export async function addMessage(plugin: BMOGPT, input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index: number) {
     const messageObj: { role: string; content: string } = {
         role: '',
         content: ''
@@ -30,9 +30,9 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
         newBotP.innerHTML = messageObj.content;
         
         if (!messageObj.content.includes('commandBotMessage') && !messageObj.content.includes('errorBotMessage')) {
-            const editButton = displayBotEditButton(settings, newBotP);
+            const editButton = displayBotEditButton(plugin, settings, newBotP);
             const copyBotButton = displayBotCopyButton(settings, messageObj.content);
-            const appendButton = displayAppendButton(settings, messageObj.content);
+            const appendButton = displayAppendButton(plugin, settings, messageObj.content);
             buttonContainerDiv.appendChild(editButton);
             buttonContainerDiv.appendChild(copyBotButton);
             buttonContainerDiv.appendChild(appendButton);
@@ -45,7 +45,7 @@ export async function addMessage(input: string, messageType: 'userMessage' | 'bo
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {
-        await this.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
     } catch (error) {
         console.error('Error writing to message history file:', error);
     }
