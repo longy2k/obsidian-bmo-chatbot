@@ -3,7 +3,7 @@ import { BMOSettings } from 'src/main';
 export async function getPrompt(settings: BMOSettings) {
 
     if (settings.prompts.prompt.trim() === '') {
-        return;
+        return '';
     }
 
     const promptFilePath = settings.prompts.promptFolderPath + '/' + settings.prompts.prompt;

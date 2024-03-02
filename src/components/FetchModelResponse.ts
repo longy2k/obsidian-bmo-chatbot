@@ -13,7 +13,7 @@ import OpenAI from 'openai';
 
 let abortController = new AbortController();
 
-// Request response from Ollama
+// Fetch response from Ollama
 // NOTE: Abort does not work for requestUrl
 export async function fetchOllamaResponse(settings: BMOSettings, index: number) {
     const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
@@ -22,11 +22,7 @@ export async function fetchOllamaResponse(settings: BMOSettings, index: number) 
         return;
     }
 
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
+    const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -99,7 +95,7 @@ export async function fetchOllamaResponse(settings: BMOSettings, index: number) 
     }
 }
 
-// Fetch Ollama API via stream
+// Fetch response from Ollama (stream)
 export async function fetchOllamaResponseStream(settings: BMOSettings, index: number) {
     const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
@@ -115,11 +111,7 @@ export async function fetchOllamaResponseStream(settings: BMOSettings, index: nu
 
     let isScroll = false;
 
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
+    const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -236,13 +228,9 @@ export async function fetchOllamaResponseStream(settings: BMOSettings, index: nu
     }
 }
 
-// Request response from openai-based rest api url
+// Fetch response from openai-based rest api url
 export async function fetchRESTAPIURLResponse(settings: BMOSettings, index: number) {
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
+    const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -318,7 +306,7 @@ export async function fetchRESTAPIURLResponse(settings: BMOSettings, index: numb
     }
 }
 
-// Fetch REST API via stream
+// Fetch response from openai-based rest api url (stream)
 export async function fetchRESTAPIURLResponseStream(settings: BMOSettings, index: number) {
     const RESTAPIURL = settings.RESTAPIURLConnection.RESTAPIURL;
 
@@ -334,11 +322,7 @@ export async function fetchRESTAPIURLResponseStream(settings: BMOSettings, index
 
     let isScroll = false;
 
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
+    const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -466,8 +450,9 @@ export async function fetchRESTAPIURLResponseStream(settings: BMOSettings, index
     }
 }
 
+// Fetch response from Anthropic
 export async function fetchAnthropicResponse(settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(settings) || '';
+    const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -544,12 +529,9 @@ export async function fetchAnthropicResponse(settings: BMOSettings, index: numbe
 
 }
 
+// Fetch response from Google Gemini
 export async function fetchGoogleGeminiResponse(settings: BMOSettings, index: number) {
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
+    const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -657,14 +639,10 @@ export async function fetchGoogleGeminiResponse(settings: BMOSettings, index: nu
 
 }
 
-// Request response from Mistral
+// Fetch response from Mistral
 export async function fetchMistralResponse(settings: BMOSettings, index: number) {
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
-
+    const prompt = await getPrompt(settings);
+    
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -739,7 +717,7 @@ export async function fetchMistralResponse(settings: BMOSettings, index: number)
 
 }
 
-// Fetch Mistral API via stream
+// Fetch response Mistral (stream)
 export async function fetchMistralResponseStream(settings: BMOSettings, index: number) {
     abortController = new AbortController();
 
@@ -747,11 +725,7 @@ export async function fetchMistralResponseStream(settings: BMOSettings, index: n
 
     let isScroll = false;
 
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
+    const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -888,11 +862,7 @@ export async function fetchOpenAIAPIResponse(settings: BMOSettings, index: numbe
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
+    const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -972,11 +942,7 @@ export async function fetchOpenAIAPIResponseStream(settings: BMOSettings, index:
     let message = '';
     let isScroll = false;
 
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
+    const prompt = await getPrompt(settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
