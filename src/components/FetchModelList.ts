@@ -3,28 +3,6 @@ import OpenAI from 'openai';
 import BMOGPT from 'src/main';
 import { OPENAI_MODELS } from 'src/view';
 
-export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
-    const openai = new OpenAI({
-        apiKey: plugin.settings.APIConnections.openAI.APIKey,
-        baseURL: plugin.settings.APIConnections.openAI.openAIBaseUrl,
-        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
-    });
-
-	const list = await openai.models.list();
-
-    if (openai.baseURL == 'https://api.openai.com/v1') {
-        plugin.settings.APIConnections.openAI.openAIBaseModels = OPENAI_MODELS;
-        return OPENAI_MODELS;
-    }
-    else {
-        const models = list.data.map((model) => model.id);
-        plugin.settings.APIConnections.openAI.openAIBaseModels = models;
-        return models;
-    }
-
-}
-
-// Fetch OLLAMA models from OLLAMA REST API
 export async function fetchOllamaModels(plugin: BMOGPT) {
 	const ollamaRESTAPIURL = plugin.settings.OllamaConnection.RESTAPIURL;
 
@@ -98,28 +76,7 @@ export async function fetchRESTAPIURLModels(plugin: BMOGPT) {
     
 }
 
-export async function fetchMistralModels(plugin: BMOGPT) {
-    try {
-        const response = await requestUrl({
-            url: 'https://api.mistral.ai/v1/models',
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${plugin.settings.APIConnections.mistral.APIKey}`
-            },
-        });
-
-        // Check if the response is valid
-        if (response.json && response.json.data) {
-            const models = response.json.data.map((model: { id: number; }) => model.id);
-            plugin.settings.APIConnections.mistral.mistralModels = models;
-            return models;
-        }
-    } catch (error) {
-        console.error(error);
-        
-    }
-}
+// Anthropic API models are static. No need to fetch them.
 
 export async function fetchGoogleGeminiModels(plugin: BMOGPT) {
     try {
@@ -146,3 +103,46 @@ export async function fetchGoogleGeminiModels(plugin: BMOGPT) {
     }
 }
 
+export async function fetchMistralModels(plugin: BMOGPT) {
+    try {
+        const response = await requestUrl({
+            url: 'https://api.mistral.ai/v1/models',
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${plugin.settings.APIConnections.mistral.APIKey}`
+            },
+        });
+
+        // Check if the response is valid
+        if (response.json && response.json.data) {
+            const models = response.json.data.map((model: { id: number; }) => model.id);
+            plugin.settings.APIConnections.mistral.mistralModels = models;
+            return models;
+        }
+    } catch (error) {
+        console.error(error);
+        
+    }
+}
+
+export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
+    const openai = new OpenAI({
+        apiKey: plugin.settings.APIConnections.openAI.APIKey,
+        baseURL: plugin.settings.APIConnections.openAI.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
+
+	const list = await openai.models.list();
+
+    if (openai.baseURL == 'https://api.openai.com/v1') {
+        plugin.settings.APIConnections.openAI.openAIBaseModels = OPENAI_MODELS;
+        return OPENAI_MODELS;
+    }
+    else {
+        const models = list.data.map((model) => model.id);
+        plugin.settings.APIConnections.openAI.openAIBaseModels = models;
+        return models;
+    }
+
+}

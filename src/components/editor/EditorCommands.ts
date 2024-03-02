@@ -2,7 +2,7 @@ import { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
 import { fetchModelRenameTitle } from './FetchRenameNoteTitle';
 import { MarkdownView, Notice } from 'obsidian';
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
-import { fetchOpenAIBaseAPIDataEditor, fetchOllamaResponseEditor, fetchRESTAPIURLDataEditor, fetchAnthropicAPIDataEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor } from '../FetchModelEditor';
+import { fetchOpenAIBaseAPIResponseEditor, fetchOllamaResponseEditor, fetchRESTAPIURLDataEditor, fetchAnthropicResponseEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor } from '../FetchModelEditor';
 
 export async function renameTitleCommand(settings: BMOSettings) {
     let uniqueNameFound = false;
@@ -58,7 +58,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         if (OPENAI_MODELS.includes(settings.general.model)) {
             try {
                 new Notice('Generating...');
-                const response = await fetchOpenAIBaseAPIDataEditor(settings, select); 
+                const response = await fetchOpenAIBaseAPIResponseEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);
@@ -80,7 +80,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         else if ((settings.APIConnections.openAI.openAIBaseUrl != DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl) && settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)){
             try {
                 new Notice('Generating...');
-                const response = await fetchOpenAIBaseAPIDataEditor(settings, select); 
+                const response = await fetchOpenAIBaseAPIResponseEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);
@@ -102,7 +102,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
             try {
                 new Notice('Generating...');
-                const response = await fetchAnthropicAPIDataEditor(settings, select); 
+                const response = await fetchAnthropicResponseEditor(settings, select); 
                 view.editor.replaceSelection(response);
             }
             catch (error) {

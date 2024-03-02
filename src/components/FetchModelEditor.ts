@@ -2,28 +2,6 @@ import { requestUrl } from 'obsidian';
 import OpenAI from 'openai';
 import { BMOSettings } from 'src/main';
 
-// Fetch OpenAI-Based API Editor
-export async function fetchOpenAIBaseAPIDataEditor(settings: BMOSettings, selectionString: string) {
-    const openai = new OpenAI({
-        apiKey: settings.APIConnections.openAI.APIKey,
-        baseURL: settings.APIConnections.openAI.openAIBaseUrl,
-        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
-    });
-
-    const completion = await openai.chat.completions.create({
-        model: settings.general.model,
-        max_tokens: parseInt(settings.general.max_tokens),
-        messages: [
-            { role: 'system', content: settings.editor.system_role_prompt_select_generate },
-            { role: 'user', content: selectionString}
-        ],
-    });
-
-
-    const message = completion.choices[0].message.content;
-    return message;
-}
-
 // Request response from Ollama
 // NOTE: Abort does not work for requestUrl
 export async function fetchOllamaResponseEditor(settings: BMOSettings, selectionString: string) {
@@ -109,6 +87,67 @@ export async function fetchRESTAPIURLDataEditor(settings: BMOSettings, selection
     }
 }
 
+// Fetch Anthropic API Editor
+export async function fetchAnthropicResponseEditor(settings: BMOSettings, selectionString: string) {
+    try {
+        const response = await requestUrl({
+            url: 'https://api.anthropic.com/v1/messages',
+            method: 'POST',
+            headers: {
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+                'x-api-key': settings.APIConnections.anthropic.APIKey,
+            },
+            body: JSON.stringify({
+                model: settings.general.model,
+                system: settings.editor.system_role_prompt_select_generate,
+                messages: [
+                    { role: 'user', content: selectionString}
+                ],
+                max_tokens: parseInt(settings.general.max_tokens) || 4096,
+                temperature: parseInt(settings.general.temperature),
+            }),
+        });
+
+        const message = response.json.content[0].text;
+        return message;
+
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+// Fetch Google Gemini API Editor
+export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, selectionString: string) {
+    try {        
+        const API_KEY = settings.APIConnections.googleGemini.APIKey;
+
+        const requestBody = {
+            contents: [{
+                parts: [
+                    {text: settings.editor.system_role_prompt_select_generate + selectionString}
+                ]
+            }],
+        }
+        
+        const response = await requestUrl({
+            url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+        });
+        
+        const message = response.json.candidates[0].content.parts[0].text;
+        return message;
+    } catch (error) {
+        console.error(error);
+    }
+
+}
+
+// Fetch Mistral API Editor
 export async function fetchMistralDataEditor(settings: BMOSettings, selectionString: string) {
     try {
         const response = await requestUrl({
@@ -137,64 +176,24 @@ export async function fetchMistralDataEditor(settings: BMOSettings, selectionStr
     }
 }
 
-export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, selectionString: string) {
-    try {        
-        // Assuming settings.APIConnections.googleGemini.APIKey contains your API key
-        const API_KEY = settings.APIConnections.googleGemini.APIKey;
+// Fetch OpenAI-Based API Editor
+export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, selectionString: string) {
+    const openai = new OpenAI({
+        apiKey: settings.APIConnections.openAI.APIKey,
+        baseURL: settings.APIConnections.openAI.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
 
-        const requestBody = {
-            contents: [{
-                parts: [
-                    {text: settings.editor.system_role_prompt_select_generate + selectionString}
-                ]
-            }],
-        }
-        
-        const response = await requestUrl({
-            url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-        });
-        
-        const message = response.json.candidates[0].content.parts[0].text;
-        return message;
-    } catch (error) {
-        console.error(error);
-    }
-
-}
-    
-// Request response from Anthropic Editor
-export async function fetchAnthropicAPIDataEditor(settings: BMOSettings, selectionString: string) {
-    const headers = {
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'x-api-key': settings.APIConnections.anthropic.APIKey,
-    };
-
-    const requestBody = {
+    const completion = await openai.chat.completions.create({
         model: settings.general.model,
-        prompt:  `\n\nHuman: ${settings.editor.system_role_prompt_select_generate}\n\n${selectionString}\n\nAssistant:`,
-        max_tokens_to_sample: parseInt(settings.general.max_tokens) || 100000,
-        temperature: parseInt(settings.general.temperature),
-        stream: false,
-    };
-  
-    try {
-      const response = await requestUrl({
-        url: 'https://api.anthropic.com/v1/complete',
-        method: 'POST',
-        headers,
-        body: JSON.stringify(requestBody),
-      });
+        max_tokens: parseInt(settings.general.max_tokens),
+        messages: [
+            { role: 'system', content: settings.editor.system_role_prompt_select_generate },
+            { role: 'user', content: selectionString}
+        ],
+    });
 
-      return response;
-  
-    } catch (error) {
-        console.error('Error making API request:', error);
-        throw error;
-    }
+
+    const message = completion.choices[0].message.content;
+    return message;
 }

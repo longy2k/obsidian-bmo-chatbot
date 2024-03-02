@@ -304,15 +304,7 @@ export class BMOView extends ItemView {
         } 
         else {
             // Fetch OpenAI API
-            if (OPENAI_MODELS.includes(this.settings.general.model) || (this.settings.APIConnections.openAI.openAIBaseModels.includes(this.settings.general.model) && this.settings.APIConnections.openAI.openAIBaseUrl !== DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl)) {
-                if (this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
-                    await fetchOpenAIAPIResponseStream(this.settings, index); 
-                }
-                else {
-                    await fetchOpenAIAPIResponse(this.settings, index); 
-                }
-            }
-            else if (this.settings.OllamaConnection.RESTAPIURL && this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
+            if (this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
                 if (this.settings.OllamaConnection.allowOllamaStream) {
                     await fetchOllamaResponseStream(this.settings, index);
                 }
@@ -320,13 +312,16 @@ export class BMOView extends ItemView {
                     await fetchOllamaResponse(this.settings, index);
                 }
             }
-            else if (this.settings.RESTAPIURLConnection.RESTAPIURL && this.settings.RESTAPIURLConnection.RESTAPIURLModels.includes(this.settings.general.model)){
+            else if (this.settings.RESTAPIURLConnection.RESTAPIURLModels.includes(this.settings.general.model)){
                 if (this.settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
                     await fetchRESTAPIURLResponseStream(this.settings, index);
                 }
                 else {
                     await fetchRESTAPIURLResponse(this.settings, index);
                 }
+            }
+            else if (ANTHROPIC_MODELS.includes(this.settings.general.model)) {
+                await fetchAnthropicResponse(this.settings, index);
             }
             else if (this.settings.APIConnections.mistral.mistralModels.includes(this.settings.general.model)) {
                 if (this.settings.APIConnections.mistral.allowStream) {
@@ -339,8 +334,13 @@ export class BMOView extends ItemView {
             else if (this.settings.APIConnections.googleGemini.geminiModels.includes(this.settings.general.model)) {
                 await fetchGoogleGeminiResponse(this.settings, index);
             }
-            else if (ANTHROPIC_MODELS.includes(this.settings.general.model)) {
-                await fetchAnthropicResponse(this.settings, index);
+            else if (this.settings.APIConnections.openAI.openAIBaseModels.includes(this.settings.general.model)) {
+                if (this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
+                    await fetchOpenAIAPIResponseStream(this.settings, index); 
+                }
+                else {
+                    await fetchOpenAIAPIResponse(this.settings, index); 
+                }
             }
             else {
                 const errorMessage = 'Connection not found.';

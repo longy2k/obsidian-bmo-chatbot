@@ -499,6 +499,7 @@ export async function fetchAnthropicResponse(settings: BMOSettings, index: numbe
                     ...messageHistoryAtIndex
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || 4096,
+                temperature: parseInt(settings.general.temperature),
             }),
         });
 
