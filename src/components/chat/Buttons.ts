@@ -1,7 +1,7 @@
 import { Modal, Notice, setIcon } from 'obsidian';
 import { BMOSettings, checkActiveFile } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
-import { fetchOpenAIAPIDataStream, fetchOpenAIAPIData, fetchOllamaData, fetchOllamaDataStream, fetchAnthropicAPIData, fetchRESTAPIURLData, fetchRESTAPIURLDataStream, fetchMistralDataStream, fetchMistralData, fetchGoogleGeminiData } from '../FetchModelResponse';
+import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse } from '../FetchModelResponse';
 import { getActiveFileContent } from '../editor/ReferenceCurrentNote';
 
 export function regenerateUserButton(settings: BMOSettings) {
@@ -33,9 +33,9 @@ export function regenerateUserButton(settings: BMOSettings) {
             if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                 try {
                     if (settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
-                        await fetchOpenAIAPIDataStream(settings, index); 
+                        await fetchOpenAIAPIResponseStream(settings, index); 
                     } else {
-                        await fetchOpenAIAPIData(settings, index);
+                        await fetchOpenAIAPIResponse(settings, index);
                     }
                 }
                 catch (error) {
@@ -45,27 +45,27 @@ export function regenerateUserButton(settings: BMOSettings) {
             }
             else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
                 if (settings.OllamaConnection.allowOllamaStream) {
-                    await fetchOllamaDataStream(settings, index);
+                    await fetchOllamaResponseStream(settings, index);
                 }
                 else {
-                    await fetchOllamaData(settings, index);
+                    await fetchOllamaResponse(settings, index);
                 }
             }
             else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
                 if (settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
-                    await fetchRESTAPIURLDataStream(settings, index);
+                    await fetchRESTAPIURLResponseStream(settings, index);
                 }
                 else {
-                    await fetchRESTAPIURLData(settings, index);
+                    await fetchRESTAPIURLResponse(settings, index);
                 }
             }
             else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
                 try {
                     if (settings.APIConnections.mistral.allowStream) {
-                        await fetchMistralDataStream(settings, index);
+                        await fetchMistralResponseStream(settings, index);
                     }
                     else {
-                        await fetchMistralData(settings, index);
+                        await fetchMistralResponse(settings, index);
                     }
                 }
                 catch (error) {
@@ -74,7 +74,7 @@ export function regenerateUserButton(settings: BMOSettings) {
             }
             else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
                 try {
-                    await fetchGoogleGeminiData(settings, index);
+                    await fetchGoogleGeminiResponse(settings, index);
                 }
                 catch (error) {
                     console.error('Error:', error);
@@ -83,7 +83,7 @@ export function regenerateUserButton(settings: BMOSettings) {
             }
             else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
                 try {
-                    await fetchAnthropicAPIData(settings, index);
+                    await fetchAnthropicResponse(settings, index);
                 }
                 catch (error) {
                     console.error('Error:', error);
@@ -148,9 +148,9 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                         try {
                             if (settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
-                                await fetchOpenAIAPIDataStream(settings, index); 
+                                await fetchOpenAIAPIResponseStream(settings, index); 
                             } else {
-                                await fetchOpenAIAPIData(settings, index);
+                                await fetchOpenAIAPIResponse(settings, index);
                             }
                         }
                         catch (error) {
@@ -160,7 +160,7 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     }
                     else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
                         try {
-                            await fetchAnthropicAPIData(settings, index);
+                            await fetchAnthropicResponse(settings, index);
                         }
                         catch (error) {
                             console.error('Error:', error);
@@ -168,19 +168,19 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     }
                     else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
                         if (settings.OllamaConnection.allowOllamaStream) {
-                            await fetchOllamaDataStream(settings, index);
+                            await fetchOllamaResponseStream(settings, index);
                         }
                         else {
-                            await fetchOllamaData(settings, index);
+                            await fetchOllamaResponse(settings, index);
                         }
                     }
                     else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
                         try {
                             if (settings.APIConnections.mistral.allowStream) {
-                                await fetchMistralDataStream(settings, index);
+                                await fetchMistralResponseStream(settings, index);
                             }
                             else {
-                                await fetchMistralData(settings, index);
+                                await fetchMistralResponse(settings, index);
                             }
                         }
                         catch (error) {
@@ -189,7 +189,7 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     }
                     else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
                         try {
-                            await fetchGoogleGeminiData(settings, index);
+                            await fetchGoogleGeminiResponse(settings, index);
                         }
                         catch (error) {
                             console.error('Error:', error);
@@ -198,10 +198,10 @@ export function displayUserEditButton (settings: BMOSettings, userP: HTMLParagra
                     }
                     else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
                         if (settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
-                            await fetchRESTAPIURLDataStream(settings, index);
+                            await fetchRESTAPIURLResponseStream(settings, index);
                         }
                         else {
-                            await fetchRESTAPIURLData(settings, index);
+                            await fetchRESTAPIURLResponse(settings, index);
                         }
                     }
                 }

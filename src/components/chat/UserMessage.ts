@@ -1,7 +1,6 @@
 import { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
 import { colorToHex } from 'src/utils/ColorConverter';
 import { displayUserEditButton, displayTrashButton, displayUserCopyButton, regenerateUserButton } from './Buttons';
-import { ANTHROPIC_MODELS } from 'src/view';
 import { marked } from 'marked';
 
 export function displayUserMessage(settings: BMOSettings, message: string) {
@@ -39,13 +38,7 @@ export function displayUserMessage(settings: BMOSettings, message: string) {
     userMessageDiv.appendChild(userMessageToolBarDiv);
     userMessageDiv.appendChild(userP);
 
-    if (ANTHROPIC_MODELS.includes(settings.general.model)) {
-        const fullString = message;
-        const cleanString = fullString.split(' ').slice(1).join(' ').trim();
-        userP.innerHTML = marked(cleanString);
-    } else {
-        userP.innerHTML = marked(message);
-    }
+    userP.innerHTML = marked(message);
 
     return userMessageDiv;
 }

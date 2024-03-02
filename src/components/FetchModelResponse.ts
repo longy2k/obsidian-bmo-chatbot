@@ -1,7 +1,6 @@
 import { Notice, requestUrl } from 'obsidian';
 import { BMOSettings } from '../main';
 import { messageHistory } from '../view';
-import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/chat';
 import { marked } from 'marked';
 import { prismHighlighting } from 'src/components/PrismaHighlighting';
@@ -10,192 +9,13 @@ import { codeBlockCopyButton } from './chat/Buttons';
 import { getPrompt } from './chat/Prompt';
 import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
 import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
+import OpenAI from 'openai';
 
 let abortController = new AbortController();
 
-// Fetch OpenAI-Based API
-export async function fetchOpenAIAPIData(settings: BMOSettings, index: number) {
-    const openai = new OpenAI({
-        apiKey: settings.APIConnections.openAI.APIKey,
-        baseURL: settings.APIConnections.openAI.openAIBaseUrl,
-        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
-    });
-
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
-
-    const filteredMessageHistory = filterMessageHistory(messageHistory);
-    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
-
-    const messageContainerEl = document.querySelector('#messageContainer');
-    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
-
-    const botMessageDiv = displayLoadingBotMessage(settings);
-    
-    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
-    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    await getActiveFileContent(settings);
-    const referenceCurrentNoteContent = getCurrentNoteContent();
-
-    try {
-        const completion = await openai.chat.completions.create({
-            model: settings.general.model,
-            max_tokens: parseInt(settings.general.max_tokens),
-            stream: false,
-            messages: [
-                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
-                ...messageHistoryAtIndex as ChatCompletionMessageParam[]
-            ],
-        });
-
-        const message = completion.choices[0].message.content;
-        
-        if (messageContainerEl) {
-            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
-            const targetBotMessage = targetUserMessage.nextElementSibling;
-
-            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-            const loadingEl = targetBotMessage?.querySelector('#loading');
-
-            if (messageBlock) {
-                if (loadingEl) {
-                    targetBotMessage?.removeChild(loadingEl);
-                }
-
-                messageBlock.innerHTML = marked(message || '', { breaks: true });
-
-                addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
-                
-                targetBotMessage?.appendChild(messageBlock);
-            }
-            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        if (message != null) {
-            addMessage(message, 'botMessage', settings, index);
-        }
-
-    } catch (error) {
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
-        const targetBotMessage = targetUserMessage.nextElementSibling;
-        targetBotMessage?.remove();
-
-        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
-        messageContainer.appendChild(botMessageDiv);
-    }
-}
-
-// Fetch OpenAI-Based API Chat
-export async function fetchOpenAIAPIDataStream(settings: BMOSettings, index: number) {
-    const openai = new OpenAI({
-        apiKey: settings.APIConnections.openAI.APIKey,
-        baseURL: settings.APIConnections.openAI.openAIBaseUrl,
-        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
-    });
-
-    abortController = new AbortController();
-
-    let message = '';
-    let isScroll = false;
-
-    let prompt = await getPrompt(settings);
-
-    if (prompt == undefined) {
-        prompt = '';
-    }
-
-    const filteredMessageHistory = filterMessageHistory(messageHistory);
-    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
-
-    const messageContainerEl = document.querySelector('#messageContainer');
-    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
-
-    const botMessageDiv = displayLoadingBotMessage(settings);
-
-    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
-    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
-    const targetBotMessage = targetUserMessage.nextElementSibling;
-
-    await getActiveFileContent(settings);
-    const referenceCurrentNoteContent = getCurrentNoteContent();
-
-    try {
-        const stream = await openai.chat.completions.create({
-            model: settings.general.model,
-            max_tokens: parseInt(settings.general.max_tokens),
-            temperature: parseInt(settings.general.temperature),
-            messages: [
-                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
-                ...messageHistoryAtIndex as ChatCompletionMessageParam[]
-            ],
-            stream: true,
-        });
-
-        for await (const part of stream) {
-
-            const content = part.choices[0]?.delta?.content || '';
-
-            message += content;
-
-            if (messageContainerEl) {
-                
-                const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-                const loadingEl = targetBotMessage?.querySelector('#loading');
-
-                if (messageBlock) {
-                    if (loadingEl) {
-                        targetBotMessage?.removeChild(loadingEl);
-                    }
-
-                    messageBlock.innerHTML = marked(message);
-
-                    addParagraphBreaks(messageBlock);
-                    prismHighlighting(messageBlock);
-                    codeBlockCopyButton(messageBlock);
-                }
-
-                messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
-                    // If the user scrolls up or down, stop auto-scrolling
-                    if (event.deltaY < 0 || event.deltaY > 0) {
-                        isScroll = true;
-                    }
-                });
-
-                if (!isScroll) {
-                    targetBotMessage?.scrollIntoView({ behavior: 'auto', block: 'start' });
-                }
-            }
-        
-            if (abortController.signal.aborted) {
-                new Notice('Error making API request: The user aborted a request.');
-                break;
-            }
-        }
-        addMessage(message, 'botMessage', settings, index);
-
-    } catch (error) {
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
-        const targetBotMessage = targetUserMessage.nextElementSibling;
-        targetBotMessage?.remove();
-
-        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
-        messageContainer.appendChild(botMessageDiv);
-    }
-}
-
 // Request response from Ollama
 // NOTE: Abort does not work for requestUrl
-export async function fetchOllamaData(settings: BMOSettings, index: number) {
+export async function fetchOllamaResponse(settings: BMOSettings, index: number) {
     const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
     if (!ollamaRESTAPIURL) {
@@ -269,7 +89,7 @@ export async function fetchOllamaData(settings: BMOSettings, index: number) {
         addMessage(message, 'botMessage', settings, index);
 
     } catch (error) {
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetUserMessage = messageContainerElDivs[index];
         const targetBotMessage = targetUserMessage.nextElementSibling;
         targetBotMessage?.remove();
 
@@ -280,7 +100,7 @@ export async function fetchOllamaData(settings: BMOSettings, index: number) {
 }
 
 // Fetch Ollama API via stream
-export async function fetchOllamaDataStream(settings: BMOSettings, index: number) {
+export async function fetchOllamaResponseStream(settings: BMOSettings, index: number) {
     const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
     if (!ollamaRESTAPIURL) {
@@ -375,7 +195,7 @@ export async function fetchOllamaDataStream(settings: BMOSettings, index: number
 
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
-                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+                const targetUserMessage = messageContainerElDivs[index];
                 const targetBotMessage = targetUserMessage.nextElementSibling;
     
                 const messageBlock = targetBotMessage?.querySelector('.messageBlock');
@@ -417,7 +237,7 @@ export async function fetchOllamaDataStream(settings: BMOSettings, index: number
 }
 
 // Request response from openai-based rest api url
-export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) {
+export async function fetchRESTAPIURLResponse(settings: BMOSettings, index: number) {
     let prompt = await getPrompt(settings);
 
     if (prompt == undefined) {
@@ -461,7 +281,7 @@ export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) 
 
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
-            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+            const targetUserMessage = messageContainerElDivs[index];
             const targetBotMessage = targetUserMessage.nextElementSibling;
 
             const messageBlock = targetBotMessage?.querySelector('.messageBlock');
@@ -487,7 +307,7 @@ export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) 
         return;
 
     } catch (error) {
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetUserMessage = messageContainerElDivs[index];
         const targetBotMessage = targetUserMessage.nextElementSibling;
         targetBotMessage?.remove();
 
@@ -499,7 +319,7 @@ export async function fetchRESTAPIURLData(settings: BMOSettings, index: number) 
 }
 
 // Fetch REST API via stream
-export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: number) {
+export async function fetchRESTAPIURLResponseStream(settings: BMOSettings, index: number) {
     const RESTAPIURL = settings.RESTAPIURLConnection.RESTAPIURL;
 
     if (!RESTAPIURL) {
@@ -605,7 +425,7 @@ export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: nu
 
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
-                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+                const targetUserMessage = messageContainerElDivs[index];
                 const targetBotMessage = targetUserMessage.nextElementSibling;
     
                 const messageBlock = targetBotMessage?.querySelector('.messageBlock');
@@ -646,8 +466,198 @@ export async function fetchRESTAPIURLDataStream(settings: BMOSettings, index: nu
     }
 }
 
+export async function fetchAnthropicResponse(settings: BMOSettings, index: number) {
+    const prompt = await getPrompt(settings) || '';
+
+    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+    
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    const botMessageDiv = displayLoadingBotMessage(settings);
+
+    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
+    try {
+        const response = await requestUrl({
+            url: 'https://api.anthropic.com/v1/messages',
+            method: 'POST',
+            headers: {
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+                'x-api-key': settings.APIConnections.anthropic.APIKey,
+            },
+            body: JSON.stringify({
+                model: settings.general.model,
+                system: referenceCurrentNoteContent + settings.general.system_role + prompt,
+                messages: [
+                    ...messageHistoryAtIndex
+                ],
+                max_tokens: parseInt(settings.general.max_tokens) || 4096,
+            }),
+        });
+
+        const message = response.json.content[0].text;
+
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const targetUserMessage = messageContainerElDivs[index];
+            const targetBotMessage = targetUserMessage.nextElementSibling;
+
+            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+            const loadingEl = targetBotMessage?.querySelector('#loading');
+        
+            if (messageBlock) {
+                if (loadingEl) {
+                    targetBotMessage?.removeChild(loadingEl);
+                }
+                messageBlock.innerHTML = marked(message, { breaks: true });
+                
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                targetBotMessage?.appendChild(messageBlock);
+            }
+            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+        }
+
+        addMessage(message, 'botMessage', settings, index);
+        return;
+
+    } catch (error) {
+        const targetUserMessage = messageContainerElDivs[index];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
+
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
+    }
+
+}
+
+export async function fetchGoogleGeminiResponse(settings: BMOSettings, index: number) {
+    let prompt = await getPrompt(settings);
+
+    if (prompt == undefined) {
+        prompt = '';
+    }
+
+    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+    
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    const botMessageDiv = displayLoadingBotMessage(settings);
+
+    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
+    // Function to convert messageHistory to Google Gemini format
+    const convertMessageHistory = (messageHistory: { role: string; content: string }[], referenceCurrentNoteContent: string) => {
+        // Clone the messageHistory to avoid mutating the original array
+        const modifiedMessageHistory = [...messageHistory];
+        
+        // Find the last user message index
+        const lastUserMessageIndex = modifiedMessageHistory.map((message, index) => ({ role: message.role, index }))
+                                                    .filter(message => message.role === 'user')
+                                                    .map(message => message.index)
+                                                    .pop();
+
+        // Append referenceCurrentNoteContent to the last user message, if found
+        if (lastUserMessageIndex !== undefined) {
+            modifiedMessageHistory[lastUserMessageIndex].content += '\n\n' + referenceCurrentNoteContent + '\n\n' + settings.general.system_role + '\n\n' + prompt;
+        }
+
+        const contents = modifiedMessageHistory.map(({ role, content }) => ({
+            role: role === 'assistant' ? 'model' : role, // Convert "assistant" to "model"
+            parts: [{ text: content }]
+        }));
+
+        return { contents };
+    };
+    
+    // Use the function to convert your message history
+    const convertedMessageHistory = convertMessageHistory(messageHistoryAtIndex, referenceCurrentNoteContent);
+
+    try {        
+        // Assuming settings.APIConnections.googleGemini.APIKey contains your API key
+        const API_KEY = settings.APIConnections.googleGemini.APIKey;
+        
+        const response = await requestUrl({
+            url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [
+                    ...convertedMessageHistory.contents,
+                ],
+                generationConfig: {
+                    stopSequences: '',
+                    temperature: parseInt(settings.general.temperature),
+                    maxOutputTokens: settings.general.max_tokens || 4096,
+                    topP: 0.8,
+                    topK: 10
+                }
+            }),
+        });
+        
+        const message = response.json.candidates[0].content.parts[0].text;
+
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const targetUserMessage = messageContainerElDivs[index];
+            const targetBotMessage = targetUserMessage.nextElementSibling;
+
+            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+            const loadingEl = targetBotMessage?.querySelector('#loading');
+        
+            if (messageBlock) {
+                if (loadingEl) {
+                    targetBotMessage?.removeChild(loadingEl);
+                }
+                messageBlock.innerHTML = marked(message, { breaks: true });
+                
+                addParagraphBreaks(messageBlock);
+                prismHighlighting(messageBlock);
+                codeBlockCopyButton(messageBlock);
+                
+                targetBotMessage?.appendChild(messageBlock);
+            }
+            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+        }
+
+        addMessage(message, 'botMessage', settings, index);
+        return;
+
+    } catch (error) {
+        const targetUserMessage = messageContainerElDivs[index];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
+
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
+    }
+
+}
+
 // Request response from Mistral
-export async function fetchMistralData(settings: BMOSettings, index: number) {
+export async function fetchMistralResponse(settings: BMOSettings, index: number) {
     let prompt = await getPrompt(settings);
 
     if (prompt == undefined) {
@@ -691,7 +701,7 @@ export async function fetchMistralData(settings: BMOSettings, index: number) {
 
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
-            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+            const targetUserMessage = messageContainerElDivs[index];
             const targetBotMessage = targetUserMessage.nextElementSibling;
 
             const messageBlock = targetBotMessage?.querySelector('.messageBlock');
@@ -717,7 +727,7 @@ export async function fetchMistralData(settings: BMOSettings, index: number) {
         return;
 
     } catch (error) {
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetUserMessage = messageContainerElDivs[index];
         const targetBotMessage = targetUserMessage.nextElementSibling;
         targetBotMessage?.remove();
 
@@ -729,7 +739,7 @@ export async function fetchMistralData(settings: BMOSettings, index: number) {
 }
 
 // Fetch Mistral API via stream
-export async function fetchMistralDataStream(settings: BMOSettings, index: number) {
+export async function fetchMistralResponseStream(settings: BMOSettings, index: number) {
     abortController = new AbortController();
 
     let message = '';
@@ -828,7 +838,7 @@ export async function fetchMistralDataStream(settings: BMOSettings, index: numbe
 
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
-                const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+                const targetUserMessage = messageContainerElDivs[index];
                 const targetBotMessage = targetUserMessage.nextElementSibling;
     
                 const messageBlock = targetBotMessage?.querySelector('.messageBlock');
@@ -869,7 +879,14 @@ export async function fetchMistralDataStream(settings: BMOSettings, index: numbe
     }
 }
 
-export async function fetchGoogleGeminiData(settings: BMOSettings, index: number) {
+// Fetch OpenAI-Based API
+export async function fetchOpenAIAPIResponse(settings: BMOSettings, index: number) {
+    const openai = new OpenAI({
+        apiKey: settings.APIConnections.openAI.APIKey,
+        baseURL: settings.APIConnections.openAI.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
+
     let prompt = await getPrompt(settings);
 
     if (prompt == undefined) {
@@ -878,85 +895,45 @@ export async function fetchGoogleGeminiData(settings: BMOSettings, index: number
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
-    
+
     const messageContainerEl = document.querySelector('#messageContainer');
     const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
 
     const botMessageDiv = displayLoadingBotMessage(settings);
-
+    
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     await getActiveFileContent(settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
-    // Function to convert messageHistory to Google Gemini format
-    const convertMessageHistory = (messageHistory: { role: string; content: string }[], referenceCurrentNoteContent: string) => {
-        // Clone the messageHistory to avoid mutating the original array
-        const modifiedMessageHistory = [...messageHistory];
-        
-        // Find the last user message index
-        const lastUserMessageIndex = modifiedMessageHistory.map((message, index) => ({ role: message.role, index }))
-                                                    .filter(message => message.role === 'user')
-                                                    .map(message => message.index)
-                                                    .pop();
-
-        // Append referenceCurrentNoteContent to the last user message, if found
-        if (lastUserMessageIndex !== undefined) {
-            modifiedMessageHistory[lastUserMessageIndex].content += '\n\n' + referenceCurrentNoteContent + '\n\n' + settings.general.system_role + '\n\n' + prompt;
-        }
-
-        const contents = modifiedMessageHistory.map(({ role, content }) => ({
-            role: role === 'assistant' ? 'model' : role, // Convert "assistant" to "model"
-            parts: [{ text: content }]
-        }));
-
-        return { contents };
-    };
-    
-    // Use the function to convert your message history
-    const convertedMessageHistory = convertMessageHistory(messageHistoryAtIndex, referenceCurrentNoteContent);
-
-    try {        
-        // Assuming settings.APIConnections.googleGemini.APIKey contains your API key
-        const API_KEY = settings.APIConnections.googleGemini.APIKey;
-        
-        const response = await requestUrl({
-            url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                contents: [
-                    ...convertedMessageHistory.contents,
-                ],
-                generationConfig: {
-                    stopSequences: '',
-                    temperature: parseInt(settings.general.temperature),
-                    maxOutputTokens: settings.general.max_tokens || 4096,
-                    topP: 0.8,
-                    topK: 10
-                }
-            }),
+    try {
+        const completion = await openai.chat.completions.create({
+            model: settings.general.model,
+            max_tokens: parseInt(settings.general.max_tokens),
+            stream: false,
+            messages: [
+                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                ...messageHistoryAtIndex as ChatCompletionMessageParam[]
+            ],
         });
-        
-        const message = response.json.candidates[0].content.parts[0].text;
 
-        const messageContainerEl = document.querySelector('#messageContainer');
+        const message = completion.choices[0].message.content;
+        
         if (messageContainerEl) {
-            const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+            const targetUserMessage = messageContainerElDivs[index];
             const targetBotMessage = targetUserMessage.nextElementSibling;
 
             const messageBlock = targetBotMessage?.querySelector('.messageBlock');
             const loadingEl = targetBotMessage?.querySelector('#loading');
-        
+
             if (messageBlock) {
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
-                messageBlock.innerHTML = marked(message, { breaks: true });
-                
+
+                messageBlock.innerHTML = marked(message || '', { breaks: true });
+
                 addParagraphBreaks(messageBlock);
                 prismHighlighting(messageBlock);
                 codeBlockCopyButton(messageBlock);
@@ -964,14 +941,14 @@ export async function fetchGoogleGeminiData(settings: BMOSettings, index: number
                 targetBotMessage?.appendChild(messageBlock);
             }
             targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
         }
 
-        addMessage(message, 'botMessage', settings, index);
-        return;
+        if (message != null) {
+            addMessage(message, 'botMessage', settings, index);
+        }
 
     } catch (error) {
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetUserMessage = messageContainerElDivs[index];
         const targetBotMessage = targetUserMessage.nextElementSibling;
         targetBotMessage?.remove();
 
@@ -979,17 +956,21 @@ export async function fetchGoogleGeminiData(settings: BMOSettings, index: number
         const botMessageDiv = displayErrorBotMessage(settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
     }
-
 }
 
-// Request response from Anthropic 
-export async function fetchAnthropicAPIData(settings: BMOSettings, index: number) {
-    const headers = {
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'x-api-key': settings.APIConnections.anthropic.APIKey,
-    };
-  
+// Fetch OpenAI-Based API Stream
+export async function fetchOpenAIAPIResponseStream(settings: BMOSettings, index: number) {
+    const openai = new OpenAI({
+        apiKey: settings.APIConnections.openAI.APIKey,
+        baseURL: settings.APIConnections.openAI.openAIBaseUrl,
+        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+    });
+
+    abortController = new AbortController();
+
+    let message = '';
+    let isScroll = false;
+
     let prompt = await getPrompt(settings);
 
     if (prompt == undefined) {
@@ -999,8 +980,6 @@ export async function fetchAnthropicAPIData(settings: BMOSettings, index: number
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
 
-    const messageHistoryAtIndexString = messageHistoryAtIndex.map(entry => entry.content).join('\n');
-            
     const messageContainerEl = document.querySelector('#messageContainer');
     const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
 
@@ -1009,63 +988,68 @@ export async function fetchAnthropicAPIData(settings: BMOSettings, index: number
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    const targetUserMessage = messageContainerElDivs[index];
+    const targetBotMessage = targetUserMessage.nextElementSibling;
+
     await getActiveFileContent(settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
-    const requestBody = {
-        model: settings.general.model,
-        prompt:  `\n\nHuman: ${referenceCurrentNoteContent}\n\n${settings.general.system_role}\n\n${prompt}\n\n${messageHistoryAtIndexString}\n\nAssistant:`,
-        max_tokens_to_sample: parseInt(settings.general.max_tokens) || 100000,
-        temperature: parseInt(settings.general.temperature),
-        stream: true,
-    };
-  
     try {
-      const response = await requestUrl({
-        url: 'https://api.anthropic.com/v1/complete',
-        method: 'POST',
-        headers,
-        body: JSON.stringify(requestBody),
-      });
-  
-      const message = response.text;
-      const lines = message.split('\n');
-      let completionText = '';
-  
-      for (const line of lines) {
-        if (line.startsWith('data:')) {
-          const eventData = JSON.parse(line.slice('data:'.length));
-          if (eventData.completion) {
-            completionText += eventData.completion;
-          }
-        }
-      }
+        const stream = await openai.chat.completions.create({
+            model: settings.general.model,
+            max_tokens: parseInt(settings.general.max_tokens),
+            temperature: parseInt(settings.general.temperature),
+            messages: [
+                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                ...messageHistoryAtIndex as ChatCompletionMessageParam[]
+            ],
+            stream: true,
+        });
 
-      const messageContainerEl = document.querySelector('#messageContainer');
-      if (messageContainerEl) {
-        const targetUserMessage = messageContainerElDivs[index];
-        const targetBotMessage = targetUserMessage.nextElementSibling;
+        for await (const part of stream) {
 
-        const messageBlock = targetBotMessage?.querySelector('.messageBlock');
-        const loadingEl = targetBotMessage?.querySelector('#loading');
+            const content = part.choices[0]?.delta?.content || '';
 
-          if (messageBlock) {
-            if (loadingEl) {
-                targetBotMessage?.removeChild(loadingEl);
+            message += content;
+
+            if (messageContainerEl) {
+                
+                const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+                const loadingEl = targetBotMessage?.querySelector('#loading');
+
+                if (messageBlock) {
+                    if (loadingEl) {
+                        targetBotMessage?.removeChild(loadingEl);
+                    }
+
+                    messageBlock.innerHTML = marked(message);
+
+                    addParagraphBreaks(messageBlock);
+                    prismHighlighting(messageBlock);
+                    codeBlockCopyButton(messageBlock);
+                }
+
+                messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
+                    // If the user scrolls up or down, stop auto-scrolling
+                    if (event.deltaY < 0 || event.deltaY > 0) {
+                        isScroll = true;
+                    }
+                });
+
+                if (!isScroll) {
+                    targetBotMessage?.scrollIntoView({ behavior: 'auto', block: 'start' });
+                }
             }
-            messageBlock.innerHTML = marked(completionText);
-          
-            addParagraphBreaks(messageBlock);
-            prismHighlighting(messageBlock);
-            codeBlockCopyButton(messageBlock);
-          }
-          targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+        
+            if (abortController.signal.aborted) {
+                new Notice('Error making API request: The user aborted a request.');
+                break;
+            }
+        }
+        addMessage(message, 'botMessage', settings, index);
 
-      addMessage('\n\nAssistant: ' + completionText, 'botMessage', settings, index);
-  
     } catch (error) {
-        const targetUserMessage = messageContainerElDivs[index ?? messageHistory.length - 1];
+        const targetUserMessage = messageContainerElDivs[index];
         const targetBotMessage = targetUserMessage.nextElementSibling;
         targetBotMessage?.remove();
 

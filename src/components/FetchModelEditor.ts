@@ -26,7 +26,7 @@ export async function fetchOpenAIBaseAPIDataEditor(settings: BMOSettings, select
 
 // Request response from Ollama
 // NOTE: Abort does not work for requestUrl
-export async function fetchOllamaDataEditor(settings: BMOSettings, selectionString: string) {
+export async function fetchOllamaResponseEditor(settings: BMOSettings, selectionString: string) {
     const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
     if (!ollamaRESTAPIURL) {

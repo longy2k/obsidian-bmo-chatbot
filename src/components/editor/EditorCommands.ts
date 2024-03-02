@@ -2,7 +2,7 @@ import { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
 import { fetchModelRenameTitle } from './FetchRenameNoteTitle';
 import { MarkdownView, Notice } from 'obsidian';
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
-import { fetchOpenAIBaseAPIDataEditor, fetchOllamaDataEditor, fetchRESTAPIURLDataEditor, fetchAnthropicAPIDataEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor } from '../FetchModelEditor';
+import { fetchOpenAIBaseAPIDataEditor, fetchOllamaResponseEditor, fetchRESTAPIURLDataEditor, fetchAnthropicAPIDataEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor } from '../FetchModelEditor';
 
 export async function renameTitleCommand(settings: BMOSettings) {
     let uniqueNameFound = false;
@@ -113,7 +113,7 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
         else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
             try {
                 new Notice('Generating...');
-                const response = await fetchOllamaDataEditor(settings, select); 
+                const response = await fetchOllamaResponseEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);

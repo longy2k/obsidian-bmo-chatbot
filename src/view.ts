@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, TFile, MarkdownView, Editor, EditorPosition } from 'obsidian';
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
-import { fetchOpenAIAPIDataStream, fetchOpenAIAPIData, fetchOllamaData, fetchOllamaDataStream, fetchAnthropicAPIData, fetchRESTAPIURLData, fetchRESTAPIURLDataStream, fetchMistralData, fetchMistralDataStream, fetchGoogleGeminiData } from './components/FetchModelResponse';
+import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponse, fetchMistralResponseStream, fetchGoogleGeminiResponse, fetchAnthropicResponse } from './components/FetchModelResponse';
 import { executeCommand } from './components/chat/Commands';
 import { getActiveFileContent } from './components/editor/ReferenceCurrentNote';
 import { addMessage } from './components/chat/Message';
@@ -191,12 +191,8 @@ export class BMOView extends ItemView {
                 return;
             }
 
-            if (ANTHROPIC_MODELS.includes(this.settings.general.model)) {
-                addMessage('\n\nHuman: ' + input, 'userMessage', this.settings, index);
-            } else {
-                if (!(input === '/s' || input === '/stop')) {
-                    addMessage(input, 'userMessage', this.settings, index);
-                }
+            if (!(input === '/s' || input === '/stop')) {
+                addMessage(input, 'userMessage', this.settings, index);
             }
             
             const messageContainer = document.querySelector('#messageContainer');
@@ -310,41 +306,41 @@ export class BMOView extends ItemView {
             // Fetch OpenAI API
             if (OPENAI_MODELS.includes(this.settings.general.model) || (this.settings.APIConnections.openAI.openAIBaseModels.includes(this.settings.general.model) && this.settings.APIConnections.openAI.openAIBaseUrl !== DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl)) {
                 if (this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
-                    await fetchOpenAIAPIDataStream(this.settings, index); 
+                    await fetchOpenAIAPIResponseStream(this.settings, index); 
                 }
                 else {
-                    await fetchOpenAIAPIData(this.settings, index); 
+                    await fetchOpenAIAPIResponse(this.settings, index); 
                 }
             }
             else if (this.settings.OllamaConnection.RESTAPIURL && this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
                 if (this.settings.OllamaConnection.allowOllamaStream) {
-                    await fetchOllamaDataStream(this.settings, index);
+                    await fetchOllamaResponseStream(this.settings, index);
                 }
                 else {
-                    await fetchOllamaData(this.settings, index);
+                    await fetchOllamaResponse(this.settings, index);
                 }
             }
             else if (this.settings.RESTAPIURLConnection.RESTAPIURL && this.settings.RESTAPIURLConnection.RESTAPIURLModels.includes(this.settings.general.model)){
                 if (this.settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
-                    await fetchRESTAPIURLDataStream(this.settings, index);
+                    await fetchRESTAPIURLResponseStream(this.settings, index);
                 }
                 else {
-                    await fetchRESTAPIURLData(this.settings, index);
+                    await fetchRESTAPIURLResponse(this.settings, index);
                 }
             }
             else if (this.settings.APIConnections.mistral.mistralModels.includes(this.settings.general.model)) {
                 if (this.settings.APIConnections.mistral.allowStream) {
-                    await fetchMistralDataStream(this.settings, index);
+                    await fetchMistralResponseStream(this.settings, index);
                 }
                 else {
-                    await fetchMistralData(this.settings, index);
+                    await fetchMistralResponse(this.settings, index);
                 }
             }
             else if (this.settings.APIConnections.googleGemini.geminiModels.includes(this.settings.general.model)) {
-                await fetchGoogleGeminiData(this.settings, index);
+                await fetchGoogleGeminiResponse(this.settings, index);
             }
             else if (ANTHROPIC_MODELS.includes(this.settings.general.model)) {
-                await fetchAnthropicAPIData(this.settings, index);
+                await fetchAnthropicResponse(this.settings, index);
             }
             else {
                 const errorMessage = 'Connection not found.';
