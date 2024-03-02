@@ -1,4 +1,4 @@
-import { Modal, Notice, setIcon } from 'obsidian';
+import { MarkdownRenderer, Modal, Notice, setIcon } from 'obsidian';
 import BMOGPT, { BMOSettings, checkActiveFile } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
 import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse } from '../FetchModelResponse';
@@ -97,7 +97,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
     return regenerateButton;
 }
 
-export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, userP: HTMLParagraphElement) {
+export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, userPre: HTMLPreElement) {
     const editButton = document.createElement('button');
     editButton.textContent = 'edit';
     setIcon(editButton, 'edit'); // Assuming setIcon is defined elsewhere
@@ -111,7 +111,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
         editContainer.classList.add('edit-container');
         const textArea = document.createElement('textarea');
         textArea.classList.add('edit-textarea');
-        textArea.value = userP.textContent ?? ''; // Check if userP.textContent is null and provide a default value
+        textArea.value = userPre.textContent ?? ''; // Check if userP.textContent is null and provide a default value
 
         editContainer.appendChild(textArea);
 
@@ -133,8 +133,8 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
         }
 
         textareaEditButton.addEventListener('click', async function () {
-            userP.textContent = textArea.value;
-            editContainer.replaceWith(userP);
+            userPre.textContent = textArea.value.trim();
+            editContainer.replaceWith(userPre);
 
             if (lastClickedElement) {
                 const userMessages = Array.from(document.querySelectorAll('#messageContainer .userMessage'));
@@ -142,7 +142,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                 const index = userMessages.indexOf(lastClickedElement) * 2;
             
                 if (index !== -1) {
-                    messageHistory[index].content = textArea.value;
+                    messageHistory[index].content = textArea.value.trim();
                     deleteMessage(plugin, index+1);
                     // Fetch OpenAI API
                     if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
@@ -213,24 +213,24 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
         });
 
         cancelButton.addEventListener('click', function () {
-            editContainer.replaceWith(userP);
+            editContainer.replaceWith(userPre);
         });
 
         editContainer.appendChild(textareaEditButton);
         editContainer.appendChild(cancelButton);
 
-        if (userP.parentNode !== null) {
-            userP.parentNode.replaceChild(editContainer, userP);
+        if (userPre.parentNode !== null) {
+            userPre.parentNode.replaceChild(editContainer, userPre);
         }
     });
 
     return editButton;
 }
 
-export function displayBotEditButton (plugin: BMOGPT, settings: BMOSettings, botP: HTMLParagraphElement) {
+export function displayBotEditButton (plugin: BMOGPT, message: string) {
     const editButton = document.createElement('button');
     editButton.textContent = 'edit';
-    setIcon(editButton, 'edit'); // Assuming setIcon is defined elsewhere
+    setIcon(editButton, 'edit');
     editButton.classList.add('edit-button');
     editButton.title = 'edit';
 
@@ -241,7 +241,9 @@ export function displayBotEditButton (plugin: BMOGPT, settings: BMOSettings, bot
         editContainer.classList.add('edit-container');
         const textArea = document.createElement('textarea');
         textArea.classList.add('edit-textarea');
-        textArea.value = botP.textContent ?? ''; // Check if botP.textContent is null and provide a default value
+
+        // Insert current bot message into the textarea.
+        textArea.value = message;
 
         const textareaEditButton = document.createElement('button');
         textareaEditButton.textContent = 'Edit';
@@ -262,26 +264,34 @@ export function displayBotEditButton (plugin: BMOGPT, settings: BMOSettings, bot
             lastClickedElement = lastClickedElement.parentElement;
         }
 
-        // Assuming lastClickedElement is the element that was clicked
-        const messageBlock = lastClickedElement?.querySelector('.messageBlock');
-        // Assuming editContainer and textArea are already defined
+        let messageBlock = lastClickedElement?.querySelector('.messageBlock');
         if (messageBlock) {
-            // If messageBlock exists, proceed to append textArea to editContainer
             messageBlock.innerHTML = '';
             messageBlock.appendChild(editContainer);
         } else {
-            console.log('messageBlock not found');
+            console.log('messageBlock not found.');
         }
 
         textareaEditButton.addEventListener('click', async function () {
-            botP.textContent = textArea.value;
-            editContainer.replaceWith(botP);
+            message = textArea.value;
+            editContainer.remove();
+            messageBlock?.remove();
+            messageBlock = document.createElement('div');
+            messageBlock.className = 'messageBlock';
+            lastClickedElement?.appendChild(messageBlock);
+
+            await MarkdownRenderer.render(plugin.app, message, messageBlock as HTMLElement, '/', plugin);
+
+            const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+            copyCodeBlocks.forEach((copyCodeBlock) => {
+                copyCodeBlock.textContent = 'Copy';
+                setIcon(copyCodeBlock, 'copy');
+            });
 
             if (lastClickedElement) {
                 const allMessages = Array.from(document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage'));
-                
                 const index = allMessages.indexOf(lastClickedElement);
-            
+
                 if (index !== -1) {
                     messageHistory[index].content = textArea.value;
 
@@ -300,22 +310,34 @@ export function displayBotEditButton (plugin: BMOGPT, settings: BMOSettings, bot
 
         });
 
-        cancelButton.addEventListener('click', function () {
-            editContainer.replaceWith(botP);
+        cancelButton.addEventListener('click', async function () {
+            editContainer.remove();
+            messageBlock?.remove();
+            messageBlock = document.createElement('div');
+            messageBlock.className = 'messageBlock';
+            lastClickedElement?.appendChild(messageBlock);
+
+            await MarkdownRenderer.render(plugin.app, message, messageBlock as HTMLElement, '/', plugin);
+            
+            const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+            copyCodeBlocks.forEach((copyCodeBlock) => {
+                copyCodeBlock.textContent = 'Copy';
+                setIcon(copyCodeBlock, 'copy');
+            });
         });
 
         editContainer.appendChild(textareaEditButton);
         editContainer.appendChild(cancelButton);
 
-        if (botP.parentNode !== null) {
-            botP.parentNode.replaceChild(editContainer, botP);
-        }
+        // if (messageBlock !== null) {
+        //     messageBlock?.replaceChild(editContainer, messageBlock);
+        // }
     });
 
     return editButton;
 }
 
-export function displayUserCopyButton (userP: HTMLParagraphElement) {
+export function displayUserCopyButton (userPre: HTMLPreElement) {
     const copyButton = document.createElement('button');
     copyButton.textContent = 'copy';
     setIcon(copyButton, 'copy');
@@ -323,7 +345,7 @@ export function displayUserCopyButton (userP: HTMLParagraphElement) {
     copyButton.title = 'copy';
 
     copyButton.addEventListener('click', function () {
-        const messageText = userP.textContent;
+        const messageText = userPre.textContent;
 
         if (messageText !== null) {
             copyMessageToClipboard(messageText);
@@ -351,35 +373,6 @@ export function displayBotCopyButton (settings: BMOSettings, message: string) {
         }
     });
     return copyButton;
-}
-
-// Copy button for code blocks
-export function codeBlockCopyButton(messageBlock: { querySelectorAll: (arg0: string) =>  NodeListOf<HTMLElement>; }) {
-    const codeBlocks = messageBlock.querySelectorAll('.messageBlock pre code');
-    codeBlocks.forEach((codeElement: HTMLElement) => {
-        const copyButton = document.createElement('button');
-        copyButton.textContent = 'copy';
-        setIcon(copyButton, 'copy');
-        copyButton.classList.add('copy-button');
-        copyButton.title = 'copy';
-        if (codeElement.parentNode) {
-            codeElement.parentNode.insertBefore(copyButton, codeElement.nextSibling);
-        }
-        copyButton.addEventListener('click', () => {
-            // Extract the language from the class attribute
-            const language = codeElement.getAttribute('class')?.replace('language-', '') || '';
-            // Format the code text in markdown code block syntax
-            const codeText = `\`\`\`${language}\n${codeElement.textContent}\`\`\``;
-            if (codeText) {
-                navigator.clipboard.writeText(codeText).then(() => {
-                    new Notice('Copied codeblock.');
-                }, (err) => {
-                    console.error('Failed to copy code: ', err);
-                    new Notice('Failed to copy code: ', err);
-                });
-            }
-        });
-    });
 }
 
 export function copyMessageToClipboard(message: string) {

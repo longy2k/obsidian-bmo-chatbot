@@ -1,23 +1,28 @@
 import { ItemView, WorkspaceLeaf, TFile, MarkdownView, Editor, EditorPosition } from 'obsidian';
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
-import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponse, fetchMistralResponseStream, fetchGoogleGeminiResponse, fetchAnthropicResponse } from './components/FetchModelResponse';
 import { executeCommand } from './components/chat/Commands';
 import { getActiveFileContent } from './components/editor/ReferenceCurrentNote';
 import { addMessage } from './components/chat/Message';
 import { displayUserMessage } from './components/chat/UserMessage';
 import { displayBotMessage, displayErrorBotMessage } from './components/chat/BotMessage';
+import { fetchOpenAIAPIResponseStream, 
+        fetchOpenAIAPIResponse, 
+        fetchOllamaResponse, 
+        fetchOllamaResponseStream, 
+        fetchRESTAPIURLResponse, 
+        fetchRESTAPIURLResponseStream, 
+        fetchMistralResponse, 
+        fetchMistralResponseStream, 
+        fetchGoogleGeminiResponse, 
+        fetchAnthropicResponse } from './components/FetchModelResponse';
+
 export const VIEW_TYPE_CHATBOT = 'chatbot-view';
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
-
 export const ANTHROPIC_MODELS = ['claude-instant-1.2', 'claude-2.0', 'claude-2.1'];
 export const OPENAI_MODELS = ['gpt-3.5-turbo', 'gpt-3.5-turbo-1106', 'gpt-4', 'gpt-4-turbo-preview'];
 
 export let messageHistory: { role: string; content: string }[] = [];
-
-export function clearMessageHistory() {
-    messageHistory = [];
-}
 
 export let lastCursorPosition: EditorPosition = {
     line: 0,
@@ -26,6 +31,10 @@ export let lastCursorPosition: EditorPosition = {
 
 export let lastCursorPositionFile: TFile | null = null;
 export let activeEditor: Editor | null | undefined = null;
+
+export function clearMessageHistory() {
+    messageHistory = [];
+}
 
 export class BMOView extends ItemView {
     private settings: BMOSettings;
@@ -135,10 +144,16 @@ export class BMOView extends ItemView {
             if (messageData.role == 'assistant') {
                 const botMessageDiv = displayBotMessage(this.plugin, this.settings, messageHistory, messageData.content);
                 messageContainer.appendChild(botMessageDiv);
-            
-                const botMessages = messageContainer.querySelectorAll('.botMessage');
-                const lastBotMessage = botMessages[botMessages.length - 1];
-                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        // Open notes/links from chatbot
+        messageContainer.addEventListener('click', (event) => {
+            const target = event.target as HTMLElement;
+            if (target.tagName === 'A' && target.classList.contains('internal-link')) {
+                const link = target as HTMLAnchorElement;
+                const linkName = link.getAttribute('data-href') || '';
+                this.plugin.app.workspace.openLinkText(linkName, '', false);
             }
         });
         
@@ -163,6 +178,9 @@ export class BMOView extends ItemView {
         
         this.textareaElement = textarea as HTMLTextAreaElement;
         this.addEventListeners();
+
+        // Scroll to bottom of messageContainer
+        messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 
     addEventListeners() {
@@ -177,7 +195,10 @@ export class BMOView extends ItemView {
         const index = messageHistory.length - 1;
 
         // Only allow /stop command to be executed during fetch
-        if (this.settings.OllamaConnection.allowOllamaStream || !this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
+        if (this.settings.OllamaConnection.allowOllamaStream || 
+            this.settings.RESTAPIURLConnection.allowRESTAPIURLDataStream || 
+            this.settings.APIConnections.mistral.allowStream || 
+            this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
             if ((input === '/s' || input === '/stop') && event.key === 'Enter') {
                 this.preventEnter = false;
                 executeCommand(input, this.settings, this.plugin);
@@ -191,6 +212,7 @@ export class BMOView extends ItemView {
                 return;
             }
 
+            // Add user message to message history when stopped via stream.
             if (!(input === '/s' || input === '/stop')) {
                 addMessage(this.plugin, input, 'userMessage', this.settings, index);
             }
@@ -232,7 +254,7 @@ export class BMOView extends ItemView {
 
             this.textareaElement.value = '';
             this.textareaElement.style.height = '29px';
-            this.textareaElement.value = this.textareaElement.value.replace(/^[\r\n]+|[\r\n]+$/gm,''); // remove newlines only at beginning or end of input
+            this.textareaElement.value = this.textareaElement.value.trim();
             this.textareaElement.setSelectionRange(0, 0);
             }
     }

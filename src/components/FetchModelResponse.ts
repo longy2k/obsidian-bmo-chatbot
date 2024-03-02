@@ -1,11 +1,8 @@
-import { Notice, requestUrl } from 'obsidian';
+import { MarkdownRenderer, Notice, requestUrl, setIcon } from 'obsidian';
 import BMOGPT, { BMOSettings } from '../main';
 import { messageHistory } from '../view';
 import { ChatCompletionMessageParam } from 'openai/resources/chat';
-import { marked } from 'marked';
-import { prismHighlighting } from 'src/components/PrismaHighlighting';
 import { addMessage, addParagraphBreaks } from './chat/Message';
-import { codeBlockCopyButton } from './chat/Buttons';
 import { getPrompt } from './chat/Prompt';
 import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
 import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
@@ -22,7 +19,7 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
         return;
     }
 
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -70,11 +67,16 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
-                messageBlock.innerHTML = marked(message, { breaks: true });
+
+                await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
                 addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
+
+                const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                copyCodeBlocks.forEach((copyCodeBlock) => {
+                    copyCodeBlock.textContent = 'Copy';
+                    setIcon(copyCodeBlock, 'copy');
+                });
                 
                 targetBotMessage?.appendChild(messageBlock);
             }
@@ -111,7 +113,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
 
     let isScroll = false;
 
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -197,13 +199,30 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
                     if (loadingEl) {
                         targetBotMessage?.removeChild(loadingEl);
                     }
-
-                    messageBlock.innerHTML = marked(message, { breaks: true });
-
+        
+                    // Clear the messageBlock for re-rendering
+                    messageBlock.innerHTML = '';
+        
+                    // DocumentFragment to render markdown off-DOM
+                    const fragment = document.createDocumentFragment();
+                    const tempContainer = document.createElement('div');
+                    fragment.appendChild(tempContainer);
+        
+                    // Render the accumulated message to the temporary container
+                    await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
+        
+                    // Once rendering is complete, move the content to the actual message block
+                    while (tempContainer.firstChild) {
+                        messageBlock.appendChild(tempContainer.firstChild);
+                    }
+        
                     addParagraphBreaks(messageBlock);
-                    prismHighlighting(messageBlock);
-                    codeBlockCopyButton(messageBlock);
 
+                    const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                    copyCodeBlocks.forEach((copyCodeBlock) => {
+                        copyCodeBlock.textContent = 'Copy';
+                        setIcon(copyCodeBlock, 'copy');
+                    });
                 }
 
                 messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
@@ -230,7 +249,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
 
 // Fetch response from openai-based rest api url
 export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -257,7 +276,7 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || 4096,
@@ -279,11 +298,16 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
-                messageBlock.innerHTML = marked(message, { breaks: true });
+
+                await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
                 addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
+
+                const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                copyCodeBlocks.forEach((copyCodeBlock) => {
+                    copyCodeBlock.textContent = 'Copy';
+                    setIcon(copyCodeBlock, 'copy');
+                });
                 
                 targetBotMessage?.appendChild(messageBlock);
             }
@@ -314,7 +338,7 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
         return;
     }
 
-    const url = RESTAPIURL + '/v1/chat/completions';
+    const url = RESTAPIURL + '/chat/completions';
 
     abortController = new AbortController();
 
@@ -322,7 +346,7 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
 
     let isScroll = false;
 
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -348,7 +372,7 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
@@ -419,13 +443,30 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
                     if (loadingEl) {
                         targetBotMessage?.removeChild(loadingEl);
                     }
-
-                    messageBlock.innerHTML = marked(message, { breaks: true });
-
+        
+                    // Clear the messageBlock for re-rendering
+                    messageBlock.innerHTML = '';
+        
+                    // DocumentFragment to render markdown off-DOM
+                    const fragment = document.createDocumentFragment();
+                    const tempContainer = document.createElement('div');
+                    fragment.appendChild(tempContainer);
+        
+                    // Render the accumulated message to the temporary container
+                    await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
+        
+                    // Once rendering is complete, move the content to the actual message block
+                    while (tempContainer.firstChild) {
+                        messageBlock.appendChild(tempContainer.firstChild);
+                    }
+        
                     addParagraphBreaks(messageBlock);
-                    prismHighlighting(messageBlock);
-                    codeBlockCopyButton(messageBlock);
 
+                    const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                    copyCodeBlocks.forEach((copyCodeBlock) => {
+                        copyCodeBlock.textContent = 'Copy';
+                        setIcon(copyCodeBlock, 'copy');
+                    });
                 }
 
                 messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
@@ -452,7 +493,7 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
 
 // Fetch response from Anthropic
 export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -502,11 +543,16 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
-                messageBlock.innerHTML = marked(message, { breaks: true });
+
+                await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
                 addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
+
+                const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                copyCodeBlocks.forEach((copyCodeBlock) => {
+                    copyCodeBlock.textContent = 'Copy';
+                    setIcon(copyCodeBlock, 'copy');
+                });
                 
                 targetBotMessage?.appendChild(messageBlock);
             }
@@ -531,7 +577,7 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
 
 // Fetch response from Google Gemini
 export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -575,7 +621,6 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
     const convertedMessageHistory = convertMessageHistory(messageHistoryAtIndex, referenceCurrentNoteContent);
 
     try {        
-        // Assuming settings.APIConnections.googleGemini.APIKey contains your API key
         const API_KEY = settings.APIConnections.googleGemini.APIKey;
         
         const response = await requestUrl({
@@ -612,11 +657,16 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
-                messageBlock.innerHTML = marked(message, { breaks: true });
+
+                await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
                 addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
+
+                const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                copyCodeBlocks.forEach((copyCodeBlock) => {
+                    copyCodeBlock.textContent = 'Copy';
+                    setIcon(copyCodeBlock, 'copy');
+                });
                 
                 targetBotMessage?.appendChild(messageBlock);
             }
@@ -641,7 +691,7 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
 
 // Fetch response from Mistral
 export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
     
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -690,11 +740,15 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
-                messageBlock.innerHTML = marked(message, { breaks: true });
+                await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
                 addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
+
+                const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                copyCodeBlocks.forEach((copyCodeBlock) => {
+                    copyCodeBlock.textContent = 'Copy';
+                    setIcon(copyCodeBlock, 'copy');
+                });
                 
                 targetBotMessage?.appendChild(messageBlock);
             }
@@ -725,7 +779,7 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
 
     let isScroll = false;
 
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -785,7 +839,7 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
 
             const chunk = decoder.decode(value, { stream: false }) || '';
 
-            // console.log("chunk",chunk);
+            // console.log('chunk',chunk);
             
             const parts = chunk.split('\n');
 
@@ -823,13 +877,30 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
                     if (loadingEl) {
                         targetBotMessage?.removeChild(loadingEl);
                     }
-
-                    messageBlock.innerHTML = marked(message, { breaks: true });
-
+        
+                    // Clear the messageBlock for re-rendering
+                    messageBlock.innerHTML = '';
+        
+                    // DocumentFragment to render markdown off-DOM
+                    const fragment = document.createDocumentFragment();
+                    const tempContainer = document.createElement('div');
+                    fragment.appendChild(tempContainer);
+        
+                    // Render the accumulated message to the temporary container
+                    await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
+        
+                    // Once rendering is complete, move the content to the actual message block
+                    while (tempContainer.firstChild) {
+                        messageBlock.appendChild(tempContainer.firstChild);
+                    }
+        
                     addParagraphBreaks(messageBlock);
-                    prismHighlighting(messageBlock);
-                    codeBlockCopyButton(messageBlock);
 
+                    const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                    copyCodeBlocks.forEach((copyCodeBlock) => {
+                        copyCodeBlock.textContent = 'Copy';
+                        setIcon(copyCodeBlock, 'copy');
+                    });
                 }
 
                 messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
@@ -862,7 +933,7 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -903,11 +974,15 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
                     targetBotMessage?.removeChild(loadingEl);
                 }
 
-                messageBlock.innerHTML = marked(message || '', { breaks: true });
+                await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
 
                 addParagraphBreaks(messageBlock);
-                prismHighlighting(messageBlock);
-                codeBlockCopyButton(messageBlock);
+
+                const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                copyCodeBlocks.forEach((copyCodeBlock) => {
+                    copyCodeBlock.textContent = 'Copy';
+                    setIcon(copyCodeBlock, 'copy');
+                });
                 
                 targetBotMessage?.appendChild(messageBlock);
             }
@@ -942,7 +1017,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
     let message = '';
     let isScroll = false;
 
-    const prompt = await getPrompt(settings);
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -966,11 +1041,11 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
             model: settings.general.model,
             max_tokens: parseInt(settings.general.max_tokens),
             temperature: parseInt(settings.general.temperature),
+            stream: true,
             messages: [
                 { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
                 ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
-            stream: true,
         });
 
         for await (const part of stream) {
@@ -988,12 +1063,30 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
                     if (loadingEl) {
                         targetBotMessage?.removeChild(loadingEl);
                     }
-
-                    messageBlock.innerHTML = marked(message);
-
+        
+                    // Clear the messageBlock for re-rendering
+                    messageBlock.innerHTML = '';
+        
+                    // DocumentFragment to render markdown off-DOM
+                    const fragment = document.createDocumentFragment();
+                    const tempContainer = document.createElement('div');
+                    fragment.appendChild(tempContainer);
+        
+                    // Render the accumulated message to the temporary container
+                    await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
+        
+                    // Once rendering is complete, move the content to the actual message block
+                    while (tempContainer.firstChild) {
+                        messageBlock.appendChild(tempContainer.firstChild);
+                    }
+        
                     addParagraphBreaks(messageBlock);
-                    prismHighlighting(messageBlock);
-                    codeBlockCopyButton(messageBlock);
+
+                    const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                    copyCodeBlocks.forEach((copyCodeBlock) => {
+                        copyCodeBlock.textContent = 'Copy';
+                        setIcon(copyCodeBlock, 'copy');
+                    });
                 }
 
                 messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {

@@ -26,11 +26,11 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
         buttonContainerDiv.className = 'button-container';
         botMessageToolBarDiv?.appendChild(buttonContainerDiv);
 
-        const newBotP = document.createElement('p');
-        newBotP.innerHTML = messageObj.content;
+        // const newBotP = document.createElement('p');
+        // newBotP.innerHTML = messageObj.content;
         
         if (!messageObj.content.includes('commandBotMessage') && !messageObj.content.includes('errorBotMessage')) {
-            const editButton = displayBotEditButton(plugin, settings, newBotP);
+            const editButton = displayBotEditButton(plugin, messageObj.content);
             const copyBotButton = displayBotCopyButton(settings, messageObj.content);
             const appendButton = displayAppendButton(plugin, settings, messageObj.content);
             buttonContainerDiv.appendChild(editButton);

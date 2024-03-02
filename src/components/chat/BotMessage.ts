@@ -1,9 +1,8 @@
 import BMOGPT, { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
 import { colorToHex } from 'src/utils/ColorConverter';
-import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton, displayBotEditButton } from './Buttons';
-import { marked } from 'marked';
-import { prismHighlighting } from '../PrismaHighlighting';
+import { displayAppendButton, displayBotCopyButton, displayBotEditButton } from './Buttons';
 import { addMessage, addParagraphBreaks } from './Message';
+import { MarkdownRenderer, setIcon } from 'obsidian';
 
 export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, messageHistory: { role: string; content: string }[], message: string) {
     const botMessageDiv = document.createElement('div');
@@ -22,39 +21,31 @@ export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, message
     botNameSpan.textContent = settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName;
     botNameSpan.className = 'chatbotName';
 
-    let botP = '';
-
-    if (messageHistory.length >= 1) {
-        if (message.includes('commandBotMessage') || message.includes('errorBotMessage')) {
-            botP = message;
-        } 
-        else {
-            botP = marked(message);
-        }                                  
-    }
-
-    const newBotP = document.createElement('p');
-    newBotP.innerHTML = botP;
-
     botMessageToolBarDiv.appendChild(botNameSpan);
     botMessageToolBarDiv.appendChild(buttonContainerDiv);
     const messageBlockDiv = document.createElement('div');
     messageBlockDiv.className = 'messageBlock';
 
     if (!message.includes('commandBotMessage') && !message.includes('errorBotMessage')) {
-        const editButton = displayBotEditButton(plugin, settings, newBotP);
+        const editButton = displayBotEditButton(plugin, message);
         const copyBotButton = displayBotCopyButton(settings, message);
         const appendButton = displayAppendButton(plugin, settings, message);
         buttonContainerDiv.appendChild(editButton);
         buttonContainerDiv.appendChild(copyBotButton);
         buttonContainerDiv.appendChild(appendButton);
-        prismHighlighting(messageBlockDiv);
-        codeBlockCopyButton(messageBlockDiv);
+
         addParagraphBreaks(messageBlockDiv);  
+
+        MarkdownRenderer.render(plugin.app, message, messageBlockDiv, '', plugin);
+
+        const copyCodeBlocks = messageBlockDiv.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+        copyCodeBlocks.forEach((copyCodeBlock) => {
+            copyCodeBlock.textContent = 'Copy';
+            setIcon(copyCodeBlock, 'copy');
+        });
     }
 
     botMessageDiv.appendChild(botMessageToolBarDiv);
-    messageBlockDiv.appendChild(newBotP);
     botMessageDiv.appendChild(messageBlockDiv);
 
     return botMessageDiv;

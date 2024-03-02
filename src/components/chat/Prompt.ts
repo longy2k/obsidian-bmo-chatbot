@@ -1,6 +1,6 @@
-import { BMOSettings } from 'src/main';
+import BMOGPT, { BMOSettings } from 'src/main';
 
-export async function getPrompt(settings: BMOSettings) {
+export async function getPrompt(plugin: BMOGPT, settings: BMOSettings) {
 
     if (settings.prompts.prompt.trim() === '') {
         return '';
@@ -10,7 +10,7 @@ export async function getPrompt(settings: BMOSettings) {
 
     try {
         // Await the reading of the file and return its content
-        const content = await app.vault.adapter.read(promptFilePath);
+        const content = await plugin.app.vault.adapter.read(promptFilePath);
         // Remove YAML front matter if present
         const clearYamlContent = content.replace(/---[\s\S]+?---/, '').trim();
         return clearYamlContent;

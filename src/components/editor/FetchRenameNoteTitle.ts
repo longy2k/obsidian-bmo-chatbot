@@ -68,50 +68,35 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
             return title;
         }
         else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)) {
-            const urls = [
-                settings.RESTAPIURLConnection.RESTAPIURL + '/v1/chat/completions',
-                settings.RESTAPIURLConnection.RESTAPIURL + '/api/v1/chat/completions'
-            ];
-        
-            let lastError = null;
+            try {
+                const response = await requestUrl({
+                    url: settings.RESTAPIURLConnection.RESTAPIURL + '/chat/completions',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${settings.RESTAPIURLConnection.APIKey}`
+                    },
+                    body: JSON.stringify({
+                        model: settings.general.model,
+                        messages: [
+                            { role: 'system', content: prompt + clearYamlContent},
+                            { role: 'user', content: '\n'}
+                        ],
+                        max_tokens: 40,
+                    }),
+                });
+    
+                let title = response.json.choices[0].message.content;
 
-        
-            for (const url of urls) {
-                try {
-                    const response = await requestUrl({
-                        url: url,
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${settings.RESTAPIURLConnection.APIKey}`
-                        },
-                        body: JSON.stringify({
-                            model: settings.general.model,
-                            messages: [
-                                { role: 'system', content: prompt + clearYamlContent},
-                                { role: 'user', content: '\n'}
-                            ],
-                            max_tokens: 40,
-                        }),
-                    });
-        
-                    let title = response.json.choices[0].message.content;
-                    // let title = chatCompletion.choices[0].message.content;
-                    // Remove backslashes, forward slashes, colons, and quotes
-                    if (title) {
-                        title = title.replace(/[\\/:"]/g, '');
-                    }
-                    return title;
-        
-                } catch (error) {
-                    lastError = error; // Store the last error and continue
+                // Remove backslashes, forward slashes, colons, and quotes
+                if (title) {
+                    title = title.replace(/[\\/:"]/g, '');
                 }
-            }
-            
-            // If all requests failed, throw the last encountered error
-            if (lastError) {
-                console.error('Error making API request:', lastError);
-                throw lastError;
+                return title;
+    
+            } catch (error) {
+                console.error('Error making API request:', error);
+                throw error;
             }
 
         }
@@ -135,7 +120,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                 });
     
                 let title = response.json.choices[0].message.content;
-                // let title = chatCompletion.choices[0].message.content;
+
                 // Remove backslashes, forward slashes, colons, and quotes
                 if (title) {
                     title = title.replace(/[\\/:"]/g, '');
@@ -149,7 +134,6 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
         }
         else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
             try {        
-                // Assuming settings.APIConnections.googleGemini.APIKey contains your API key
                 const API_KEY = settings.APIConnections.googleGemini.APIKey;
         
                 const requestBody = {
