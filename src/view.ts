@@ -28,7 +28,7 @@ export let lastCursorPositionFile: TFile | null = null;
 export let activeEditor: Editor | null | undefined = null;
 
 export class BMOView extends ItemView {
-    public settings: BMOSettings;
+    private settings: BMOSettings;
     private textareaElement: HTMLTextAreaElement;
     private preventEnter = false;
     private plugin: BMOGPT;
@@ -260,7 +260,7 @@ export class BMOView extends ItemView {
 
     addCursorLogging() {
         const updateCursorPosition = async () => {
-            await getActiveFileContent(this.settings); 
+            await getActiveFileContent(this.plugin, this.settings); 
             const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
             if (view) {
                 const cursor = view.editor.getCursor();
@@ -287,7 +287,7 @@ export class BMOView extends ItemView {
     }
 
     async BMOchatbot() {        
-        await getActiveFileContent(this.settings);
+        await getActiveFileContent(this.plugin, this.settings);
         const index = messageHistory.length - 1;
 
         // If model does not exist.

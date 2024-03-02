@@ -231,7 +231,7 @@ export default class BMOGPT extends Plugin {
             id: 'rename-note-title',
             name: 'Rename Note Title',
             callback: () => {
-				renameTitleCommand(this.settings);
+				renameTitleCommand(this, this.settings);
             },
             hotkeys: [
 				{
@@ -250,7 +250,7 @@ export default class BMOGPT extends Plugin {
 				menu.addItem((item) => {
 					item
 						.setTitle('BMO Chatbot: Generate new title')
-						.onClick(() => renameTitleCommand(this.settings));
+						.onClick(() => renameTitleCommand(this, this.settings));
 				});
 			})
 		);
@@ -259,7 +259,7 @@ export default class BMOGPT extends Plugin {
             id: 'prompt-select-generate',
             name: 'Prompt Select Generate',
             callback: () => {
-				promptSelectGenerateCommand(this.settings);
+				promptSelectGenerateCommand(this, this.settings);
             },
             hotkeys: [
 				{

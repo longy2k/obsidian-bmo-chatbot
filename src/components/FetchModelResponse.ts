@@ -35,7 +35,7 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
@@ -124,7 +124,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
@@ -243,7 +243,7 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
  
     try {
@@ -335,7 +335,7 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
@@ -465,7 +465,7 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
@@ -544,7 +544,7 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     // Function to convert messageHistory to Google Gemini format
@@ -654,7 +654,7 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
@@ -738,7 +738,7 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
@@ -875,7 +875,7 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
     messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
@@ -958,7 +958,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
     const targetUserMessage = messageContainerElDivs[index];
     const targetBotMessage = targetUserMessage.nextElementSibling;
 
-    await getActiveFileContent(settings);
+    await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {

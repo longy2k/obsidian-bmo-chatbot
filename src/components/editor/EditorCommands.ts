@@ -1,23 +1,23 @@
-import { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
+import BMOGPT, { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
 import { fetchModelRenameTitle } from './FetchRenameNoteTitle';
 import { MarkdownView, Notice } from 'obsidian';
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
 import { fetchOpenAIBaseAPIResponseEditor, fetchOllamaResponseEditor, fetchRESTAPIURLDataEditor, fetchAnthropicResponseEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor } from '../FetchModelEditor';
 
-export async function renameTitleCommand(settings: BMOSettings) {
+export async function renameTitleCommand(plugin: BMOGPT, settings: BMOSettings) {
     let uniqueNameFound = false;
     let modelRenameTitle;
-    let folderName = app.vault.getAbstractFileByPath(app.workspace.getActiveFile()?.path || '')?.parent?.path || '';
+    let folderName = plugin.app.vault.getAbstractFileByPath(plugin.app.workspace.getActiveFile()?.path || '')?.parent?.path || '';
     const fileExtension = '.md';
-    const allFiles = app.vault.getFiles(); // Retrieve all files from the vault
-    const activeFile = app.workspace.getActiveFile();
+    const allFiles = plugin.app.vault.getFiles(); // Retrieve all files from the vault
+    const activeFile = plugin.app.workspace.getActiveFile();
     let fileContent = '';
   
     try {
         new Notice('Generating title...');
 
         if (activeFile) {
-        fileContent = await app.vault.read(activeFile);
+        fileContent = await plugin.app.vault.read(activeFile);
         }
     
         if (folderName && !folderName.endsWith('/')) {
@@ -50,9 +50,9 @@ export async function renameTitleCommand(settings: BMOSettings) {
 }
 
 // Prompt + Select + Generate command
-export async function promptSelectGenerateCommand(settings: BMOSettings) {
-    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-    const select = view.editor.getSelection();
+export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOSettings) {
+    const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+    const select = view?.editor.getSelection();
     if (view && select && select.trim() !== '') {
         // Fetch OpenAI API with selected models.
         if (OPENAI_MODELS.includes(settings.general.model)) {
@@ -61,12 +61,12 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
                 const response = await fetchOpenAIBaseAPIResponseEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
-                view.editor.replaceSelection(response);
+                view.editor.replaceSelection(response || '');
 
                 // Calculate new cursor position based on the length of the response
                 const cursorEnd = { 
                     line: cursorStart.line, 
-                    ch: cursorStart.ch + response?.length 
+                    ch: cursorStart.ch + (response?.length ?? 0)
                 };
 
                 // Keep the new text selected
@@ -83,12 +83,12 @@ export async function promptSelectGenerateCommand(settings: BMOSettings) {
                 const response = await fetchOpenAIBaseAPIResponseEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
-                view.editor.replaceSelection(response);
+                view.editor.replaceSelection(response || '');
 
                 // Calculate new cursor position based on the length of the response
                 const cursorEnd = { 
                     line: cursorStart.line, 
-                    ch: cursorStart.ch + response?.length 
+                    ch: cursorStart.ch + (response?.length ?? 0)
                 };
 
                 // Keep the new text selected

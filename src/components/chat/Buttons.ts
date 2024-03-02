@@ -342,22 +342,9 @@ export function displayBotCopyButton (settings: BMOSettings, message: string) {
     copyButton.classList.add('copy-button');
     copyButton.title = 'copy';
 
-    let messageText = message;
-
-    if (messageText !== null) {
-        if (ANTHROPIC_MODELS.includes(settings.general.model)) {
-            const fullString = message;
-            const cleanString = fullString.split(' ').slice(1).join(' ').trim();
-            messageText = cleanString;
-        } 
-    } else {
-        new Notice('Message content is null. Cannot copy.');
-        console.error('Message content is null. Cannot copy.');
-    }
-
     copyButton.addEventListener('click', function () {
-        if (messageText !== null) {
-            copyMessageToClipboard(messageText);
+        if (message !== null) {
+            copyMessageToClipboard(message);
             new Notice('Copied bot message.');
         } else {
             console.error('Message content is null. Cannot copy.');
@@ -417,7 +404,7 @@ export function displayAppendButton(plugin: BMOGPT, settings: BMOSettings, messa
             // Check if the active file is different from the file of the last cursor position
             if ((checkActiveFile !== lastCursorPositionFile)) {
                 // Append to the bottom of the file
-                getActiveFileContent(settings);
+                getActiveFileContent(plugin, settings);
                 const existingContent = await plugin.app.vault.read(checkActiveFile);
                 const updatedContent = existingContent + '\n' + messageText;
                 plugin.app.vault.modify(checkActiveFile, updatedContent);

@@ -1,7 +1,6 @@
 import BMOGPT, { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
 import { colorToHex } from 'src/utils/ColorConverter';
 import { codeBlockCopyButton, displayAppendButton, displayBotCopyButton, displayBotEditButton } from './Buttons';
-import { ANTHROPIC_MODELS } from 'src/view';
 import { marked } from 'marked';
 import { prismHighlighting } from '../PrismaHighlighting';
 import { addMessage, addParagraphBreaks } from './Message';
@@ -25,12 +24,8 @@ export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, message
 
     let botP = '';
 
-    const messageText = message;
     if (messageHistory.length >= 1) {
-        if (ANTHROPIC_MODELS.includes(settings.general.model)) {
-            const cleanString = messageText.split(' ').slice(1).join(' ').trim();
-            botP = marked(cleanString);
-        } else if (message.includes('commandBotMessage') || message.includes('errorBotMessage')) {
+        if (message.includes('commandBotMessage') || message.includes('errorBotMessage')) {
             botP = message;
         } 
         else {
@@ -126,7 +121,7 @@ export function displayCommandBotMessage(plugin: BMOGPT, settings: BMOSettings, 
 
     const index = messageHistory.length - 1;
 
-    addMessage(plugin, messageBlockDiv.innerHTML, 'botMessage', this.settings, index);
+    addMessage(plugin, messageBlockDiv.innerHTML, 'botMessage', settings, index);
 
     return botMessageDiv;
 }
