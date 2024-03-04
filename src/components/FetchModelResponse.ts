@@ -406,21 +406,22 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
 
             const chunk = decoder.decode(value, { stream: false }) || '';
 
-            // Check if chunk contains 'data: [DONE]'
-            if (chunk.includes('data: [DONE]')) {
-                break;
-            }
+            // console.log('chunk',chunk);
             
-            const trimmedChunk = chunk.replace(/^data: /, '');
-            
-            // Splitting the chunk to parse JSON messages separately
-            const parts = trimmedChunk.split('\n');
+            const parts = chunk.split('\n');
+
+            // console.log("parts", parts)
 
             for (const part of parts.filter(Boolean)) { // Filter out empty parts
+                // Check if chunk contains 'data: [DONE]'
+                if (part.includes('data: [DONE]')) {
+                    break;
+                }
+                
                 let parsedChunk;
                 try {
-                    parsedChunk = JSON.parse(part);
-                    if ((parsedChunk.done !== true) || part !== 'data: [DONE]') {
+                    parsedChunk = JSON.parse(part.replace(/^data: /, ''));
+                    if ((parsedChunk.choices[0].finish_reason !== 'stop')) {
                         const content = parsedChunk.choices[0].delta.content;
                         message += content;
                     }
