@@ -1,7 +1,7 @@
 import { MarkdownRenderer, Modal, Notice, setIcon } from 'obsidian';
 import BMOGPT, { BMOSettings, checkActiveFile } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
-import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse } from '../FetchModelResponse';
+import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse, fetchOpenRouterResponseStream, fetchOpenRouterResponse } from '../FetchModelResponse';
 import { getActiveFileContent } from '../editor/ReferenceCurrentNote';
 
 export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
@@ -32,7 +32,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
             deleteMessage(plugin, index+1);
             if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                 try {
-                    if (settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
+                    if (settings.APIConnections.openAI.allowStream) {
                         await fetchOpenAIAPIResponseStream(plugin, settings, index); 
                     } else {
                         await fetchOpenAIAPIResponse(plugin, settings, index);
@@ -52,11 +52,19 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                 }
             }
             else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
-                if (settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
+                if (settings.RESTAPIURLConnection.allowStream) {
                     await fetchRESTAPIURLResponseStream(plugin, settings, index);
                 }
                 else {
                     await fetchRESTAPIURLResponse(plugin, settings, index);
+                }
+            }
+            else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)){
+                if (settings.APIConnections.openRouter.allowStream) {
+                    await fetchOpenRouterResponseStream(plugin, settings, index);
+                }
+                else {
+                    await fetchOpenRouterResponse(plugin, settings, index);
                 }
             }
             else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
@@ -147,7 +155,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                     // Fetch OpenAI API
                     if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                         try {
-                            if (settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
+                            if (settings.APIConnections.openAI.allowStream) {
                                 await fetchOpenAIAPIResponseStream(plugin, settings, index); 
                             } else {
                                 await fetchOpenAIAPIResponse(plugin, settings, index);
@@ -197,11 +205,19 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                         }
                     }
                     else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
-                        if (settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
+                        if (settings.RESTAPIURLConnection.allowStream) {
                             await fetchRESTAPIURLResponseStream(plugin, settings, index);
                         }
                         else {
                             await fetchRESTAPIURLResponse(plugin, settings, index);
+                        }
+                    }
+                    else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)){
+                        if (settings.APIConnections.openRouter.allowStream) {
+                            await fetchOpenRouterResponseStream(plugin, settings, index);
+                        }
+                        else {
+                            await fetchOpenRouterResponse(plugin, settings, index);
                         }
                     }
                 }

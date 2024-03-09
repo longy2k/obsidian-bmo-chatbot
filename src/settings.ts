@@ -6,7 +6,7 @@ import { addChatHistorySettings } from './components/settings/ChatHistorySetting
 import { addOllamaSettings } from './components/settings/OllamaSettings';
 import { addAPIConnectionSettings } from './components/settings/ConnectionSettings';
 import { addPromptSettings } from './components/settings/PromptSettings';
-import { addRESTAPIURLSettings } from './components/settings/OpenAIRestAPISettings';
+import { addRESTAPIURLSettings } from './components/settings/RESTAPIURLSettings';
 import { addEditorSettings } from './components/settings/EditorSettings';
 
 export class BMOSettingTab extends PluginSettingTab {

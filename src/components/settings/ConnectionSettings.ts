@@ -4,6 +4,7 @@ import { addOpenAIConnectionSettings } from './APIConnections/OpenAIConnections'
 import { addMistralConnectionSettings } from './APIConnections/MistralConnections';
 import { addGoogleGeminiConnectionSettings } from './APIConnections/GoogleGeminiConnections';
 import { addAnthropicConnectionSettings } from './APIConnections/AnthropicConnections';
+import { addOpenRouterConnectionSettings } from './APIConnections/OpenRouterConnections';
 
 export function addAPIConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
@@ -37,5 +38,6 @@ export function addAPIConnectionSettings(containerEl: HTMLElement, plugin: BMOGP
     addGoogleGeminiConnectionSettings(settingsContainer, plugin, SettingTab);
     addMistralConnectionSettings(settingsContainer, plugin, SettingTab);
     addOpenAIConnectionSettings(settingsContainer, plugin, SettingTab);
+    addOpenRouterConnectionSettings(settingsContainer, plugin, SettingTab);
 }
 

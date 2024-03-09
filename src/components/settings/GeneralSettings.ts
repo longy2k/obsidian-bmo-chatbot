@@ -1,7 +1,7 @@
 import { DropdownComponent, Notice, Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 import { ANTHROPIC_MODELS } from 'src/view';
-import { fetchGoogleGeminiModels, fetchMistralModels, fetchOllamaModels, fetchOpenAIBaseModels, fetchRESTAPIURLModels } from '../FetchModelList';
+import { fetchGoogleGeminiModels, fetchMistralModels, fetchOllamaModels, fetchOpenAIBaseModels, fetchOpenRouterModels, fetchRESTAPIURLModels } from '../FetchModelList';
 
 export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
@@ -160,6 +160,8 @@ async function populateDropdownWithModels(plugin: BMOGPT, dropdown: DropdownComp
                 return await fetchMistralModels(plugin);
             case 'openAI':
                 return await fetchOpenAIBaseModels(plugin);
+            case 'openRouter':
+                return await fetchOpenRouterModels(plugin);
             default:
                 return [];
         }
@@ -183,6 +185,7 @@ async function populateDropdownWithModels(plugin: BMOGPT, dropdown: DropdownComp
         { type: 'googleGemini', condition: plugin.settings.APIConnections.googleGemini.APIKey },
         { type: 'mistral', condition: plugin.settings.APIConnections.mistral.APIKey },
         { type: 'openAI', condition: plugin.settings.APIConnections.openAI.APIKey },
+        { type: 'openRouter', condition: plugin.settings.APIConnections.openRouter.APIKey },
     ];
 
     // Process each source to fetch and add models

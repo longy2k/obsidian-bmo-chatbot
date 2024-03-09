@@ -1120,6 +1120,245 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
     }
 }
 
+// Fetch response from OpenRouter
+export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
+    const prompt = await getPrompt(plugin, settings);
+
+    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+    
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    const botMessageDiv = displayLoadingBotMessage(settings);
+
+    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(plugin, settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+ 
+    try {
+        const response = await requestUrl({
+            url: 'https://openrouter.ai/api/v1/chat/completions',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.APIConnections.openRouter.APIKey}`
+            },
+            body: JSON.stringify({
+                model: settings.general.model,
+                messages: [
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt || 'You are a helpful assistant.'},
+                    ...messageHistoryAtIndex
+                ],
+                max_tokens: parseInt(settings.general.max_tokens) || 4096,
+                temperature: parseInt(settings.general.temperature),
+            }),
+        });
+
+        const message = response.json.choices[0].message.content;
+
+        const messageContainerEl = document.querySelector('#messageContainer');
+        if (messageContainerEl) {
+            const targetUserMessage = messageContainerElDivs[index];
+            const targetBotMessage = targetUserMessage.nextElementSibling;
+
+            const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+            const loadingEl = targetBotMessage?.querySelector('#loading');
+        
+            if (messageBlock) {
+                if (loadingEl) {
+                    targetBotMessage?.removeChild(loadingEl);
+                }
+
+                await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
+                
+                addParagraphBreaks(messageBlock);
+
+                const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                copyCodeBlocks.forEach((copyCodeBlock) => {
+                    copyCodeBlock.textContent = 'Copy';
+                    setIcon(copyCodeBlock, 'copy');
+                });
+                
+                targetBotMessage?.appendChild(messageBlock);
+            }
+            targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+        }
+
+        addMessage(plugin, message, 'botMessage', settings, index);
+        return;
+
+    } catch (error) {
+        const targetUserMessage = messageContainerElDivs[index];
+        const targetBotMessage = targetUserMessage.nextElementSibling;
+        targetBotMessage?.remove();
+
+        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
+        messageContainer.appendChild(botMessageDiv);
+
+    }
+}
+
+// Fetch response from openai-based rest api url (stream)
+export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
+    const url = 'https://openrouter.ai/api/v1/chat/completions';
+
+    abortController = new AbortController();
+
+    let message = '';
+
+    let isScroll = false;
+
+    const prompt = await getPrompt(plugin, settings);
+
+    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+
+    const messageContainerEl = document.querySelector('#messageContainer');
+    const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+    const botMessageDiv = displayLoadingBotMessage(settings);
+
+    messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await getActiveFileContent(plugin, settings);
+    const referenceCurrentNoteContent = getCurrentNoteContent();
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.APIConnections.openRouter.APIKey}`
+            },
+            body: JSON.stringify({
+                model: settings.general.model,
+                messages: [
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt || 'You are a helpful assistant.'},
+                    ...messageHistoryAtIndex
+                ],
+                stream: true,
+                temperature: parseInt(settings.general.temperature),
+                max_tokens: parseInt(settings.general.max_tokens) || 4096,
+            }),
+            signal: abortController.signal
+        })
+
+        
+        if (!response.ok) {
+            new Notice(`HTTP error! Status: ${response.status}`);
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        if (!response.body) {
+            new Notice('Response body is null or undefined.');
+            throw new Error('Response body is null or undefined.');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let reading = true;
+
+        while (reading) {
+            const { done, value } = await reader.read();
+            if (done) {
+                reading = false;
+                break;
+            }
+
+            const chunk = decoder.decode(value, { stream: false }) || '';
+
+            // console.log('chunk',chunk);
+            
+            const parts = chunk.split('\n');
+
+            // console.log("parts", parts)
+
+            for (const part of parts.filter(Boolean)) { // Filter out empty parts
+                // Check if chunk contains 'data: [DONE]'
+                if (part.includes('data: [DONE]')) {
+                    break;
+                }
+                
+                let parsedChunk;
+                try {
+                    parsedChunk = JSON.parse(part.replace(/^data: /, ''));
+                    if ((parsedChunk.choices[0].finish_reason !== 'stop')) {
+                        const content = parsedChunk.choices[0].delta.content;
+                        message += content;
+                    }
+                } catch (err) {
+                    console.error('Error parsing JSON:', err);
+                    console.log('Part with error:', part);
+                    parsedChunk = {response: '{_e_}'};
+                }
+            }
+
+            const messageContainerEl = document.querySelector('#messageContainer');
+            if (messageContainerEl) {
+                const targetUserMessage = messageContainerElDivs[index];
+                const targetBotMessage = targetUserMessage.nextElementSibling;
+    
+                const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+                const loadingEl = targetBotMessage?.querySelector('#loading');
+
+                if (messageBlock) {
+                    if (loadingEl) {
+                        targetBotMessage?.removeChild(loadingEl);
+                    }
+        
+                    // Clear the messageBlock for re-rendering
+                    messageBlock.innerHTML = '';
+        
+                    // DocumentFragment to render markdown off-DOM
+                    const fragment = document.createDocumentFragment();
+                    const tempContainer = document.createElement('div');
+                    fragment.appendChild(tempContainer);
+        
+                    // Render the accumulated message to the temporary container
+                    await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
+        
+                    // Once rendering is complete, move the content to the actual message block
+                    while (tempContainer.firstChild) {
+                        messageBlock.appendChild(tempContainer.firstChild);
+                    }
+        
+                    addParagraphBreaks(messageBlock);
+
+                    const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+                    copyCodeBlocks.forEach((copyCodeBlock) => {
+                        copyCodeBlock.textContent = 'Copy';
+                        setIcon(copyCodeBlock, 'copy');
+                    });
+                }
+
+                messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
+                    // If the user scrolls up or down, stop auto-scrolling
+                    if (event.deltaY < 0 || event.deltaY > 0) {
+                        isScroll = true;
+                    }
+                });
+
+                if (!isScroll) {
+                    targetBotMessage?.scrollIntoView({ behavior: 'auto', block: 'start' });
+                }
+            }
+
+        }
+        addMessage(plugin, message, 'botMessage', settings, index);
+        
+    } catch (error) {
+        addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
+        new Notice(error);
+        console.error(error);
+    }
+}
+
 // Abort controller
 export function getAbortController() {
     return abortController;

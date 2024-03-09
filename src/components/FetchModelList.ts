@@ -146,3 +146,33 @@ export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
     }
 
 }
+
+export async function fetchOpenRouterModels(plugin: BMOGPT) {
+    try {
+        const response = await requestUrl({
+            url: 'https://openrouter.ai/api/v1/models',
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${plugin.settings.APIConnections.openRouter.APIKey}`
+            },
+        });
+
+        // Check if the response is valid
+        if (response.json && (response.json.data || Array.isArray(response.json))) {
+            let models;
+            if (Array.isArray(response.json)) {
+                models = response.json.map((model: { id: number; }) => model.id);
+            } else {
+                models = response.json.data.map((model: { id: number; }) => model.id);
+            }
+
+            plugin.settings.APIConnections.openRouter.openRouterModels = models;
+            return models;
+        }
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
+    }
+    
+}

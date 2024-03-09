@@ -15,7 +15,9 @@ import { fetchOpenAIAPIResponseStream,
         fetchMistralResponse, 
         fetchMistralResponseStream, 
         fetchGoogleGeminiResponse, 
-        fetchAnthropicResponse } from './components/FetchModelResponse';
+        fetchAnthropicResponse, 
+        fetchOpenRouterResponseStream,
+        fetchOpenRouterResponse} from './components/FetchModelResponse';
 
 export const VIEW_TYPE_CHATBOT = 'chatbot-view';
 export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
@@ -196,9 +198,9 @@ export class BMOView extends ItemView {
 
         // Only allow /stop command to be executed during fetch
         if (this.settings.OllamaConnection.allowOllamaStream || 
-            this.settings.RESTAPIURLConnection.allowRESTAPIURLDataStream || 
+            this.settings.RESTAPIURLConnection.allowStream || 
             this.settings.APIConnections.mistral.allowStream || 
-            this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
+            this.settings.APIConnections.openAI.allowStream) {
             if ((input === '/s' || input === '/stop') && event.key === 'Enter') {
                 this.preventEnter = false;
                 executeCommand(input, this.settings, this.plugin);
@@ -335,7 +337,7 @@ export class BMOView extends ItemView {
                 }
             }
             else if (this.settings.RESTAPIURLConnection.RESTAPIURLModels.includes(this.settings.general.model)){
-                if (this.settings.RESTAPIURLConnection.allowRESTAPIURLDataStream) {
+                if (this.settings.RESTAPIURLConnection.allowStream) {
                     await fetchRESTAPIURLResponseStream(this.plugin, this.settings, index);
                 }
                 else {
@@ -357,11 +359,19 @@ export class BMOView extends ItemView {
                 await fetchGoogleGeminiResponse(this.plugin, this.settings, index);
             }
             else if (this.settings.APIConnections.openAI.openAIBaseModels.includes(this.settings.general.model)) {
-                if (this.settings.APIConnections.openAI.allowOpenAIBaseUrlDataStream) {
+                if (this.settings.APIConnections.openAI.allowStream) {
                     await fetchOpenAIAPIResponseStream(this.plugin, this.settings, index); 
                 }
                 else {
                     await fetchOpenAIAPIResponse(this.plugin, this.settings, index); 
+                }
+            }
+            else if (this.settings.APIConnections.openRouter.openRouterModels.includes(this.settings.general.model)){
+                if (this.settings.APIConnections.openRouter.allowStream) {
+                    await fetchOpenRouterResponseStream(this.plugin, this.settings, index);
+                }
+                else {
+                    await fetchOpenRouterResponse(this.plugin, this.settings, index);
                 }
             }
             else {

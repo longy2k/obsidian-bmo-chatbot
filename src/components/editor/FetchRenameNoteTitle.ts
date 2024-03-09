@@ -98,6 +98,38 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                 console.error('Error making API request:', error);
                 throw error;
             }
+        }
+        else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)) {
+            try {
+                const response = await requestUrl({
+                    url: 'https://openrouter.ai/api/v1/chat/completions',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${settings.APIConnections.openRouter.APIKey}`
+                    },
+                    body: JSON.stringify({
+                        model: settings.general.model,
+                        messages: [
+                            { role: 'system', content: prompt + clearYamlContent},
+                            { role: 'user', content: '\n'}
+                        ],
+                        max_tokens: 40,
+                    }),
+                });
+    
+                let title = response.json.choices[0].message.content;
+
+                // Remove backslashes, forward slashes, colons, and quotes
+                if (title) {
+                    title = title.replace(/[\\/:"]/g, '');
+                }
+                return title;
+    
+            } catch (error) {
+                console.error('Error making API request:', error);
+                throw error;
+            }
 
         }
         else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {

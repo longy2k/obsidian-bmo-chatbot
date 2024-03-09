@@ -2,7 +2,7 @@ import BMOGPT, { BMOSettings, DEFAULT_SETTINGS } from 'src/main';
 import { fetchModelRenameTitle } from './FetchRenameNoteTitle';
 import { MarkdownView, Notice } from 'obsidian';
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
-import { fetchOpenAIBaseAPIResponseEditor, fetchOllamaResponseEditor, fetchRESTAPIURLDataEditor, fetchAnthropicResponseEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor } from '../FetchModelEditor';
+import { fetchOpenAIBaseAPIResponseEditor, fetchOllamaResponseEditor, fetchRESTAPIURLDataEditor, fetchAnthropicResponseEditor, fetchMistralDataEditor, fetchGoogleGeminiDataEditor, fetchOpenRouterEditor } from '../FetchModelEditor';
 
 export async function renameTitleCommand(plugin: BMOGPT, settings: BMOSettings) {
     let uniqueNameFound = false;
@@ -136,6 +136,28 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
             try {
                 new Notice('Generating...');
                 const response = await fetchRESTAPIURLDataEditor(settings, select); 
+                // Replace the current selection with the response
+                const cursorStart = view.editor.getCursor('from');
+                view.editor.replaceSelection(response);
+
+                // Calculate new cursor position based on the length of the response
+                const cursorEnd = { 
+                    line: cursorStart.line, 
+                    ch: cursorStart.ch + response?.length 
+                };
+
+                // Keep the new text selected
+                view.editor.setSelection(cursorStart, cursorEnd);
+            }
+            catch (error) {
+                new Notice('Error occurred while fetching completion: ' + error.message);
+                console.log(error.message);
+            }
+        }
+        else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)){
+            try {
+                new Notice('Generating...');
+                const response = await fetchOpenRouterEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
                 view.editor.replaceSelection(response);

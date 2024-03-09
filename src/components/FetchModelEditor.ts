@@ -182,3 +182,33 @@ export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, se
     const message = completion.choices[0].message.content;
     return message;
 }
+
+// Request response from openai-based rest api url (editor)
+export async function fetchOpenRouterEditor(settings: BMOSettings, selectionString: string) {
+    try {
+        const response = await requestUrl({
+            url: 'https://openrouter.ai/api/v1/chat/completions',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.APIConnections.openRouter.APIKey}`
+            },
+            body: JSON.stringify({
+                model: settings.general.model,
+                messages: [
+                    { role: 'system', content: settings.editor.system_role_prompt_select_generate },
+                    { role: 'user', content: selectionString}
+                ],
+                max_tokens: parseInt(settings.general.max_tokens),
+                temperature: parseInt(settings.general.temperature),
+            }),
+        });
+
+        const message = response.json.choices[0].message.content;
+        return message;
+
+    } catch (error) {
+        console.error('Error making API request:', error);
+        throw error;
+    }
+}

@@ -56,29 +56,34 @@ export interface BMOSettings {
 	RESTAPIURLConnection: {
 		APIKey: string,
 		RESTAPIURL: string,
-		allowRESTAPIURLDataStream: boolean,
+		allowStream: boolean,
 		RESTAPIURLModels: string[],
 	},
 	APIConnections: {
-		openAI: {
+		anthropic: {
 			APIKey: string,
-			openAIBaseUrl: string,
-			allowOpenAIBaseUrlDataStream: boolean,
-			openAIBaseModels: string[],
-		},
-		mistral: {
-			APIKey: string,
-			mistralModels: string[],
-			allowStream: boolean,
+			anthropicModels: string[],
 		},
 		googleGemini: {
 			APIKey: string,
 			geminiModels: string[],
-		}
-		anthropic: {
+		},
+		mistral: {
 			APIKey: string,
-			anthropicModels: string[],
-		}
+			allowStream: boolean,
+			mistralModels: string[],
+		},
+		openAI: {
+			APIKey: string,
+			openAIBaseUrl: string,
+			allowStream: boolean,
+			openAIBaseModels: string[],
+		},
+		openRouter: {
+			APIKey: string,
+			allowStream: boolean,
+			openRouterModels: string[],
+		},
 	},
 	toggleGeneralSettings: boolean,
 	toggleAppearanceSettings: boolean,
@@ -149,29 +154,34 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	RESTAPIURLConnection: {
 		APIKey: '',	
 		RESTAPIURL: '',
-		allowRESTAPIURLDataStream: false,
+		allowStream: false,
 		RESTAPIURLModels: [],
 	},
 	APIConnections: {
-		openAI: {
+		anthropic: {
 			APIKey: '',
-			openAIBaseUrl: 'https://api.openai.com/v1',
-			allowOpenAIBaseUrlDataStream: true,
-			openAIBaseModels: [],
-		},
-		mistral: {
-			APIKey: '',
-			mistralModels: [],
-			allowStream: false,
+			anthropicModels: [],
 		},
 		googleGemini: {
 			APIKey: '',
 			geminiModels: [],
 		},
-		anthropic: {
+		mistral: {
 			APIKey: '',
-			anthropicModels: [],
-		}
+			allowStream: false,
+			mistralModels: [],
+		},
+		openAI: {
+			APIKey: '',
+			openAIBaseUrl: 'https://api.openai.com/v1',
+			allowStream: true,
+			openAIBaseModels: [],
+		},
+		openRouter: {
+			APIKey: '',
+			allowStream: false,
+			openRouterModels: [],
+		},
 	},
 	toggleGeneralSettings: true,
 	toggleAppearanceSettings: false,

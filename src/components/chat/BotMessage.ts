@@ -26,6 +26,7 @@ export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, message
     const messageBlockDiv = document.createElement('div');
     messageBlockDiv.className = 'messageBlock';
 
+    // Add buttons to the bot message
     if (!message.includes('commandBotMessage') && !message.includes('errorBotMessage')) {
         const editButton = displayBotEditButton(plugin, message);
         const copyBotButton = displayBotCopyButton(settings, message);
@@ -33,17 +34,17 @@ export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, message
         buttonContainerDiv.appendChild(editButton);
         buttonContainerDiv.appendChild(copyBotButton);
         buttonContainerDiv.appendChild(appendButton);
-
-        addParagraphBreaks(messageBlockDiv);  
-
-        MarkdownRenderer.render(plugin.app, message, messageBlockDiv, '', plugin);
-
-        const copyCodeBlocks = messageBlockDiv.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
-        copyCodeBlocks.forEach((copyCodeBlock) => {
-            copyCodeBlock.textContent = 'Copy';
-            setIcon(copyCodeBlock, 'copy');
-        });
     }
+
+    addParagraphBreaks(messageBlockDiv);  
+
+    MarkdownRenderer.render(plugin.app, message, messageBlockDiv, '', plugin);
+
+    const copyCodeBlocks = messageBlockDiv.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+    copyCodeBlocks.forEach((copyCodeBlock) => {
+        copyCodeBlock.textContent = 'Copy';
+        setIcon(copyCodeBlock, 'copy');
+    });
 
     botMessageDiv.appendChild(botMessageToolBarDiv);
     botMessageDiv.appendChild(messageBlockDiv);
