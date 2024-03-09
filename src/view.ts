@@ -34,10 +34,6 @@ export let lastCursorPosition: EditorPosition = {
 export let lastCursorPositionFile: TFile | null = null;
 export let activeEditor: Editor | null | undefined = null;
 
-export function clearMessageHistory() {
-    messageHistory = [];
-}
-
 export class BMOView extends ItemView {
     private settings: BMOSettings;
     private textareaElement: HTMLTextAreaElement;
@@ -416,5 +412,29 @@ async function loadData(plugin: BMOGPT) {
         }
     } else {
         messageHistory = [];
+    }
+}
+
+// Delete all messages from the messageContainer and the messageHistory array
+export async function deleteAllMessages(plugin: BMOGPT) {
+    const messageContainer = document.querySelector('#messageContainer');
+
+    // Remove all child nodes from the messageContainer
+    if (messageContainer) {
+        while (messageContainer.firstChild) {
+            messageContainer.removeChild(messageContainer.firstChild);
+        }
+    }
+
+    // Clear the messageHistory array
+    messageHistory = [];
+
+    // Write an empty array to the messageHistory.json file
+    const jsonString = JSON.stringify(messageHistory, null, 4);
+
+    try {
+        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+    } catch (error) {
+        console.error('Error writing messageHistory.json', error);
     }
 }

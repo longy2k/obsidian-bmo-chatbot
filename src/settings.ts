@@ -1,5 +1,5 @@
 import { App, PluginSettingTab } from 'obsidian';
-import BMOGPT from './main';
+import BMOGPT, { DEFAULT_SETTINGS } from './main';
 import { addGeneralSettings } from './components/settings/GeneralSettings';
 import { addAppearanceSettings } from './components/settings/AppearanceSettings';
 import { addChatHistorySettings } from './components/settings/ChatHistorySettings';
@@ -40,12 +40,49 @@ export class BMOSettingTab extends PluginSettingTab {
 		addChatHistorySettings(this.containerEl, this.plugin, this);
 		addPromptSettings(this.containerEl, this.plugin, this);
 
-		const separator = document.createElement('hr');
-		separator.style.margin = '1rem 0';
-		this.containerEl.appendChild(separator);
+		addHorizontalRule(this.containerEl);
 
 		addOllamaSettings(this.containerEl, this.plugin, this);
 		addRESTAPIURLSettings(this.containerEl, this.plugin, this);
 		addAPIConnectionSettings(this.containerEl, this.plugin, this);
+
+		addHorizontalRule(this.containerEl);
+
+		const resetButton = containerEl.createEl('a', {
+			text: 'Reset Settings',
+			href: '#',
+			attr: {
+				style: 'display: block; text-align: center; margin: 1rem 0; font-size: 0.7rem; color: #ff6666;'
+			}
+		});
+
+		resetButton.addEventListener('click', async (event) => {
+			event.preventDefault();
+			const confirmReset = confirm('Are you sure you want to reset all settings to default?');
+			if (confirmReset) {
+				this.plugin.settings = DEFAULT_SETTINGS;
+				await this.plugin.saveSettings();
+				// @ts-ignore
+				await this.plugin.app.plugins.disablePlugin(this.plugin.manifest.id);
+				// @ts-ignore
+				await this.plugin.app.plugins.enablePlugin(this.plugin.manifest.id);
+				// @ts-ignore
+				this.plugin.app.setting.openTabById(this.plugin.manifest.id).display();
+			}
+		});
+
+		const resetNotice = containerEl.createEl('p', {
+			text: 'Please reset your settings if you have recently updated from version <1.9.0.',
+			attr: {
+				style: 'font-size: 0.7rem; text-align: center;'
+			}
+		});
+		containerEl.appendChild(resetNotice);
 	}
+}
+
+function addHorizontalRule(containerEl: HTMLElement) {
+	const separator = document.createElement('hr');
+	separator.style.margin = '1rem 0';
+	containerEl.appendChild(separator);
 }
