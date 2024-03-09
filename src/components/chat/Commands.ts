@@ -20,9 +20,9 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
       case '/model':
       case '/models':
           return commandModel(input, settings, plugin);
-      case '/prompt':
-      case '/prompts':
-          return commandPrompt(input, settings, plugin);
+      case '/profile':
+      case '/profiles':
+          return commandProfile(input, settings, plugin);
       case '/reference':
       case '/ref':
           commandReference(input, settings, plugin);
@@ -93,8 +93,8 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
   const commandBotMessage =
   `<h2>Commands</h2>
   <p><code>/model "[MODEL-NAME]" or [VALUE]</code> - List or change model.</p>
-  <p><code>/prompt "[PROMPT-NAME]" or [VALUE]</code> - List or change prompt.</p>
-  <p><code>/prompt clear</code> - Clear prompt.</p>
+  <p><code>/profile "[PROFILE-NAME]" or [VALUE]</code> - List or change profile.</p>
+  <p><code>/profile clear</code> - Clear profile.</p>
   <p><code>/system "[PROMPT]"</code> - Change system setting.</p>
   <p><code>/maxtokens [VALUE]</code> - Set max tokens.</p>
   <p><code>/temp [VALUE]</code> - Change temperature range 0 from to 1.</p>
@@ -169,13 +169,13 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
   }
 }
 
-// `/prompt "[VALUE]"` to change prompt.
-export async function commandPrompt(input: string, settings: BMOSettings, plugin: BMOGPT) {
+// `/profile "[VALUE]"` to change profile.
+export async function commandProfile(input: string, settings: BMOSettings, plugin: BMOGPT) {
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
 
-  if (!settings.prompts.promptFolderPath) {
-    new Notice('Prompt folder path not set.');
-    const commandBotMessage = '<p>Prompt folder path not set.</p>';
+  if (!settings.profiles.profileFolderPath) {
+    new Notice('Profile folder path not set.');
+    const commandBotMessage = '<p>Profile folder path not set.</p>';
 
     const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
     messageContainer.appendChild(botMessageDiv);
@@ -183,12 +183,12 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
   }
 
   // Fetching files from the specified folder
-  const files = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.prompts.promptFolderPath));
+  const files = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.profiles.profileFolderPath));
 
   // Sorting the files array alphabetically by file name
   files.sort((a, b) => a.name.localeCompare(b.name));
 
-  // Check if the user has not specified a prompt after the "/prompt" command
+  // Check if the user has not specified a profile after the "/profile" command
   if (!input.split(' ')[1]) {
 
     // Loop through files and create list items, removing the file extension
@@ -197,16 +197,16 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
       return `<li>${fileNameWithoutExtension}</li>`;
     }).join('');
 
-    let currentPrompt = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
+    let currentProfile = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
 
-    // Check if currentPrompt is empty, and set it to "Empty" if it is
-    if (!currentPrompt) {
-      currentPrompt = 'Empty';
+    // Check if currentProfile is empty, and set it to "Empty" if it is
+    if (!currentProfile) {
+      currentProfile = 'Empty';
     }
 
     const commandBotMessage = 
-    `<h2>Prompts</h2>
-      <p><b>Current prompt:</b> ${currentPrompt}</p>
+    `<h2>Profiles</h2>
+      <p><b>Current profile:</b> ${currentProfile}</p>
       <ol>${fileListItems}</ol>`;
 
     const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
@@ -215,9 +215,9 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
     return;
   }
 
-  // Check if the user has specified a prompt after the "/prompt" command
-  if (input.startsWith('/prompt')) {
-    let inputValue = input.substring('/prompt '.length).trim();
+  // Check if the user has specified a profile after the "/profile" command
+  if (input.startsWith('/profile')) {
+    let inputValue = input.substring('/profile '.length).trim();
 
     // Remove quotation marks if present
     if ((inputValue.startsWith('"') && inputValue.endsWith('"')) ||
@@ -227,8 +227,8 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
 
     // Set to default or empty if the input is 'clear' or 'c'
     if (inputValue === 'clear' || inputValue === 'c') {
-      settings.prompts.prompt = ''; // Set to default or empty
-      const commandBotMessage = 'Prompt cleared.';
+      settings.profiles.profile = ''; // Set to default or empty
+      const commandBotMessage = 'Profile cleared.';
       const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
 
@@ -236,35 +236,35 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
       return settings;
     }
     
-    const promptAliases: { [key: string]: string } = {};
+    const profileAliases: { [key: string]: string } = {};
     
-    // Create aliases for each file (prompt)
+    // Create aliases for each file (profile)
     for (let i = 1; i <= files.length; i++) {
       const fileNameWithoutExtension = files[i - 1].name.replace(/\.[^/.]+$/, '');
-      promptAliases[i.toString()] = fileNameWithoutExtension;
+      profileAliases[i.toString()] = fileNameWithoutExtension;
     }
 
     let currentModel;
-    if (promptAliases[inputValue]) {
-      // If input matches a key in promptAliases
-      settings.prompts.prompt = promptAliases[inputValue] + '.md';
-      currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
-      const commandBotMessage = `<b>Updated Prompt to</b> '${currentModel}'`;
+    if (profileAliases[inputValue]) {
+      // If input matches a key in profileAliases
+      settings.profiles.profile = profileAliases[inputValue] + '.md';
+      currentModel = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+      const commandBotMessage = `<b>Updated profile to</b> '${currentModel}'`;
       const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
-    } else if (Object.values(promptAliases).includes(inputValue)) {
-      // If input matches a value in promptAliases
-      settings.prompts.prompt = inputValue + '.md';
-      currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
-      const commandBotMessage = `<b>Updated Prompt to</b> '${currentModel}'`;
+    } else if (Object.values(profileAliases).includes(inputValue)) {
+      // If input matches a value in profileAliases
+      settings.profiles.profile = inputValue + '.md';
+      currentModel = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+      const commandBotMessage = `<b>Updated Profile to</b> '${currentModel}'`;
       const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
     } else {
-      // If the input prompt does not exist
-      const commandBotMessage = `Prompt '${inputValue}' does not exist.`;
+      // If the input profile does not exist
+      const commandBotMessage = `Profile '${inputValue}' does not exist.`;
       const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
       messageContainer.appendChild(botMessageDiv);
-      new Notice('Invalid prompt.');
+      new Notice('Invalid profile.');
     }
 
     await plugin.saveSettings();

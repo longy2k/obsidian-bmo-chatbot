@@ -3,7 +3,6 @@ import BMOGPT, { BMOSettings } from '../main';
 import { messageHistory } from '../view';
 import { ChatCompletionMessageParam } from 'openai/resources/chat';
 import { addMessage, addParagraphBreaks } from './chat/Message';
-import { getPrompt } from './chat/Prompt';
 import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
 import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
 import OpenAI from 'openai';
@@ -18,8 +17,6 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
     if (!ollamaRESTAPIURL) {
         return;
     }
-
-    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -45,7 +42,7 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
                     ...messageHistoryAtIndex
                 ],
                 stream: false,
@@ -113,8 +110,6 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
 
     let isScroll = false;
 
-    const prompt = await getPrompt(plugin, settings);
-
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -138,7 +133,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
@@ -249,8 +244,6 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
 
 // Fetch response from openai-based rest api url
 export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(plugin, settings);
-
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -276,7 +269,7 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt || 'You are a helpful assistant.'},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || -1,
@@ -346,8 +339,6 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
 
     let isScroll = false;
 
-    const prompt = await getPrompt(plugin, settings);
-
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
 
@@ -372,7 +363,7 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt || 'You are a helpful assistant.'},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
@@ -494,7 +485,6 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
 
 // Fetch response from Anthropic
 export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -521,7 +511,7 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
             },
             body: JSON.stringify({
                 model: settings.general.model,
-                system: referenceCurrentNoteContent + settings.general.system_role + prompt,
+                system: referenceCurrentNoteContent + settings.general.system_role,
                 messages: [
                     ...messageHistoryAtIndex
                 ],
@@ -578,8 +568,6 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
 
 // Fetch response from Google Gemini
 export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(plugin, settings);
-
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -607,7 +595,7 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
 
         // Append referenceCurrentNoteContent to the last user message, if found
         if (lastUserMessageIndex !== undefined) {
-            modifiedMessageHistory[lastUserMessageIndex].content += '\n\n' + referenceCurrentNoteContent + '\n\n' + settings.general.system_role + '\n\n' + prompt;
+            modifiedMessageHistory[lastUserMessageIndex].content += '\n\n' + referenceCurrentNoteContent + '\n\n' + settings.general.system_role + '\n\n';
         }
 
         const contents = modifiedMessageHistory.map(({ role, content }) => ({
@@ -692,8 +680,6 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
 
 // Fetch response from Mistral
 export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(plugin, settings);
-    
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -719,7 +705,7 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
                     ...messageHistoryAtIndex
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || 4096,
@@ -780,8 +766,6 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
 
     let isScroll = false;
 
-    const prompt = await getPrompt(plugin, settings);
-
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
 
@@ -806,7 +790,7 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
@@ -934,8 +918,6 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
-    const prompt = await getPrompt(plugin, settings);
-
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
 
@@ -956,7 +938,7 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
             max_tokens: parseInt(settings.general.max_tokens),
             stream: false,
             messages: [
-                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
                 ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
         });
@@ -1018,8 +1000,6 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
     let message = '';
     let isScroll = false;
 
-    const prompt = await getPrompt(plugin, settings);
-
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
 
@@ -1044,7 +1024,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
             temperature: parseInt(settings.general.temperature),
             stream: true,
             messages: [
-                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt},
+                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
                 ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
         });
@@ -1122,8 +1102,6 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
 
 // Fetch response from OpenRouter
 export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-    const prompt = await getPrompt(plugin, settings);
-
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -1149,7 +1127,7 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt || 'You are a helpful assistant.'},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || 4096,
@@ -1213,8 +1191,6 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
 
     let isScroll = false;
 
-    const prompt = await getPrompt(plugin, settings);
-
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
 
@@ -1239,7 +1215,7 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt || 'You are a helpful assistant.'},
+                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,

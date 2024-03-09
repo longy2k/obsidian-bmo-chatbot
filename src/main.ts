@@ -4,6 +4,10 @@ import { BMOSettingTab } from './settings';
 import { promptSelectGenerateCommand, renameTitleCommand } from './components/editor/EditorCommands';
 
 export interface BMOSettings {
+	profiles: {
+		profileFolderPath: string,
+		profile: string,
+	},
 	general: {
 		model: string,
 		system_role: string,
@@ -28,10 +32,6 @@ export interface BMOSettings {
 		templateFilePath: string,
 		allowRenameNoteTitle: boolean,
 	}
-	prompts: {
-		promptFolderPath: string,
-		prompt: string,
-	},
 	OllamaConnection: {
 		RESTAPIURL: string,
 		allowStream: boolean,
@@ -89,7 +89,7 @@ export interface BMOSettings {
 	toggleAppearanceSettings: boolean,
 	toggleEditorSettings: boolean,
 	toggleChatHistorySettings: boolean,
-	togglePromptSettings: boolean,
+	toggleProfileSettings: boolean,
 	toggleAPIConnectionSettings: boolean,
 	toggleOpenAISettings: boolean,
 	toggleMistralSettings: boolean,
@@ -103,6 +103,10 @@ export interface BMOSettings {
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
+	profiles: {
+		profileFolderPath: '',
+		profile: '',
+	},
 	general: {
 		model: '',
 		system_role: 'You are a helpful assistant.',
@@ -126,10 +130,6 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		chatHistoryPath: 'BMO/',
 		templateFilePath: '',
 		allowRenameNoteTitle: false,
-	},
-	prompts: {
-		promptFolderPath: '',
-		prompt: '',
 	},
 	OllamaConnection: {
 		RESTAPIURL: '',
@@ -188,7 +188,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	toggleAppearanceSettings: false,
 	toggleEditorSettings: false,
 	toggleChatHistorySettings: false,
-	togglePromptSettings: false,
+	toggleProfileSettings: false,
 	toggleAPIConnectionSettings: true,
 	toggleOpenAISettings: false,
 	toggleMistralSettings: false,
