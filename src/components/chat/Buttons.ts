@@ -44,7 +44,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                 }
             }
             else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
-                if (settings.OllamaConnection.allowOllamaStream) {
+                if (settings.OllamaConnection.allowStream) {
                     await fetchOllamaResponseStream(plugin, settings, index);
                 }
                 else {
@@ -154,7 +154,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                     deleteMessage(plugin, index+1);
 
                     if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
-                        if (settings.OllamaConnection.allowOllamaStream) {
+                        if (settings.OllamaConnection.allowStream) {
                             await fetchOllamaResponseStream(plugin, settings, index);
                         }
                         else {

@@ -197,7 +197,7 @@ export class BMOView extends ItemView {
         const index = messageHistory.length - 1;
 
         // Only allow /stop command to be executed during fetch
-        if (this.settings.OllamaConnection.allowOllamaStream || 
+        if (this.settings.OllamaConnection.allowStream || 
             this.settings.RESTAPIURLConnection.allowStream || 
             this.settings.APIConnections.mistral.allowStream || 
             this.settings.APIConnections.openAI.allowStream) {
@@ -329,7 +329,7 @@ export class BMOView extends ItemView {
         else {
             // Fetch OpenAI API
             if (this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
-                if (this.settings.OllamaConnection.allowOllamaStream) {
+                if (this.settings.OllamaConnection.allowStream) {
                     await fetchOllamaResponseStream(this.plugin, this.settings, index);
                 }
                 else {

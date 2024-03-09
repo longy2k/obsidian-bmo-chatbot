@@ -34,11 +34,11 @@ export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, message
         buttonContainerDiv.appendChild(editButton);
         buttonContainerDiv.appendChild(copyBotButton);
         buttonContainerDiv.appendChild(appendButton);
-    }
-
-    addParagraphBreaks(messageBlockDiv);  
+    } 
 
     MarkdownRenderer.render(plugin.app, message, messageBlockDiv, '', plugin);
+
+    addParagraphBreaks(messageBlockDiv); 
 
     const copyCodeBlocks = messageBlockDiv.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
     copyCodeBlocks.forEach((copyCodeBlock) => {

@@ -51,8 +51,8 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
         .setName('Allow Stream')
         .setDesc(addDescriptionLink('Allow Ollama models to stream response. Additional setup required: ', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/How-to-setup-with-Ollama', '', '[Instructions]'))
         .addToggle((toggle) =>
-            toggle.setValue(plugin.settings.OllamaConnection.allowOllamaStream).onChange((value) => {
-                plugin.settings.OllamaConnection.allowOllamaStream = value;
+            toggle.setValue(plugin.settings.OllamaConnection.allowStream).onChange((value) => {
+                plugin.settings.OllamaConnection.allowStream = value;
                 plugin.saveSettings();
             })
         );

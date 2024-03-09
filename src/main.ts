@@ -34,8 +34,7 @@ export interface BMOSettings {
 	},
 	OllamaConnection: {
 		RESTAPIURL: string,
-		allowOllamaStream: boolean,
-		ollamaModels: string[],
+		allowStream: boolean,
 		ollamaParameters: {
 			mirostat: string,
 			mirostat_eta: string,
@@ -52,6 +51,7 @@ export interface BMOSettings {
 			top_p: string,
 			keep_alive: string,
 		},
+		ollamaModels: string[],
 	},
 	RESTAPIURLConnection: {
 		APIKey: string,
@@ -133,8 +133,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	},
 	OllamaConnection: {
 		RESTAPIURL: '',
-		allowOllamaStream: false,
-		ollamaModels: [],
+		allowStream: false,
 		ollamaParameters: {
 			keep_alive: '',
 			mirostat: '0',
@@ -151,6 +150,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 			top_k: '40',
 			top_p: '0.9',
 		},
+		ollamaModels: [],
 	},
 	RESTAPIURLConnection: {
 		APIKey: '',	
