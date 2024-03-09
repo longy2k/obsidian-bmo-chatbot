@@ -5,7 +5,7 @@ export function addOpenRouterConnectionSettings(containerEl: HTMLElement, plugin
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
     toggleSettingContainer.createEl('h2', { text: 'OpenRouter' });
 
-    const initialState = plugin.settings.toggleMistralSettings;
+    const initialState = plugin.settings.toggleOpenRouterSettings;
     const chevronIcon = toggleSettingContainer.createEl('span', { cls: 'chevron-icon' });
     setIcon(chevronIcon, initialState ? 'chevron-down' : 'chevron-right');
 
@@ -19,12 +19,12 @@ export function addOpenRouterConnectionSettings(containerEl: HTMLElement, plugin
         if (isOpen) {
             setIcon(chevronIcon, 'chevron-right'); // Close state
             settingsContainer.style.display = 'none';
-            plugin.settings.toggleMistralSettings = false;
+            plugin.settings.toggleOpenRouterSettings = false;
 
         } else {
             setIcon(chevronIcon, 'chevron-down'); // Open state
             settingsContainer.style.display = 'block';
-            plugin.settings.toggleMistralSettings = true;
+            plugin.settings.toggleOpenRouterSettings = true;
         }
         await plugin.saveSettings();
     });

@@ -152,18 +152,21 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                 if (index !== -1) {
                     messageHistory[index].content = textArea.value.trim();
                     deleteMessage(plugin, index+1);
-                    // Fetch OpenAI API
-                    if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
-                        try {
-                            if (settings.APIConnections.openAI.allowStream) {
-                                await fetchOpenAIAPIResponseStream(plugin, settings, index); 
-                            } else {
-                                await fetchOpenAIAPIResponse(plugin, settings, index);
-                            }
+
+                    if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
+                        if (settings.OllamaConnection.allowOllamaStream) {
+                            await fetchOllamaResponseStream(plugin, settings, index);
                         }
-                        catch (error) {
-                            new Notice('Error occurred while fetching completion: ' + error.message);
-                            console.log(error.message);
+                        else {
+                            await fetchOllamaResponse(plugin, settings, index);
+                        }
+                    }
+                    else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
+                        if (settings.RESTAPIURLConnection.allowStream) {
+                            await fetchRESTAPIURLResponseStream(plugin, settings, index);
+                        }
+                        else {
+                            await fetchRESTAPIURLResponse(plugin, settings, index);
                         }
                     }
                     else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
@@ -174,12 +177,13 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                             console.error('Error:', error);
                         }
                     }
-                    else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
-                        if (settings.OllamaConnection.allowOllamaStream) {
-                            await fetchOllamaResponseStream(plugin, settings, index);
+                    else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
+                        try {
+                            await fetchGoogleGeminiResponse(plugin, settings, index);
                         }
-                        else {
-                            await fetchOllamaResponse(plugin, settings, index);
+                        catch (error) {
+                            console.error('Error:', error);
+                        
                         }
                     }
                     else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
@@ -195,21 +199,17 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                             console.error('Error:', error);
                         }
                     }
-                    else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
+                    else if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                         try {
-                            await fetchGoogleGeminiResponse(plugin, settings, index);
+                            if (settings.APIConnections.openAI.allowStream) {
+                                await fetchOpenAIAPIResponseStream(plugin, settings, index); 
+                            } else {
+                                await fetchOpenAIAPIResponse(plugin, settings, index);
+                            }
                         }
                         catch (error) {
-                            console.error('Error:', error);
-                        
-                        }
-                    }
-                    else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
-                        if (settings.RESTAPIURLConnection.allowStream) {
-                            await fetchRESTAPIURLResponseStream(plugin, settings, index);
-                        }
-                        else {
-                            await fetchRESTAPIURLResponse(plugin, settings, index);
+                            new Notice('Error occurred while fetching completion: ' + error.message);
+                            console.log(error.message);
                         }
                     }
                     else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)){

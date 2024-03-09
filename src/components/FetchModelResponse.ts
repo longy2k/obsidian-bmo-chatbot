@@ -279,7 +279,7 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
                     { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role + prompt || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
-                max_tokens: parseInt(settings.general.max_tokens) || 4096,
+                max_tokens: parseInt(settings.general.max_tokens) || -1,
                 temperature: parseInt(settings.general.temperature),
             }),
         });

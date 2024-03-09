@@ -55,10 +55,10 @@ export async function fetchRESTAPIURLDataEditor(settings: BMOSettings, selection
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: settings.editor.system_role_prompt_select_generate },
+                    { role: 'system', content: settings.editor.system_role_prompt_select_generate || 'You are a helpful assistant.' },
                     { role: 'user', content: selectionString}
                 ],
-                max_tokens: parseInt(settings.general.max_tokens),
+                max_tokens: parseInt(settings.general.max_tokens) || -1,
                 temperature: parseInt(settings.general.temperature),
             }),
         });

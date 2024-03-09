@@ -11,31 +11,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                     forward slashes, or colons. Generate a title as your response.\n\n`;
 
     try {
-        if (OPENAI_MODELS.includes(settings.general.model) || (settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model))) {
-            const openai = new OpenAI({
-                apiKey: settings.APIConnections.openAI.APIKey,
-                baseURL: settings.APIConnections.openAI.openAIBaseUrl,
-                dangerouslyAllowBrowser: true, // apiKey is stored within data.json
-            });
-
-            const chatCompletion = await openai.chat.completions.create({
-                model: settings.general.model,
-                max_tokens: 40,
-                messages: [
-                    { role: 'system', content: prompt + clearYamlContent},
-                    { role: 'user', content: ''}
-                ],
-            });
-
-            let title = chatCompletion.choices[0].message.content;
-            // Remove backslashes, forward slashes, colons, and quotes
-            if (title) {
-                title = title.replace(/[\\/:"]/g, '');
-            }
-
-            return title;
-        }
-        else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
+        if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
             const url = settings.OllamaConnection.RESTAPIURL + '/api/generate';
 
             const requestBody = {
@@ -44,7 +20,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                 stream: false,
                 options: {
                     temperature: parseInt(settings.general.temperature),
-                    num_predict: 25,
+                    num_predict: 40,
                 },
             };
     
@@ -99,70 +75,40 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                 throw error;
             }
         }
-        else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)) {
-            try {
+        else if(ANTHROPIC_MODELS.includes(settings.general.model)) {
+              try {
                 const response = await requestUrl({
-                    url: 'https://openrouter.ai/api/v1/chat/completions',
+                    url: 'https://api.anthropic.com/v1/messages',
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${settings.APIConnections.openRouter.APIKey}`
+                        'anthropic-version': '2023-06-01',
+                        'content-type': 'application/json',
+                        'x-api-key': settings.APIConnections.anthropic.APIKey,
                     },
                     body: JSON.stringify({
                         model: settings.general.model,
+                        system: prompt,
                         messages: [
-                            { role: 'system', content: prompt + clearYamlContent},
-                            { role: 'user', content: '\n'}
+                            { role: 'user', content: `${clearYamlContent}`}
                         ],
                         max_tokens: 40,
+                        temperature: parseInt(settings.general.temperature),
                     }),
                 });
-    
-                let title = response.json.choices[0].message.content;
+
+                let title = response.json.content[0].text;
 
                 // Remove backslashes, forward slashes, colons, and quotes
                 if (title) {
                     title = title.replace(/[\\/:"]/g, '');
                 }
                 return title;
-    
-            } catch (error) {
-                console.error('Error making API request:', error);
-                throw error;
-            }
-
-        }
-        else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
-            try {
-                const response = await requestUrl({
-                    url: 'https://api.mistral.ai/v1/chat/completions',
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${settings.APIConnections.mistral.APIKey}`
-                    },
-                    body: JSON.stringify({
-                        model: settings.general.model,
-                        messages: [
-                            { role: 'system', content: prompt + clearYamlContent},
-                            { role: 'user', content: '\n'}
-                        ],
-                        max_tokens: 40,
-                    }),
-                });
-    
-                let title = response.json.choices[0].message.content;
-
-                // Remove backslashes, forward slashes, colons, and quotes
-                if (title) {
-                    title = title.replace(/[\\/:"]/g, '');
-                }
-                return title;
-    
-            } catch (error) {
+            
+              } catch (error) {
+                new Notice(error);
                 console.error(error);
-            }
-
+                throw error;
+              }
         }
         else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
             try {        
@@ -195,54 +141,93 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
                 console.error(error);
             }
         }
-        else if(ANTHROPIC_MODELS.includes(settings.general.model)) {
-            const headers = {
-                'anthropic-version': '2023-06-01',
-                'content-type': 'application/json',
-                'x-api-key': settings.APIConnections.anthropic.APIKey,
-              };
-          
-              const requestBody = {
-                  model: settings.general.model,
-                  prompt:  `\n\nHuman: ${prompt}\n\nAssistant:`,
-                  max_tokens_to_sample: 40,
-                  temperature: parseInt(settings.general.temperature),
-                  stream: true,
-              };
-            
-              try {
+        else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
+            try {
                 const response = await requestUrl({
-                  url: 'https://api.anthropic.com/v1/complete',
-                  method: 'POST',
-                  headers,
-                  body: JSON.stringify(requestBody),
+                    url: 'https://api.mistral.ai/v1/chat/completions',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${settings.APIConnections.mistral.APIKey}`
+                    },
+                    body: JSON.stringify({
+                        model: settings.general.model,
+                        messages: [
+                            { role: 'system', content: prompt + clearYamlContent},
+                            { role: 'user', content: '\n'}
+                        ],
+                        max_tokens: 40,
+                    }),
                 });
-
-                const message = response.text;
-                const lines = message.split('\n');
-                let title = '';
-            
-                for (const line of lines) {
-                  if (line.startsWith('data:')) {
-                    const eventData = JSON.parse(line.slice('data:'.length));
-                    if (eventData.completion) {
-                      title += eventData.completion;
-                    }
-                  }
-                }
+    
+                let title = response.json.choices[0].message.content;
 
                 // Remove backslashes, forward slashes, colons, and quotes
                 if (title) {
                     title = title.replace(/[\\/:"]/g, '');
                 }
-            
                 return title;
-            
-              } catch (error) {
-                new Notice('Error making API request:', error);
+            } catch (error) {
+                console.error(error);
+            }
+
+        }
+        else if (OPENAI_MODELS.includes(settings.general.model) || (settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model))) {
+            const openai = new OpenAI({
+                apiKey: settings.APIConnections.openAI.APIKey,
+                baseURL: settings.APIConnections.openAI.openAIBaseUrl,
+                dangerouslyAllowBrowser: true, // apiKey is stored within data.json
+            });
+
+            const chatCompletion = await openai.chat.completions.create({
+                model: settings.general.model,
+                max_tokens: 40,
+                messages: [
+                    { role: 'system', content: prompt + clearYamlContent},
+                    { role: 'user', content: ''}
+                ],
+            });
+
+            let title = chatCompletion.choices[0].message.content;
+            // Remove backslashes, forward slashes, colons, and quotes
+            if (title) {
+                title = title.replace(/[\\/:"]/g, '');
+            }
+
+            return title;
+        }
+        else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)) {
+            try {
+                const response = await requestUrl({
+                    url: 'https://openrouter.ai/api/v1/chat/completions',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${settings.APIConnections.openRouter.APIKey}`
+                    },
+                    body: JSON.stringify({
+                        model: settings.general.model,
+                        messages: [
+                            { role: 'system', content: prompt + clearYamlContent},
+                            { role: 'user', content: '\n'}
+                        ],
+                        max_tokens: 40,
+                    }),
+                });
+    
+                let title = response.json.choices[0].message.content;
+
+                // Remove backslashes, forward slashes, colons, and quotes
+                if (title) {
+                    title = title.replace(/[\\/:"]/g, '');
+                }
+                return title;
+    
+            } catch (error) {
                 console.error('Error making API request:', error);
                 throw error;
-              }
+            }
+
         }
         else {
             throw new Error('Invalid model selected for renaming note title. Please check your settings.');
