@@ -33,6 +33,8 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
 
+		addHorizontalRule(this.containerEl);
+
 		// Display settings
 		addProfileSettings(this.containerEl, this.plugin, this);
 		addGeneralSettings(this.containerEl, this.plugin, this);
@@ -66,8 +68,16 @@ export class BMOSettingTab extends PluginSettingTab {
 				await this.plugin.app.plugins.disablePlugin(this.plugin.manifest.id);
 				// @ts-ignore
 				await this.plugin.app.plugins.enablePlugin(this.plugin.manifest.id);
-				// @ts-ignore
-				this.plugin.app.setting.openTabById(this.plugin.manifest.id).display();
+
+				requestAnimationFrame(() => {
+					// @ts-ignore
+					const refreshTab = this.plugin.app.setting.openTabById('bmo-chatbot');
+					if (refreshTab) {
+						refreshTab.display();
+					} else {
+						new BMOSettingTab(this.app, this.plugin).display();
+					}
+				});
 			}
 		});
 
@@ -77,6 +87,7 @@ export class BMOSettingTab extends PluginSettingTab {
 				style: 'font-size: 0.7rem; text-align: center;'
 			}
 		});
+
 		containerEl.appendChild(resetNotice);
 	}
 }

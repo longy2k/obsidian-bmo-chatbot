@@ -45,7 +45,7 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {
-        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
     } catch (error) {
         console.error('Error writing to message history file:', error);
     }

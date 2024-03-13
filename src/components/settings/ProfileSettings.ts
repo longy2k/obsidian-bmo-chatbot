@@ -1,5 +1,5 @@
-import { Setting, SettingTab, TFolder, setIcon } from 'obsidian';
-import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
+import { Setting, SettingTab, TFile, TFolder, setIcon } from 'obsidian';
+import BMOGPT, { DEFAULT_SETTINGS, updateSettingsFromFrontMatter } from 'src/main';
 
 
 // Profile Settings
@@ -35,47 +35,73 @@ export function addProfileSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
     .setName('Profile')
     .setDesc('Select a profile.')
     .addDropdown(dropdown => {
-        dropdown.addOption('', '--EMPTY--');
 
         if (plugin.settings.profiles.profileFolderPath !== '') {
             // Fetching files from the specified folder
             const files = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.profiles.profileFolderPath));
-    
+        
             // Sorting the files array alphabetically by file name
             files.sort((a, b) => a.name.localeCompare(b.name));
-
-            // Adding each file name as a dropdown option
+        
+            const dataFolderPath = './.obsidian/plugins/bmo-chatbot/data/';
+            
+            if (!plugin.app.vault.getAbstractFileByPath(dataFolderPath)) {
+                plugin.app.vault.adapter.mkdir(dataFolderPath);
+            }
+        
             files.forEach((file) => {
-                const fileName = file.name.replace(/\.[^/.]+$/, ''); // Removing the file extension
-                dropdown.addOption(file.name, fileName);
-            });
-        }
+                if (file instanceof TFile) {
+                    const fileName = file.basename;
+                    const newFileName = `messageHistory_${fileName}.json`;
+                    const newFilePath = `${dataFolderPath}${newFileName}`;
+        
+                    plugin.app.vault.create(newFilePath, '')
+                    .catch((err) => {
+                        // If the file already exists, log a message
+                        if (err.message === 'File already exists.') {
+                            // console.log(`File ${newFilePath} already exists. Skipping creation.`);
+                        } else {
+                            // For any other error, rethrow it
+                            throw err;
+                        }
+                    });
 
-        // Set the default option to the empty one
-        dropdown.setValue('');
+                    // Adding the file name as a dropdown option
+                    dropdown.addOption(file.name, fileName);
+                }
+            });
+
+        }
 
         dropdown
         .setValue(plugin.settings.profiles.profile || DEFAULT_SETTINGS.profiles.profile)
         .onChange(async (value) => {
             plugin.settings.profiles.profile = value ? value : DEFAULT_SETTINGS.profiles.profile;
+            const profileFilePath = plugin.settings.profiles.profileFolderPath + '/' + plugin.settings.profiles.profile;
+            const currentProfile = plugin.app.vault.getAbstractFileByPath(profileFilePath) as TFile;
+            plugin.activateView();
+            await updateSettingsFromFrontMatter(plugin, currentProfile);
             await plugin.saveSettings();
+            SettingTab.display();
         })
+        
     });
 
     new Setting(settingsContainer)
         .setName('Profile Folder Path')
         .setDesc('Select a profile from a specified folder.')
         .addText(text => text
-            .setPlaceholder('BMO/Profiles/')
+            .setPlaceholder('BMO/Profiles')
             .setValue(plugin.settings.profiles.profileFolderPath || DEFAULT_SETTINGS.profiles.profileFolderPath)
             .onChange(async (value) => {
                 plugin.settings.profiles.profileFolderPath = value ? value : DEFAULT_SETTINGS.profiles.profileFolderPath;
                 if (value) {
-                    let folderPath = plugin.settings.profiles.profileFolderPath.trim();
+                    let folderPath = plugin.settings.profiles.profileFolderPath.trim() || DEFAULT_SETTINGS.profiles.profileFolderPath;
                     
                     // Remove trailing '/' if it exists
-                    if (folderPath.endsWith('/')) {
+                    while (folderPath.endsWith('/')) {
                         folderPath = folderPath.substring(0, folderPath.length - 1);
+                        plugin.settings.profiles.profileFolderPath = folderPath;
                     }
                     
                     const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
@@ -90,6 +116,18 @@ export function addProfileSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
             })
             .inputEl.addEventListener('focusout', async () => {
                 SettingTab.display();
+                // const folderPath = plugin.settings.profiles.profileFolderPath.trim() || DEFAULT_SETTINGS.profiles.profileFolderPath;
+            
+                // // Check if the folder exists, create it if not
+                // if (!await plugin.app.vault.adapter.exists(folderPath)) {
+                //     await plugin.app.vault.createFolder(folderPath);
+                // }
+
+                // // Check if the 'Default.md' file exists, create it if not
+                // const defaultFilePath = `${folderPath}/${DEFAULT_SETTINGS.profiles.profile}.md`;
+                // if (!await plugin.app.vault.adapter.exists(defaultFilePath)) {
+                //     await plugin.app.vault.create(defaultFilePath, '');
+                // }
             })
         );
 }

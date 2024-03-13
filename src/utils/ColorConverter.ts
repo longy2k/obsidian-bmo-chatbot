@@ -56,3 +56,8 @@ function hue2rgb(p: number, q: number, t: number) {
 	if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
 	return p;
 }
+
+export const isValidHexColor = (color: string): boolean => {
+  const hexColorRegex = /^[0-9A-Fa-f]{6}$/;
+  return hexColorRegex.test(color);
+};

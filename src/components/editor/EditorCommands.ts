@@ -17,7 +17,7 @@ export async function renameTitleCommand(plugin: BMOGPT, settings: BMOSettings) 
         new Notice('Generating title...');
 
         if (activeFile) {
-        fileContent = await plugin.app.vault.read(activeFile);
+            fileContent = await plugin.app.vault.read(activeFile);
         }
     
         if (folderName && !folderName.endsWith('/')) {

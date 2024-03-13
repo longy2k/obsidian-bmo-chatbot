@@ -77,7 +77,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                     }
                 }
                 catch (error) {
-                    console.error('Error:', error);
+                    console.error('Mistral Error:', error);
                 }
             }
             else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
@@ -85,7 +85,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                     await fetchGoogleGeminiResponse(plugin, settings, index);
                 }
                 catch (error) {
-                    console.error('Error:', error);
+                    console.error('Google Gemini Error:', error);
                 
                 }
             }
@@ -94,7 +94,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                     await fetchAnthropicResponse(plugin, settings, index);
                 }
                 catch (error) {
-                    console.error('Error:', error);
+                    console.error('Anthropic Error:', error);
                 }
             }
         }
@@ -174,7 +174,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                             await fetchAnthropicResponse(plugin, settings, index);
                         }
                         catch (error) {
-                            console.error('Error:', error);
+                            console.error('Anthropic Error:', error);
                         }
                     }
                     else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
@@ -182,7 +182,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                             await fetchGoogleGeminiResponse(plugin, settings, index);
                         }
                         catch (error) {
-                            console.error('Error:', error);
+                            console.error('Google GeminiError:', error);
                         
                         }
                     }
@@ -196,7 +196,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                             }
                         }
                         catch (error) {
-                            console.error('Error:', error);
+                            console.error('Mistral Error:', error);
                         }
                     }
                     else if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
@@ -314,7 +314,7 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
                     const jsonString = JSON.stringify(messageHistory, null, 4);
 
                     try {
-                        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+                        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
                     } catch (error) {
                         console.error('Error writing to message history file:', error);
                     }
@@ -509,7 +509,7 @@ export async function deleteMessage(plugin: BMOGPT, index: number) {
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {
-        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
     } catch (error) {
         console.error('Error writing messageHistory.json', error);
     }

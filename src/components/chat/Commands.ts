@@ -10,7 +10,7 @@ import { displayCommandBotMessage } from './BotMessage';
 // Commands
 export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
   const command = input.split(' ')[0]; // Get the first word from the input
-  
+
   switch (command) {
       case '/commands':
       case '/help':
@@ -171,6 +171,10 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 
 // `/profile "[VALUE]"` to change profile.
 export async function commandProfile(input: string, settings: BMOSettings, plugin: BMOGPT) {
+  // const profile = `${plugin.settings.profiles.profileFolderPath}${plugin.settings.profiles.profile}`;
+  // const profileFile = plugin.app.vault.getAbstractFileByPath(profile) as TFile;
+  // updateFrontMatter(plugin, profileFile);
+
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
 
   if (!settings.profiles.profileFolderPath) {
@@ -562,9 +566,9 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
     const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
 
     // Check and read the JSON file
-    if (await plugin.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+    if (await plugin.app.vault.adapter.exists(filenameMessageHistoryJSON(plugin))) {
       try {
-        const jsonContent = await plugin.app.vault.adapter.read(filenameMessageHistoryJSON);
+        const jsonContent = await plugin.app.vault.adapter.read(filenameMessageHistoryJSON(plugin));
         const messages = JSON.parse(jsonContent);
 
         // Filter out messages starting with '/', and the assistant's response immediately following it
@@ -666,7 +670,7 @@ export async function removeMessageThread(plugin: BMOGPT, index: number) {
   const jsonString = JSON.stringify(messageHistory, null, 4);
 
   try {
-      await plugin.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+      await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
   } catch (error) {
       console.error('Error writing messageHistory.json', error);
   }

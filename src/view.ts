@@ -20,9 +20,15 @@ import { fetchOpenAIAPIResponseStream,
         fetchOpenRouterResponse} from './components/FetchModelResponse';
 
 export const VIEW_TYPE_CHATBOT = 'chatbot-view';
-export const filenameMessageHistoryJSON = './.obsidian/plugins/bmo-chatbot/data/messageHistory.json';
 export const ANTHROPIC_MODELS = ['claude-instant-1.2', 'claude-2.0', 'claude-2.1', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229'];
 export const OPENAI_MODELS = ['gpt-3.5-turbo', 'gpt-3.5-turbo-1106', 'gpt-4', 'gpt-4-turbo-preview'];
+
+export function filenameMessageHistoryJSON(plugin: BMOGPT) {
+    const filenameMessageHistoryPath = './.obsidian/plugins/bmo-chatbot/data/';
+    const currentProfileMessageHistory = 'messageHistory_' + plugin.settings.profiles.profile.replace('.md', '.json');
+
+    return filenameMessageHistoryPath + currentProfileMessageHistory;
+}
 
 export let messageHistory: { role: string; content: string }[] = [];
 
@@ -254,7 +260,7 @@ export class BMOView extends ItemView {
             this.textareaElement.style.height = '29px';
             this.textareaElement.value = this.textareaElement.value.trim();
             this.textareaElement.setSelectionRange(0, 0);
-            }
+        }
     }
 
     handleKeydown(event: KeyboardEvent) {
@@ -288,6 +294,11 @@ export class BMOView extends ItemView {
                 if (cursor != null && this.plugin.app.workspace.activeEditor != null) {
                     lastCursorPosition = cursor;
                     activeEditor = view.editor;
+                }
+
+                const modelName = document.querySelector('#modelName');
+                if (modelName) {
+                    modelName.textContent = 'Model: ' + this.plugin.settings.general.model;
                 }
             }
         };
@@ -398,9 +409,9 @@ async function loadData(plugin: BMOGPT) {
         plugin.app.vault.adapter.mkdir('./.obsidian/plugins/bmo-chatbot/data/');
     }
 
-    if (await plugin.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+    if (await plugin.app.vault.adapter.exists(filenameMessageHistoryJSON(plugin))) {
         try {
-            const fileContent = await plugin.app.vault.adapter.read(filenameMessageHistoryJSON);
+            const fileContent = await plugin.app.vault.adapter.read(filenameMessageHistoryJSON(plugin));
 
             if (fileContent.trim() === '') {
                 messageHistory = [];
@@ -433,7 +444,7 @@ export async function deleteAllMessages(plugin: BMOGPT) {
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {
-        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON, jsonString);
+        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
     } catch (error) {
         console.error('Error writing messageHistory.json', error);
     }

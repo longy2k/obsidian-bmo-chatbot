@@ -21,7 +21,7 @@ export async function fetchOllamaResponseEditor(settings: BMOSettings, selection
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: settings.editor.system_role_prompt_select_generate },
+                    { role: 'system', content: settings.editor.prompt_select_generate_system_role },
                     { role: 'user', content: selectionString}
                 ],
                 stream: false,
@@ -55,7 +55,7 @@ export async function fetchRESTAPIURLDataEditor(settings: BMOSettings, selection
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: settings.editor.system_role_prompt_select_generate || 'You are a helpful assistant.' },
+                    { role: 'system', content: settings.editor.prompt_select_generate_system_role || 'You are a helpful assistant.' },
                     { role: 'user', content: selectionString}
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || -1,
@@ -85,7 +85,7 @@ export async function fetchAnthropicResponseEditor(settings: BMOSettings, select
             },
             body: JSON.stringify({
                 model: settings.general.model,
-                system: settings.editor.system_role_prompt_select_generate,
+                system: settings.editor.prompt_select_generate_system_role,
                 messages: [
                     { role: 'user', content: selectionString}
                 ],
@@ -110,7 +110,7 @@ export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, selecti
         const requestBody = {
             contents: [{
                 parts: [
-                    {text: settings.editor.system_role_prompt_select_generate + selectionString}
+                    {text: settings.editor.prompt_select_generate_system_role + selectionString}
                 ]
             }],
         }
@@ -145,7 +145,7 @@ export async function fetchMistralDataEditor(settings: BMOSettings, selectionStr
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: settings.editor.system_role_prompt_select_generate },
+                    { role: 'system', content: settings.editor.prompt_select_generate_system_role },
                     { role: 'user', content: selectionString}
                 ],
                 max_tokens: parseInt(settings.general.max_tokens),
@@ -173,7 +173,7 @@ export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, se
         model: settings.general.model,
         max_tokens: parseInt(settings.general.max_tokens),
         messages: [
-            { role: 'system', content: settings.editor.system_role_prompt_select_generate },
+            { role: 'system', content: settings.editor.prompt_select_generate_system_role },
             { role: 'user', content: selectionString}
         ],
     });
@@ -196,7 +196,7 @@ export async function fetchOpenRouterEditor(settings: BMOSettings, selectionStri
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: settings.editor.system_role_prompt_select_generate },
+                    { role: 'system', content: settings.editor.prompt_select_generate_system_role },
                     { role: 'user', content: selectionString}
                 ],
                 max_tokens: parseInt(settings.general.max_tokens),

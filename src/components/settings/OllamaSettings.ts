@@ -122,13 +122,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             
             // Determine if the float value is an integer (whole number)
             if (!isNaN(floatValue)) {
-                if (parseInt(value) === floatValue) {
-                    // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = floatValue + '.0';
-                } else {
-                    // It's already a float, so just use it directly
-                    plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = floatValue.toString();
-                }
+                plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = floatValue.toFixed(2).toString();
             } else {
                 // Fallback to the default value if input is not a valid number
                 plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_eta;
@@ -145,7 +139,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     .setName('mirostat_tau')
     .setDesc('Controls the balance between coherence and diversity of the output. A lower value will result in more focused and coherent text. (Default: 5.0)')
     .addText(text => text
-        .setPlaceholder('5.0')
+        .setPlaceholder('5.00')
         .setValue(plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_tau)
         .onChange(async (value) => {
             // Parse the input value as an integer
@@ -153,13 +147,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             
             // Determine if the float value is an integer (whole number)
             if (!isNaN(floatValue)) {
-                if (parseInt(value) === floatValue) {
-                    // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau = floatValue + '.0';
-                } else {
-                    // It's already a float, so just use it directly
-                    plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau = floatValue.toString();
-                }
+                plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau = floatValue.toFixed(2).toString();
             } else {
                 // Fallback to the default value if input is not a valid number
                 plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_tau;
@@ -279,17 +267,11 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
             
             // Determine if the float value is an integer (whole number)
-            if (!isNaN(floatValue)) {
-                if (parseInt(value) === floatValue) {
-                    // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.OllamaConnection.ollamaParameters.repeat_penalty = floatValue + '.0';
-                } else {
-                    // It's already a float, so just use it directly
-                    plugin.settings.OllamaConnection.ollamaParameters.repeat_penalty = floatValue.toString();
-                }
+            if (isNaN(floatValue)) {
+                plugin.settings.OllamaConnection.ollamaParameters.repeat_penalty = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.repeat_penalty;
             } else {
                 // Fallback to the default value if input is not a valid number
-                plugin.settings.OllamaConnection.ollamaParameters.repeat_penalty = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.repeat_penalty;
+                plugin.settings.OllamaConnection.ollamaParameters.repeat_penalty = floatValue.toString();
             }
 
             await plugin.saveSettings();
@@ -355,17 +337,10 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
             
             // Determine if the float value is an integer (whole number)
-            if (!isNaN(floatValue)) {
-                if (parseInt(value) === floatValue) {
-                    // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.OllamaConnection.ollamaParameters.tfs_z = floatValue + '.0';
-                } else {
-                    // It's already a float, so just use it directly
-                    plugin.settings.OllamaConnection.ollamaParameters.tfs_z = floatValue.toString();
-                }
-            } else {
-                // Fallback to the default value if input is not a valid number
+            if (isNaN(floatValue)) {
                 plugin.settings.OllamaConnection.ollamaParameters.tfs_z = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.tfs_z;
+            } else {
+                plugin.settings.OllamaConnection.ollamaParameters.tfs_z = floatValue.toFixed(2).toString();
             }
 
             await plugin.saveSettings();
@@ -410,17 +385,10 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
             
             // Determine if the float value is an integer (whole number)
-            if (!isNaN(floatValue)) {
-                if (parseInt(value) === floatValue) {
-                    // If it's a whole number, append '.0' to make it explicitly a float
-                    plugin.settings.OllamaConnection.ollamaParameters.top_p = floatValue + '.0';
-                } else {
-                    // It's already a float, so just use it directly
-                    plugin.settings.OllamaConnection.ollamaParameters.top_p = floatValue.toString();
-                }
-            } else {
-                // Fallback to the default value if input is not a valid number
+            if (isNaN(floatValue)) {
                 plugin.settings.OllamaConnection.ollamaParameters.top_p = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.top_p;
+            } else {
+                plugin.settings.OllamaConnection.ollamaParameters.top_p = floatValue.toFixed(2).toString();
             }
 
             await plugin.saveSettings();
