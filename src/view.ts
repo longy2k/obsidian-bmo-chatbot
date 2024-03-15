@@ -174,9 +174,38 @@ export class BMOView extends ItemView {
         textarea.setAttribute('contenteditable', true.toString());
         textarea.setAttribute('placeholder', 'Start typing...');
 
+
+        if (textarea) {
+            textarea.style.color = this.settings.appearance.chatBoxFontColor;
+            
+            // Set the placeholder color to the default value
+            const style = document.createElement('style');
+            style.textContent = `
+                .chatbox textarea::placeholder {
+                    color: ${this.settings.appearance.chatBoxFontColor} !important;
+                }
+            `;
+            textarea.appendChild(style);
+        }
+
+
+        chatbotContainer.style.backgroundColor = this.settings.appearance.chatbotContainerBackgroundColor || DEFAULT_SETTINGS.appearance.chatbotContainerBackgroundColor;
+        messageContainer.style.backgroundColor = this.settings.appearance.messageContainerBackgroundColor || DEFAULT_SETTINGS.appearance.messageContainerBackgroundColor;
         textarea.style.backgroundColor = this.settings.appearance.chatBoxBackgroundColor || DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
         textarea.style.borderColor = this.settings.appearance.chatBoxBackgroundColor || DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
-        chatbox.style.backgroundColor = this.settings.appearance.chatBoxBorderColor || DEFAULT_SETTINGS.appearance.chatBoxBorderColor;
+        textarea.style.color = this.settings.appearance.chatBoxFontColor || DEFAULT_SETTINGS.appearance.chatBoxFontColor;
+        chatbox.style.backgroundColor = this.settings.appearance.chatBoxBackgroundColor || DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
+
+
+        const userMessages = messageContainer.querySelectorAll('.userMessage');
+        userMessages.forEach((userMessage: HTMLElement) => {
+            userMessage.style.color = this.settings.appearance.userMessageFontColor || DEFAULT_SETTINGS.appearance.userMessageFontColor;
+        });
+
+        const botMessages = messageContainer.querySelectorAll('.botMessage');
+        botMessages.forEach((botMessage: HTMLElement) => {
+            botMessage.style.color = this.settings.appearance.botMessageFontColor || DEFAULT_SETTINGS.appearance.botMessageFontColor;
+        });
 
         chatbox.appendChild(textarea);
         

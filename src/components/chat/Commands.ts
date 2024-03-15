@@ -434,10 +434,11 @@ export async function commandAppend(plugin: BMOGPT, settings: BMOSettings) {
     const chatbotNames = document.querySelectorAll('.chatbotName') as NodeListOf<HTMLHeadingElement>;
     const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
 
+
     // Check and read the JSON file
-    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON)) {
+    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON(plugin))) {
       try {
-        const jsonContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON);
+        const jsonContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON(plugin));
         const messages = JSON.parse(jsonContent);
 
         // Filter out messages starting with '/', and the assistant's response immediately following it

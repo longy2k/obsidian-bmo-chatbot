@@ -10,6 +10,8 @@ export function displayUserMessage(plugin: BMOGPT, settings: BMOSettings, messag
     userMessageDiv.style.backgroundColor = colorToHex(settings.appearance.userMessageBackgroundColor || 
         getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.userMessageBackgroundColor).trim());
 
+    userMessageDiv.style.color = settings.appearance.userMessageFontColor || DEFAULT_SETTINGS.appearance.userMessageFontColor;
+
     const userMessageToolBarDiv = document.createElement('div');
     userMessageToolBarDiv.className = 'userMessageToolBar';
 

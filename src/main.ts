@@ -19,10 +19,14 @@ export interface BMOSettings {
 	appearance: {
 		userName: string,
 		chatbotName: string,
+		chatbotContainerBackgroundColor: string,
+		messageContainerBackgroundColor: string,
+		userMessageFontColor: string,
 		userMessageBackgroundColor: string,
+		botMessageFontColor: string,
 		botMessageBackgroundColor: string,
+		chatBoxFontColor: string,
 		chatBoxBackgroundColor: string,
-		chatBoxBorderColor: string,
 		allowHeader: boolean,
 	},
 	editor: {
@@ -118,10 +122,14 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	appearance: {
 		userName: 'USER',
 		chatbotName: 'BMO',
+		chatbotContainerBackgroundColor: '--background-secondary',
+		messageContainerBackgroundColor: '--background-secondary',
+		userMessageFontColor: '--text-normal',
 		userMessageBackgroundColor: '--background-primary',
+		botMessageFontColor: '--text-normal',
 		botMessageBackgroundColor: '--background-secondary',
+		chatBoxFontColor: '--text-normal',
 		chatBoxBackgroundColor: '--interactive-accent',
-		chatBoxBorderColor: '--interactive-accent',
 		allowHeader: true,
 	},
 	editor: {
@@ -464,10 +472,14 @@ export async function defaultFrontMatter(plugin: BMOGPT, file: TFile) {
         frontmatter.reference_current_note = DEFAULT_SETTINGS.general.allowReferenceCurrentNote;
 		frontmatter.user_name = DEFAULT_SETTINGS.appearance.userName;
 		// frontmatter.chatbot_name = DEFAULT_SETTINGS.appearance.chatbotName;
+		frontmatter.chatbot_container_background_color = DEFAULT_SETTINGS.appearance.chatbotContainerBackgroundColor.replace(/^#/, '');
+		frontmatter.message_container_background_color = DEFAULT_SETTINGS.appearance.messageContainerBackgroundColor.replace(/^#/, '');
+		frontmatter.user_message_font_color = DEFAULT_SETTINGS.appearance.userMessageFontColor.replace(/^#/, '');
 		frontmatter.user_message_background_color = DEFAULT_SETTINGS.appearance.userMessageBackgroundColor.replace(/^#/, '');
+		frontmatter.bot_message_font_color = DEFAULT_SETTINGS.appearance.botMessageFontColor.replace(/^#/, '');
 		frontmatter.chatbot_message_background_color = DEFAULT_SETTINGS.appearance.botMessageBackgroundColor.replace(/^#/, '');
+		frontmatter.chatbox_font_color = DEFAULT_SETTINGS.appearance.chatBoxFontColor.replace(/^#/, '');
 		frontmatter.chatbox_background_color = DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor.replace(/^#/, '');
-		frontmatter.chatbox_border_color = DEFAULT_SETTINGS.appearance.chatBoxBorderColor.replace(/^#/, '');
 		frontmatter.prompt_select_generate_system_role = DEFAULT_SETTINGS.editor.prompt_select_generate_system_role;
 		frontmatter.allow_header = DEFAULT_SETTINGS.appearance.allowHeader;
 		frontmatter.ollama_mirostat = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat);
@@ -511,10 +523,14 @@ export async function updateSettingsFromFrontMatter(plugin: BMOGPT, file: TFile)
 		plugin.settings.general.allowReferenceCurrentNote = frontmatter.reference_current_note;
 		plugin.settings.appearance.userName = frontmatter.user_name;
 		plugin.settings.appearance.chatbotName = file.basename;
+		plugin.settings.appearance.chatbotContainerBackgroundColor = '#' + frontmatter.chatbot_container_background_color;
+		plugin.settings.appearance.messageContainerBackgroundColor = '#' + frontmatter.message_container_background_color;
+		plugin.settings.appearance.userMessageFontColor = '#' + frontmatter.user_message_font_color;
 		plugin.settings.appearance.userMessageBackgroundColor = '#' + frontmatter.user_message_background_color;
+		plugin.settings.appearance.botMessageFontColor = '#' + frontmatter.bot_message_font_color;
 		plugin.settings.appearance.botMessageBackgroundColor = '#' + frontmatter.chatbot_message_background_color;
+		plugin.settings.appearance.chatBoxFontColor = '#' + frontmatter.chatbox_font_color;
 		plugin.settings.appearance.chatBoxBackgroundColor = '#' + frontmatter.chatbox_background_color;
-		plugin.settings.appearance.chatBoxBorderColor = '#' + frontmatter.chatbox_border_color;
 		plugin.settings.editor.prompt_select_generate_system_role = frontmatter.prompt_select_generate_system_role;
 		plugin.settings.appearance.allowHeader = frontmatter.allow_header;
 		plugin.settings.OllamaConnection.ollamaParameters.mirostat = frontmatter.ollama_mirostat;
@@ -559,10 +575,14 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
         frontmatter.reference_current_note = plugin.settings.general.allowReferenceCurrentNote;
 		frontmatter.user_name = plugin.settings.appearance.userName;
 		// frontmatter.chatbot_name = plugin.settings.appearance.chatbotName;
+		frontmatter.chatbot_container_background_color = plugin.settings.appearance.chatbotContainerBackgroundColor.replace(/^#/, '');
+		frontmatter.message_container_background_color = plugin.settings.appearance.messageContainerBackgroundColor.replace(/^#/, '');
+		frontmatter.user_message_font_color = plugin.settings.appearance.userMessageFontColor.replace(/^#/, '');
 		frontmatter.user_message_background_color = plugin.settings.appearance.userMessageBackgroundColor.replace(/^#/, '');
+		frontmatter.bot_message_font_color = plugin.settings.appearance.botMessageFontColor.replace(/^#/, '');
 		frontmatter.chatbot_message_background_color = plugin.settings.appearance.botMessageBackgroundColor.replace(/^#/, '');
+		frontmatter.chatbox_font_color = plugin.settings.appearance.chatBoxFontColor.replace(/^#/, '');
 		frontmatter.chatbox_background_color = plugin.settings.appearance.chatBoxBackgroundColor.replace(/^#/, '');
-		frontmatter.chatbox_border_color = plugin.settings.appearance.chatBoxBorderColor.replace(/^#/, '');
 		frontmatter.prompt_select_generate_system_role = plugin.settings.editor.prompt_select_generate_system_role;
 		frontmatter.allow_header = plugin.settings.appearance.allowHeader;
 		frontmatter.ollama_mirostat = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.mirostat);
@@ -639,7 +659,7 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 			}
 
 			if (frontmatter.user_name) {
-				plugin.settings.appearance.userName = frontmatter.user_name.toUpperCase().substring(0, 30);
+				plugin.settings.appearance.userName = frontmatter.user_name.substring(0, 30);
 			} else {
 				plugin.settings.appearance.userName = DEFAULT_SETTINGS.appearance.userName;
 			}
@@ -667,7 +687,58 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 				chatbotName.textContent = plugin.settings.appearance.chatbotName;
 			});
 
-			const messageContainer = document.querySelector('#messageContainer');
+			const chatbotContainer = document.querySelector('.chatbotContainer') as HTMLElement;
+			const messageContainer = document.querySelector('#messageContainer') as HTMLElement;
+
+			if (isValidHexColor(frontmatter.chatbot_container_background_color)) {
+				plugin.settings.appearance.chatbotContainerBackgroundColor = '#' + frontmatter.chatbot_container_background_color.substring(0, 6);
+				if (chatbotContainer) {
+					chatbotContainer.style.backgroundColor = plugin.settings.appearance.chatbotContainerBackgroundColor;
+				}
+			} else {
+				plugin.settings.appearance.chatbotContainerBackgroundColor = colorToHex(DEFAULT_SETTINGS.appearance.chatbotContainerBackgroundColor);
+				frontmatter.chatbot_container_background_color = plugin.settings.appearance.chatbotContainerBackgroundColor.replace(/^#/, '');
+				if (chatbotContainer) {
+					const defaultChatbotContainerBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.chatbotContainerBackgroundColor).trim();
+					chatbotContainer.style.backgroundColor = defaultChatbotContainerBackgroundColor;
+				}
+			}
+
+			if (isValidHexColor(frontmatter.message_container_background_color)) {
+				plugin.settings.appearance.messageContainerBackgroundColor = '#' + frontmatter.message_container_background_color.substring(0, 6);
+				if (messageContainer) {
+					messageContainer.style.backgroundColor = plugin.settings.appearance.messageContainerBackgroundColor;
+				}
+			} else {
+				plugin.settings.appearance.messageContainerBackgroundColor = colorToHex(DEFAULT_SETTINGS.appearance.messageContainerBackgroundColor);
+				frontmatter.message_container_background_color = plugin.settings.appearance.messageContainerBackgroundColor.replace(/^#/, '');
+				if (messageContainer) {
+					const defaultMessageContainerBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.messageContainerBackgroundColor).trim();
+					messageContainer.style.backgroundColor = defaultMessageContainerBackgroundColor;
+				}
+			}
+
+			if (isValidHexColor(frontmatter.user_message_font_color)) {
+				plugin.settings.appearance.userMessageFontColor = '#' + frontmatter.user_message_font_color.substring(0, 6);
+				if (messageContainer) {
+					const userMessages = messageContainer.querySelectorAll('.userMessage');
+					userMessages.forEach((userMessage) => {
+					const element = userMessage as HTMLElement;
+					element.style.color = plugin.settings.appearance.userMessageFontColor;
+					});
+				}
+			} else {
+				plugin.settings.appearance.userMessageFontColor = colorToHex(DEFAULT_SETTINGS.appearance.userMessageFontColor);
+				frontmatter.user_message_font_color = plugin.settings.appearance.userMessageFontColor.replace(/^#/, '');
+				if (messageContainer) {
+					const userMessages = messageContainer.querySelectorAll('.userMessage');
+					userMessages.forEach((userMessage) => {
+					const element = userMessage as HTMLElement;
+					const defaultUserMessageFontColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.userMessageFontColor).trim();
+					element.style.color = defaultUserMessageFontColor;
+					});
+				}
+			}
 			
 			if (isValidHexColor(frontmatter.user_message_background_color)) {
 				plugin.settings.appearance.userMessageBackgroundColor = '#' + frontmatter.user_message_background_color.substring(0, 6);
@@ -687,6 +758,28 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 					const element = userMessage as HTMLElement;
 					const defaultUserMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.userMessageBackgroundColor).trim();
 					element.style.backgroundColor = defaultUserMessageBackgroundColor;
+					});
+				}
+			}
+
+			if (isValidHexColor(frontmatter.bot_message_font_color)) {
+				plugin.settings.appearance.botMessageFontColor = '#' + frontmatter.bot_message_font_color.substring(0, 6);
+				if (messageContainer) {
+					const botMessages = messageContainer.querySelectorAll('.botMessage');
+					botMessages.forEach((botMessage) => {
+					const element = botMessage as HTMLElement;
+					element.style.color = plugin.settings.appearance.botMessageFontColor;
+					});
+				}
+			} else {
+				plugin.settings.appearance.botMessageFontColor = colorToHex(DEFAULT_SETTINGS.appearance.botMessageFontColor);
+				frontmatter.bot_message_font_color = plugin.settings.appearance.botMessageFontColor.replace(/^#/, '');
+				if (messageContainer) {
+					const botMessages = messageContainer.querySelectorAll('.botMessage');
+					botMessages.forEach((botMessage) => {
+					const element = botMessage as HTMLElement;
+					const defaultBotMessageFontColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageFontColor).trim();
+					element.style.color = defaultBotMessageFontColor;
 					});
 				}
 			}
@@ -713,9 +806,52 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 				}
 			}
 
+			if (isValidHexColor(frontmatter.chatbox_font_color)) {
+				plugin.settings.appearance.chatBoxFontColor = '#' + frontmatter.chatbox_font_color.substring(0, 6);
+				const textarea = document.querySelector('.chatbox textarea') as HTMLElement;
+				if (textarea) {
+					textarea.style.color = plugin.settings.appearance.chatBoxFontColor;
+					
+					// Set the placeholder color to the default value
+					const style = document.createElement('style');
+					style.textContent = `
+						.chatbox textarea::placeholder {
+							color: ${plugin.settings.appearance.chatBoxFontColor} !important;
+						}
+					`;
+					textarea.appendChild(style);
+				}
+			} else {
+				plugin.settings.appearance.chatBoxFontColor = colorToHex(DEFAULT_SETTINGS.appearance.chatBoxFontColor);
+				frontmatter.chatbox_font_color = plugin.settings.appearance.chatBoxFontColor.replace(/^#/, '');
+                const textarea = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
+				const defaultChatBoxFontColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.chatBoxFontColor).trim();
+                
+                if (textarea) {
+                    textarea.style.color = DEFAULT_SETTINGS.appearance.chatBoxFontColor;
+                    
+                    // Set the placeholder color to the selected value
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .chatbox textarea::placeholder {
+                            color: ${defaultChatBoxFontColor} !important;
+                        }
+                    `;
+                    textarea.appendChild(style);
+                }
+			}
+
 			if (isValidHexColor(frontmatter.chatbox_background_color)) {
 				plugin.settings.appearance.chatBoxBackgroundColor = '#' + frontmatter.chatbox_background_color.substring(0, 6);
+				
 				if (messageContainer) {
+					const chatbox = document.querySelector('.chatbox');
+					if (chatbox) {
+						const element = chatbox as HTMLElement;
+						element.style.backgroundColor = plugin.settings.appearance.chatBoxBackgroundColor;
+						element.style.borderColor = plugin.settings.appearance.chatBoxBackgroundColor;
+					}
+					
 					const textarea = document.querySelector('.chatbox textarea');
 					if (textarea) {
 						const element = textarea as HTMLElement;
@@ -724,39 +860,23 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 					}
 				}
 			} else {
-				plugin.settings.appearance.chatBoxBackgroundColor = colorToHex(DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor);
-				frontmatter.chatbox_background_color = plugin.settings.appearance.chatBoxBackgroundColor.replace(/^#/, '');
+				const defaultChatBoxBackgroundColor = colorToHex(DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor);
+				plugin.settings.appearance.chatBoxBackgroundColor = defaultChatBoxBackgroundColor;
+				frontmatter.chatbox_background_color = defaultChatBoxBackgroundColor.replace(/^#/, '');
+			
 				if (messageContainer) {
-					const textarea = document.querySelector('.chatbox textarea');
-					if (textarea) {
-						const element = textarea as HTMLElement;
-						const defaultChatBoxBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor).trim();
+					const chatbox = document.querySelector('.chatbox');
+					if (chatbox) {
+						const element = chatbox as HTMLElement;
 						element.style.backgroundColor = defaultChatBoxBackgroundColor;
 						element.style.borderColor = defaultChatBoxBackgroundColor;
 					}
-				}
-			}
-
-			if (isValidHexColor(frontmatter.chatbox_border_color)) {
-				plugin.settings.appearance.chatBoxBorderColor = '#' + frontmatter.chatbox_border_color.substring(0, 6);
-				if (messageContainer) {
-					const textarea = document.querySelector('.chatbox');
+					
+					const textarea = document.querySelector('.chatbox textarea');
 					if (textarea) {
 						const element = textarea as HTMLElement;
-						element.style.backgroundColor = plugin.settings.appearance.chatBoxBorderColor;
-						element.style.borderColor = plugin.settings.appearance.chatBoxBorderColor;
-					}
-				}
-			} else {
-				plugin.settings.appearance.chatBoxBorderColor = colorToHex(DEFAULT_SETTINGS.appearance.chatBoxBorderColor);
-				frontmatter.chatbox_border_color = plugin.settings.appearance.chatBoxBorderColor.replace(/^#/, '');
-				if (messageContainer) {
-					const textarea = document.querySelector('.chatbox');
-					if (textarea) {
-						const element = textarea as HTMLElement;
-						const defaultChatBoxBorderColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.chatBoxBorderColor).trim();
-						element.style.backgroundColor = defaultChatBoxBorderColor;
-						element.style.borderColor = defaultChatBoxBorderColor;
+						element.style.backgroundColor = defaultChatBoxBackgroundColor;
+						element.style.borderColor = defaultChatBoxBackgroundColor;
 					}
 				}
 			}

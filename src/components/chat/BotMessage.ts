@@ -7,9 +7,11 @@ import { MarkdownRenderer, setIcon } from 'obsidian';
 export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, messageHistory: { role: string; content: string }[], message: string) {
     const botMessageDiv = document.createElement('div');
     botMessageDiv.className = 'botMessage';
-    
+
     botMessageDiv.style.backgroundColor = colorToHex(settings.appearance.botMessageBackgroundColor ||
         getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim());
+
+    botMessageDiv.style.color = settings.appearance.botMessageFontColor || DEFAULT_SETTINGS.appearance.botMessageFontColor;
 
     const botMessageToolBarDiv = document.createElement('div');
     botMessageToolBarDiv.className = 'botMessageToolBar';
@@ -57,6 +59,8 @@ export function displayLoadingBotMessage(settings: BMOSettings) {
     botMessageDiv.className = 'botMessage';
     botMessageDiv.style.backgroundColor = colorToHex(settings.appearance.botMessageBackgroundColor ||
         getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim());
+
+    botMessageDiv.style.color = settings.appearance.botMessageFontColor || DEFAULT_SETTINGS.appearance.botMessageFontColor;
 
     const botMessageToolBarDiv = document.createElement('div');
     botMessageToolBarDiv.className = 'botMessageToolBar';
