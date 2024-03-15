@@ -294,7 +294,11 @@ export default class BMOGPT extends Plugin {
 						const filenameMessageHistoryPath = './.obsidian/plugins/bmo-chatbot/data/';
 						const oldProfileMessageHistory = 'messageHistory_' + oldPath.replace(folderPath + '/', '').replace('.md', '.json');
 
-						await this.app.vault.adapter.rename(filenameMessageHistoryPath + oldProfileMessageHistory, filenameMessageHistoryPath + 'messageHistory_' + file.name.replace('.md', '.json'));
+						await this.app.vault.adapter.rename(filenameMessageHistoryPath + oldProfileMessageHistory, filenameMessageHistoryPath + 'messageHistory_' + file.name.replace('.md', '.json'))
+							.catch((error) => {
+								console.error('Error handling rename event:', error);
+							});
+					
 						await this.app.vault.adapter.remove(filenameMessageHistoryPath + oldProfileMessageHistory);
 					}
 				} catch (error) {

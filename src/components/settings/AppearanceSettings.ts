@@ -47,26 +47,26 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
             })
         );
 
-    new Setting(settingsContainer)
-        .setName('Chatbot Name')
-        .setDesc('Name your chatbot.')
-        .addText(text => text
-            .setPlaceholder('Enter chatbot name')
-            .setValue(plugin.settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName)
-            .onChange(async (value) => {
-                plugin.settings.appearance.chatbotName = value ? value.toUpperCase() : DEFAULT_SETTINGS.appearance.chatbotName;
-                text.inputEl.maxLength = 30;
-                await plugin.saveSettings();
-                const chatbotNameHeading = document.querySelector('#chatbotNameHeading') as HTMLHeadingElement;
-                const chatbotNames = document.querySelectorAll('.chatbotName') as NodeListOf<HTMLHeadingElement>;
-                if (chatbotNameHeading) {
-                    chatbotNameHeading.textContent = plugin.settings.appearance.chatbotName;
-                }
-                chatbotNames.forEach(chatbotName => {
-                    chatbotName.textContent = plugin.settings.appearance.chatbotName;
-                });
-            })
-        );
+    // new Setting(settingsContainer)
+    //     .setName('Chatbot Name')
+    //     .setDesc('Name your chatbot.')
+    //     .addText(text => text
+    //         .setPlaceholder('Enter chatbot name')
+    //         .setValue(plugin.settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName)
+    //         .onChange(async (value) => {
+    //             plugin.settings.appearance.chatbotName = value ? value.toUpperCase() : DEFAULT_SETTINGS.appearance.chatbotName;
+    //             text.inputEl.maxLength = 30;
+    //             await plugin.saveSettings();
+    //             const chatbotNameHeading = document.querySelector('#chatbotNameHeading') as HTMLHeadingElement;
+    //             const chatbotNames = document.querySelectorAll('.chatbotName') as NodeListOf<HTMLHeadingElement>;
+    //             if (chatbotNameHeading) {
+    //                 chatbotNameHeading.textContent = plugin.settings.appearance.chatbotName;
+    //             }
+    //             chatbotNames.forEach(chatbotName => {
+    //                 chatbotName.textContent = plugin.settings.appearance.chatbotName;
+    //             });
+    //         })
+    //     );
 
     let colorPicker1: ColorComponent;
     const defaultUserMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.userMessageBackgroundColor).trim();
