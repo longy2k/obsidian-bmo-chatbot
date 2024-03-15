@@ -136,7 +136,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		prompt_select_generate_system_role: 'Output user request.',
 	},
 	chatHistory: {
-		chatHistoryPath: 'BMO/',
+		chatHistoryPath: 'BMO/History',
 		templateFilePath: '',
 		allowRenameNoteTitle: false,
 	},

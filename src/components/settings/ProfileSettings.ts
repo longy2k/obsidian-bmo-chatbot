@@ -116,18 +116,6 @@ export function addProfileSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
             })
             .inputEl.addEventListener('focusout', async () => {
                 SettingTab.display();
-                // const folderPath = plugin.settings.profiles.profileFolderPath.trim() || DEFAULT_SETTINGS.profiles.profileFolderPath;
-            
-                // // Check if the folder exists, create it if not
-                // if (!await plugin.app.vault.adapter.exists(folderPath)) {
-                //     await plugin.app.vault.createFolder(folderPath);
-                // }
-
-                // // Check if the 'Default.md' file exists, create it if not
-                // const defaultFilePath = `${folderPath}/${DEFAULT_SETTINGS.profiles.profile}.md`;
-                // if (!await plugin.app.vault.adapter.exists(defaultFilePath)) {
-                //     await plugin.app.vault.create(defaultFilePath, '');
-                // }
             })
         );
 }

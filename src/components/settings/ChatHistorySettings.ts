@@ -1,4 +1,4 @@
-import { Setting, SettingTab, setIcon } from 'obsidian';
+import { Setting, SettingTab, TFolder, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 
 export function addChatHistorySettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -33,11 +33,31 @@ export function addChatHistorySettings(containerEl: HTMLElement, plugin: BMOGPT,
         .setName('Chat History Folder Path')
         .setDesc('Save your chat history in a specified folder.')
         .addText(text => text
-            .setPlaceholder('BMO/')
+            .setPlaceholder('BMO/History')
             .setValue(plugin.settings.chatHistory.chatHistoryPath || DEFAULT_SETTINGS.chatHistory.chatHistoryPath)
             .onChange(async (value) => {
                 plugin.settings.chatHistory.chatHistoryPath = value ? value : DEFAULT_SETTINGS.chatHistory.chatHistoryPath;
+                if (value) {
+                    let folderPath = plugin.settings.chatHistory.chatHistoryPath.trim() || DEFAULT_SETTINGS.chatHistory.chatHistoryPath;
+                    
+                    // Remove trailing '/' if it exists
+                    while (folderPath.endsWith('/')) {
+                        folderPath = folderPath.substring(0, folderPath.length - 1);
+                        plugin.settings.chatHistory.chatHistoryPath = folderPath;
+                    }
+                    
+                    const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
+                    
+                    if (folder && folder instanceof TFolder) {
+                        text.inputEl.style.borderColor = ''; 
+                    } else {
+                        text.inputEl.style.borderColor = 'red'; 
+                    }
+                }
                 await plugin.saveSettings();
+            })
+            .inputEl.addEventListener('focusout', async () => {
+                SettingTab.display();
             })
         );
 
