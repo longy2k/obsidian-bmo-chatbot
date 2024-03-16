@@ -2,21 +2,20 @@
 
 Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, OpenAI, Mistral AI, and more for Obsidian.
 
-![Screenshot-1](README_images/Screenshot-1.png)
-
 <p align="center">
-  <img src="README_images/Screenshot-2.png" alt="Description of image">
+  <img src="README_images/original-example.png" alt="original_example">
+  <img src="README_image/dataview-example.ong" alt="dataview_example">
+  <img src="README_image/eli5-example.png" alt="eli5_example">
 </p>
 
 ## Features
 
 -   **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URLs provided to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LM Studio](https://lmstudio.ai/).
+-   **Profiles:** Create chatbots with specific knowledge, personalities, and presets.
 -   **Chat from anywhere in Obsidian:** Chat with your bot from anywhere within Obsidian.
 -   **Chat with current note:** Use your chatbot to reference and engage within your current note.
 -   **Chatbot renders in Obsidian Markdown:** Receive formatted responses in Obsidian Markdown for consistency.
 -   **Customizable bot name:** Personalize the chatbot's name.
--   **System role prompt:** Configure the chatbot to prompt for user roles before responding to messages.
--   **Custom prompts:** Create custom prompts to interact with your models.
 -   **Prompt Select Generate:** Prompt, select, and generate within your editor.
 -   **Save current chat history as markdown:** Use the `/save` command in chat to save current conversation.
 
@@ -58,7 +57,7 @@ Install using Beta Reviewers Auto-update Tester ([BRAT](https://github.com/TfTHa
 
 ## Getting Started
 
-To start using the plugin, enable it in your settings menu and enter your OpenAI API key. After completing these steps, you can access the bot panel by clicking on the bot icon in the left sidebar.
+To start using the plugin, enable it in your settings menu and insert an API key or REST API URL from a provider. After completing these steps, you can access the bot panel by clicking on the bot icon in the left sidebar.
 
 ## Commands
 
@@ -67,9 +66,8 @@ To start using the plugin, enable it in your settings menu and enter your OpenAI
     -   `/model 1` or `/model "llama2"`
     -   `/model 2` or `/model "gpt-3.5-turbo"`
         -   ...
--   `/prompt` - List or change prompt.
-    -   `/prompt 1` or `/prompt "[PROMPT-NAME]"`
--   `/prompt clear` or `/prompt c` - Clear prompt.
+-   `/profile` - List or change profiles.
+    -   `/profile 1` or `/profile [PROMPT-NAME]`
 -   `/maxtokens [VALUE]` - Set max tokens.
 -   `/temp [VALUE]` - Change temperature range from 0 to 1.
 -   `/ref on | off` - Turn on or off reference current note.
@@ -89,6 +87,7 @@ To start using the plugin, enable it in your settings menu and enter your OpenAI
     -   claude-instant-1.2
     -   claude-2.0
     -   claude-2.1
+    -   claude-3-haiku-20240307
     -   claude-3-sonnet-20240229
     -   claude-3-opus-20240229
 -   Mistral AI's models
@@ -98,10 +97,13 @@ To start using the plugin, enable it in your settings menu and enter your OpenAI
     -   gpt-3.5-turbo-1106
     -   gpt-4 (Context window: 8,192 tokens)
     -   gpt-4-turbo-preview (Context window: 128,000 tokens)
+-   Any Openrouter provided models.
 
 ## Other Notes
 
 "BMO" is a tag name for this project, inspired by the character BMO from the animated TV show "Adventure Time."
+
+Be MOre!
 
 ## Contributing
 

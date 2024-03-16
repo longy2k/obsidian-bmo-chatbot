@@ -1,9 +1,9 @@
 {
 	"id": "bmo-chatbot",
 	"name": "BMO Chatbot",
-	"version": "1.8.9",
+	"version": "1.9.0",
 	"minAppVersion": "1.0.0",
-	"description": "Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) such as OpenAI's \"gpt-3.5-turbo\" and \"gpt-4.\"",
+	"description": "Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, OpenAI, Mistral AI, and more for Obsidian.",
 	"author": "Longy2k",
 	"authorUrl": "https://github.com/longy2k",
 	"fundingUrl": "https://ko-fi.com/longy2k",
