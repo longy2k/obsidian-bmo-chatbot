@@ -1,5 +1,5 @@
-import { App, PluginSettingTab } from 'obsidian';
-import BMOGPT, { DEFAULT_SETTINGS } from './main';
+import { App, PluginSettingTab, TFile } from 'obsidian';
+import BMOGPT, { DEFAULT_SETTINGS, updateSettingsFromFrontMatter } from './main';
 import { addGeneralSettings } from './components/settings/GeneralSettings';
 import { addAppearanceSettings } from './components/settings/AppearanceSettings';
 import { addChatHistorySettings } from './components/settings/ChatHistorySettings';
@@ -62,12 +62,31 @@ export class BMOSettingTab extends PluginSettingTab {
 			event.preventDefault();
 			const confirmReset = confirm('Are you sure you want to reset all settings to default?');
 			if (confirmReset) {
-				this.plugin.settings = DEFAULT_SETTINGS;
-				await this.plugin.saveSettings();
-				// @ts-ignore
-				await this.plugin.app.plugins.disablePlugin(this.plugin.manifest.id);
-				// @ts-ignore
-				await this.plugin.app.plugins.enablePlugin(this.plugin.manifest.id);
+				const profilePathFile = this.plugin.settings.profiles.profileFolderPath + '/' + this.plugin.settings.profiles.profile;
+				const profilePath = this.plugin.app.vault.getAbstractFileByPath(profilePathFile) as TFile;
+
+				const defaultProfilePathFile = DEFAULT_SETTINGS.profiles.profileFolderPath + '/' + DEFAULT_SETTINGS.profiles.profile;
+				const defaultProfilePath = this.plugin.app.vault.getAbstractFileByPath(defaultProfilePathFile) as TFile;
+
+				if (profilePath) {
+					if (profilePath.path === defaultProfilePath.path) {
+						this.plugin.settings = DEFAULT_SETTINGS;
+						await this.plugin.saveSettings();
+
+						// @ts-ignore
+						await this.plugin.app.plugins.disablePlugin(this.plugin.manifest.id);
+						// @ts-ignore
+						await this.plugin.app.plugins.enablePlugin(this.plugin.manifest.id);
+					}
+					else {
+						const filenameMessageHistory = './.obsidian/plugins/bmo-chatbot/data/' + 'messageHistory_' + defaultProfilePath.name.replace('.md', '.json');
+						this.app.vault.adapter.remove(filenameMessageHistory);
+						this.plugin.app.vault.delete(profilePath);
+						this.plugin.settings.profiles.profile = DEFAULT_SETTINGS.profiles.profile;
+						await updateSettingsFromFrontMatter(this.plugin, defaultProfilePath);
+						await this.plugin.saveSettings();
+					}
+				}
 
 				requestAnimationFrame(() => {
 					// @ts-ignore
