@@ -12,22 +12,28 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
   const command = input.split(' ')[0]; // Get the first word from the input
 
   switch (command) {
-      case '/commands':
-      case '/help':
       case '/h':
+      case '/help':
+      case '/man':
+      case '/manual':
+      case '/commands':
           commandHelp(plugin, settings);
           break;
+      case '/m':
       case '/model':
       case '/models':
           return commandModel(input, settings, plugin);
+      case '/p':
+      case '/prof':
       case '/profile':
       case '/profiles':
           return commandProfile(input, settings, plugin);
-      case '/reference':
       case '/ref':
+      case '/reference':
           commandReference(input, settings, plugin);
           break;
       case '/temp':
+      case '/temperature':
           commandTemperature(input, settings, plugin);
           break;
       case '/maxtokens':
@@ -42,12 +48,12 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
       case '/save':
           commandSave(plugin, settings);
           break;
-      case '/clear':
       case '/c':
+      case '/clear':
           removeMessageThread(plugin, 0);
           break;
-      case '/stop':
       case '/s':
+      case '/stop':
           commandStop();
           break;
       default:
@@ -170,10 +176,6 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 
 // `/profile "[VALUE]"` to change profile.
 export async function commandProfile(input: string, settings: BMOSettings, plugin: BMOGPT) {
-  // const profile = `${plugin.settings.profiles.profileFolderPath}${plugin.settings.profiles.profile}`;
-  // const profileFile = plugin.app.vault.getAbstractFileByPath(profile) as TFile;
-  // updateFrontMatter(plugin, profileFile);
-
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
 
   if (!settings.profiles.profileFolderPath) {
