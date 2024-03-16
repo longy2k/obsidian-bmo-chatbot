@@ -33,9 +33,9 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
       case '/maxtokens':
           commandMaxTokens(input, settings, plugin);
           break;
-      case '/system':
-          commandSystem(input, settings, plugin);
-          break;
+      // case '/system':
+      //     commandSystem(input, settings, plugin);
+      //     break;
       case '/append':
           commandAppend(plugin, settings);
           break;
@@ -95,7 +95,6 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
   <p><code>/model "[MODEL-NAME]" or [VALUE]</code> - List or change model.</p>
   <p><code>/profile "[PROFILE-NAME]" or [VALUE]</code> - List or change profile.</p>
   <p><code>/profile clear</code> - Clear profile.</p>
-  <p><code>/system "[PROMPT]"</code> - Change system setting.</p>
   <p><code>/maxtokens [VALUE]</code> - Set max tokens.</p>
   <p><code>/temp [VALUE]</code> - Change temperature range 0 from to 1.</p>
   <p><code>/ref on | off</code> - Turn on or off "reference current note".</p>
@@ -374,39 +373,39 @@ export async function commandMaxTokens(input: string, settings: BMOSettings, plu
 }
 
 // `/system "[VALUE]"` to change system prompt
-export async function commandSystem(input: string, settings: BMOSettings, plugin: BMOGPT) {
-  let commandBotMessage = '';
-  const commandParts = input.split(' ');
-  const commandAction = commandParts[1] ? commandParts[1].toLowerCase() : '';
-  let systemSettingMessage: string;
+// export async function commandSystem(input: string, settings: BMOSettings, plugin: BMOGPT) {
+//   let commandBotMessage = '';
+//   const commandParts = input.split(' ');
+//   const commandAction = commandParts[1] ? commandParts[1].toLowerCase() : '';
+//   let systemSettingMessage: string;
 
-  // Check for clear command first
-  if (commandAction === 'c' || commandAction === 'clear') {
-    settings.general.system_role = '';
-    systemSettingMessage = 'System cleared.';
-  } else if (commandAction !== '') {
-    const systemPromptValue = input.match(/['"]([^'"]+)['"]/) || [null, commandAction];
+//   // Check for clear command first
+//   if (commandAction === 'c' || commandAction === 'clear') {
+//     settings.general.system_role = '';
+//     systemSettingMessage = 'System cleared.';
+//   } else if (commandAction !== '') {
+//     const systemPromptValue = input.match(/['"]([^'"]+)['"]/) || [null, commandAction];
 
-    if (systemPromptValue[1] !== null) {
-      // Update system_role with the provided value
-      settings.general.system_role = systemPromptValue[1];
-      systemSettingMessage = `System updated: "${systemPromptValue[1]}"`;
-    } else {
-      // Handle case where no valid system value is provided
-      systemSettingMessage = `Current system: "${settings.general.system_role}"`;
-    }
-  } else {
-    // No action specified
-    systemSettingMessage = `Current system: "${settings.general.system_role}"`;
-  }
+//     if (systemPromptValue[1] !== null) {
+//       // Update system_role with the provided value
+//       settings.general.system_role = systemPromptValue[1];
+//       systemSettingMessage = `System updated: "${systemPromptValue[1]}"`;
+//     } else {
+//       // Handle case where no valid system value is provided
+//       systemSettingMessage = `Current system: "${settings.general.system_role}"`;
+//     }
+//   } else {
+//     // No action specified
+//     systemSettingMessage = `Current system: "${settings.general.system_role}"`;
+//   }
   
-  commandBotMessage += `<p><strong>${systemSettingMessage}</strong></p>`;
-  const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-  messageContainer.appendChild(botMessageDiv);
+//   commandBotMessage += `<p><strong>${systemSettingMessage}</strong></p>`;
+//   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+//   const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+//   messageContainer.appendChild(botMessageDiv);
 
-  await plugin.saveSettings();
-}
+//   await plugin.saveSettings();
+// }
 
 // `/append` to append current chat history to current active note.
 export async function commandAppend(plugin: BMOGPT, settings: BMOSettings) {

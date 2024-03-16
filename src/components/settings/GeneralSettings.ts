@@ -1,4 +1,4 @@
-import { DropdownComponent, Notice, Setting, SettingTab, TFile, setIcon } from 'obsidian';
+import { DropdownComponent, Notice, Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 import { ANTHROPIC_MODELS } from 'src/view';
 import { fetchGoogleGeminiModels, fetchMistralModels, fetchOllamaModels, fetchOpenAIBaseModels, fetchOpenRouterModels, fetchRESTAPIURLModels } from '../FetchModelList';
@@ -49,24 +49,24 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
         
         });
 
-    const currentProfileFile = `${plugin.settings.profiles.profileFolderPath}/${plugin.settings.profiles.profile}`
-    const currentProfile = plugin.app.vault.getAbstractFileByPath(currentProfileFile) as TFile;
+    // const currentProfileFile = `${plugin.settings.profiles.profileFolderPath}/${plugin.settings.profiles.profile}`
+    // const currentProfile = plugin.app.vault.getAbstractFileByPath(currentProfileFile) as TFile;
 
-    new Setting(settingsContainer)
-        .setName('System')
-        .setDesc('System role prompt.')
-        .addTextArea(text => text
-            .setPlaceholder('You are a helpful assistant.')
-            .setValue(plugin.settings.general.system_role !== undefined ? plugin.settings.general.system_role : DEFAULT_SETTINGS.general.system_role)
-            .onChange(async (value) => {
-                plugin.settings.general.system_role = value !== undefined ? value : DEFAULT_SETTINGS.general.system_role;
-            })
-            .inputEl.addEventListener('focusout', async () => {
-                plugin.app.vault.modify(currentProfile, plugin.settings.general.system_role);
-                await plugin.saveSettings();
-                SettingTab.display();
-            })
-        );
+    // new Setting(settingsContainer)
+    //     .setName('System')
+    //     .setDesc('System role prompt.')
+    //     .addTextArea(text => text
+    //         .setPlaceholder('You are a helpful assistant.')
+    //         .setValue(plugin.settings.general.system_role !== undefined ? plugin.settings.general.system_role : DEFAULT_SETTINGS.general.system_role)
+    //         .onChange(async (value) => {
+    //             plugin.settings.general.system_role = value !== undefined ? value : DEFAULT_SETTINGS.general.system_role;
+    //         })
+    //         .inputEl.addEventListener('focusout', async () => {
+    //             plugin.app.vault.modify(currentProfile, plugin.settings.general.system_role);
+    //             await plugin.saveSettings();
+    //             SettingTab.display();
+    //         })
+    //     );
 
     new Setting(settingsContainer)
         .setName('Max Tokens')

@@ -70,8 +70,6 @@ To start using the plugin, enable it in your settings menu and enter your OpenAI
 -   `/prompt` - List or change prompt.
     -   `/prompt 1` or `/prompt "[PROMPT-NAME]"`
 -   `/prompt clear` or `/prompt c` - Clear prompt.
--   `/system` - Change system prompt.
-    -   `/system "WRITE IN ALL CAPS!"`
 -   `/maxtokens [VALUE]` - Set max tokens.
 -   `/temp [VALUE]` - Change temperature range from 0 to 1.
 -   `/ref on | off` - Turn on or off reference current note.
