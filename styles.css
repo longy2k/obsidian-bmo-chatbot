@@ -314,7 +314,7 @@ button.regenerate-button {
 }
 
 .chatbox textarea::placeholder {
-	color: var(--text-muted);
+	color: var(--text-normal);
 	font-weight: 500;
 }
 
@@ -518,9 +518,4 @@ ul#dropdownOptions li:hover {
 
 .theme-light .chatbox textarea::selection {
 	background: var(--interactive-accent) !important;
-}
-
-.theme-light .chatbox textarea::placeholder {
-	color: black;
-	font-weight: 500;
 }
