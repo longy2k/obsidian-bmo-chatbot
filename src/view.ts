@@ -234,7 +234,7 @@ export class BMOView extends ItemView {
             this.settings.APIConnections.openAI.allowStream) {
             if ((input === '/s' || input === '/stop') && event.key === 'Enter') {
                 this.preventEnter = false;
-                executeCommand(input, this.settings, this.plugin);
+                await executeCommand(input, this.settings, this.plugin);
             }
         }
 
@@ -245,9 +245,16 @@ export class BMOView extends ItemView {
                 return;
             }
 
-            // Add user message to message history when stopped via stream.
-            if (!(input === '/s' || input === '/stop')) {
-                addMessage(this.plugin, input, 'userMessage', this.settings, index);
+            // Add all user messages besides certain commands
+            if (!input.includes('/c') && 
+                !input.includes('/clear') && 
+                !input.startsWith('/p ') &&
+                !input.startsWith('/prof ') &&
+                !input.startsWith('/profile ') &&
+                !input.startsWith('/profiles ') &&
+                !input.includes('/s') &&
+                !input.includes('/stop')) {
+                    addMessage(this.plugin, input, 'userMessage', this.settings, index);
             }
             
             const messageContainer = document.querySelector('#messageContainer');
@@ -258,7 +265,14 @@ export class BMOView extends ItemView {
                 if (input.startsWith('/')) {
                     executeCommand(input, this.settings, this.plugin);
 
-                    if (input !== '/c' && input !== '/clear') {
+                    if (!input.includes('/c') && 
+                        !input.includes('/clear') && 
+                        input === '/prof' ||
+                        input === '/p' ||
+                        input === '/profile' ||
+                        input === '/profiles' &&
+                        !input.includes('/s') &&
+                        !input.includes('/stop')) {
                         const botMessages = messageContainer.querySelectorAll('.botMessage');
                         const lastBotMessage = botMessages[botMessages.length - 1];
                         lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });

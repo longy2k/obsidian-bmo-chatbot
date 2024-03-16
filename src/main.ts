@@ -261,8 +261,6 @@ export default class BMOGPT extends Plugin {
 					}
 					else {
 						if (this.settings.profiles.profile === file.name) {
-							console.log(this.settings.profiles.profile);
-
 							this.settings.profiles.profile = DEFAULT_SETTINGS.profiles.profile;
 							const fileContent = (await this.app.vault.read(defaultProfile)).replace(/^---\s*[\s\S]*?---/, '').trim();
 							this.settings.general.system_role = fileContent;
@@ -569,7 +567,7 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
     // Define a callback function to modify the frontmatter
     const modifyFrontMatter = async (frontmatter: any) => {
         // Add or modify properties in the frontmatter
-        frontmatter.model = plugin.settings.general.model.toLowerCase();
+        frontmatter.model = plugin.settings.general.model;
         frontmatter.max_tokens = parseInt(plugin.settings.general.max_tokens);
         frontmatter.temperature = parseFloat(plugin.settings.general.temperature);
         frontmatter.reference_current_note = plugin.settings.general.allowReferenceCurrentNote;
@@ -619,7 +617,7 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 	try {
 		await plugin.app.fileManager.processFrontMatter(file, (frontmatter: any) => {
 
-			plugin.settings.general.model = frontmatter.model.toLowerCase() || DEFAULT_SETTINGS.general.model;
+			plugin.settings.general.model = frontmatter.model || DEFAULT_SETTINGS.general.model;
 
 			const modelName = document.querySelector('#modelName');
 			if (modelName) {

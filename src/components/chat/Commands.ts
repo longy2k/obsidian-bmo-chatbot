@@ -1,11 +1,12 @@
-import { Notice } from 'obsidian';
-import { BMOSettings, DEFAULT_SETTINGS } from '../../main';
+import { Notice, TFile } from 'obsidian';
+import { BMOSettings, DEFAULT_SETTINGS, updateSettingsFromFrontMatter } from '../../main';
 import { colorToHex } from '../../utils/ColorConverter';
 import { filenameMessageHistoryJSON, messageHistory } from '../../view';
 import BMOGPT from '../../main';
 import { getAbortController } from '../FetchModelResponse';
 import { fetchModelRenameTitle } from '../editor/FetchRenameNoteTitle';
 import { displayCommandBotMessage } from './BotMessage';
+import { addMessage } from './Message';
 
 // Commands
 export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
@@ -176,6 +177,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 
 // `/profile "[VALUE]"` to change profile.
 export async function commandProfile(input: string, settings: BMOSettings, plugin: BMOGPT) {
+  
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
 
   if (!settings.profiles.profileFolderPath) {
@@ -193,7 +195,7 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
   // Sorting the files array alphabetically by file name
   files.sort((a, b) => a.name.localeCompare(b.name));
 
-  // Check if the user has not specified a profile after the "/profile" command
+  // Check if the user has not specified a profile
   if (!input.split(' ')[1]) {
 
     // Loop through files and create list items, removing the file extension
@@ -220,25 +222,17 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
     return;
   }
 
-  // Check if the user has specified a profile after the "/profile" command
-  if (input.startsWith('/profile')) {
-    let inputValue = input.substring('/profile '.length).trim();
+  // Check if the user has specified a profile
+  if (input.startsWith('/p') || 
+      input.startsWith('/prof') || 
+      input.startsWith('/profile') || 
+      input.startsWith('/profiles')) {
+    let inputValue = input.split(' ').slice(1).join(' ').trim();
 
     // Remove quotation marks if present
     if ((inputValue.startsWith('"') && inputValue.endsWith('"')) ||
         (inputValue.startsWith('\'') && inputValue.endsWith('\''))) {
       inputValue = inputValue.substring(1, inputValue.length - 1);
-    }
-
-    // Set to default or empty if the input is 'clear' or 'c'
-    if (inputValue === 'clear' || inputValue === 'c') {
-      settings.profiles.profile = ''; // Set to default or empty
-      const commandBotMessage = 'Profile cleared.';
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
-
-      await plugin.saveSettings();
-      return settings;
     }
     
     const profileAliases: { [key: string]: string } = {};
@@ -246,30 +240,38 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
     // Create aliases for each file (profile)
     for (let i = 1; i <= files.length; i++) {
       const fileNameWithoutExtension = files[i - 1].name.replace(/\.[^/.]+$/, '');
-      profileAliases[i.toString()] = fileNameWithoutExtension;
+      profileAliases[i.toString().toLowerCase()] = fileNameWithoutExtension;
     }
 
-    let currentModel;
     if (profileAliases[inputValue]) {
       // If input matches a key in profileAliases
-      settings.profiles.profile = profileAliases[inputValue] + '.md';
-      currentModel = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
-      const commandBotMessage = `<b>Updated profile to</b> '${currentModel}'`;
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
-    } else if (Object.values(profileAliases).includes(inputValue)) {
-      // If input matches a value in profileAliases
-      settings.profiles.profile = inputValue + '.md';
-      currentModel = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
-      const commandBotMessage = `<b>Updated Profile to</b> '${currentModel}'`;
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
+      plugin.settings.profiles.profile = profileAliases[inputValue] + '.md';
+      const profileFilePath = plugin.settings.profiles.profileFolderPath + '/' + profileAliases[inputValue] + '.md';
+      const currentProfile = plugin.app.vault.getAbstractFileByPath(profileFilePath) as TFile;
+      plugin.activateView();
+      await updateSettingsFromFrontMatter(plugin, currentProfile);
+      await plugin.saveSettings();
+    } else if (Object.values(profileAliases).map(v => v.toLowerCase()).includes(inputValue.toLowerCase())) {
+        // If input matches a value in profileAliases (case-insensitive)
+        const matchedProfile = Object.entries(profileAliases).find(([key, value]) => value.toLowerCase() === inputValue.toLowerCase());
+        if (matchedProfile) {
+            plugin.settings.profiles.profile = matchedProfile[1] + '.md';
+            const profileFilePath = plugin.settings.profiles.profileFolderPath + '/' + matchedProfile[1] + '.md';
+            const currentProfile = plugin.app.vault.getAbstractFileByPath(profileFilePath) as TFile;
+            plugin.activateView();
+            await updateSettingsFromFrontMatter(plugin, currentProfile);
+            await plugin.saveSettings();
+        }
     } else {
-      // If the input profile does not exist
-      const commandBotMessage = `Profile '${inputValue}' does not exist.`;
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
-      new Notice('Invalid profile.');
+        // If the input profile does not exist
+        addMessage(plugin, input, 'userMessage', settings, messageHistory.length - 1);
+        const commandBotMessage = `Profile '${inputValue}' does not exist.`;
+        const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+        messageContainer.appendChild(botMessageDiv);
+        const botMessages = messageContainer.querySelectorAll('.botMessage');
+        const lastBotMessage = botMessages[botMessages.length - 1];
+        lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        new Notice('Invalid profile.');
     }
 
     await plugin.saveSettings();
