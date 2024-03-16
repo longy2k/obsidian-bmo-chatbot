@@ -1,5 +1,5 @@
-# BMO Chatbot for Obsidian
 
+# BMO Chatbot for Obsidian
 Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, OpenAI, Mistral AI, and more for Obsidian.
 
 <p align="center">
@@ -7,6 +7,20 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
   <img src="README_images/dataview-example.png" alt="dataview_example">
   <img src="README_images/eli5-example.png" alt="eli5_example">
 </p>
+
+## Breaking Changes
+
+### If you have <v1.9.0, please perform the following instructions:
+
+1. Go to `Options > Community plugins` and click on the folder's icon:
+
+    <img width="775" alt="Screenshot 2024-03-10 at 9 28 38 PM" src="https://github.com/longy2k/obsidian-bmo-chatbot/assets/40724177/62882d8d-77d9-4a46-88fc-4e6a9b1215fc">
+
+2. Close Obsidian completely.
+    
+3. Find the `bmo-chatbot` folder and delete `data.json`.
+
+4. Restart Obsidian.
 
 ## Features
 
