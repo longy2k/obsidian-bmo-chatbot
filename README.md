@@ -4,8 +4,8 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 
 <p align="center">
   <img src="README_images/original-example.png" alt="original_example">
-  <img src="README_image/dataview-example.ong" alt="dataview_example">
-  <img src="README_image/eli5-example.png" alt="eli5_example">
+  <img src="README_images/dataview-example.png" alt="dataview_example">
+  <img src="README_images/eli5-example.png" alt="eli5_example">
 </p>
 
 ## Features
