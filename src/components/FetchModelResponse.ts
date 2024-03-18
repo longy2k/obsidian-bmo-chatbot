@@ -643,8 +643,6 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
                 }
             }),
         });
-
-        console.log(response);
         
         const message = response.json.candidates[0].content.parts[0].text;
 

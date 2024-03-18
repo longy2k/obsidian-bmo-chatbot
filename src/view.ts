@@ -265,6 +265,7 @@ export class BMOView extends ItemView {
                 if (input.startsWith('/')) {
                     executeCommand(input, this.settings, this.plugin);
 
+
                     if (!input.includes('/c') && 
                         !input.includes('/clear') && 
                         (input === '/prof' ||
