@@ -13,7 +13,7 @@ export async function getPrompt(plugin: BMOGPT, settings: BMOSettings) {
         const content = await plugin.app.vault.adapter.read(promptFilePath);
         // Remove YAML front matter if present
         const clearYamlContent = content.replace(/---[\s\S]+?---/, '').trim();
-        return clearYamlContent;
+        return '\n\n' + clearYamlContent + '\n\n';
     } catch (error) {
         console.error(`Error reading file ${promptFilePath}:`, error);
         return null; 

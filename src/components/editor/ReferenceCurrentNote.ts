@@ -18,8 +18,7 @@ export async function getActiveFileContent(plugin: BMOGPT, settings: BMOSettings
             }
             const content = await plugin.app.vault.read(activeFile);
             const clearYamlContent = content.replace(/---[\s\S]+?---/, '').trim();
-            referenceCurrentNoteContent = 'Reference Note:' + 
-                          '\n\n' + clearYamlContent + '\n\n';
+            referenceCurrentNoteContent = '\n\n' + 'Reference Note:' + '\n\n' + clearYamlContent + '\n\n';
         }
     }
     return referenceCurrentNoteContent;

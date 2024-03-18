@@ -594,31 +594,24 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     // Function to convert messageHistory to Google Gemini format
-    const convertMessageHistory = (messageHistory: { role: string; content: string }[], referenceCurrentNoteContent: string) => {
+    const convertMessageHistory = (messageHistory: { role: string; content: string }[]) => {
         // Clone the messageHistory to avoid mutating the original array
         const modifiedMessageHistory = [...messageHistory];
         
-        // Find the last user message index
-        const lastUserMessageIndex = modifiedMessageHistory.map((message, index) => ({ role: message.role, index }))
-                                                    .filter(message => message.role === 'user')
-                                                    .map(message => message.index)
-                                                    .pop();
-
-        // Append referenceCurrentNoteContent to the last user message, if found
-        if (lastUserMessageIndex !== undefined) {
-            modifiedMessageHistory[lastUserMessageIndex].content += '\n\n' + settings.general.system_role + '\n\n' + prompt + referenceCurrentNoteContent + '\n\n';
-        }
-
-        const contents = modifiedMessageHistory.map(({ role, content }) => ({
-            role: role === 'assistant' ? 'model' : role, // Convert "assistant" to "model"
+        const convertedMessageHistory = modifiedMessageHistory.map(({ role, content }) => ({
+            role: role === 'assistant' ? 'model' : role,
             parts: [{ text: content }]
         }));
+        
+        const contents = [
+            ...convertedMessageHistory
+        ];
 
         return { contents };
     };
     
     // Use the function to convert your message history
-    const convertedMessageHistory = convertMessageHistory(messageHistoryAtIndex, referenceCurrentNoteContent);
+    const convertedMessageHistory = convertMessageHistory(messageHistoryAtIndex);
 
     try {        
         const API_KEY = settings.APIConnections.googleGemini.APIKey;
@@ -631,6 +624,14 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
             },
             body: JSON.stringify({
                 contents: [
+                    {
+                        role: 'user',
+                        parts: [{ text: `System prompt: \n\n ${plugin.settings.general.system_role} ${prompt} ${referenceCurrentNoteContent} Respond understood if you got it.`}],
+                    },
+                    {
+                        role: 'model',
+                        parts: [{ text: 'Understood.'}],
+                    },                
                     ...convertedMessageHistory.contents,
                 ],
                 generationConfig: {
@@ -642,6 +643,8 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
                 }
             }),
         });
+
+        console.log(response);
         
         const message = response.json.candidates[0].content.parts[0].text;
 
@@ -1011,6 +1014,8 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
     });
 
     abortController = new AbortController();
+
+    const prompt = await getPrompt(plugin, settings);
 
     let message = '';
     let isScroll = false;
