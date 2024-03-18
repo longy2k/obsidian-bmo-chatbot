@@ -8,6 +8,7 @@ import { addAPIConnectionSettings } from './components/settings/ConnectionSettin
 import { addProfileSettings } from './components/settings/ProfileSettings';
 import { addRESTAPIURLSettings } from './components/settings/RESTAPIURLSettings';
 import { addEditorSettings } from './components/settings/EditorSettings';
+import { addPromptSettings } from './components/settings/PromptSettings';
 
 export class BMOSettingTab extends PluginSettingTab {
 	plugin: BMOGPT;
@@ -38,9 +39,10 @@ export class BMOSettingTab extends PluginSettingTab {
 		// Display settings
 		addProfileSettings(this.containerEl, this.plugin, this);
 		addGeneralSettings(this.containerEl, this.plugin, this);
+		addPromptSettings(this.containerEl, this.plugin, this);
 		addAppearanceSettings(this.containerEl, this.plugin, this);
-		addEditorSettings(this.containerEl, this.plugin, this);		
 		addChatHistorySettings(this.containerEl, this.plugin, this);
+		addEditorSettings(this.containerEl, this.plugin, this);		
 
 		addHorizontalRule(this.containerEl);
 

@@ -105,6 +105,9 @@ export class BMOView extends ItemView {
             }
         });
 
+        header.appendChild(chatbotNameHeading);
+        header.appendChild(modelName);
+
         referenceCurrentNoteElement.appendChild(spanElement);
 
         referenceCurrentNoteElement.style.display = 'none';
@@ -122,9 +125,6 @@ export class BMOView extends ItemView {
                 id: 'messageContainer',
             },
         });
-
-        header.appendChild(chatbotNameHeading);
-        header.appendChild(modelName);
 
         if (this.settings.appearance.allowHeader) {
             header.style.display = 'block';
@@ -267,10 +267,14 @@ export class BMOView extends ItemView {
 
                     if (!input.includes('/c') && 
                         !input.includes('/clear') && 
-                        input === '/prof' ||
+                        (input === '/prof' ||
                         input === '/p' ||
                         input === '/profile' ||
-                        input === '/profiles' &&
+                        input === '/profiles' ||
+                        input === '/prompt' ||
+                        input === '/prompts' ||
+                        input.startsWith('/prompt ') || 
+                        input.startsWith('/prompts ')) &&
                         !input.includes('/s') &&
                         !input.includes('/stop')) {
                         const botMessages = messageContainer.querySelectorAll('.botMessage');

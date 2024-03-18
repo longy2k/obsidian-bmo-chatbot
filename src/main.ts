@@ -29,6 +29,10 @@ export interface BMOSettings {
 		chatBoxBackgroundColor: string,
 		allowHeader: boolean,
 	},
+	prompts: {
+		prompt: string,
+		promptFolderPath: string,
+	},
 	editor: {
 		prompt_select_generate_system_role: string,
 	},
@@ -92,6 +96,7 @@ export interface BMOSettings {
 	},
 	toggleGeneralSettings: boolean,
 	toggleAppearanceSettings: boolean,
+	togglePromptSettings: boolean,
 	toggleEditorSettings: boolean,
 	toggleChatHistorySettings: boolean,
 	toggleProfileSettings: boolean,
@@ -131,6 +136,10 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		chatBoxFontColor: '--text-normal',
 		chatBoxBackgroundColor: '--interactive-accent',
 		allowHeader: true,
+	},
+	prompts: {
+		prompt: '',
+		promptFolderPath: 'BMO/Prompts',
 	},
 	editor: {
 		prompt_select_generate_system_role: 'Output user request.',
@@ -195,6 +204,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	},
 	toggleGeneralSettings: true,
 	toggleAppearanceSettings: false,
+	togglePromptSettings: false,
 	toggleEditorSettings: false,
 	toggleChatHistorySettings: false,
 	toggleProfileSettings: false,
@@ -219,8 +229,6 @@ export default class BMOGPT extends Plugin {
 		await this.loadSettings();
 
 		const folderPath = this.settings.profiles.profileFolderPath || DEFAULT_SETTINGS.profiles.profileFolderPath;
-		// const currentProfilePath = `${folderPath}/${this.settings.profiles.profile}`;
-		// const currentProfile = this.app.vault.getAbstractFileByPath(currentProfilePath) as TFile;
 
 		const defaultFilePath = `${folderPath}/${DEFAULT_SETTINGS.profiles.profile}`;
 		const defaultProfile = this.app.vault.getAbstractFileByPath(defaultFilePath) as TFile;
@@ -468,8 +476,10 @@ export async function defaultFrontMatter(plugin: BMOGPT, file: TFile) {
         frontmatter.max_tokens = parseInt(DEFAULT_SETTINGS.general.max_tokens);
         frontmatter.temperature = parseFloat(DEFAULT_SETTINGS.general.temperature);
         frontmatter.reference_current_note = DEFAULT_SETTINGS.general.allowReferenceCurrentNote;
+		frontmatter.prompt = DEFAULT_SETTINGS.prompts.prompt;
 		frontmatter.user_name = DEFAULT_SETTINGS.appearance.userName;
 		// frontmatter.chatbot_name = DEFAULT_SETTINGS.appearance.chatbotName;
+		frontmatter.allow_header = DEFAULT_SETTINGS.appearance.allowHeader;
 		frontmatter.chatbot_container_background_color = DEFAULT_SETTINGS.appearance.chatbotContainerBackgroundColor.replace(/^#/, '');
 		frontmatter.message_container_background_color = DEFAULT_SETTINGS.appearance.messageContainerBackgroundColor.replace(/^#/, '');
 		frontmatter.user_message_font_color = DEFAULT_SETTINGS.appearance.userMessageFontColor.replace(/^#/, '');
@@ -479,7 +489,6 @@ export async function defaultFrontMatter(plugin: BMOGPT, file: TFile) {
 		frontmatter.chatbox_font_color = DEFAULT_SETTINGS.appearance.chatBoxFontColor.replace(/^#/, '');
 		frontmatter.chatbox_background_color = DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor.replace(/^#/, '');
 		frontmatter.prompt_select_generate_system_role = DEFAULT_SETTINGS.editor.prompt_select_generate_system_role;
-		frontmatter.allow_header = DEFAULT_SETTINGS.appearance.allowHeader;
 		frontmatter.ollama_mirostat = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat);
 		frontmatter.ollama_mirostat_eta = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_eta);
 		frontmatter.ollama_mirostat_tau = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_tau);
@@ -519,8 +528,10 @@ export async function updateSettingsFromFrontMatter(plugin: BMOGPT, file: TFile)
 		plugin.settings.general.max_tokens = frontmatter.max_tokens;
 		plugin.settings.general.temperature = frontmatter.temperature;
 		plugin.settings.general.allowReferenceCurrentNote = frontmatter.reference_current_note;
+		plugin.settings.prompts.prompt = frontmatter.prompt + '.md';
 		plugin.settings.appearance.userName = frontmatter.user_name;
 		plugin.settings.appearance.chatbotName = file.basename;
+		plugin.settings.appearance.allowHeader = frontmatter.allow_header;
 		plugin.settings.appearance.chatbotContainerBackgroundColor = '#' + frontmatter.chatbot_container_background_color;
 		plugin.settings.appearance.messageContainerBackgroundColor = '#' + frontmatter.message_container_background_color;
 		plugin.settings.appearance.userMessageFontColor = '#' + frontmatter.user_message_font_color;
@@ -530,7 +541,6 @@ export async function updateSettingsFromFrontMatter(plugin: BMOGPT, file: TFile)
 		plugin.settings.appearance.chatBoxFontColor = '#' + frontmatter.chatbox_font_color;
 		plugin.settings.appearance.chatBoxBackgroundColor = '#' + frontmatter.chatbox_background_color;
 		plugin.settings.editor.prompt_select_generate_system_role = frontmatter.prompt_select_generate_system_role;
-		plugin.settings.appearance.allowHeader = frontmatter.allow_header;
 		plugin.settings.OllamaConnection.ollamaParameters.mirostat = frontmatter.ollama_mirostat;
 		plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = frontmatter.ollama_mirostat_eta;
 		plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau = frontmatter.ollama_mirostat_tau;
@@ -571,8 +581,10 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
         frontmatter.max_tokens = parseInt(plugin.settings.general.max_tokens);
         frontmatter.temperature = parseFloat(plugin.settings.general.temperature);
         frontmatter.reference_current_note = plugin.settings.general.allowReferenceCurrentNote;
+		frontmatter.prompt = plugin.settings.prompts.prompt.replace('.md', '');
 		frontmatter.user_name = plugin.settings.appearance.userName;
 		// frontmatter.chatbot_name = plugin.settings.appearance.chatbotName;
+		frontmatter.allow_header = plugin.settings.appearance.allowHeader;
 		frontmatter.chatbot_container_background_color = plugin.settings.appearance.chatbotContainerBackgroundColor.replace(/^#/, '');
 		frontmatter.message_container_background_color = plugin.settings.appearance.messageContainerBackgroundColor.replace(/^#/, '');
 		frontmatter.user_message_font_color = plugin.settings.appearance.userMessageFontColor.replace(/^#/, '');
@@ -582,7 +594,6 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
 		frontmatter.chatbox_font_color = plugin.settings.appearance.chatBoxFontColor.replace(/^#/, '');
 		frontmatter.chatbox_background_color = plugin.settings.appearance.chatBoxBackgroundColor.replace(/^#/, '');
 		frontmatter.prompt_select_generate_system_role = plugin.settings.editor.prompt_select_generate_system_role;
-		frontmatter.allow_header = plugin.settings.appearance.allowHeader;
 		frontmatter.ollama_mirostat = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.mirostat);
 		frontmatter.ollama_mirostat_eta = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta);
 		frontmatter.ollama_mirostat_tau = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau);
@@ -655,6 +666,9 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 					referenceCurrentNoteElement.style.display = 'none';
 				}
 			}
+
+
+			plugin.settings.prompts.prompt = frontmatter.prompt + '.md' || DEFAULT_SETTINGS.prompts.prompt;
 
 			if (frontmatter.user_name) {
 				plugin.settings.appearance.userName = frontmatter.user_name.substring(0, 30);

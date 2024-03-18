@@ -29,6 +29,9 @@ export function executeCommand(input: string, settings: BMOSettings, plugin: BMO
       case '/profile':
       case '/profiles':
           return commandProfile(input, settings, plugin);
+      case '/prompt':
+      case '/prompts':
+          return commandPrompt(input, settings, plugin);  
       case '/ref':
       case '/reference':
           commandReference(input, settings, plugin);
@@ -99,11 +102,12 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
 
   const commandBotMessage =
   `<h2>Commands</h2>
-  <p><code>/model "[MODEL-NAME]" or [VALUE]</code> - List or change model.</p>
-  <p><code>/profile "[PROFILE-NAME]" or [VALUE]</code> - List or change profile.</p>
-  <p><code>/profile clear</code> - Clear profile.</p>
+  <p><code>/model [MODEL-NAME] or [VALUE]</code> - List or change model.</p>
+  <p><code>/profile [PROFILE-NAME] or [VALUE]</code> - List or change profile.</p>
+  <p><code>/prompt [PROMPT-NAME] or [VALUE]</code> - List or change prompts.</p>
+  <p><code>/prompt clear</code> - Clear prompt.</p>
   <p><code>/maxtokens [VALUE]</code> - Set max tokens.</p>
-  <p><code>/temp [VALUE]</code> - Change temperature range 0 from to 1.</p>
+  <p><code>/temp [VALUE]</code> - Change temperature range from 0 to 2.</p>
   <p><code>/ref on | off</code> - Turn on or off "reference current note".</p>
   <p><code>/append</code> - Append current chat history to current active note.</p>
   <p><code>/save</code> - Save current chat history to a note.</p>
@@ -272,6 +276,114 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
         const lastBotMessage = botMessages[botMessages.length - 1];
         lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
         new Notice('Invalid profile.');
+    }
+
+    await plugin.saveSettings();
+    return settings;
+  }
+
+}
+
+// `/prompt "[VALUE]"` to change prompt.
+export async function commandPrompt(input: string, settings: BMOSettings, plugin: BMOGPT) {
+  const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+
+  if (!settings.prompts.promptFolderPath) {
+    new Notice('Prompt folder path not set.');
+    const commandBotMessage = '<p>Prompt folder path not set.</p>';
+
+    const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+    messageContainer.appendChild(botMessageDiv);
+    return;
+  }
+
+  // Fetching files from the specified folder
+  const files = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.prompts.promptFolderPath));
+
+  // Sorting the files array alphabetically by file name
+  files.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Check if the user has not specified a prompt after the "/prompt" command
+  if (!input.split(' ')[1]) {
+
+    // Loop through files and create list items, removing the file extension
+    const fileListItems = files.map(file => {
+      const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, ''); // Removing the last dot and what follows
+      return `<li>${fileNameWithoutExtension}</li>`;
+    }).join('');
+
+    let currentPrompt = settings.prompts.prompt;
+
+    // Check if currentPrompt is empty, and set it to "Empty" if it is
+    if (!currentPrompt) {
+      currentPrompt = 'Empty';
+    }
+
+    const commandBotMessage = 
+    `<h2>Prompts</h2>
+      <p><b>Current prompt:</b> ${currentPrompt.replace('.md', '') }</p>
+      <ol>${fileListItems}</ol>`;
+
+    const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+    messageContainer.appendChild(botMessageDiv);
+
+    return;
+  }
+
+  // Check if the user has specified a prompt after the "/prompt" command
+  if (input.startsWith('/prompt')) {
+    let inputValue = input.split(' ').slice(1).join(' ').trim();
+
+    // Remove quotation marks if present
+    if ((inputValue.startsWith('"') && inputValue.endsWith('"')) ||
+        (inputValue.startsWith('\'') && inputValue.endsWith('\''))) {
+      inputValue = inputValue.substring(1, inputValue.length - 1);
+    }
+
+    // Set to default or empty if the input is 'clear' or 'c'
+    if (inputValue === 'clear' || inputValue === 'c') {
+      settings.prompts.prompt = ''; // Set to default or empty
+      const commandBotMessage = 'Prompt cleared.';
+      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+      messageContainer.appendChild(botMessageDiv);
+
+      await plugin.saveSettings();
+      return settings;
+    }
+    
+    const promptAliases: { [key: string]: string } = {};
+    
+    // Create aliases for each file (prompt)
+    for (let i = 1; i <= files.length; i++) {
+      const fileNameWithoutExtension = files[i - 1].name.replace(/\.[^/.]+$/, '');
+      promptAliases[i.toString()] = fileNameWithoutExtension;
+    }
+  
+
+    let currentModel;
+    if (promptAliases[inputValue]) {
+      // If input matches a key in promptAliases
+      settings.prompts.prompt = promptAliases[inputValue] + '.md';
+      currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
+      const commandBotMessage = `<b>Updated Prompt to</b> '${currentModel}'`;
+      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+      messageContainer.appendChild(botMessageDiv);
+    } else if (Object.values(promptAliases).map(v => v.toLowerCase()).includes(inputValue.toLowerCase())) {
+      // If input matches a value in profileAliases (case-insensitive)
+      const matchedProfile = Object.entries(promptAliases).find(([key, value]) => value.toLowerCase() === inputValue.toLowerCase());
+      if (matchedProfile) {
+        settings.prompts.prompt = matchedProfile[1] + '.md';
+        currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
+        const commandBotMessage = `<b>Updated Prompt to</b> '${currentModel}'`;
+        const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+        messageContainer.appendChild(botMessageDiv);
+      }
+    } else {
+      // If the input prompt does not exist
+      const commandBotMessage = `Prompt '${inputValue}' does not exist.`;
+      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+      messageContainer.appendChild(botMessageDiv);
+      new Notice('Invalid prompt.');
     }
 
     await plugin.saveSettings();

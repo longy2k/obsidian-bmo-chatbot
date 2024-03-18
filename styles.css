@@ -42,10 +42,10 @@ If your plugin does not need CSS, delete this file.
 }
 
 #modelName {
-	margin: 0;
+	margin: 0rem 0;
 	text-align: center;
 	color: var(--interactive-accent);
-	font-size: 0.75rem;
+	font-size: 0.65rem;
 }
 
 #referenceCurrentNote {
@@ -400,7 +400,7 @@ button.regenerate-button {
 	background-color: #da2c2c;
 	border-radius: 50%;
 	margin-left: 0.25rem;
-	margin-bottom: 0.1rem;
+	margin-bottom: 0.05rem;
 }
 
 ul#dropdownOptions {

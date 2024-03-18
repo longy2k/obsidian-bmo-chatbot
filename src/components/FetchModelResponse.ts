@@ -6,6 +6,7 @@ import { addMessage, addParagraphBreaks } from './chat/Message';
 import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
 import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
 import OpenAI from 'openai';
+import { getPrompt } from './chat/Prompt';
 
 let abortController = new AbortController();
 
@@ -17,6 +18,8 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
     if (!ollamaRESTAPIURL) {
         return;
     }
+
+    const prompt = await getPrompt(plugin, settings);
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
@@ -42,7 +45,7 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
+                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent},
                     ...messageHistoryAtIndex
                 ],
                 stream: false,
@@ -102,6 +105,8 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
         return;
     }
 
+    const prompt = await getPrompt(plugin, settings);
+
     const url = ollamaRESTAPIURL + '/api/chat';
 
     abortController = new AbortController();
@@ -133,7 +138,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
+                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
@@ -244,6 +249,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
 
 // Fetch response from openai-based rest api url
 export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
+    const prompt = await getPrompt(plugin, settings);
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -269,7 +275,7 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role || 'You are a helpful assistant.'},
+                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || -1,
@@ -331,6 +337,8 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
         return;
     }
 
+    const prompt = await getPrompt(plugin, settings);
+
     const url = RESTAPIURL + '/chat/completions';
 
     abortController = new AbortController();
@@ -363,7 +371,7 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role || 'You are a helpful assistant.'},
+                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
@@ -486,6 +494,8 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
 // Fetch response from Anthropic
 export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
 
+    const prompt = await getPrompt(plugin, settings);
+
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -511,7 +521,7 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
             },
             body: JSON.stringify({
                 model: settings.general.model,
-                system: referenceCurrentNoteContent + settings.general.system_role,
+                system: settings.general.system_role + prompt + referenceCurrentNoteContent,
                 messages: [
                     ...messageHistoryAtIndex
                 ],
@@ -568,6 +578,7 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
 
 // Fetch response from Google Gemini
 export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
+    const prompt = await getPrompt(plugin, settings);
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -595,7 +606,7 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
 
         // Append referenceCurrentNoteContent to the last user message, if found
         if (lastUserMessageIndex !== undefined) {
-            modifiedMessageHistory[lastUserMessageIndex].content += '\n\n' + referenceCurrentNoteContent + '\n\n' + settings.general.system_role + '\n\n';
+            modifiedMessageHistory[lastUserMessageIndex].content += '\n\n' + settings.general.system_role + '\n\n' + prompt + referenceCurrentNoteContent + '\n\n';
         }
 
         const contents = modifiedMessageHistory.map(({ role, content }) => ({
@@ -680,6 +691,7 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
 
 // Fetch response from Mistral
 export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
+    const prompt = await getPrompt(plugin, settings);
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -705,7 +717,7 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
+                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent},
                     ...messageHistoryAtIndex
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || 4096,
@@ -761,6 +773,7 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
 // Fetch response Mistral (stream)
 export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
     abortController = new AbortController();
+    const prompt = await getPrompt(plugin, settings);
 
     let message = '';
 
@@ -790,7 +803,7 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
+                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
@@ -918,6 +931,8 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
         dangerouslyAllowBrowser: true, // apiKey is stored within data.json
     });
 
+    const prompt = await getPrompt(plugin, settings);
+
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
 
@@ -938,7 +953,7 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
             max_tokens: parseInt(settings.general.max_tokens),
             stream: false,
             messages: [
-                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
+                { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent},
                 ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
         });
@@ -1024,7 +1039,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
             temperature: parseInt(settings.general.temperature),
             stream: true,
             messages: [
-                { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role},
+                { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent},
                 ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
         });
@@ -1102,6 +1117,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
 
 // Fetch response from OpenRouter
 export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
+    const prompt = await getPrompt(plugin, settings);  
     const filteredMessageHistory = filterMessageHistory(messageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
@@ -1127,7 +1143,7 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role || 'You are a helpful assistant.'},
+                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 max_tokens: parseInt(settings.general.max_tokens) || 4096,
@@ -1187,6 +1203,8 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
 
     abortController = new AbortController();
 
+    const prompt = await getPrompt(plugin, settings);
+
     let message = '';
 
     let isScroll = false;
@@ -1215,7 +1233,7 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
             body: JSON.stringify({
                 model: settings.general.model,
                 messages: [
-                    { role: 'system', content: referenceCurrentNoteContent + settings.general.system_role || 'You are a helpful assistant.'},
+                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent || 'You are a helpful assistant.'},
                     ...messageHistoryAtIndex
                 ],
                 stream: true,
