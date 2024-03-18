@@ -1,5 +1,5 @@
-
 # BMO Chatbot for Obsidian
+
 Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, OpenAI, Mistral AI, and more for Obsidian.
 
 <p align="center">
@@ -10,14 +10,13 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 
 ## Breaking Changes
 
-### If you have <v1.9.0, please perform the following instructions:
+### If you have <v2.0.0, please perform the following instructions:
 
 1. Go to `Options > Community plugins` and click on the folder's icon:
 
-    <img width="775" alt="Screenshot 2024-03-10 at 9 28 38 PM" src="https://github.com/longy2k/obsidian-bmo-chatbot/assets/40724177/62882d8d-77d9-4a46-88fc-4e6a9b1215fc">
+ <img width="775" alt="Screenshot 2024-03-10 at 9 28 38 PM" src="https://github.com/longy2k/obsidian-bmo-chatbot/assets/40724177/62882d8d-77d9-4a46-88fc-4e6a9b1215fc">
 
 2. Close Obsidian completely.
-    
 3. Find the `bmo-chatbot` folder and delete `data.json`.
 
 4. Restart Obsidian.
@@ -78,10 +77,11 @@ To start using the plugin, enable it in your settings menu and insert an API key
 -   `/help` - Show help commands.
 -   `/model` - List or change model.
     -   `/model 1` or `/model "llama2"`
-    -   `/model 2` or `/model "gpt-3.5-turbo"`
         -   ...
 -   `/profile` - List or change profiles.
-    -   `/profile 1` or `/profile [PROMPT-NAME]`
+    -   `/profile 1` or `/profile [PROFILE-NAME]`
+-   `/prompt` - List or change prompts.
+    -   `/prompt 1` or `/prompt [PROMPT-NAME]`
 -   `/maxtokens [VALUE]` - Set max tokens.
 -   `/temp [VALUE]` - Change temperature range from 0 to 1.
 -   `/ref on | off` - Turn on or off reference current note.
@@ -109,13 +109,13 @@ To start using the plugin, enable it in your settings menu and insert an API key
 -   OpenAI
     -   gpt-3.5-turbo
     -   gpt-3.5-turbo-1106
-    -   gpt-4 (Context window: 8,192 tokens)
-    -   gpt-4-turbo-preview (Context window: 128,000 tokens)
+    -   gpt-4
+    -   gpt-4-turbo-preview
 -   Any Openrouter provided models.
 
 ## Other Notes
 
-"BMO" is a tag name for this project, inspired by the character BMO from the animated TV show "Adventure Time."
+"BMO" is a tag name for this project. Inspired by the character "BMO" from Adventure Time.
 
 Be MOre!
 

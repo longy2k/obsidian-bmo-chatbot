@@ -103,7 +103,7 @@ export class BMOSettingTab extends PluginSettingTab {
 		});
 
 		const resetNotice = containerEl.createEl('p', {
-			text: 'Please reset your settings if you have recently updated from version <1.9.0.',
+			text: 'Please reset your settings if you have recently updated from version <2.0.0.',
 			attr: {
 				style: 'font-size: 0.7rem; text-align: center;'
 			}
