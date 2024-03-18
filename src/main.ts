@@ -667,8 +667,11 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 				}
 			}
 
-
-			plugin.settings.prompts.prompt = frontmatter.prompt + '.md' || DEFAULT_SETTINGS.prompts.prompt;
+			if (frontmatter.prompt && frontmatter.prompt !== '') {
+				plugin.settings.prompts.prompt = frontmatter.prompt + '.md'
+			} else {
+				plugin.settings.prompts.prompt = DEFAULT_SETTINGS.prompts.prompt;
+			}
 
 			if (frontmatter.user_name) {
 				plugin.settings.appearance.userName = frontmatter.user_name.substring(0, 30);

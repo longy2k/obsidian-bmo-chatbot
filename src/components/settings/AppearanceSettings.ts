@@ -29,6 +29,34 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
         }
         await plugin.saveSettings();
     });
+
+    new Setting(settingsContainer)
+    .setName('Allow Header')
+    .setDesc('Display chatbot name and model name in header.')
+    .addToggle((toggle) =>
+        toggle.setValue(plugin.settings.appearance.allowHeader).onChange((value) => {
+            plugin.settings.appearance.allowHeader = value;
+            const referenceCurrentNoteElement = document.querySelector('#referenceCurrentNote') as HTMLElement;
+
+            if (value === true) {
+                const header = document.querySelector('#header') as HTMLElement;
+
+                if (header) {
+                    header.style.display = 'block';
+                    referenceCurrentNoteElement.style.margin = '-0.5rem 0 0.5rem 0';
+                }
+            } else {
+                const header = document.querySelector('#header') as HTMLElement;
+                const messageContainer = document.querySelector('#messageContainer') as HTMLElement;
+                if (header) {
+                    header.style.display = 'none';
+                    messageContainer.style.maxHeight = 'calc(100% - 60px)';
+                    referenceCurrentNoteElement.style.margin = '0.5rem 0 0.5rem 0';
+                }
+            }
+            plugin.saveSettings();
+        })
+    );
     
     new Setting(settingsContainer)
         .setName('User Name')
@@ -477,32 +505,4 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
                 await plugin.saveSettings();
             });
     });
-
-    new Setting(settingsContainer)
-    .setName('Allow Header')
-    .setDesc('Display chatbot name and model name in header.')
-    .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.appearance.allowHeader).onChange((value) => {
-            plugin.settings.appearance.allowHeader = value;
-            const referenceCurrentNoteElement = document.querySelector('#referenceCurrentNote') as HTMLElement;
-
-            if (value === true) {
-                const header = document.querySelector('#header') as HTMLElement;
-
-                if (header) {
-                    header.style.display = 'block';
-                    referenceCurrentNoteElement.style.margin = '-0.5rem 0 0.5rem 0';
-                }
-            } else {
-                const header = document.querySelector('#header') as HTMLElement;
-                const messageContainer = document.querySelector('#messageContainer') as HTMLElement;
-                if (header) {
-                    header.style.display = 'none';
-                    messageContainer.style.maxHeight = 'calc(100% - 60px)';
-                    referenceCurrentNoteElement.style.margin = '0.5rem 0 0.5rem 0';
-                }
-            }
-            plugin.saveSettings();
-        })
-    );
 }
