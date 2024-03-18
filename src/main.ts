@@ -814,9 +814,9 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 				if (messageContainer) {
 					const botMessages = messageContainer.querySelectorAll('.botMessage');
 					botMessages.forEach((botMessage) => {
-					const element = botMessage as HTMLElement;
-					const defaultBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim();
-					element.style.backgroundColor = defaultBotMessageBackgroundColor;
+						const element = botMessage as HTMLElement;
+						const defaultBotMessageBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim();
+						element.style.backgroundColor = defaultBotMessageBackgroundColor;
 					});
 				}
 			}
@@ -875,16 +875,19 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 					}
 				}
 			} else {
-				const defaultChatBoxBackgroundColor = colorToHex(DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor);
-				plugin.settings.appearance.chatBoxBackgroundColor = defaultChatBoxBackgroundColor;
-				frontmatter.chatbox_background_color = defaultChatBoxBackgroundColor.replace(/^#/, '');
-			
+				plugin.settings.appearance.chatBoxBackgroundColor = DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
+				frontmatter.chatbox_background_color = DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor.replace(/^#/, '');
+
+				const defaultChatBoxBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor).trim();
+
 				if (messageContainer) {
 					const chatbox = document.querySelector('.chatbox');
 					if (chatbox) {
 						const element = chatbox as HTMLElement;
 						element.style.backgroundColor = defaultChatBoxBackgroundColor;
 						element.style.borderColor = defaultChatBoxBackgroundColor;
+
+						console.log(DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor);
 					}
 					
 					const textarea = document.querySelector('.chatbox textarea');
@@ -1041,6 +1044,7 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 				plugin.settings.OllamaConnection.ollamaParameters.keep_alive = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.keep_alive;
 				frontmatter.ollama_keep_alive = plugin.settings.OllamaConnection.ollamaParameters.keep_alive;
 			}
+
 		});
 	} catch (error) {
 		console.error('Error processing frontmatter:', error);
