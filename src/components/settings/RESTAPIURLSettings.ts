@@ -51,7 +51,7 @@ export function addRESTAPIURLSettings(containerEl: HTMLElement, plugin: BMOGPT, 
     .setName('REST API URL')
     .setDesc('Enter your REST API URL.')
     .addText(text => text
-        .setPlaceholder('http://localhost:1234')
+        .setPlaceholder('http://localhost:1234/v1')
         .setValue(plugin.settings.RESTAPIURLConnection.RESTAPIURL || DEFAULT_SETTINGS.RESTAPIURLConnection.RESTAPIURL)
         .onChange(async (value) => {
                 plugin.settings.RESTAPIURLConnection.RESTAPIURLModels = [];

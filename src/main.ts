@@ -886,8 +886,6 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 						const element = chatbox as HTMLElement;
 						element.style.backgroundColor = defaultChatBoxBackgroundColor;
 						element.style.borderColor = defaultChatBoxBackgroundColor;
-
-						console.log(DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor);
 					}
 					
 					const textarea = document.querySelector('.chatbox textarea');
