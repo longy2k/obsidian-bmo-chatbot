@@ -116,6 +116,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
     let isScroll = false;
 
     const filteredMessageHistory = filterMessageHistory(messageHistory);
+
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
     const messageContainerEl = document.querySelector('#messageContainer');
@@ -1386,7 +1387,7 @@ function filterMessageHistory(messageHistory: { role: string; content: string }[
 
     messageHistory.forEach((message, index, array) => {
         // Check for user message with slash
-        if (message.role === 'user' && message.content.includes('/')) {
+        if (message.role === 'user' && message.content.startsWith('/')) {
             skipIndexes.add(index); // Skip this message
             // Check if next message is from the assistant and skip it as well
             if (index + 1 < array.length && array[index + 1].role === 'assistant') {
