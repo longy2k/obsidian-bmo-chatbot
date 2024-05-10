@@ -59,7 +59,7 @@ export function addProfileSettings(containerEl: HTMLElement, plugin: BMOGPT, Set
                     .catch((err) => {
                         // If the file already exists, log a message
                         if (err.message === 'File already exists.') {
-                            // console.log(`File ${newFilePath} already exists. Skipping creation.`);
+                            console.log(`File ${newFilePath} already exists. Skipping creation.`);
                         } else {
                             // For any other error, rethrow it
                             throw err;
