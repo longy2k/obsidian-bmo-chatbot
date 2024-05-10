@@ -181,45 +181,9 @@ button.copy-code-button:hover,
 }
 
 /* Styles for copy button */
-.userMessageToolBar button.copy-button,
+.userMessageToolBar button.regenerate-button,
 .userMessageToolBar button.edit-button,
-button.regenerate-button {
-	padding: 0 3px;
-	background-color: transparent !important;
-	box-shadow: none !important;
-	border: none;
-	color: var(--interactive-accent);
-	width: 1.2rem;
-}
-
-.userMessageToolBar .copy-button:hover,
-.userMessageToolBar .edit-button:hover,
-.regenerate-button:hover {
-	color: var(--text-muted);
-}
-
-.botMessageToolBar {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	height: 1.2rem;
-}
-
-.botMessageToolBar button.copy-button,
-.botMessageToolBar button.edit-button {
-	padding: 0 3px;
-	background-color: transparent !important;
-	box-shadow: none !important;
-	border: none;
-	color: var(--interactive-accent);
-	width: 1.2rem;
-}
-
-.botMessageToolBar .copy-button:hover {
-	color: var(--text-muted);
-}
-
-/* Styles for trash button */
+.userMessageToolBar button.copy-button,
 .userMessageToolBar button.trash-button {
 	padding: 0 3px;
 	background-color: transparent !important;
@@ -229,11 +193,25 @@ button.regenerate-button {
 	width: 1.2rem;
 }
 
+.userMessageToolBar .regenerate-button:hover,
+.userMessageToolBar .edit-button:hover,
+.userMessageToolBar .copy-button:hover {
+	color: var(--text-muted);
+}
+
 .userMessageToolBar .trash-button:hover {
 	color: rgb(188, 35, 35);
 }
 
-/* Styles for append button */
+.botMessageToolBar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 1.2rem;
+}
+
+.botMessageToolBar button.edit-button,
+.botMessageToolBar button.copy-button,
 .botMessageToolBar button.append-button {
 	padding: 0 3px;
 	background-color: transparent !important;
@@ -243,6 +221,8 @@ button.regenerate-button {
 	width: 1.2rem;
 }
 
+.botMessageToolBar .edit-button:hover,
+.botMessageToolBar .copy-button:hover,
 .botMessageToolBar .append-button:hover {
 	color: var(--text-muted);
 }
