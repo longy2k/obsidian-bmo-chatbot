@@ -272,7 +272,7 @@ button.copy-code-button:hover,
 
 .chatbox {
 	display: flex;
-	align-items: center;
+	align-items: flex-end;
 	justify-content: center;
 	margin: 13px 3.5%;
 	padding: 3px;
@@ -305,6 +305,43 @@ button.copy-code-button:hover,
 
 .chatbox textarea::selection {
 	background: blue !important;
+}
+
+/* Send Button */
+
+.chatbox .submit-button {
+	background-color: var(--interactive-accent);
+	filter: brightness(90%);
+	box-shadow: none !important;
+	color: white;
+	border: none;
+	border-radius: 50%;
+	padding: 8px;
+	max-width: 30px;
+	cursor: pointer;
+}
+
+.chatbox .submit-button:hover {
+	filter: brightness(80%);
+}
+
+.is-tablet .chatbox .submit-button {
+	background-color: var(--interactive-accent);
+	filter: brightness(90%);
+	/* box-shadow: none !important; */
+	color: white;
+	border: none;
+	border-radius: 50%;
+	padding: 10px !important;
+	max-width: 40px;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.is-tablet .chatbox .submit-button:hover {
+	filter: brightness(80%);
 }
 
 /* Misc */

@@ -502,6 +502,14 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
                     element.style.backgroundColor = hexValue;
                     element.style.borderColor = hexValue;
                 }
+
+                const submitButton = document.querySelector('.chatbox .submit-button');
+                if (submitButton) {
+                    const element = submitButton as HTMLElement;
+                    element.style.backgroundColor = hexValue;
+                    element.style.borderColor = hexValue;
+                }
+
                 await plugin.saveSettings();
             });
     });

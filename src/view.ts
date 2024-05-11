@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, TFile, MarkdownView, Editor, EditorPosition } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, MarkdownView, Editor, EditorPosition, setIcon } from 'obsidian';
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
 import { executeCommand } from './components/chat/Commands';
@@ -188,6 +188,17 @@ export class BMOView extends ItemView {
             textarea.appendChild(style);
         }
 
+        // Submit button
+        const submitButton = document.createElement('button');
+        submitButton.textContent = 'send';
+        setIcon(submitButton, 'arrow-up');
+        submitButton.classList.add('submit-button');
+        submitButton.title = 'send';
+
+        submitButton.addEventListener('click', () => {
+            this.handleKeyup(new KeyboardEvent('keyup', { key: 'Enter' }));
+        });
+
 
         chatbotContainer.style.backgroundColor = this.settings.appearance.chatbotContainerBackgroundColor || DEFAULT_SETTINGS.appearance.chatbotContainerBackgroundColor;
         messageContainer.style.backgroundColor = this.settings.appearance.messageContainerBackgroundColor || DEFAULT_SETTINGS.appearance.messageContainerBackgroundColor;
@@ -195,6 +206,7 @@ export class BMOView extends ItemView {
         textarea.style.borderColor = this.settings.appearance.chatBoxBackgroundColor || DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
         textarea.style.color = this.settings.appearance.chatBoxFontColor || DEFAULT_SETTINGS.appearance.chatBoxFontColor;
         chatbox.style.backgroundColor = this.settings.appearance.chatBoxBackgroundColor || DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
+        submitButton.style.backgroundColor = this.settings.appearance.chatBoxBackgroundColor || DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
 
 
         const userMessages = messageContainer.querySelectorAll('.userMessage');
@@ -208,6 +220,7 @@ export class BMOView extends ItemView {
         });
 
         chatbox.appendChild(textarea);
+        chatbox.appendChild(submitButton);
         
         this.textareaElement = textarea as HTMLTextAreaElement;
         this.addEventListeners();

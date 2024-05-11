@@ -873,6 +873,13 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 						element.style.backgroundColor = plugin.settings.appearance.chatBoxBackgroundColor;
 						element.style.borderColor = plugin.settings.appearance.chatBoxBackgroundColor;
 					}
+					
+					const submitButton = document.querySelector('.chatbox .submit-button');
+					if (submitButton) {
+						const element = submitButton as HTMLElement;
+						element.style.backgroundColor = plugin.settings.appearance.chatBoxBackgroundColor;
+						element.style.borderColor = plugin.settings.appearance.chatBoxBackgroundColor;
+					}
 				}
 			} else {
 				plugin.settings.appearance.chatBoxBackgroundColor = DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor;
@@ -894,6 +901,14 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 						element.style.backgroundColor = defaultChatBoxBackgroundColor;
 						element.style.borderColor = defaultChatBoxBackgroundColor;
 					}
+
+					const submitButton = document.querySelector('.chatbox .submit-button');
+					if (submitButton) {
+						const element = submitButton as HTMLElement;
+						element.style.backgroundColor = defaultChatBoxBackgroundColor;
+						element.style.borderColor = defaultChatBoxBackgroundColor;
+					}
+
 				}
 			}
 
