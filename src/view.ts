@@ -196,7 +196,7 @@ export class BMOView extends ItemView {
         submitButton.title = 'send';
 
         submitButton.addEventListener('click', () => {
-            this.handleKeyup(new KeyboardEvent('keyup', { key: 'Enter' }));
+            this.handleKeyup(new KeyboardEvent('keyup', { key: 'Enter' }), true);
         });
 
 
@@ -236,7 +236,15 @@ export class BMOView extends ItemView {
         this.textareaElement.addEventListener('blur', this.handleBlur.bind(this));
     }
     
-    async handleKeyup(event: KeyboardEvent) {
+    async handleKeyup(event: KeyboardEvent, fromSubmitButton = false) {
+        // Check if it's mobile and return if true
+        if (document.body.classList.contains('is-mobile') && event.key === 'Enter' && !fromSubmitButton) {
+            event.preventDefault();  // Prevent default to avoid any other actions like submit
+            this.textareaElement.value += '\n';
+            this.handleInput(event);  // Trigger the input event manually
+            return;  // Exit the function early
+        }
+        
         const input = this.textareaElement.value;
         const index = messageHistory.length - 1;
 
@@ -378,7 +386,7 @@ export class BMOView extends ItemView {
         this.textareaElement.removeEventListener('blur', this.handleBlur.bind(this));
     }
 
-    async BMOchatbot() {        
+    async BMOchatbot() {      
         await getActiveFileContent(this.plugin, this.settings);
         const index = messageHistory.length - 1;
 
