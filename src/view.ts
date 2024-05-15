@@ -21,7 +21,7 @@ import { fetchOpenAIAPIResponseStream,
 
 export const VIEW_TYPE_CHATBOT = 'chatbot-view';
 export const ANTHROPIC_MODELS = ['claude-instant-1.2', 'claude-2.0', 'claude-2.1', 'claude-3-haiku-20240307', 'claude-3-sonnet-20240229', 'claude-3-opus-20240229'];
-export const OPENAI_MODELS = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo'];
+export const OPENAI_MODELS = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o'];
 
 export function filenameMessageHistoryJSON(plugin: BMOGPT) {
     const filenameMessageHistoryPath = './.obsidian/plugins/bmo-chatbot/data/';
@@ -91,7 +91,7 @@ export class BMOView extends ItemView {
             }
         });
 
-        const spanElement = chatbotContainer.createEl('span', {
+        const dotIndicator = chatbotContainer.createEl('span', {
             attr: {
                 class: 'dotIndicator',
                 id: 'markDownBoolean'
@@ -108,7 +108,7 @@ export class BMOView extends ItemView {
         header.appendChild(chatbotNameHeading);
         header.appendChild(modelName);
 
-        referenceCurrentNoteElement.appendChild(spanElement);
+        referenceCurrentNoteElement.appendChild(dotIndicator);
 
         referenceCurrentNoteElement.style.display = 'none';
         
@@ -238,7 +238,7 @@ export class BMOView extends ItemView {
     
     async handleKeyup(event: KeyboardEvent, fromSubmitButton = false) {
         // Check if it's mobile and return if true
-        if (document.body.classList.contains('is-mobile') && event.key === 'Enter' && !fromSubmitButton) {
+        if ((document.body.classList.contains('is-mobile') || document.body.classList.contains('is-tablet')) && event.key === 'Enter' && !fromSubmitButton) {
             event.preventDefault();  // Prevent default to avoid any other actions like submit
             this.textareaElement.value += '\n';
             this.handleInput(event);  // Trigger the input event manually

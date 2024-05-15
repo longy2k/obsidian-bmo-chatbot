@@ -293,6 +293,11 @@ button.copy-code-button:hover,
 	overflow-y: auto;
 }
 
+/* Hide scrollbar from textarea */
+.chatbox textarea::-webkit-scrollbar {
+	display: none;
+}
+
 .chatbox textarea::placeholder {
 	color: var(--text-normal);
 	font-weight: 500;
