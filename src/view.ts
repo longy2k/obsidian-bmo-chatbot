@@ -267,36 +267,32 @@ export class BMOView extends ItemView {
             }
 
             // Add all user messages besides certain commands
-            if (!input.startsWith('/c') && 
-                !input.startsWith('/clear') && 
-                !input.startsWith('/p ') &&
-                !input.startsWith('/prof ') &&
-                !input.startsWith('/profile ') &&
-                !input.startsWith('/profiles ') &&
-                !input.startsWith('/s') &&
-                !input.startsWith('/stop')) {
-                    addMessage(this.plugin, input, 'userMessage', this.settings, index);
+            const excludedCommands = ['/c', '/clear', '/s', '/stop'];
+            if (!excludedCommands.some(cmd => input.startsWith(cmd))) {
+                addMessage(this.plugin, input, 'userMessage', this.settings, index);
             }
             
             const messageContainer = document.querySelector('#messageContainer');
             if (messageContainer) {
-                const userMessageDiv = displayUserMessage(this.plugin, this.settings, input);
-                messageContainer.appendChild(userMessageDiv);
+                if (input !== '/save') {
+                    const userMessageDiv = displayUserMessage(this.plugin, this.settings, input);
+                    messageContainer.appendChild(userMessageDiv);
+                }
 
                 if (input.startsWith('/')) {
                     executeCommand(input, this.settings, this.plugin);
 
 
-                    if (!input.startsWith('/c') && 
-                        !input.startsWith('/clear') && 
-                        (input === '/prof' ||
-                        input === '/p' ||
-                        input === '/profile' ||
-                        input === '/profiles' ||
-                        input === '/prompt' ||
-                        input === '/prompts' ||
-                        input.startsWith('/prompt ') || 
-                        input.startsWith('/prompts ')) &&
+                    if ((input === '/prof' ||
+                            input === '/p' ||
+                            input === '/profile' ||
+                            input === '/profiles' ||
+                            input === '/prompt' ||
+                            input === '/prompts' ||
+                            input.startsWith('/prompt ') ||
+                            input.startsWith('/prompts ')) &&
+                        !input.startsWith('/c') &&
+                        !input.startsWith('/clear') &&
                         !input.startsWith('/s') &&
                         !input.startsWith('/stop')) {
                         const botMessages = messageContainer.querySelectorAll('.botMessage');

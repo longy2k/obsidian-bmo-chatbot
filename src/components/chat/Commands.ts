@@ -709,17 +709,10 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
           return `###### ${roleText}\n${message.content}\n`;
         })
         .join('\n');
-
-          const commandBotMessage = '<p><strong>Message history saved.</strong></p>';
-
-          const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-          const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-          messageContainer.appendChild(botMessageDiv);
-
       } catch (error) {
-        const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-        const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, error);
-        messageContainer.appendChild(botMessageDiv);
+        // const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+        // const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, error);
+        // messageContainer.appendChild(botMessageDiv);
         console.error('Error processing message history:', error);
       }
     }
