@@ -31,11 +31,11 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
     });
 
     new Setting(settingsContainer)
-    .setName('Allow Header')
+    .setName('Enable Header')
     .setDesc('Display chatbot name and model name in header.')
     .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.appearance.allowHeader).onChange((value) => {
-            plugin.settings.appearance.allowHeader = value;
+        toggle.setValue(plugin.settings.appearance.enableHeader).onChange((value) => {
+            plugin.settings.appearance.enableHeader = value;
             const referenceCurrentNoteElement = document.querySelector('#referenceCurrentNote') as HTMLElement;
 
             if (value === true) {

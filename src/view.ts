@@ -126,7 +126,7 @@ export class BMOView extends ItemView {
             },
         });
 
-        if (this.settings.appearance.allowHeader) {
+        if (this.settings.appearance.enableHeader) {
             header.style.display = 'block';
         }
         else {

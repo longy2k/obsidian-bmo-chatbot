@@ -27,7 +27,7 @@ export interface BMOSettings {
 		botMessageBackgroundColor: string,
 		chatBoxFontColor: string,
 		chatBoxBackgroundColor: string,
-		allowHeader: boolean,
+		enableHeader: boolean,
 	},
 	prompts: {
 		prompt: string,
@@ -135,7 +135,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		botMessageBackgroundColor: '--background-secondary',
 		chatBoxFontColor: '--text-normal',
 		chatBoxBackgroundColor: '--interactive-accent',
-		allowHeader: true,
+		enableHeader: true,
 	},
 	prompts: {
 		prompt: '',
@@ -479,7 +479,7 @@ export async function defaultFrontMatter(plugin: BMOGPT, file: TFile) {
 		frontmatter.prompt = DEFAULT_SETTINGS.prompts.prompt;
 		frontmatter.user_name = DEFAULT_SETTINGS.appearance.userName;
 		// frontmatter.chatbot_name = DEFAULT_SETTINGS.appearance.chatbotName;
-		frontmatter.allow_header = DEFAULT_SETTINGS.appearance.allowHeader;
+		frontmatter.enable_header = DEFAULT_SETTINGS.appearance.enableHeader;
 		frontmatter.chatbot_container_background_color = DEFAULT_SETTINGS.appearance.chatbotContainerBackgroundColor.replace(/^#/, '');
 		frontmatter.message_container_background_color = DEFAULT_SETTINGS.appearance.messageContainerBackgroundColor.replace(/^#/, '');
 		frontmatter.user_message_font_color = DEFAULT_SETTINGS.appearance.userMessageFontColor.replace(/^#/, '');
@@ -531,7 +531,7 @@ export async function updateSettingsFromFrontMatter(plugin: BMOGPT, file: TFile)
 		plugin.settings.prompts.prompt = frontmatter.prompt + '.md';
 		plugin.settings.appearance.userName = frontmatter.user_name;
 		plugin.settings.appearance.chatbotName = file.basename;
-		plugin.settings.appearance.allowHeader = frontmatter.allow_header;
+		plugin.settings.appearance.enableHeader = frontmatter.enable_header;
 		plugin.settings.appearance.chatbotContainerBackgroundColor = '#' + frontmatter.chatbot_container_background_color;
 		plugin.settings.appearance.messageContainerBackgroundColor = '#' + frontmatter.message_container_background_color;
 		plugin.settings.appearance.userMessageFontColor = '#' + frontmatter.user_message_font_color;
@@ -584,7 +584,7 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
 		frontmatter.prompt = plugin.settings.prompts.prompt.replace('.md', '');
 		frontmatter.user_name = plugin.settings.appearance.userName;
 		// frontmatter.chatbot_name = plugin.settings.appearance.chatbotName;
-		frontmatter.allow_header = plugin.settings.appearance.allowHeader;
+		frontmatter.enable_header = plugin.settings.appearance.enableHeader;
 		frontmatter.chatbot_container_background_color = plugin.settings.appearance.chatbotContainerBackgroundColor.replace(/^#/, '');
 		frontmatter.message_container_background_color = plugin.settings.appearance.messageContainerBackgroundColor.replace(/^#/, '');
 		frontmatter.user_message_font_color = plugin.settings.appearance.userMessageFontColor.replace(/^#/, '');
@@ -914,8 +914,8 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 
 			plugin.settings.editor.prompt_select_generate_system_role = frontmatter.prompt_select_generate_system_role;
 
-			plugin.settings.appearance.allowHeader = frontmatter.allow_header;
-			if (frontmatter.allow_header === true) {
+			plugin.settings.appearance.enableHeader = frontmatter.enable_header;
+			if (frontmatter.enable_header === true) {
 				const header = document.querySelector('#header') as HTMLElement;
 
 				if (header) {
