@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, TFile, MarkdownView, Editor, EditorPosition, setIcon } from 'obsidian';
 import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
-import { executeCommand } from './components/chat/Commands';
+import { commandMap, executeCommand } from './components/chat/Commands';
 import { getActiveFileContent } from './components/editor/ReferenceCurrentNote';
 import { addMessage } from './components/chat/Message';
 import { displayUserMessage } from './components/chat/UserMessage';
@@ -265,36 +265,62 @@ export class BMOView extends ItemView {
             if (input.length === 0) {
                 return;
             }
-
-            // Add all user messages besides certain commands
-            const excludedCommands = ['/c', '/clear', '/s', '/stop'];
-            if (!excludedCommands.some(cmd => input.startsWith(cmd))) {
-                addMessage(this.plugin, input, 'userMessage', this.settings, index);
-            }
             
             const messageContainer = document.querySelector('#messageContainer');
             if (messageContainer) {
-                if (input !== '/save') {
-                    const userMessageDiv = displayUserMessage(this.plugin, this.settings, input);
-                    messageContainer.appendChild(userMessageDiv);
+                const excludedCommands = [
+                    '/c', 
+                    '/clear', 
+                    '/s', 
+                    '/stop', 
+                    '/save', 
+                    '/m ', 
+                    '/model ', 
+                    '/models ', 
+                    '/p ', 
+                    '/profile ', 
+                    '/prof ', 
+                    '/profiles ', 
+                    '/prompt ', 
+                    '/prompts ', 
+                    '/append', 
+                    '/reference ',
+                    '/ref ',
+                    '/maxtokens',
+                    '/maxtokens ',
+                    '/temperature',
+                    '/temperature ',
+                    '/temp',
+                    '/temp ',
+                ];
+
+                if (!excludedCommands.some(cmd => input.startsWith(cmd))) {
+                    const parts = input.split(' '); // Splits the input on spaces
+                    const baseCommand = parts[0]; // The base command is the first part
+                
+                    if (baseCommand.startsWith('/') && commandMap.hasOwnProperty(baseCommand)) {
+                        // This block handles recognized commands with or without parameters
+                        addMessage(this.plugin, input, 'userMessage', this.settings, index);
+                        const userMessageDiv = displayUserMessage(this.plugin, this.settings, input);
+                        messageContainer.appendChild(userMessageDiv);
+                        // console.log('Command processed:', commandMap[baseCommand], 'with parameters:', parts.slice(1).join(' ')); // Logs the processed command and parameters
+                    } else if (!baseCommand.startsWith('/')) {
+                        // This block handles non-command inputs
+                        addMessage(this.plugin, input, 'userMessage', this.settings, index);
+                        const userMessageDiv = displayUserMessage(this.plugin, this.settings, input);
+                        messageContainer.appendChild(userMessageDiv);
+                    } else {
+                        // console.log('Unknown command ignored:', input);
+                    }
                 }
+                
+                
 
                 if (input.startsWith('/')) {
                     executeCommand(input, this.settings, this.plugin);
 
 
-                    if ((input === '/prof' ||
-                            input === '/p' ||
-                            input === '/profile' ||
-                            input === '/profiles' ||
-                            input === '/prompt' ||
-                            input === '/prompts' ||
-                            input.startsWith('/prompt ') ||
-                            input.startsWith('/prompts ')) &&
-                        !input.startsWith('/c') &&
-                        !input.startsWith('/clear') &&
-                        !input.startsWith('/s') &&
-                        !input.startsWith('/stop')) {
+                    if (!excludedCommands.some(cmd => input.startsWith(cmd))) {
                         const botMessages = messageContainer.querySelectorAll('.botMessage');
                         const lastBotMessage = botMessages[botMessages.length - 1];
                         lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });

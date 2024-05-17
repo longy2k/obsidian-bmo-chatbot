@@ -7,63 +7,47 @@ import { getAbortController } from '../FetchModelResponse';
 import { fetchModelRenameTitle } from '../editor/FetchRenameNoteTitle';
 import { displayCommandBotMessage } from './BotMessage';
 import { addMessage } from './Message';
+// Define handler function signatures
+type CommandHandler = (input: string, settings: BMOSettings, plugin: BMOGPT) => void | Promise<void>;
 
-// Commands
-export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT) {
-  const command = input.split(' ')[0]; // Get the first word from the input
+// Define the command map with explicit typing
+export const commandMap: Record<string, CommandHandler> = {
+  '/help': (input, settings, plugin) => commandHelp(plugin, settings),
+  '/model': (input, settings, plugin) => commandModel(input, settings, plugin),
+  '/profile': (input, settings, plugin) => commandProfile(input, settings, plugin),
+  '/prompt': (input, settings, plugin) => commandPrompt(input, settings, plugin),
+  '/reference': (input, settings, plugin) => commandReference(input, settings, plugin),
+  '/temperature': (input, settings, plugin) => commandTemperature(input, settings, plugin),
+  '/maxtokens': (input, settings, plugin) => commandMaxTokens(input, settings, plugin),
+  '/append': (input, settings, plugin) => commandAppend(plugin, settings),
+  '/save': (input, settings, plugin) => commandSave(plugin, settings),
+  '/clear': (input, settings, plugin) => removeMessageThread(plugin, 0),
+  '/stop': (input, settings, plugin) => commandStop()
+};
 
-  switch (command) {
-      case '/h':
-      case '/help':
-      case '/man':
-      case '/manual':
-      case '/commands':
-          commandHelp(plugin, settings);
-          break;
-      case '/m':
-      case '/model':
-      case '/models':
-          return commandModel(input, settings, plugin);
-      case '/p':
-      case '/prof':
-      case '/profile':
-      case '/profiles':
-          return commandProfile(input, settings, plugin);
-      case '/prompt':
-      case '/prompts':
-          return commandPrompt(input, settings, plugin);  
-      case '/ref':
-      case '/reference':
-          commandReference(input, settings, plugin);
-          break;
-      case '/temp':
-      case '/temperature':
-          commandTemperature(input, settings, plugin);
-          break;
-      case '/maxtokens':
-          commandMaxTokens(input, settings, plugin);
-          break;
-      // case '/system':
-      //     commandSystem(input, settings, plugin);
-      //     break;
-      case '/append':
-          commandAppend(plugin, settings);
-          break;
-      case '/save':
-          commandSave(plugin, settings);
-          break;
-      case '/c':
-      case '/clear':
-          removeMessageThread(plugin, 0);
-          break;
-      case '/s':
-      case '/stop':
-          commandStop();
-          break;
-      default:
-          commandFalse(settings, plugin);
-  }
+// Populate commandMap with aliases for cleaner access
+export const aliases: Record<string, string[]> = {
+  '/help': ['/h', '/man', '/manual', '/commands'],
+  '/model': ['/m', '/models'],
+  '/profile': ['/p', '/prof', '/profiles'],
+  '/prompt': ['/prompts'],
+  '/reference': ['/ref'],
+  '/temperature': ['/temp', ''],
+  '/clear': ['/c'],
+  '/stop': ['/s']
+};
+
+Object.entries(aliases).forEach(([command, aliasList]) => {
+  aliasList.forEach(alias => commandMap[alias] = commandMap[command]);
+});
+
+// Command execution function with correct typing
+export function executeCommand(input: string, settings: BMOSettings, plugin: BMOGPT): void | Promise<void> {
+  const command = input.split(' ')[0];
+  const handler = commandMap[command] || (() => commandFalse());
+  return handler(input, settings, plugin);
 }
+
 
 // Function to create and append a bot message
 export function createBotMessage(settings: BMOSettings): HTMLDivElement {
@@ -88,34 +72,141 @@ export function createBotMessage(settings: BMOSettings): HTMLDivElement {
   return messageBlock;
 }
 
-export async function commandFalse(settings: BMOSettings, plugin: BMOGPT) {
-  const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, 'Command not recognized.');
-  messageContainer.appendChild(botMessageDiv);
-  await plugin.saveSettings();
+export async function commandFalse() {
+  new Notice('Command not recognized. Type `/help` for commands.');
+
+  const chatbox = document.querySelector('.chatbox textarea') as HTMLTextAreaElement;
+
+  chatbox.value = '';
 }
 
 // =================== COMMAND FUNCTIONS ===================
 
 // `/help` for help commands
 export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
-
-  const commandBotMessage =
-  `<h2>Commands</h2>
-  <p><code>/model [MODEL-NAME] or [VALUE]</code> - List or change model.</p>
-  <p><code>/profile [PROFILE-NAME] or [VALUE]</code> - List or change profile.</p>
-  <p><code>/prompt [PROMPT-NAME] or [VALUE]</code> - List or change prompts.</p>
-  <p><code>/prompt clear</code> - Clear prompt.</p>
-  <p><code>/maxtokens [VALUE]</code> - Set max tokens.</p>
-  <p><code>/temp [VALUE]</code> - Change temperature range from 0 to 2.</p>
-  <p><code>/ref on | off</code> - Turn on or off "reference current note".</p>
-  <p><code>/append</code> - Append current chat history to current active note.</p>
-  <p><code>/save</code> - Save current chat history to a note.</p>
-  <p><code>/clear</code> or <code>/c</code> - Clear chat history.</p>
-  <p><code>/stop</code> or <code>/s</code> - [STREAMING MODELS ONLY]: Stop fetching response.</p>`;
-
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+  const botMessageDiv = document.createElement('div');
+  botMessageDiv.className = 'botMessage';
+  botMessageDiv.style.backgroundColor = colorToHex(settings.appearance.botMessageBackgroundColor ||
+      getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim());
+
+  const botMessageToolBarDiv = document.createElement('div');
+  botMessageToolBarDiv.className = 'botMessageToolBar';
+
+  const botNameSpan = document.createElement('span'); 
+  botNameSpan.textContent = settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName;
+  botNameSpan.className = 'chatbotName';
+
+  const messageBlockDiv = document.createElement('div');
+  messageBlockDiv.className = 'messageBlock';
+
+  const displayCommandBotMessageDiv = document.createElement('div');
+  displayCommandBotMessageDiv.className = 'commandBotMessage';
+
+  const header = document.createElement('h3');
+  header.textContent = 'Manual';
+  header.style.textAlign = 'center';
+  displayCommandBotMessageDiv.appendChild(header);
+
+  const generalCommandHeader = document.createElement('h4');
+  generalCommandHeader.textContent = 'General Commands';
+  generalCommandHeader.style.textAlign = 'center';
+  displayCommandBotMessageDiv.appendChild(generalCommandHeader);
+
+  const commandClearP = document.createElement('p');
+  commandClearP.innerHTML = '<code>/clear</code> or <code>/c</code> - Clear chat history.';
+  displayCommandBotMessageDiv.appendChild(commandClearP);
+
+  const commandRefOnP = document.createElement('p');
+  commandRefOnP.innerHTML = '<code>/ref on</code> - Turn on "reference current note".';
+  displayCommandBotMessageDiv.appendChild(commandRefOnP);
+
+  const commandRefOffP = document.createElement('p');
+  commandRefOffP.innerHTML = '<code>/ref off</code> - Turn off "reference current note".';
+  displayCommandBotMessageDiv.appendChild(commandRefOffP);
+
+  const commandMaxTokensP = document.createElement('p');
+  commandMaxTokensP.innerHTML = '<code>/maxtokens [VALUE]</code> - Set max tokens.';
+  displayCommandBotMessageDiv.appendChild(commandMaxTokensP);
+
+  const commandTempP = document.createElement('p');
+  commandTempP.innerHTML = '<code>/temp [VALUE]</code> - Change temperature range from 0 to 2.';
+  displayCommandBotMessageDiv.appendChild(commandTempP);
+
+  const profileCommandHeader = document.createElement('h4');
+  profileCommandHeader.textContent = 'Profile Commands';
+  profileCommandHeader.style.textAlign = 'center';
+  displayCommandBotMessageDiv.appendChild(profileCommandHeader);
+
+  const commandProfileListP = document.createElement('p');
+  commandProfileListP.innerHTML = '<code>/profile</code> - List profile.';
+  displayCommandBotMessageDiv.appendChild(commandProfileListP);
+
+  const commandProfileChangeP = document.createElement('p');
+  commandProfileChangeP.innerHTML = '<code>/profile [PROFILE-NAME] or [VALUE]</code> - Change profile.';
+  displayCommandBotMessageDiv.appendChild(commandProfileChangeP);
+
+  const modelCommandHeader = document.createElement('h4');
+  modelCommandHeader.textContent = 'Model Commands';
+  modelCommandHeader.style.textAlign = 'center';
+  displayCommandBotMessageDiv.appendChild(modelCommandHeader);
+
+  const commandModelListP = document.createElement('p');
+  commandModelListP.innerHTML = '<code>/model</code> - List model.';
+  displayCommandBotMessageDiv.appendChild(commandModelListP);
+
+  const commandModelChangeP = document.createElement('p');
+  commandModelChangeP.innerHTML = '<code>/model [MODEL-NAME] or [VALUE]</code> - Change model.';
+  displayCommandBotMessageDiv.appendChild(commandModelChangeP);
+
+  const promptCommandHeader = document.createElement('h4');
+  promptCommandHeader.textContent = 'Prompt Commands';
+  promptCommandHeader.style.textAlign = 'center';
+  displayCommandBotMessageDiv.appendChild(promptCommandHeader);
+
+  const commandPromptListP = document.createElement('p');
+  commandPromptListP.innerHTML = '<code>/prompt</code> - List prompts.';
+  displayCommandBotMessageDiv.appendChild(commandPromptListP);
+
+  const commandPromptChangeP = document.createElement('p');
+  commandPromptChangeP.innerHTML = '<code>/prompt [PROMPT-NAME] or [VALUE]</code> - Change prompts.';
+  displayCommandBotMessageDiv.appendChild(commandPromptChangeP);
+
+  const commandPromptClearP = document.createElement('p');
+  commandPromptClearP.innerHTML = '<code>/prompt clear</code> - Clear prompt.';
+  displayCommandBotMessageDiv.appendChild(commandPromptClearP);
+
+  const editorCommandHeader = document.createElement('h4');
+  editorCommandHeader.textContent = 'Editor Commands';
+  editorCommandHeader.style.textAlign = 'center';
+  displayCommandBotMessageDiv.appendChild(editorCommandHeader);
+
+  const commandAppendP = document.createElement('p');
+  commandAppendP.innerHTML = '<code>/append</code> - Append current chat history to current active note.';
+  displayCommandBotMessageDiv.appendChild(commandAppendP);
+
+  const commandSaveP = document.createElement('p');
+  commandSaveP.innerHTML = '<code>/save</code> - Save current chat history to a note.';
+  displayCommandBotMessageDiv.appendChild(commandSaveP);
+
+  const streamCommandHeader = document.createElement('h4');
+  streamCommandHeader.textContent = 'Stream Commands';
+  streamCommandHeader.style.textAlign = 'center';
+  displayCommandBotMessageDiv.appendChild(streamCommandHeader);
+
+  const commandStopP = document.createElement('p');
+  commandStopP.innerHTML = '<code>/stop</code> or <code>/s</code> - Stop fetching response for streaming models only.';
+  displayCommandBotMessageDiv.appendChild(commandStopP);
+
+  messageBlockDiv.appendChild(displayCommandBotMessageDiv);
+  botMessageToolBarDiv.appendChild(botNameSpan);
+  botMessageDiv.appendChild(botMessageToolBarDiv);
+  botMessageDiv.appendChild(messageBlockDiv);
+
+  const index = messageHistory.length - 1;
+
+  addMessage(plugin, messageBlockDiv.innerHTML, 'botMessage', settings, index);
+
   messageContainer.appendChild(botMessageDiv);
 }
 
@@ -123,7 +214,7 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
 export async function commandModel(input: string, settings: BMOSettings, plugin: BMOGPT) {
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
 
-    // Loop through allModels and create list items
+    // Get models as arrays
     const ollamaModels = settings.OllamaConnection.ollamaModels.map(model => model);
     const RESTAPIModels = settings.RESTAPIURLConnection.RESTAPIURLModels.map(model => model);
     const anthropicModels = settings.APIConnections.anthropic.anthropicModels.map(model => model);
@@ -132,6 +223,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
     const openAIBaseModels = settings.APIConnections.openAI.openAIBaseModels.map(model => model);
     const openRouterModels = settings.APIConnections.openRouter.openRouterModels.map(model => model);
 
+    // Combine all models
     const allModels = [
       ...settings.OllamaConnection.ollamaModels,
       ...settings.RESTAPIURLConnection.RESTAPIURLModels,
@@ -241,25 +333,17 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 
     if (Object.entries(modelAliases).find(([key, val]) => key === inputModel)){
       settings.general.model = modelAliases[inputModel];
-      const commandBotMessage = `Updated Model to <b>${settings.general.model}</b>`;
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
+      new Notice(`Updated model to ${settings.general.model}`);
     }
     else if (Object.entries(modelAliases).find(([key, val]) => val === inputModel)) {
       settings.general.model = modelAliases[Object.keys(modelAliases).find(key => modelAliases[key] === inputModel) || ''];
-      const commandBotMessage = `Updated Model to <b>${settings.general.model}</b>`;
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
+      new Notice('Updated model to {settings.general.model}');
     }
     else {
-      const commandBotMessage = `Model '${inputModel}' does not exist for this API key.`;
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
       new Notice('Invalid model.');
     }
 
     await plugin.saveSettings();
-    return settings;
   }
 }
 
@@ -300,8 +384,8 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
     }
 
     const commandBotMessage = 
-    `<h2>Profiles</h2>
-      <p><b>Current profile:</b> ${currentProfile}</p>
+    `<h2 style="text-align: center;">Profiles</h2>
+      <p style="text-align: center;"><b>Current profile:</b> ${currentProfile}</p>
       <ol>${fileListItems}</ol>`;
 
     const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
@@ -336,6 +420,7 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
       plugin.settings.profiles.profile = profileAliases[inputValue] + '.md';
       const profileFilePath = plugin.settings.profiles.profileFolderPath + '/' + profileAliases[inputValue] + '.md';
       const currentProfile = plugin.app.vault.getAbstractFileByPath(profileFilePath) as TFile;
+      // new Notice(`Profile updated to '${profileAliases[inputValue]}'`);
       plugin.activateView();
       await updateSettingsFromFrontMatter(plugin, currentProfile);
       await plugin.saveSettings();
@@ -351,19 +436,10 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
             await plugin.saveSettings();
         }
     } else {
-        // If the input profile does not exist
-        addMessage(plugin, input, 'userMessage', settings, messageHistory.length - 1);
-        const commandBotMessage = `Profile '${inputValue}' does not exist.`;
-        const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-        messageContainer.appendChild(botMessageDiv);
-        const botMessages = messageContainer.querySelectorAll('.botMessage');
-        const lastBotMessage = botMessages[botMessages.length - 1];
-        lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
         new Notice('Invalid profile.');
     }
 
     await plugin.saveSettings();
-    return settings;
   }
 
 }
@@ -404,8 +480,8 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
     }
 
     const commandBotMessage = 
-    `<h2>Prompts</h2>
-      <p><b>Current prompt:</b> ${currentPrompt.replace('.md', '') }</p>
+    `<h2 style="text-align: center;">Prompts</h2>
+      <p style="text-align: center;"><b>Current prompt:</b> ${currentPrompt.replace('.md', '') }</p>
       <ol>${fileListItems}</ol>`;
 
     const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
@@ -427,12 +503,9 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
     // Set to default or empty if the input is 'clear' or 'c'
     if (inputValue === 'clear' || inputValue === 'c') {
       settings.prompts.prompt = ''; // Set to default or empty
-      const commandBotMessage = 'Prompt cleared.';
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
+      new Notice('Prompt cleared.');
 
       await plugin.saveSettings();
-      return settings;
     }
     
     const promptAliases: { [key: string]: string } = {};
@@ -449,36 +522,28 @@ export async function commandPrompt(input: string, settings: BMOSettings, plugin
       // If input matches a key in promptAliases
       settings.prompts.prompt = promptAliases[inputValue] + '.md';
       currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
-      const commandBotMessage = `<b>Updated Prompt to</b> '${currentModel}'`;
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
+      new Notice(`Prompt updated to '${currentModel}'`);
     } else if (Object.values(promptAliases).map(v => v.toLowerCase()).includes(inputValue.toLowerCase())) {
       // If input matches a value in profileAliases (case-insensitive)
       const matchedProfile = Object.entries(promptAliases).find(([key, value]) => value.toLowerCase() === inputValue.toLowerCase());
       if (matchedProfile) {
         settings.prompts.prompt = matchedProfile[1] + '.md';
         currentModel = settings.prompts.prompt.replace(/\.[^/.]+$/, ''); // Removing the file extension
-        const commandBotMessage = `<b>Updated Prompt to</b> '${currentModel}'`;
-        const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-        messageContainer.appendChild(botMessageDiv);
+        new Notice(`Prompt updated to '${currentModel}'`);
       }
     } else {
-      // If the input prompt does not exist
-      const commandBotMessage = `Prompt '${inputValue}' does not exist.`;
-      const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-      messageContainer.appendChild(botMessageDiv);
-      new Notice('Invalid prompt.');
+      if (inputValue !== 'clear' && inputValue !== 'c') {
+        new Notice('Invalid prompt.');
+      }
     }
 
     await plugin.saveSettings();
-    return settings;
   }
 
 }
 
 // `/ref` to turn on/off referenceCurrentNote.
 export async function commandReference(input: string, settings: BMOSettings, plugin: BMOGPT) {
-  let commandBotMessage = '';
   const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');
   const inputValue = input.split(' ')[1]?.toLowerCase();
 
@@ -487,20 +552,16 @@ export async function commandReference(input: string, settings: BMOSettings, plu
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'block';
       }
-      commandBotMessage += '<p><strong>Reference updated: on</strong></p>';
+      new Notice('Reference current note: on.');
   } else if (inputValue === 'false' || inputValue === 'off') {
     settings.general.allowReferenceCurrentNote = false;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'none';
       }
-      commandBotMessage += '<p><strong>Reference updated: off</strong></p>';
+      new Notice ('Reference current note: off.');
   } else {
-    commandBotMessage += '<p><strong>Type `/ref on` or `/ref off` to turn on/off reference current note.</strong></p>';
+    new Notice('Type `/ref on` or `/ref off` to turn on/off reference current note.');
   }
-
-  const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-  messageContainer.appendChild(botMessageDiv);
 
   await plugin.saveSettings();
 }
@@ -509,7 +570,6 @@ export async function commandReference(input: string, settings: BMOSettings, plu
 export async function commandTemperature(input: string, settings: BMOSettings, plugin: BMOGPT) {
   const inputValue = input.split(' ')[1];
   const floatValue = parseFloat(inputValue);
-  let temperatureSettingMessage: string;
 
   if (settings && !isNaN(floatValue)) {
     if (floatValue < 0.00) {
@@ -519,55 +579,44 @@ export async function commandTemperature(input: string, settings: BMOSettings, p
     } else {
       settings.general.temperature = floatValue.toFixed(2);
     }
-    temperatureSettingMessage = `Temperature updated: ${settings.general.temperature}`;
+    new Notice(`Temperature updated: ${settings.general.temperature}`);
   } else {
-    temperatureSettingMessage = `Current temperature: ${settings.general.temperature}`;
+    new Notice(`Current temperature: ${settings.general.temperature}`);
   }
-
-  const commandBotMessage = `<p><strong>${temperatureSettingMessage}</strong></p>`;
-
-  const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-  messageContainer.appendChild(botMessageDiv);
 
   await plugin.saveSettings();
 }
 
 // `/maxtokens` to change max_tokens.
 export async function commandMaxTokens(input: string, settings: BMOSettings, plugin: BMOGPT) {
-  let commandBotMessage = '';
+  // let commandBotMessage = '';
   const commandParts = input.split(' ');
   const commandAction = commandParts[1] ? commandParts[1].toLowerCase() : '';
-  let maxTokensSettingMessage: string;
+  // let maxTokensSettingMessage: string;
 
   // Check for clear command first
   if (commandAction === 'c' || commandAction === 'clear') {
     settings.general.max_tokens = '';
-    maxTokensSettingMessage = 'Max tokens cleared.';
+    new Notice('Max tokens cleared.');
   } else if (commandAction !== '') {
     const inputValue = parseInt(commandAction);
 
     if (!isNaN(inputValue) && inputValue >= 0) {
       // Update max_tokens with the valid integer value
       settings.general.max_tokens = inputValue.toString();
-      maxTokensSettingMessage = `Max tokens updated: ${inputValue}`;
+      new Notice(`Max tokens updated: ${inputValue}`);
     } else {
       // Input is not a valid integer or is negative
-      maxTokensSettingMessage = 'Max tokens update: invalid';
+      new Notice('Max tokens update: invalid');
     }
   } else {
     // No action specified
     if (settings.general.max_tokens === '') {
-      maxTokensSettingMessage = 'Current max tokens: Empty';
+      new Notice('Current max tokens: Empty');
     } else {
-      maxTokensSettingMessage = `Current max tokens: ${settings.general.max_tokens}`;
+      new Notice(`Current max tokens: ${settings.general.max_tokens}`);
     }
   }
-  
-  commandBotMessage += `<p><strong>${maxTokensSettingMessage}</strong></p>`;
-  const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-  messageContainer.appendChild(botMessageDiv);
 
   await plugin.saveSettings();
 }
@@ -662,13 +711,6 @@ export async function commandAppend(plugin: BMOGPT, settings: BMOSettings) {
           return `###### ${roleText}\n${message.content}\n`;
         })
         .join('\n');
-
-          const commandBotMessage = '<p><strong>Message history appended.</strong></p>';
-
-          const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-          const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-          messageContainer.appendChild(botMessageDiv);
-
       } catch (error) {
         const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
         const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, error);
@@ -864,6 +906,7 @@ export async function removeMessageThread(plugin: BMOGPT, index: number) {
 
   try {
       await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), jsonString);
+      new Notice('Chat history cleared.');
   } catch (error) {
       console.error('Error writing messageHistory.json', error);
   }
