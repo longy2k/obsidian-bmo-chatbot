@@ -293,11 +293,6 @@ button.copy-code-button:hover,
 	overflow-y: auto;
 }
 
-/* Hide scrollbar from textarea */
-.chatbox textarea::-webkit-scrollbar {
-	display: none;
-}
-
 .chatbox textarea::placeholder {
 	color: var(--text-normal);
 	font-weight: 500;
@@ -324,6 +319,7 @@ button.copy-code-button:hover,
 	padding: 8px;
 	max-width: 30px;
 	cursor: pointer;
+	margin: 0 3px;
 }
 
 .chatbox .submit-button:hover {

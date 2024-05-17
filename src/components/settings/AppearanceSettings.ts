@@ -513,4 +513,28 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
                 await plugin.saveSettings();
             });
     });
+
+    new Setting(settingsContainer)
+    .setName('Enable Scrollbar')
+    .setDesc('Display scrollbar in chatbox.')
+    .addToggle((toggle) =>
+        toggle.setValue(plugin.settings.appearance.enableScrollBar).onChange((value) => {
+            plugin.settings.appearance.enableScrollBar = value;
+
+            if (value === true) {
+                const chatbox = document.querySelector('.chatbox textarea') as HTMLElement;
+                if (chatbox) {
+                    chatbox.style.overflowY = 'auto';
+                }
+            }
+            else {
+                const chatbox = document.querySelector('.chatbox textarea') as HTMLElement;
+                if (chatbox) {
+                    chatbox.style.overflowY = 'hidden';
+                }
+            }
+            
+            plugin.saveSettings();
+        })
+    );
 }

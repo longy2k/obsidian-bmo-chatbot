@@ -28,6 +28,7 @@ export interface BMOSettings {
 		chatBoxFontColor: string,
 		chatBoxBackgroundColor: string,
 		enableHeader: boolean,
+		enableScrollBar: boolean,
 	},
 	prompts: {
 		prompt: string,
@@ -136,6 +137,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		chatBoxFontColor: '--text-normal',
 		chatBoxBackgroundColor: '--interactive-accent',
 		enableHeader: true,
+		enableScrollBar: false,
 	},
 	prompts: {
 		prompt: '',
