@@ -23,7 +23,7 @@ export const VIEW_TYPE_CHATBOT = 'chatbot-view';
 export const ANTHROPIC_MODELS = ['claude-instant-1.2', 'claude-2.0', 'claude-2.1', 'claude-3-haiku-20240307', 'claude-3-sonnet-20240229', 'claude-3-opus-20240229'];
 export const OPENAI_MODELS = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o'];
 
-export function filenameMessageHistoryJSON(plugin: BMOGPT) {
+export function fileNameMessageHistoryJson(plugin: BMOGPT) {
     const filenameMessageHistoryPath = './.obsidian/plugins/bmo-chatbot/data/';
     const currentProfileMessageHistory = 'messageHistory_' + plugin.settings.profiles.profile.replace('.md', '.json');
 
@@ -267,14 +267,14 @@ export class BMOView extends ItemView {
             }
 
             // Add all user messages besides certain commands
-            if (!input.includes('/c') && 
-                !input.includes('/clear') && 
+            if (!input.startsWith('/c') && 
+                !input.startsWith('/clear') && 
                 !input.startsWith('/p ') &&
                 !input.startsWith('/prof ') &&
                 !input.startsWith('/profile ') &&
                 !input.startsWith('/profiles ') &&
-                !input.includes('/s') &&
-                !input.includes('/stop')) {
+                !input.startsWith('/s') &&
+                !input.startsWith('/stop')) {
                     addMessage(this.plugin, input, 'userMessage', this.settings, index);
             }
             
@@ -287,8 +287,8 @@ export class BMOView extends ItemView {
                     executeCommand(input, this.settings, this.plugin);
 
 
-                    if (!input.includes('/c') && 
-                        !input.includes('/clear') && 
+                    if (!input.startsWith('/c') && 
+                        !input.startsWith('/clear') && 
                         (input === '/prof' ||
                         input === '/p' ||
                         input === '/profile' ||
@@ -297,8 +297,8 @@ export class BMOView extends ItemView {
                         input === '/prompts' ||
                         input.startsWith('/prompt ') || 
                         input.startsWith('/prompts ')) &&
-                        !input.includes('/s') &&
-                        !input.includes('/stop')) {
+                        !input.startsWith('/s') &&
+                        !input.startsWith('/stop')) {
                         const botMessages = messageContainer.querySelectorAll('.botMessage');
                         const lastBotMessage = botMessages[botMessages.length - 1];
                         lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -478,9 +478,9 @@ async function loadData(plugin: BMOGPT) {
         plugin.app.vault.adapter.mkdir('./.obsidian/plugins/bmo-chatbot/data/');
     }
 
-    if (await plugin.app.vault.adapter.exists(filenameMessageHistoryJSON(plugin))) {
+    if (await plugin.app.vault.adapter.exists(fileNameMessageHistoryJson(plugin))) {
         try {
-            const fileContent = await plugin.app.vault.adapter.read(filenameMessageHistoryJSON(plugin));
+            const fileContent = await plugin.app.vault.adapter.read(fileNameMessageHistoryJson(plugin));
 
             if (fileContent.trim() === '') {
                 messageHistory = [];
@@ -513,7 +513,7 @@ export async function deleteAllMessages(plugin: BMOGPT) {
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {
-        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
+        await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), jsonString);
     } catch (error) {
         console.error('Error writing messageHistory.json', error);
     }

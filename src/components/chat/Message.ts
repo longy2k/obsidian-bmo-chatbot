@@ -1,4 +1,4 @@
-import { filenameMessageHistoryJSON, messageHistory } from 'src/view';
+import { fileNameMessageHistoryJson, messageHistory } from 'src/view';
 import { displayAppendButton, displayBotCopyButton, displayBotEditButton } from './Buttons';
 import BMOGPT, { BMOSettings } from 'src/main';
 
@@ -45,7 +45,7 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {
-        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
+        await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), jsonString);
     } catch (error) {
         console.error('Error writing to message history file:', error);
     }

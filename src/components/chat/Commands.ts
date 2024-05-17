@@ -1,7 +1,7 @@
 import { Notice, TFile } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS, updateSettingsFromFrontMatter } from '../../main';
 import { colorToHex } from '../../utils/ColorConverter';
-import { filenameMessageHistoryJSON, messageHistory } from '../../view';
+import { fileNameMessageHistoryJson, messageHistory } from '../../view';
 import BMOGPT from '../../main';
 import { getAbortController } from '../FetchModelResponse';
 import { fetchModelRenameTitle } from '../editor/FetchRenameNoteTitle';
@@ -551,9 +551,9 @@ export async function commandAppend(plugin: BMOGPT, settings: BMOSettings) {
 
 
     // Check and read the JSON file
-    if (await this.app.vault.adapter.exists(filenameMessageHistoryJSON(plugin))) {
+    if (await this.app.vault.adapter.exists(fileNameMessageHistoryJson(plugin))) {
       try {
-        const jsonContent = await this.app.vault.adapter.read(filenameMessageHistoryJSON(plugin));
+        const jsonContent = await this.app.vault.adapter.read(fileNameMessageHistoryJson(plugin));
         const messages = JSON.parse(jsonContent);
 
         // Filter out messages starting with '/', and the assistant's response immediately following it
@@ -682,9 +682,9 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
     const chatbotNameText = chatbotNames.length > 0 && chatbotNames[0].textContent ? chatbotNames[0].textContent.toUpperCase() : 'ASSISTANT';
 
     // Check and read the JSON file
-    if (await plugin.app.vault.adapter.exists(filenameMessageHistoryJSON(plugin))) {
+    if (await plugin.app.vault.adapter.exists(fileNameMessageHistoryJson(plugin))) {
       try {
-        const jsonContent = await plugin.app.vault.adapter.read(filenameMessageHistoryJSON(plugin));
+        const jsonContent = await plugin.app.vault.adapter.read(fileNameMessageHistoryJson(plugin));
         const messages = JSON.parse(jsonContent);
 
         // Filter out messages starting with '/', and the assistant's response immediately following it
@@ -786,7 +786,7 @@ export async function removeMessageThread(plugin: BMOGPT, index: number) {
   const jsonString = JSON.stringify(messageHistory, null, 4);
 
   try {
-      await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
+      await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), jsonString);
   } catch (error) {
       console.error('Error writing messageHistory.json', error);
   }

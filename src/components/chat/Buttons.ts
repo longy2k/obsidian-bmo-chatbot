@@ -1,6 +1,6 @@
 import { MarkdownRenderer, Modal, Notice, setIcon } from 'obsidian';
 import BMOGPT, { BMOSettings, checkActiveFile } from 'src/main';
-import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, filenameMessageHistoryJSON, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
+import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, fileNameMessageHistoryJson, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
 import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse, fetchOpenRouterResponseStream, fetchOpenRouterResponse } from '../FetchModelResponse';
 import { getActiveFileContent } from '../editor/ReferenceCurrentNote';
 
@@ -314,7 +314,7 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
                     const jsonString = JSON.stringify(messageHistory, null, 4);
 
                     try {
-                        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
+                        await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), jsonString);
                     } catch (error) {
                         console.error('Error writing to message history file:', error);
                     }
@@ -509,7 +509,7 @@ export async function deleteMessage(plugin: BMOGPT, index: number) {
     const jsonString = JSON.stringify(messageHistory, null, 4);
 
     try {
-        await plugin.app.vault.adapter.write(filenameMessageHistoryJSON(plugin), jsonString);
+        await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), jsonString);
     } catch (error) {
         console.error('Error writing messageHistory.json', error);
     }
