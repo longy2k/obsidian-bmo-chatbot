@@ -1,4 +1,5 @@
 import { Setting, SettingTab, setIcon } from 'obsidian';
+import { fetchGoogleGeminiModels } from 'src/components/FetchModelList';
 import BMOGPT from 'src/main';
 
 export function addGoogleGeminiConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -36,10 +37,22 @@ export function addGoogleGeminiConnectionSettings(containerEl: HTMLElement, plug
         .setPlaceholder('insert-api-key')
         .setValue(plugin.settings.APIConnections.googleGemini.APIKey ? `${plugin.settings.APIConnections.googleGemini.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.googleGemini.APIKey.slice(-4)}` : '')
         .onChange(async (value) => {
+            plugin.settings.APIConnections.googleGemini.geminiModels = [];
             plugin.settings.APIConnections.googleGemini.APIKey = value;
-            await plugin.saveSettings();
+            if (plugin.settings.APIConnections.googleGemini.APIKey === '') {
+                plugin.settings.APIConnections.googleGemini.geminiModels = [];
+            }
+            else {
+                const models = await fetchGoogleGeminiModels(plugin);
+                models.forEach((model: string) => {
+                    if (!plugin.settings.APIConnections.googleGemini.geminiModels.includes(model)) {
+                        plugin.settings.APIConnections.googleGemini.geminiModels.push(model);
+                    }
+                });
+            }
         })
         .inputEl.addEventListener('focusout', async () => {
+            await plugin.saveSettings();
             SettingTab.display();
         })
     );

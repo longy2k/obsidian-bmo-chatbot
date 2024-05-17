@@ -1,5 +1,6 @@
 import { Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT from 'src/main';
+import { ANTHROPIC_MODELS } from 'src/view';
 
 export function addAnthropicConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
@@ -36,10 +37,21 @@ export function addAnthropicConnectionSettings(containerEl: HTMLElement, plugin:
         .setPlaceholder('insert-api-key')
         .setValue(plugin.settings.APIConnections.anthropic.APIKey ? `${plugin.settings.APIConnections.anthropic.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.anthropic.APIKey.slice(-4)}` : '')
         .onChange(async (value) => {
+            plugin.settings.APIConnections.anthropic.anthropicModels = [];
             plugin.settings.APIConnections.anthropic.APIKey = value;
-            await plugin.saveSettings();
+            if (plugin.settings.APIConnections.anthropic.APIKey === '') {
+                plugin.settings.APIConnections.anthropic.anthropicModels = [];
+            } else {
+                const models = ANTHROPIC_MODELS;
+                models.forEach((model: string) => {
+                    if (!plugin.settings.APIConnections.anthropic.anthropicModels.includes(model)) {
+                        plugin.settings.APIConnections.anthropic.anthropicModels.push(model);
+                    }
+                });
+            }
         })
         .inputEl.addEventListener('focusout', async () => {
+            await plugin.saveSettings();
             SettingTab.display();
         })
     );

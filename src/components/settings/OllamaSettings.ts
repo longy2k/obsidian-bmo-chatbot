@@ -1,6 +1,7 @@
 import { Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 import { addDescriptionLink } from 'src/utils/DescriptionLink';
+import { fetchOllamaModels } from '../FetchModelList';
 
 // Ollama Settings
 export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -40,9 +41,19 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
             .onChange(async (value) => {
                     plugin.settings.OllamaConnection.ollamaModels = [];
                     plugin.settings.OllamaConnection.RESTAPIURL = value ? value : DEFAULT_SETTINGS.OllamaConnection.RESTAPIURL;
-                    await plugin.saveSettings();
+                    if (plugin.settings.OllamaConnection.RESTAPIURL === '') {
+                        plugin.settings.OllamaConnection.ollamaModels = [];
+                    } else {
+                        const models = await fetchOllamaModels(plugin);
+                        models.forEach((model: string) => {
+                            if (!plugin.settings.OllamaConnection.ollamaModels.includes(model)) {
+                                plugin.settings.OllamaConnection.ollamaModels.push(model);
+                            }
+                        });
+                    }
                 })
             .inputEl.addEventListener('focusout', async () => {
+                await plugin.saveSettings();
                 SettingTab.display();
             })
         );

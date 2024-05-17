@@ -1,4 +1,5 @@
 import { Setting, SettingTab, setIcon } from 'obsidian';
+import { fetchOpenAIBaseModels } from 'src/components/FetchModelList';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 
 export function addOpenAIConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -34,12 +35,23 @@ export function addOpenAIConnectionSettings(containerEl: HTMLElement, plugin: BM
     .setDesc('Insert OpenAI API Key.')
     .addText(text => text
         .setPlaceholder('insert-api-key')
-        .setValue(plugin.settings.APIConnections.openAI.APIKey ? `${plugin.settings.APIConnections.openAI.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.openAI.APIKey.slice(-4)}` : '')
+        .setValue(plugin.settings.APIConnections.openAI.APIKey ? `${plugin.settings.APIConnections.openAI.APIKey.slice(0, 7)}-...${plugin.settings.APIConnections.openAI.APIKey.slice(-4)}` : '')
         .onChange(async (value) => {
+            plugin.settings.APIConnections.openAI.openAIBaseModels = [];
             plugin.settings.APIConnections.openAI.APIKey = value;
-            await plugin.saveSettings();
+            if (plugin.settings.APIConnections.openAI.APIKey === '') {
+                plugin.settings.APIConnections.openAI.openAIBaseModels = [];
+            } else {
+                const models = await fetchOpenAIBaseModels(plugin);
+                models.forEach((model) => {
+                    if (!plugin.settings.APIConnections.openAI.openAIBaseModels.includes(model)) {
+                        plugin.settings.APIConnections.openAI.openAIBaseModels.push(model);
+                    }
+                });
+            }
         })
         .inputEl.addEventListener('focusout', async () => {
+            await plugin.saveSettings();
             SettingTab.display();
         })
     );

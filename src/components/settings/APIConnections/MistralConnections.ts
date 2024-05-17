@@ -1,4 +1,5 @@
 import { Setting, SettingTab, setIcon } from 'obsidian';
+import { fetchMistralModels } from 'src/components/FetchModelList';
 import BMOGPT from 'src/main';
 
 export function addMistralConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -36,10 +37,22 @@ export function addMistralConnectionSettings(containerEl: HTMLElement, plugin: B
         .setPlaceholder('insert-api-key')
         .setValue(plugin.settings.APIConnections.mistral.APIKey ? `${plugin.settings.APIConnections.mistral.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.mistral.APIKey.slice(-4)}` : '')
         .onChange(async (value) => {
+            plugin.settings.APIConnections.mistral.mistralModels = [];
             plugin.settings.APIConnections.mistral.APIKey = value;
-            await plugin.saveSettings();
+            if (plugin.settings.APIConnections.mistral.APIKey === '') {
+                plugin.settings.APIConnections.mistral.mistralModels = [];
+            }
+            else {
+                const models = await fetchMistralModels(plugin);
+                models.forEach((model: string) => {
+                    if (!plugin.settings.APIConnections.mistral.mistralModels.includes(model)) {
+                        plugin.settings.APIConnections.mistral.mistralModels.push(model);
+                    }
+                });
+            }
         })
         .inputEl.addEventListener('focusout', async () => {
+            await plugin.saveSettings();
             SettingTab.display();
         })
     );

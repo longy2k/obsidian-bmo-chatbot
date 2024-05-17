@@ -110,7 +110,6 @@ export interface BMOSettings {
 	toggleOpenRouterSettings: boolean,
 	toggleOllamaSettings: boolean,
 	toggleAdvancedSettings: boolean,
-	allModels: string[],
 }
 
 export const DEFAULT_SETTINGS: BMOSettings = {
@@ -219,7 +218,6 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	toggleOpenRouterSettings: false,
 	toggleOllamaSettings: true,
 	toggleAdvancedSettings: false,
-	allModels: [],
 }
 
 export let checkActiveFile: TFile | null = null;

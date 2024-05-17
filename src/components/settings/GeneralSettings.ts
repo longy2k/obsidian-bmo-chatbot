@@ -1,7 +1,5 @@
-import { DropdownComponent, Notice, Setting, SettingTab, setIcon } from 'obsidian';
+import { Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
-import { ANTHROPIC_MODELS } from 'src/view';
-import { fetchGoogleGeminiModels, fetchMistralModels, fetchOllamaModels, fetchOpenAIBaseModels, fetchOpenRouterModels, fetchRESTAPIURLModels } from '../FetchModelList';
 
 export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
@@ -35,7 +33,69 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
         .setName('Model')
         .setDesc('Choose a model.')
         .addDropdown(async dropdown => {
-            await populateDropdownWithModels(plugin, dropdown);
+            const ollamaModels = plugin.settings.OllamaConnection.ollamaModels;
+
+            if (ollamaModels.length > 0) {
+                dropdown.addOption('', '----- Ollama -----');
+                ollamaModels.forEach((model) => {
+                    dropdown.addOption(model, model);
+                });
+            }
+
+            const restApiModels = plugin.settings.RESTAPIURLConnection.RESTAPIURLModels;
+
+            if (restApiModels.length > 0) {
+                dropdown.addOption('', '----- REST API -----');
+                restApiModels.forEach((model) => {
+                    dropdown.addOption(model, model);
+                });
+            }
+
+            const anthropicModels = plugin.settings.APIConnections.anthropic.anthropicModels;
+
+            if (anthropicModels.length > 0) {
+                dropdown.addOption('', '----- Anthropic -----');
+                anthropicModels.forEach((model) => {
+                    dropdown.addOption(model, model);
+                });
+            }
+
+            const googleGeminiModels = plugin.settings.APIConnections.googleGemini.geminiModels;
+
+            if (googleGeminiModels.length > 0) {
+                dropdown.addOption('', '----- Google Gemini -----');
+                googleGeminiModels.forEach((model) => {
+                    dropdown.addOption(model, model);
+                });
+            }
+
+            const mistralModels = plugin.settings.APIConnections.mistral.mistralModels;
+
+            if (mistralModels.length > 0) {
+                dropdown.addOption('', '----- Mistral -----');
+                mistralModels.forEach((model) => {
+                    dropdown.addOption(model, model);
+                });
+            }
+
+            const openAIModels = plugin.settings.APIConnections.openAI.openAIBaseModels;
+
+            if (openAIModels.length > 0) {
+                dropdown.addOption('', '----- OpenAI -----');
+                openAIModels.forEach((model: string) => {
+                    dropdown.addOption(model, model);
+                });
+            }
+
+            const openRouterModels = plugin.settings.APIConnections.openRouter.openRouterModels;
+
+            if (openRouterModels.length > 0) {
+                dropdown.addOption('', '----- OpenRouter -----');
+                openRouterModels.forEach((model: string) => {
+                    dropdown.addOption(model, model);
+                });
+            }
+
             dropdown
                 .setValue(plugin.settings.general.model)
                 .onChange(async (value) => {
@@ -147,66 +207,4 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
 
         return frag;
     }
-}
-
-async function populateDropdownWithModels(plugin: BMOGPT, dropdown: DropdownComponent) {
-    // Initialize an empty array to store all unique models
-    plugin.settings.allModels = [];
-
-    // Helper function to fetch models based on the source type
-    async function fetchModels(sourceType: string) {
-        switch (sourceType) {
-            case 'ollama':
-                return await fetchOllamaModels(plugin);
-            case 'RESTAPIURL':
-                return await fetchRESTAPIURLModels(plugin);
-            case 'anthropic':
-                return ANTHROPIC_MODELS;
-            case 'googleGemini':
-                return await fetchGoogleGeminiModels(plugin);
-            case 'mistral':
-                return await fetchMistralModels(plugin);
-            case 'openAI':
-                return await fetchOpenAIBaseModels(plugin);
-            case 'openRouter':
-                return await fetchOpenRouterModels(plugin);
-            default:
-                return [];
-        }
-    }
-
-    // Helper function to add models to the dropdown and allModels array
-    function addModelsToDropdownAndList(models: string[]) {
-        models.forEach((model) => {
-            dropdown.addOption(model, model);
-            if (!plugin.settings.allModels.includes(model)) {
-                plugin.settings.allModels.push(model);
-            }
-        });
-    }
-
-    // Define model sources and conditions for fetching
-    const modelSources = [
-        { type: 'ollama', condition: plugin.settings.OllamaConnection.RESTAPIURL },
-        { type: 'RESTAPIURL', condition: plugin.settings.RESTAPIURLConnection.RESTAPIURL },
-        { type: 'anthropic', condition: plugin.settings.APIConnections.anthropic.APIKey },
-        { type: 'googleGemini', condition: plugin.settings.APIConnections.googleGemini.APIKey },
-        { type: 'mistral', condition: plugin.settings.APIConnections.mistral.APIKey },
-        { type: 'openAI', condition: plugin.settings.APIConnections.openAI.APIKey },
-        { type: 'openRouter', condition: plugin.settings.APIConnections.openRouter.APIKey },
-    ];
-
-    // Process each source to fetch and add models
-    for (const { type, condition } of modelSources) {
-        if (condition) {
-            try {
-                const models = await fetchModels(type);
-                addModelsToDropdownAndList(models);
-            } catch (error) {
-                console.error(`Error fetching models from ${type}:`, error);
-                new Notice(`${type.charAt(0).toUpperCase() + type.slice(1)} connection error.`);
-            }
-        }
-    }
-
 }

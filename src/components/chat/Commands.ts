@@ -122,11 +122,28 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
 // `/model "[VALUE]"` to change model.
 export async function commandModel(input: string, settings: BMOSettings, plugin: BMOGPT) {
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-  // Check if the user has not specified a model after the "/model" command
-  if (!input.split(' ')[1]) {
 
     // Loop through allModels and create list items
-    const modelListItems = settings.allModels.map(model => `<li>${model}</li>`).join('');
+    const ollamaModels = settings.OllamaConnection.ollamaModels.map(model => model);
+    const RESTAPIModels = settings.RESTAPIURLConnection.RESTAPIURLModels.map(model => model);
+    const anthropicModels = settings.APIConnections.anthropic.anthropicModels.map(model => model);
+    const googleGeminiModels = settings.APIConnections.googleGemini.geminiModels.map(model => model);
+    const mistralModels = settings.APIConnections.mistral.mistralModels.map(model => model);
+    const openAIBaseModels = settings.APIConnections.openAI.openAIBaseModels.map(model => model);
+    const openRouterModels = settings.APIConnections.openRouter.openRouterModels.map(model => model);
+
+    const allModels = [
+      ...settings.OllamaConnection.ollamaModels,
+      ...settings.RESTAPIURLConnection.RESTAPIURLModels,
+      ...settings.APIConnections.anthropic.anthropicModels,
+      ...settings.APIConnections.googleGemini.geminiModels,
+      ...settings.APIConnections.mistral.mistralModels,
+      ...settings.APIConnections.openAI.openAIBaseModels,
+      ...settings.APIConnections.openRouter.openRouterModels
+  ];
+  
+  // Check if the user has not specified a model after the "/model" command
+  if (!input.split(' ')[1]) {
 
     let currentModel = settings.general.model;
 
@@ -134,13 +151,80 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
     if (!currentModel) {
       currentModel = 'Empty';
     }
-  
-    const commandBotMessage = 
-    `<h2>Models</h2>
-    <p><b>Current Model:</b> ${currentModel}</p>
-    <ol>${modelListItems}</ol>`;
 
-    const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+    const botMessageDiv = document.createElement('div');
+    botMessageDiv.className = 'botMessage';
+    botMessageDiv.style.backgroundColor = colorToHex(settings.appearance.botMessageBackgroundColor ||
+        getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.botMessageBackgroundColor).trim());
+
+    const botMessageToolBarDiv = document.createElement('div');
+    botMessageToolBarDiv.className = 'botMessageToolBar';
+
+    const botNameSpan = document.createElement('span'); 
+    botNameSpan.textContent = settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName;
+    botNameSpan.className = 'chatbotName';
+
+    const messageBlockDiv = document.createElement('div');
+    messageBlockDiv.className = 'messageBlock';
+
+    const displayCommandBotMessageDiv = document.createElement('div');
+    displayCommandBotMessageDiv.className = 'commandBotMessage';
+
+    const header = document.createElement('h3');
+    header.textContent = 'Model List';
+    header.style.textAlign = 'center';
+    displayCommandBotMessageDiv.appendChild(header);
+
+    const currentModelP = document.createElement('p');
+    currentModelP.innerHTML = `<b>Current Model:</b> ${currentModel}`;
+    currentModelP.style.textAlign = 'center';
+    displayCommandBotMessageDiv.appendChild(currentModelP);
+
+    const apiLists = [
+      { header: 'Ollama', items: ollamaModels },
+      { header: 'REST API', items: RESTAPIModels },
+      { header: 'Anthropic', items: anthropicModels},
+      { header: 'Google Gemini', items: googleGeminiModels },
+      { header: 'Mistral', items: mistralModels },
+      { header: 'OpenAI', items: openAIBaseModels },
+      { header: 'OpenRouter', items: openRouterModels }
+    ];
+    
+    let currentStartIndex = 1;
+    
+    apiLists.forEach(api => {
+      if (Array.isArray(api.items) && api.items.length) {
+        const header = document.createElement('h4');
+        header.textContent = api.header;
+        displayCommandBotMessageDiv.appendChild(header);
+    
+        const list = document.createElement('ol');
+        list.setAttribute('start', String(currentStartIndex));
+    
+        api.items.forEach(item => {
+          const listItem = document.createElement('li');
+          listItem.textContent = item;
+          list.appendChild(listItem);
+        });
+    
+        displayCommandBotMessageDiv.appendChild(list);
+    
+        // Update the currentStartIndex based on the number of items in the list
+        currentStartIndex += api.items.length;
+      }
+    });
+    
+    
+
+    messageBlockDiv.appendChild(displayCommandBotMessageDiv);
+    botMessageToolBarDiv.appendChild(botNameSpan);
+    botMessageDiv.appendChild(botMessageToolBarDiv);
+    botMessageDiv.appendChild(messageBlockDiv);
+
+    const index = messageHistory.length - 1;
+
+    addMessage(plugin, messageBlockDiv.innerHTML, 'botMessage', settings, index);
+
     messageContainer.appendChild(botMessageDiv);
   }
 
@@ -150,8 +234,8 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 
     const modelAliases: { [key: string]: string } = {};
 
-    for (let i = 1; i <= settings.allModels.length; i++) {
-      const model = settings.allModels[i - 1];
+    for (let i = 1; i <= allModels.length; i++) {
+      const model = allModels[i - 1];
       modelAliases[i] = model;
     }
 

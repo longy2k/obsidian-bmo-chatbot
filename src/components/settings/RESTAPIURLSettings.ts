@@ -1,11 +1,12 @@
 import { Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 import { addDescriptionLink } from 'src/utils/DescriptionLink';
+import { fetchRESTAPIURLModels } from '../FetchModelList';
 
 // OpenAI-Based REST API URL Connection Settings
 export function addRESTAPIURLSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
     const toggleSettingContainer = containerEl.createDiv({ cls: 'toggleSettingContainer' });
-    toggleSettingContainer.createEl('h2', {text: 'REST API URL Connection'});
+    toggleSettingContainer.createEl('h2', {text: 'REST API Connection'});
 
     const initialState = plugin.settings.toggleRESTAPIURLSettings;
     const chevronIcon = toggleSettingContainer.createEl('span', { cls: 'chevron-icon' });
@@ -56,9 +57,19 @@ export function addRESTAPIURLSettings(containerEl: HTMLElement, plugin: BMOGPT, 
         .onChange(async (value) => {
                 plugin.settings.RESTAPIURLConnection.RESTAPIURLModels = [];
                 plugin.settings.RESTAPIURLConnection.RESTAPIURL = value ? value : DEFAULT_SETTINGS.RESTAPIURLConnection.RESTAPIURL;
-                await plugin.saveSettings();
+                if (plugin.settings.RESTAPIURLConnection.RESTAPIURL === '') {
+                    plugin.settings.RESTAPIURLConnection.RESTAPIURLModels = [];
+                } else {
+                    const models = await fetchRESTAPIURLModels(plugin);
+                    models.forEach((model: string) => {
+                        if (!plugin.settings.RESTAPIURLConnection.RESTAPIURLModels.includes(model)) {
+                            plugin.settings.RESTAPIURLConnection.RESTAPIURLModels.push(model);
+                        }
+                    });
+                }
             })
         .inputEl.addEventListener('focusout', async () => {
+            await plugin.saveSettings();
             SettingTab.display();
         })
     );

@@ -1,4 +1,5 @@
 import { Setting, SettingTab, setIcon } from 'obsidian';
+import { fetchOpenRouterModels } from 'src/components/FetchModelList';
 import BMOGPT from 'src/main';
 
 export function addOpenRouterConnectionSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -36,10 +37,22 @@ export function addOpenRouterConnectionSettings(containerEl: HTMLElement, plugin
         .setPlaceholder('insert-api-key')
         .setValue(plugin.settings.APIConnections.openRouter.APIKey ? `${plugin.settings.APIConnections.openRouter.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.openRouter.APIKey.slice(-4)}` : '')
         .onChange(async (value) => {
+            plugin.settings.APIConnections.openAI.openAIBaseModels = [];
             plugin.settings.APIConnections.openRouter.APIKey = value;
-            await plugin.saveSettings();
+            if (plugin.settings.APIConnections.openRouter.APIKey === '') {
+                plugin.settings.APIConnections.openRouter.openRouterModels = [];
+            }
+            else {
+                const models = await fetchOpenRouterModels(plugin);
+                models.forEach((model: string) => {
+                    if (!plugin.settings.APIConnections.openRouter.openRouterModels.includes(model)) {
+                        plugin.settings.APIConnections.openRouter.openRouterModels.push(model);
+                    }
+                });
+            }
         })
         .inputEl.addEventListener('focusout', async () => {
+            await plugin.saveSettings();
             SettingTab.display();
         })
     );
