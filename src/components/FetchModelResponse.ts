@@ -130,6 +130,16 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
     await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
+    const submitButton = document.querySelector('.submit-button') as HTMLElement;
+    submitButton.addEventListener('click', () => {
+        if (submitButton.title === 'stop') {
+            const controller = getAbortController();
+            if (controller) {
+                controller.abort();
+            }
+        }
+    });
+
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -148,6 +158,10 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
             }),
             signal: abortController.signal
         })
+
+        // Change the submit button to a stop button
+        setIcon(submitButton, 'square');
+        submitButton.title = 'stop';
         
         if (!response.ok) {
             new Notice(`HTTP error! Status: ${response.status}`);
@@ -243,9 +257,14 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
         
     } catch (error) {
         addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
-        new Notice(error);
+        new Notice('Stream stopped.');
         console.error(error);
     }
+
+    // Change the submit button back to a send button
+    submitButton.textContent = 'send';
+    setIcon(submitButton, 'arrow-up');
+    submitButton.title = 'send';
 }
 
 // Fetch response from openai-based rest api url
@@ -362,6 +381,16 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
     await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
+    const submitButton = document.querySelector('.submit-button') as HTMLElement;
+    submitButton.addEventListener('click', () => {
+        if (submitButton.title === 'stop') {
+            const controller = getAbortController();
+            if (controller) {
+                controller.abort();
+            }
+        }
+    });
+
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -381,6 +410,10 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
             }),
             signal: abortController.signal
         })
+
+        // Change the submit button to a stop button
+        setIcon(submitButton, 'square');
+        submitButton.title = 'stop';
 
         
         if (!response.ok) {
@@ -487,9 +520,14 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
         
     } catch (error) {
         addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
-        new Notice(error);
+        new Notice('Stream stopped.');
         console.error(error);
     }
+
+    // Change the submit button back to a send button
+    submitButton.textContent = 'send';
+    setIcon(submitButton, 'arrow-up');
+    submitButton.title = 'send';
 }
 
 // Fetch response from Anthropic
@@ -795,6 +833,16 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
     await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
+    const submitButton = document.querySelector('.submit-button') as HTMLElement;
+    submitButton.addEventListener('click', () => {
+        if (submitButton.title === 'stop') {
+            const controller = getAbortController();
+            if (controller) {
+                controller.abort();
+            }
+        }
+    });
+
     try {
         const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
             method: 'POST',
@@ -814,6 +862,10 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
             }),
             signal: abortController.signal
         })
+
+        // Change the submit button to a stop button
+        setIcon(submitButton, 'square');
+        submitButton.title = 'stop';
 
         
         if (!response.ok) {
@@ -920,9 +972,14 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
         
     } catch (error) {
         addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
-        new Notice(error);
+        new Notice('Stream stopped.');
         console.error(error);
     }
+
+    // Change the submit button back to a send button
+    submitButton.textContent = 'send';
+    setIcon(submitButton, 'arrow-up');
+    submitButton.title = 'send';
 }
 
 // Fetch OpenAI-Based API
@@ -1036,6 +1093,16 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
     await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
+    const submitButton = document.querySelector('.submit-button') as HTMLElement;
+    submitButton.addEventListener('click', () => {
+        if (submitButton.title === 'stop') {
+            const controller = getAbortController();
+            if (controller) {
+                controller.abort();
+            }
+        }
+    });
+
     try {
         const stream = await openai.chat.completions.create({
             model: settings.general.model,
@@ -1047,6 +1114,10 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
                 ...messageHistoryAtIndex as ChatCompletionMessageParam[]
             ],
         });
+
+        // Change the submit button to a stop button
+        setIcon(submitButton, 'square');
+        submitButton.title = 'stop';
 
         for await (const part of stream) {
 
@@ -1117,6 +1188,11 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
         const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
         messageContainer.appendChild(botMessageDiv);
     }
+
+    // Change the submit button back to a send button
+    submitButton.textContent = 'send';
+    setIcon(submitButton, 'arrow-up');
+    submitButton.title = 'send';
 }
 
 // Fetch response from OpenRouter
@@ -1227,6 +1303,16 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
     await getActiveFileContent(plugin, settings);
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
+    const submitButton = document.querySelector('.submit-button') as HTMLElement;
+    submitButton.addEventListener('click', () => {
+        if (submitButton.title === 'stop') {
+            const controller = getAbortController();
+            if (controller) {
+                controller.abort();
+            }
+        }
+    });
+
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -1247,6 +1333,9 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
             signal: abortController.signal
         })
 
+        // Change the submit button to a stop button
+        setIcon(submitButton, 'square');
+        submitButton.title = 'stop';
         
         if (!response.ok) {
             new Notice(`HTTP error! Status: ${response.status}`);
@@ -1352,9 +1441,14 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
         
     } catch (error) {
         addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
-        new Notice(error);
+        new Notice('Stream stopped.');
         console.error(error);
     }
+
+    // Change the submit button back to a send button
+    submitButton.textContent = 'send';
+    setIcon(submitButton, 'arrow-up');
+    submitButton.title = 'send';
 }
 
 // Abort controller
