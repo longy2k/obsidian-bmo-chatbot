@@ -83,11 +83,11 @@ export function addOpenAIConnectionSettings(containerEl: HTMLElement, plugin: BM
         );
 
     new Setting(settingsContainer)
-        .setName('Allow Stream')
-        .setDesc('Allow stream for OpenAI-Based models.')
+        .setName('Enable Stream')
+        .setDesc('Enable stream for OpenAI-Based models.')
         .addToggle((toggle) =>
-            toggle.setValue(plugin.settings.APIConnections.openAI.allowStream).onChange(async (value) => {
-                plugin.settings.APIConnections.openAI.allowStream = value;
+            toggle.setValue(plugin.settings.APIConnections.openAI.enableStream).onChange(async (value) => {
+                plugin.settings.APIConnections.openAI.enableStream = value;
                 await plugin.saveSettings();
             })
         );

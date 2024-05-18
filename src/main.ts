@@ -14,7 +14,7 @@ export interface BMOSettings {
 		system_role: string,
 		max_tokens: string,
 		temperature: string,
-		allowReferenceCurrentNote: boolean,
+		enableReferenceCurrentNote: boolean,
 	},
 	appearance: {
 		userName: string,
@@ -44,7 +44,7 @@ export interface BMOSettings {
 	}
 	OllamaConnection: {
 		RESTAPIURL: string,
-		allowStream: boolean,
+		enableStream: boolean,
 		ollamaParameters: {
 			mirostat: string,
 			mirostat_eta: string,
@@ -66,7 +66,7 @@ export interface BMOSettings {
 	RESTAPIURLConnection: {
 		APIKey: string,
 		RESTAPIURL: string,
-		allowStream: boolean,
+		enableStream: boolean,
 		RESTAPIURLModels: string[],
 	},
 	APIConnections: {
@@ -80,18 +80,18 @@ export interface BMOSettings {
 		},
 		mistral: {
 			APIKey: string,
-			allowStream: boolean,
+			enableStream: boolean,
 			mistralModels: string[],
 		},
 		openAI: {
 			APIKey: string,
 			openAIBaseUrl: string,
-			allowStream: boolean,
+			enableStream: boolean,
 			openAIBaseModels: string[],
 		},
 		openRouter: {
 			APIKey: string,
-			allowStream: boolean,
+			enableStream: boolean,
 			openRouterModels: string[],
 		},
 	},
@@ -122,7 +122,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		system_role: 'You are a helpful assistant.',
 		max_tokens: '',
 		temperature: '1.00',
-		allowReferenceCurrentNote: false,
+		enableReferenceCurrentNote: false,
 	},
 	appearance: {
 		userName: 'YOU',
@@ -152,7 +152,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	},
 	OllamaConnection: {
 		RESTAPIURL: '',
-		allowStream: false,
+		enableStream: false,
 		ollamaParameters: {
 			keep_alive: '',
 			mirostat: '0',
@@ -174,7 +174,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	RESTAPIURLConnection: {
 		APIKey: '',	
 		RESTAPIURL: '',
-		allowStream: false,
+		enableStream: false,
 		RESTAPIURLModels: [],
 	},
 	APIConnections: {
@@ -188,18 +188,18 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		},
 		mistral: {
 			APIKey: '',
-			allowStream: false,
+			enableStream: false,
 			mistralModels: [],
 		},
 		openAI: {
 			APIKey: '',
 			openAIBaseUrl: 'https://api.openai.com/v1',
-			allowStream: true,
+			enableStream: true,
 			openAIBaseModels: [],
 		},
 		openRouter: {
 			APIKey: '',
-			allowStream: false,
+			enableStream: false,
 			openRouterModels: [],
 		},
 	},
@@ -475,7 +475,7 @@ export async function defaultFrontMatter(plugin: BMOGPT, file: TFile) {
         frontmatter.model = DEFAULT_SETTINGS.general.model;
         frontmatter.max_tokens = parseInt(DEFAULT_SETTINGS.general.max_tokens);
         frontmatter.temperature = parseFloat(DEFAULT_SETTINGS.general.temperature);
-        frontmatter.reference_current_note = DEFAULT_SETTINGS.general.allowReferenceCurrentNote;
+        frontmatter.enable_reference_current_note = DEFAULT_SETTINGS.general.enableReferenceCurrentNote;
 		frontmatter.prompt = DEFAULT_SETTINGS.prompts.prompt;
 		frontmatter.user_name = DEFAULT_SETTINGS.appearance.userName;
 		// frontmatter.chatbot_name = DEFAULT_SETTINGS.appearance.chatbotName;
@@ -527,7 +527,7 @@ export async function updateSettingsFromFrontMatter(plugin: BMOGPT, file: TFile)
         plugin.settings.general.model = frontmatter.model;
 		plugin.settings.general.max_tokens = frontmatter.max_tokens;
 		plugin.settings.general.temperature = frontmatter.temperature;
-		plugin.settings.general.allowReferenceCurrentNote = frontmatter.reference_current_note;
+		plugin.settings.general.enableReferenceCurrentNote = frontmatter.enable_reference_current_note;
 		plugin.settings.prompts.prompt = frontmatter.prompt + '.md';
 		plugin.settings.appearance.userName = frontmatter.user_name;
 		plugin.settings.appearance.chatbotName = file.basename;
@@ -580,7 +580,7 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
         frontmatter.model = plugin.settings.general.model;
         frontmatter.max_tokens = parseInt(plugin.settings.general.max_tokens);
         frontmatter.temperature = parseFloat(plugin.settings.general.temperature);
-        frontmatter.reference_current_note = plugin.settings.general.allowReferenceCurrentNote;
+        frontmatter.enable_reference_current_note = plugin.settings.general.enableReferenceCurrentNote;
 		frontmatter.prompt = plugin.settings.prompts.prompt.replace('.md', '');
 		frontmatter.user_name = plugin.settings.appearance.userName;
 		// frontmatter.chatbot_name = plugin.settings.appearance.chatbotName;
@@ -656,11 +656,11 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 				frontmatter.temperature = DEFAULT_SETTINGS.general.temperature;
 			}
 
-			plugin.settings.general.allowReferenceCurrentNote = frontmatter.reference_current_note;
+			plugin.settings.general.enableReferenceCurrentNote = frontmatter.enable_reference_current_note;
 
 			const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote') as HTMLElement;
 			if (referenceCurrentNoteElement) {
-				if (frontmatter.reference_current_note === true) {
+				if (frontmatter.enable_reference_current_note === true) {
 					referenceCurrentNoteElement.style.display = 'block';
 				} else {
 					referenceCurrentNoteElement.style.display = 'none';

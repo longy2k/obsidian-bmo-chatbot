@@ -32,7 +32,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
             deleteMessage(plugin, index+1);
             if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                 try {
-                    if (settings.APIConnections.openAI.allowStream) {
+                    if (settings.APIConnections.openAI.enableStream) {
                         await fetchOpenAIAPIResponseStream(plugin, settings, index); 
                     } else {
                         await fetchOpenAIAPIResponse(plugin, settings, index);
@@ -44,7 +44,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                 }
             }
             else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
-                if (settings.OllamaConnection.allowStream) {
+                if (settings.OllamaConnection.enableStream) {
                     await fetchOllamaResponseStream(plugin, settings, index);
                 }
                 else {
@@ -52,7 +52,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                 }
             }
             else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
-                if (settings.RESTAPIURLConnection.allowStream) {
+                if (settings.RESTAPIURLConnection.enableStream) {
                     await fetchRESTAPIURLResponseStream(plugin, settings, index);
                 }
                 else {
@@ -60,7 +60,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                 }
             }
             else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)){
-                if (settings.APIConnections.openRouter.allowStream) {
+                if (settings.APIConnections.openRouter.enableStream) {
                     await fetchOpenRouterResponseStream(plugin, settings, index);
                 }
                 else {
@@ -69,7 +69,7 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
             }
             else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
                 try {
-                    if (settings.APIConnections.mistral.allowStream) {
+                    if (settings.APIConnections.mistral.enableStream) {
                         await fetchMistralResponseStream(plugin, settings, index);
                     }
                     else {
@@ -154,7 +154,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                     deleteMessage(plugin, index+1);
 
                     if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
-                        if (settings.OllamaConnection.allowStream) {
+                        if (settings.OllamaConnection.enableStream) {
                             await fetchOllamaResponseStream(plugin, settings, index);
                         }
                         else {
@@ -162,7 +162,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                         }
                     }
                     else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
-                        if (settings.RESTAPIURLConnection.allowStream) {
+                        if (settings.RESTAPIURLConnection.enableStream) {
                             await fetchRESTAPIURLResponseStream(plugin, settings, index);
                         }
                         else {
@@ -188,7 +188,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                     }
                     else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
                         try {
-                            if (settings.APIConnections.mistral.allowStream) {
+                            if (settings.APIConnections.mistral.enableStream) {
                                 await fetchMistralResponseStream(plugin, settings, index);
                             }
                             else {
@@ -201,7 +201,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                     }
                     else if (OPENAI_MODELS.includes(settings.general.model) || settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)) {
                         try {
-                            if (settings.APIConnections.openAI.allowStream) {
+                            if (settings.APIConnections.openAI.enableStream) {
                                 await fetchOpenAIAPIResponseStream(plugin, settings, index); 
                             } else {
                                 await fetchOpenAIAPIResponse(plugin, settings, index);
@@ -213,7 +213,7 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                         }
                     }
                     else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)){
-                        if (settings.APIConnections.openRouter.allowStream) {
+                        if (settings.APIConnections.openRouter.enableStream) {
                             await fetchOpenRouterResponseStream(plugin, settings, index);
                         }
                         else {

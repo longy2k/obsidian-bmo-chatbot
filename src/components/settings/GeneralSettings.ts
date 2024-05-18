@@ -174,11 +174,11 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
         );
 
     new Setting(settingsContainer)
-        .setName('Allow Reference Current Note')
-        .setDesc('Allow chatbot to reference current active note during conversation.')
+        .setName('Enable Reference Current Note')
+        .setDesc('Enable chatbot to reference current active note during conversation.')
         .addToggle((toggle) =>
-            toggle.setValue(plugin.settings.general.allowReferenceCurrentNote).onChange((value) => {
-                plugin.settings.general.allowReferenceCurrentNote = value;
+            toggle.setValue(plugin.settings.general.enableReferenceCurrentNote).onChange((value) => {
+                plugin.settings.general.enableReferenceCurrentNote = value;
                 plugin.saveSettings();
 
                 const referenceCurrentNoteElement = document.getElementById('referenceCurrentNote');

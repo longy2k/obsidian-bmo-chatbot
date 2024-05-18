@@ -1173,7 +1173,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
             }
         
             if (abortController.signal.aborted) {
-                new Notice('Error making API request: The user aborted a request.');
+                new Notice('Stream stopped.');
                 break;
             }
         }

@@ -58,11 +58,11 @@ export function addOpenRouterConnectionSettings(containerEl: HTMLElement, plugin
     );
 
     new Setting(settingsContainer)
-    .setName('Allow Stream')
-    .setDesc('Allow stream for OpenRouter models.')
+    .setName('Enable Stream')
+    .setDesc('Enable stream for OpenRouter models.')
     .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.APIConnections.openRouter.allowStream).onChange((value) => {
-            plugin.settings.APIConnections.openRouter.allowStream = value;
+        toggle.setValue(plugin.settings.APIConnections.openRouter.enableStream).onChange((value) => {
+            plugin.settings.APIConnections.openRouter.enableStream = value;
             plugin.saveSettings();
         })
     );

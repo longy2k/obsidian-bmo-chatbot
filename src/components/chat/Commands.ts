@@ -548,13 +548,13 @@ export async function commandReference(input: string, settings: BMOSettings, plu
   const inputValue = input.split(' ')[1]?.toLowerCase();
 
   if (inputValue === 'true' || inputValue === 'on') {
-    settings.general.allowReferenceCurrentNote = true;
+    settings.general.enableReferenceCurrentNote = true;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'block';
       }
       new Notice('Reference current note: on.');
   } else if (inputValue === 'false' || inputValue === 'off') {
-    settings.general.allowReferenceCurrentNote = false;
+    settings.general.enableReferenceCurrentNote = false;
       if (referenceCurrentNoteElement) {
           referenceCurrentNoteElement.style.display = 'none';
       }

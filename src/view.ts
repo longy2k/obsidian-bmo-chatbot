@@ -113,7 +113,7 @@ export class BMOView extends ItemView {
         referenceCurrentNoteElement.style.display = 'none';
         
         if (referenceCurrentNoteElement) {
-            if (this.settings.general.allowReferenceCurrentNote) {
+            if (this.settings.general.enableReferenceCurrentNote) {
                 referenceCurrentNoteElement.style.display = 'block';
             } else {
                 referenceCurrentNoteElement.style.display = 'none';
@@ -250,10 +250,10 @@ export class BMOView extends ItemView {
         const index = messageHistory.length - 1;
 
         // Only allow /stop command to be executed during fetch
-        if (this.settings.OllamaConnection.allowStream || 
-            this.settings.RESTAPIURLConnection.allowStream || 
-            this.settings.APIConnections.mistral.allowStream || 
-            this.settings.APIConnections.openAI.allowStream) {
+        if (this.settings.OllamaConnection.enableStream || 
+            this.settings.RESTAPIURLConnection.enableStream || 
+            this.settings.APIConnections.mistral.enableStream || 
+            this.settings.APIConnections.openAI.enableStream) {
             if ((input === '/s' || input === '/stop') && event.key === 'Enter') {
                 this.preventEnter = false;
                 await executeCommand(input, this.settings, this.plugin);
@@ -428,7 +428,7 @@ export class BMOView extends ItemView {
         else {
             // Fetch OpenAI API
             if (this.settings.OllamaConnection.ollamaModels.includes(this.settings.general.model)) {
-                if (this.settings.OllamaConnection.allowStream) {
+                if (this.settings.OllamaConnection.enableStream) {
                     await fetchOllamaResponseStream(this.plugin, this.settings, index);
                 }
                 else {
@@ -436,7 +436,7 @@ export class BMOView extends ItemView {
                 }
             }
             else if (this.settings.RESTAPIURLConnection.RESTAPIURLModels.includes(this.settings.general.model)){
-                if (this.settings.RESTAPIURLConnection.allowStream) {
+                if (this.settings.RESTAPIURLConnection.enableStream) {
                     await fetchRESTAPIURLResponseStream(this.plugin, this.settings, index);
                 }
                 else {
@@ -447,7 +447,7 @@ export class BMOView extends ItemView {
                 await fetchAnthropicResponse(this.plugin, this.settings, index);
             }
             else if (this.settings.APIConnections.mistral.mistralModels.includes(this.settings.general.model)) {
-                if (this.settings.APIConnections.mistral.allowStream) {
+                if (this.settings.APIConnections.mistral.enableStream) {
                     await fetchMistralResponseStream(this.plugin, this.settings, index);
                 }
                 else {
@@ -458,7 +458,7 @@ export class BMOView extends ItemView {
                 await fetchGoogleGeminiResponse(this.plugin, this.settings, index);
             }
             else if (this.settings.APIConnections.openAI.openAIBaseModels.includes(this.settings.general.model)) {
-                if (this.settings.APIConnections.openAI.allowStream) {
+                if (this.settings.APIConnections.openAI.enableStream) {
                     await fetchOpenAIAPIResponseStream(this.plugin, this.settings, index); 
                 }
                 else {
@@ -466,7 +466,7 @@ export class BMOView extends ItemView {
                 }
             }
             else if (this.settings.APIConnections.openRouter.openRouterModels.includes(this.settings.general.model)){
-                if (this.settings.APIConnections.openRouter.allowStream) {
+                if (this.settings.APIConnections.openRouter.enableStream) {
                     await fetchOpenRouterResponseStream(this.plugin, this.settings, index);
                 }
                 else {
