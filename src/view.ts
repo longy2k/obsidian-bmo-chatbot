@@ -195,6 +195,7 @@ export class BMOView extends ItemView {
         submitButton.classList.add('submit-button');
         submitButton.title = 'send';
 
+
         submitButton.addEventListener('click', () => {
             this.handleKeyup(new KeyboardEvent('keyup', { key: 'Enter' }), true);
         });

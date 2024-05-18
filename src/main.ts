@@ -125,7 +125,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		allowReferenceCurrentNote: false,
 	},
 	appearance: {
-		userName: 'USER',
+		userName: 'YOU',
 		chatbotName: 'BMO',
 		chatbotContainerBackgroundColor: '--background-secondary',
 		messageContainerBackgroundColor: '--background-secondary',

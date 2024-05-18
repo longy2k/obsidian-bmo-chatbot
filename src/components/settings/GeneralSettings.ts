@@ -36,7 +36,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             const ollamaModels = plugin.settings.OllamaConnection.ollamaModels;
 
             if (ollamaModels.length > 0) {
-                dropdown.addOption('', '----- Ollama -----');
+                dropdown.addOption('', '---------- Ollama ----------');
                 ollamaModels.forEach((model) => {
                     dropdown.addOption(model, model);
                 });
@@ -45,7 +45,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             const restApiModels = plugin.settings.RESTAPIURLConnection.RESTAPIURLModels;
 
             if (restApiModels.length > 0) {
-                dropdown.addOption('', '----- REST API -----');
+                dropdown.addOption('', '---------- REST API ----------');
                 restApiModels.forEach((model) => {
                     dropdown.addOption(model, model);
                 });
@@ -54,7 +54,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             const anthropicModels = plugin.settings.APIConnections.anthropic.anthropicModels;
 
             if (anthropicModels.length > 0) {
-                dropdown.addOption('', '----- Anthropic -----');
+                dropdown.addOption('', '---------- Anthropic ----------');
                 anthropicModels.forEach((model) => {
                     dropdown.addOption(model, model);
                 });
@@ -63,7 +63,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             const googleGeminiModels = plugin.settings.APIConnections.googleGemini.geminiModels;
 
             if (googleGeminiModels.length > 0) {
-                dropdown.addOption('', '----- Google Gemini -----');
+                dropdown.addOption('', '---------- Google Gemini ----------');
                 googleGeminiModels.forEach((model) => {
                     dropdown.addOption(model, model);
                 });
@@ -72,7 +72,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             const mistralModels = plugin.settings.APIConnections.mistral.mistralModels;
 
             if (mistralModels.length > 0) {
-                dropdown.addOption('', '----- Mistral -----');
+                dropdown.addOption('', '---------- Mistral ----------');
                 mistralModels.forEach((model) => {
                     dropdown.addOption(model, model);
                 });
@@ -81,7 +81,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             const openAIModels = plugin.settings.APIConnections.openAI.openAIBaseModels;
 
             if (openAIModels.length > 0) {
-                dropdown.addOption('', '----- OpenAI -----');
+                dropdown.addOption('', '---------- OpenAI ----------');
                 openAIModels.forEach((model: string) => {
                     dropdown.addOption(model, model);
                 });
@@ -90,7 +90,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             const openRouterModels = plugin.settings.APIConnections.openRouter.openRouterModels;
 
             if (openRouterModels.length > 0) {
-                dropdown.addOption('', '----- OpenRouter -----');
+                dropdown.addOption('', '---------- OpenRouter ----------');
                 openRouterModels.forEach((model: string) => {
                     dropdown.addOption(model, model);
                 });
