@@ -12,12 +12,35 @@ export async function fetchOllamaResponseEditor(settings: BMOSettings, selection
         return;
     }
 
+    // Extract image links from the input
+    const imageMatch = selectionString.match(/!?\[\[(.*?)\]\]/g);
+    const imageLink = imageMatch 
+    ? imageMatch
+        .map(item => item.startsWith('!') ? item.slice(3, -2) : item.slice(2, -2))
+        .filter(link => /\.(jpg|jpeg|png|gif|webp|bmp|tiff|tif|svg)$/i.test(link))
+    : [];
+
+    // // Initialize an array to hold the absolute URLs
+    const imagesVaultPath: Uint8Array[] | string[] | null = [];
+
+    // Loop through each image link to get the full path
+    if (imageLink.length > 0) {
+    imageLink.forEach(link => {
+        const imageFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
+        const image = imageFile ? this.app.vault.adapter.getFullPath(imageFile.path) : null;
+        if (image) {
+            imagesVaultPath.push(image);
+        }
+    });
+    }
+
     try {
 
         const response = await ollama.generate({
             model: settings.general.model,
             system: settings.editor.prompt_select_generate_system_role,
             prompt: selectionString,
+            images: imagesVaultPath,
             stream: false,
             keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
             options: {
