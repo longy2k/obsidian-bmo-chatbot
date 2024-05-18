@@ -1,4 +1,5 @@
 import { Notice, requestUrl } from 'obsidian';
+import ollama from 'ollama';
 import OpenAI from 'openai';
 import { BMOSettings } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
@@ -8,41 +9,36 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
     const clearYamlContent = referenceCurrentNoteContent.replace(/---[\s\S]+?---/, '').trim();
     
     const prompt = `You are a title generator. You will give succinct titles that does not contain backslashes,
-                    forward slashes, or colons. Generate a title as your response.\n\n`;
+                    forward slashes, or colons. Only generate a title as your response for:\n\n`;
 
     try {
         if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
-            const url = settings.OllamaConnection.RESTAPIURL + '/api/generate';
-
-            const requestBody = {
-                prompt: prompt + '\n\n' + clearYamlContent + '\n\n',
-                model: settings.general.model,
-                stream: false,
-                options: {
-                    temperature: parseInt(settings.general.temperature),
-                    num_predict: 40,
-                },
-            };
-    
-            const response = await requestUrl({
-                url,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            });
-
-            const parseText = JSON.parse(response.text);
-            let title = parseText.response;
-
-            // Remove backslashes, forward slashes, colons, and quotes
-            if (title) {
-                title = title.replace(/[\\/:"]/g, '');
+            try {
+                const response = await ollama.generate({
+                    model: settings.general.model,
+                    system: prompt,
+                    prompt: clearYamlContent + '\n\n',
+                    stream: false,
+                    options: {
+                        temperature: parseInt(settings.general.temperature),
+                        num_predict: 40,
+                    },
+                });
+        
+                let title = response.response;
+        
+                // Remove backslashes, forward slashes, colons, and quotes
+                if (title) {
+                    title = title.replace(/[\\/:"]/g, '');
+                }
+        
+                return title;
+            } catch (error) {
+                new Notice('Error generating title:', error);
+                console.error('Error generating title:', error);
+                throw error;
             }
-
-            return title;
-        }
+        }        
         else if (settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)) {
             try {
                 const response = await requestUrl({

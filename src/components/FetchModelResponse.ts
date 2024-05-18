@@ -5,6 +5,7 @@ import { ChatCompletionMessageParam } from 'openai/resources/chat';
 import { addMessage, addParagraphBreaks } from './chat/Message';
 import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
 import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
+import ollama from 'ollama';
 import OpenAI from 'openai';
 import { getPrompt } from './chat/Prompt';
 
@@ -36,25 +37,18 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
-        const response = await requestUrl({
-            url: ollamaRESTAPIURL + '/api/chat',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: settings.general.model,
-                messages: [
-                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent},
-                    ...messageHistoryAtIndex
-                ],
-                stream: false,
-                keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
-                options: ollamaParametersOptions(settings),
-            }),
+        const response = await ollama.chat({
+            model: settings.general.model,
+            messages: [
+                { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent },
+                ...messageHistoryAtIndex
+            ],
+            stream: false,
+            keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
+            options: ollamaParametersOptions(settings),
         });
 
-        const message = response.json.message.content;
+        const message = response.message.content;
 
         if (messageContainerEl) {
             const targetUserMessage = messageContainerElDivs[index];
@@ -107,8 +101,6 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
 
     const prompt = await getPrompt(plugin, settings);
 
-    const url = ollamaRESTAPIURL + '/api/chat';
-
     abortController = new AbortController();
 
     let message = '';
@@ -141,66 +133,28 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
     });
 
     try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: settings.general.model,
-                messages: [
-                    { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent},
-                    ...messageHistoryAtIndex
-                ],
-                stream: true,
-                keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
-                options: ollamaParametersOptions(settings),
-            }),
-            signal: abortController.signal
-        })
+        const response = await ollama.chat({
+            model: settings.general.model,
+            messages: [
+                { role: 'system', content: settings.general.system_role + prompt + referenceCurrentNoteContent },
+                ...messageHistoryAtIndex
+            ],
+            stream: true,
+            keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
+            options: ollamaParametersOptions(settings),
+        });
 
         // Change the submit button to a stop button
         setIcon(submitButton, 'square');
         submitButton.title = 'stop';
-        
-        if (!response.ok) {
-            new Notice(`HTTP error! Status: ${response.status}`);
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
 
-        if (!response.body) {
-            new Notice('Response body is null or undefined.');
-            throw new Error('Response body is null or undefined.');
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let reading = true;
-
-        while (reading) {
-            const { done, value } = await reader.read();
-            if (done) {
-                reading = false;
-                break;
+        for await (const part of response) {
+            if (abortController.signal.aborted) {
+                throw new Error('Request aborted');
             }
 
-            const chunk = decoder.decode(value, { stream: true }) || '';
-            // Splitting the chunk to parse JSON messages separately
-            const parts = chunk.split('\n');
-            for (const part of parts.filter(Boolean)) { // Filter out empty parts
-                let parsedChunk;
-                try {
-                    parsedChunk = JSON.parse(part);
-                    if (parsedChunk.done !== true) {
-                        const content = parsedChunk.message.content;
-                        message += content;
-                    }
-                } catch (err) {
-                    console.error('Error parsing JSON:', err);
-                    console.log('Part with error:', part);
-                    parsedChunk = {response: '{_e_}'};
-                }
-            }
+            const content = part.message.content;
+            message += content;
 
             const messageContainerEl = document.querySelector('#messageContainer');
             if (messageContainerEl) {
@@ -251,14 +205,13 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
                     targetBotMessage?.scrollIntoView({ behavior: 'auto', block: 'start' });
                 }
             }
-
         }
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message, 'botMessage', settings, index);   
         
     } catch (error) {
         addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
         new Notice('Stream stopped.');
-        console.error(error);
+        console.error('Error fetching chat response from Ollama:', error);
     }
 
     // Change the submit button back to a send button

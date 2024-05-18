@@ -733,6 +733,7 @@ export async function commandAppend(plugin: BMOGPT, settings: BMOSettings) {
 
 // `/save` to save current chat history to a note.
 export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
+  new Notice('Saving conversation...')
 
   let folderName = settings.chatHistory.chatHistoryPath;
   // Check if the folder exists, create it if not

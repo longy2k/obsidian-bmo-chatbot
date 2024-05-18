@@ -1,5 +1,6 @@
 import { requestUrl } from 'obsidian';
 import { BMOSettings } from 'src/main';
+import ollama from 'ollama';
 import OpenAI from 'openai';
 
 // Request response from Ollama
@@ -12,32 +13,25 @@ export async function fetchOllamaResponseEditor(settings: BMOSettings, selection
     }
 
     try {
-        const response = await requestUrl({
-            url: ollamaRESTAPIURL + '/api/chat',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
+
+        const response = await ollama.generate({
+            model: settings.general.model,
+            system: settings.editor.prompt_select_generate_system_role,
+            prompt: selectionString,
+            stream: false,
+            keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
+            options: {
+                temperature: parseInt(settings.general.temperature),
+                num_predict: parseInt(settings.general.max_tokens),
             },
-            body: JSON.stringify({
-                model: settings.general.model,
-                messages: [
-                    { role: 'system', content: settings.editor.prompt_select_generate_system_role },
-                    { role: 'user', content: selectionString}
-                ],
-                stream: false,
-                options: {
-                    temperature: parseInt(settings.general.temperature),
-                    num_predict: parseInt(settings.general.max_tokens),
-                },
-            }),
         });
 
-        const message = response.json.message.content;
+        const message = response.response;
 
         return message;
 
     } catch (error) {
-        console.error('Error making API request:', error);
+        console.error('Ollama request:', error);
         throw error;
     }
 }

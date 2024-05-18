@@ -24,6 +24,7 @@
 	},
 	"dependencies": {
 		"marked": "^4.3.0",
+		"ollama": "^0.5.1",
 		"openai": "^4.6.0"
 	}
 }

@@ -45,7 +45,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
                         plugin.settings.OllamaConnection.ollamaModels = [];
                     } else {
                         const models = await fetchOllamaModels(plugin);
-                        models.forEach((model: string) => {
+                        models?.forEach((model: string) => {
                             if (!plugin.settings.OllamaConnection.ollamaModels.includes(model)) {
                                 plugin.settings.OllamaConnection.ollamaModels.push(model);
                             }

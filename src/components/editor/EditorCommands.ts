@@ -60,12 +60,12 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
                 const response = await fetchOllamaResponseEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
-                view.editor.replaceSelection(response);
+                view.editor.replaceSelection(response ?? 'ERROR');
 
                 // Calculate new cursor position based on the length of the response
                 const cursorEnd = { 
                     line: cursorStart.line, 
-                    ch: cursorStart.ch + response?.length 
+                    ch: cursorStart.ch + (response ?? 'ERROR').length 
                 };
 
                 // Keep the new text selected

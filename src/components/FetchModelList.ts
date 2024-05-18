@@ -1,39 +1,38 @@
 import { requestUrl } from 'obsidian';
+import ollama from 'ollama'
 import OpenAI from 'openai';
 import BMOGPT from 'src/main';
 import { OPENAI_MODELS } from 'src/view';
 
 export async function fetchOllamaModels(plugin: BMOGPT) {
-	const ollamaRESTAPIURL = plugin.settings.OllamaConnection.RESTAPIURL;
+        const ollamaRESTAPIURL = plugin.settings.OllamaConnection.RESTAPIURL;
 
-    // URL Validation
-    try {
-        new URL(ollamaRESTAPIURL);
-    } catch (error) {
-        // console.error('Invalid OLLAMA URL:', ollamaRESTAPIURL);
-        return;
-    }
+        // Check if the URL is functional
+        try {
+            const response = await fetch(ollamaRESTAPIURL);
+            if (!response.ok) {
+                console.error('OLLAMA URL is not responding:', ollamaRESTAPIURL);
+                return;
+            }
+        } catch (error) {
+            console.error('Error reaching OLLAMA URL:', error);
+            return;
+        }
 
-	try {
-		const response = await requestUrl({
-			url: ollamaRESTAPIURL + '/api/tags',
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		});
-
-		const jsonData = response.json;
-
-		const models = jsonData.models.map((model: { name: string; }) => model.name);
-		plugin.settings.OllamaConnection.ollamaModels = models;  
-
-
-		return models;
-
-	} catch (error) {
-		console.error(error);
-	}
+        // Log the list of models using ollama.list()
+        try {
+            const modelsList = await ollama.list();
+            console.log('Ollama Models:', modelsList);
+            
+            // Extracting model names and updating the plugin settings
+            const models = modelsList.models.map((model: { name: string }) => model.name);
+            plugin.settings.OllamaConnection.ollamaModels = models;
+    
+            return models;
+        } catch (error) {
+            console.error('Error fetching models from Ollama:', error);
+            return;
+        }
 }
 
 export async function fetchRESTAPIURLModels(plugin: BMOGPT) {
