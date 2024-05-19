@@ -54,9 +54,9 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
     const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
     const select = view?.editor.getSelection();
     if (view && select && select.trim() !== '') {
+        const generatingNotice = new Notice('Generating...', 0);
         if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
             try {
-                new Notice('Generating...');
                 const response = await fetchOllamaResponseEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -78,7 +78,6 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
         }
         else if (settings.RESTAPIURLConnection.RESTAPIURL && settings.RESTAPIURLConnection.RESTAPIURLModels.includes(settings.general.model)){
             try {
-                new Notice('Generating...');
                 const response = await fetchRESTAPIURLDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -100,7 +99,6 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
         }
         else if (ANTHROPIC_MODELS.includes(settings.general.model)) {
             try {
-                new Notice('Generating...');
                 const response = await fetchAnthropicResponseEditor(settings, select); 
                 view.editor.replaceSelection(response);
             }
@@ -111,7 +109,6 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
         }
         else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
             try {
-                new Notice('Generating...');
                 const response = await fetchGoogleGeminiDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -133,7 +130,6 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
         }
         else if (settings.APIConnections.mistral.mistralModels.includes(settings.general.model)) {
             try {
-                new Notice('Generating...');
                 const response = await fetchMistralDataEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -155,7 +151,6 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
         }
         else if (OPENAI_MODELS.includes(settings.general.model)) {
             try {
-                new Notice('Generating...');
                 const response = await fetchOpenAIBaseAPIResponseEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -177,7 +172,6 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
         }
         else if ((settings.APIConnections.openAI.openAIBaseUrl != DEFAULT_SETTINGS.APIConnections.openAI.openAIBaseUrl) && settings.APIConnections.openAI.openAIBaseModels.includes(settings.general.model)){
             try {
-                new Notice('Generating...');
                 const response = await fetchOpenAIBaseAPIResponseEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -199,7 +193,6 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
         }
         else if (settings.APIConnections.openRouter.openRouterModels.includes(settings.general.model)){
             try {
-                new Notice('Generating...');
                 const response = await fetchOpenRouterEditor(settings, select); 
                 // Replace the current selection with the response
                 const cursorStart = view.editor.getCursor('from');
@@ -219,6 +212,7 @@ export async function promptSelectGenerateCommand(plugin: BMOGPT, settings: BMOS
                 console.log(error.message);
             }
         }
+        generatingNotice.hide();
         new Notice('Generation complete.');
     }
     else {
