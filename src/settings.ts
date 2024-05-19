@@ -19,6 +19,7 @@ export class BMOSettingTab extends PluginSettingTab {
 	}
 
 	async display(): Promise<void> {
+		// Display settings
 		const {containerEl} = this;
 
 		containerEl.empty();

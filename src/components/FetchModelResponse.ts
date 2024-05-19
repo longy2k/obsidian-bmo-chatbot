@@ -485,10 +485,10 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
 
 // Fetch response from Anthropic
 export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
-
     const prompt = await getPrompt(plugin, settings);
 
-    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const noImageMessageHistory = messageHistory.map(({ role, content }) => ({ role, content }));
+    const filteredMessageHistory = filterMessageHistory(noImageMessageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
     const messageContainerEl = document.querySelector('#messageContainer');
@@ -685,8 +685,10 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
 // Fetch response from Mistral
 export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const prompt = await getPrompt(plugin, settings);
-    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const noImageMessageHistory = messageHistory.map(({ role, content }) => ({ role, content }));
+    const filteredMessageHistory = filterMessageHistory(noImageMessageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+    
     
     const messageContainerEl = document.querySelector('#messageContainer');
     const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
@@ -772,7 +774,8 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
 
     let isScroll = false;
 
-    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const noImageMessageHistory = messageHistory.map(({ role, content }) => ({ role, content }));
+    const filteredMessageHistory = filterMessageHistory(noImageMessageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
 
     const messageContainerEl = document.querySelector('#messageContainer');
@@ -1429,10 +1432,10 @@ function ollamaParametersOptions(settings: BMOSettings) {
     };
 }
 
-function filterMessageHistory(messageHistory: { role: string; content: string }[]) {
+function filterMessageHistory(messageHistory: { role: string; content: string; images?: Uint8Array[] | string[] }[]) {
     const skipIndexes = new Set(); // Store indexes of messages to skip
 
-    messageHistory.forEach((message, index, array) => {
+    messageHistory.forEach((message, index,  array) => {
         // Check for user message with slash
         if (message.role === 'user' && message.content.startsWith('/')) {
             skipIndexes.add(index); // Skip this message

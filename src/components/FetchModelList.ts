@@ -22,7 +22,7 @@ export async function fetchOllamaModels(plugin: BMOGPT) {
         // Log the list of models using ollama.list()
         try {
             const modelsList = await ollama.list();
-            console.log('Ollama Models:', modelsList);
+            // console.log('Ollama Models:', modelsList);
             
             // Extracting model names and updating the plugin settings
             const models = modelsList.models.map((model: { name: string }) => model.name);

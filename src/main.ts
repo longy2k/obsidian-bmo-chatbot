@@ -152,7 +152,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	},
 	OllamaConnection: {
 		RESTAPIURL: '',
-		enableStream: false,
+		enableStream: true,
 		ollamaParameters: {
 			keep_alive: '',
 			mirostat: '0',

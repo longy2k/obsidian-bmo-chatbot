@@ -2,6 +2,7 @@ import { fileNameMessageHistoryJson, messageHistory } from 'src/view';
 import { displayAppendButton, displayBotCopyButton, displayBotEditButton } from './Buttons';
 import BMOGPT, { BMOSettings } from 'src/main';
 import { getCurrentNoteContent } from '../editor/ReferenceCurrentNote';
+import { setIcon } from 'obsidian';
 
 // Add a new message to the messageHistory array and save it to the file
 export async function addMessage(plugin: BMOGPT, input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index: number) {
@@ -56,6 +57,12 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
         const buttonContainerDiv = document.createElement('div');
         buttonContainerDiv.className = 'button-container';
         botMessageToolBarDiv?.appendChild(buttonContainerDiv);
+
+        // Change submit button to send icon
+        const submitButton = document.querySelector('.submit-button') as HTMLElement;
+        submitButton.textContent = 'send';
+        setIcon(submitButton, 'arrow-up');
+        submitButton.title = 'send';
 
         // const newBotP = document.createElement('p');
         // newBotP.innerHTML = messageObj.content;
