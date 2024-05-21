@@ -296,6 +296,10 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
             messageBlock.className = 'messageBlock';
             lastClickedElement?.appendChild(messageBlock);
 
+            // Remove the rendered block from the message content
+            const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+            message = message.replace(regexRenderedBlock, '').trim();
+
             await MarkdownRenderer.render(plugin.app, message, messageBlock as HTMLElement, '/', plugin);
 
             const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -332,6 +336,10 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
             messageBlock = document.createElement('div');
             messageBlock.className = 'messageBlock';
             lastClickedElement?.appendChild(messageBlock);
+
+            // Remove the rendered block from the message content
+            const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+            message = message.replace(regexRenderedBlock, '').trim();
 
             await MarkdownRenderer.render(plugin.app, message, messageBlock as HTMLElement, '/', plugin);
             

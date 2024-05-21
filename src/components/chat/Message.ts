@@ -2,7 +2,7 @@ import { fileNameMessageHistoryJson, messageHistory } from 'src/view';
 import { displayAppendButton, displayBotCopyButton, displayBotEditButton } from './Buttons';
 import BMOGPT, { BMOSettings } from 'src/main';
 import { getCurrentNoteContent } from '../editor/ReferenceCurrentNote';
-import { setIcon } from 'obsidian';
+import { htmlToMarkdown, setIcon } from 'obsidian';
 
 // Add a new message to the messageHistory array and save it to the file
 export async function addMessage(plugin: BMOGPT, input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index: number) {
@@ -63,9 +63,6 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
         submitButton.textContent = 'send';
         setIcon(submitButton, 'arrow-up');
         submitButton.title = 'send';
-
-        // const newBotP = document.createElement('p');
-        // newBotP.innerHTML = messageObj.content;
         
         if (!messageObj.content.includes('commandBotMessage') && !messageObj.content.includes('errorBotMessage')) {
             const editButton = displayBotEditButton(plugin, messageObj.content);
@@ -84,6 +81,76 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
 
     try {
         await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), jsonString);
+        const messageContainerEl = document.getElementById('messageContainer');
+
+        if (messageContainerEl) {
+
+            // Get last botMessage div
+            const lastBotMessage = messageContainerEl.querySelector('.botMessage:last-child');
+
+            if (lastBotMessage) {
+                const getBlockLanguage = lastBotMessage.querySelectorAll('div[class^="block-language-"]');
+        
+                const replacedBlocks = new Set<string>();
+
+                getBlockLanguage.forEach(async block => {
+                    if (!block.querySelector('.rendered-markdown-output') && messageType === 'botMessage') {
+                        const blockToMarkdown = htmlToMarkdown(block as HTMLElement || '');
+                        const markdownNode = document.createElement('div');
+                        markdownNode.classList.add('rendered-markdown-output');
+                        markdownNode.textContent = `\n\n<block-rendered>\n${blockToMarkdown}\n</block-rendered>\n\n`;
+                
+                        let renderedMarkdownOutput = markdownNode.textContent;
+
+                        // Replace []() with [[]] in the rendered markdown output
+                        renderedMarkdownOutput = renderedMarkdownOutput.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, p1, p2) => {
+                            // Extract the filename without the path and extension
+                            const filename = p2.split('/').pop().replace('.md', '');
+                            return `[[${filename}]]`;
+                        });
+                        
+                        console.log('renderedMarkdownOutput', renderedMarkdownOutput);
+                
+                        const extractBlocks = (message: string) => {
+                            const regex = /```(\w+)\n([\s\S]*?)```(\s*(<block-rendered>[\s\S]*?<\/block-rendered>\s*)?)/g;
+                            let updatedMessage = message;
+                
+                            for (const match of [...message.matchAll(regex)]) {
+                                const oldBlock = match[0];
+                                const blockContent = match[2].trim();
+                
+                                // Check if this block has already been replaced
+                                if (replacedBlocks.has(oldBlock)) {
+                                    continue; // Skip if already replaced
+                                }
+                
+                                // Format the new block with renderedMarkdownOutput
+                                const newBlock = `\`\`\`${match[1]}\n${blockContent}\n\`\`\`${renderedMarkdownOutput}`;
+                
+                                // Replace only the first occurrence of oldBlock in updatedMessage with newBlock
+                                updatedMessage = updatedMessage.replace(oldBlock, newBlock);
+                                
+                                // Mark this block as replaced
+                                replacedBlocks.add(newBlock);
+                                break; // Stop the loop after updating the first eligible block
+                            }
+                
+                            return updatedMessage;
+                        };
+                
+                        const updatedMessageContent = extractBlocks(messageObj.content);
+                        // console.log('updatedMessageContent', updatedMessageContent);
+                
+                        // Update the message content with the rendered markdown output
+                        messageObj.content = updatedMessageContent;
+                
+                        // Save the updated message history
+                        const updatedJsonString = JSON.stringify(messageHistory, null, 4);
+                        await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), updatedJsonString);
+                    }
+                });
+            }   
+        }
     } catch (error) {
         console.error('Error writing to message history file:', error);
     }

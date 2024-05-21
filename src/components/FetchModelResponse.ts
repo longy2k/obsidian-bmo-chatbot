@@ -48,7 +48,7 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
             options: ollamaParametersOptions(settings),
         });
 
-        const message = response.message.content;
+        let message = response.message.content;
 
         if (messageContainerEl) {
             const targetUserMessage = messageContainerElDivs[index];
@@ -61,6 +61,10 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
+
+                // Remove the rendered block from the message content
+                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                message = message.replace(regexRenderedBlock, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
@@ -176,6 +180,10 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
                     const fragment = document.createDocumentFragment();
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
+
+                    // Remove the rendered block from the message content
+                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                    message = message.replace(regexRenderedBlock, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -206,6 +214,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
                 }
             }
         }
+
         addMessage(plugin, message, 'botMessage', settings, index);   
         
     } catch (error) {
@@ -223,7 +232,8 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
 // Fetch response from openai-based rest api url
 export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
     const prompt = await getPrompt(plugin, settings);
-    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const noImageMessageHistory = messageHistory.map(({ role, content }) => ({ role, content }));
+    const filteredMessageHistory = filterMessageHistory(noImageMessageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
     
     const messageContainerEl = document.querySelector('#messageContainer');
@@ -256,7 +266,7 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
             }),
         });
 
-        const message = response.json.choices[0].message.content;
+        let message = response.json.choices[0].message.content;
 
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
@@ -270,6 +280,10 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
+
+                // Remove the rendered block from the message content
+                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                message = message.replace(regexRenderedBlock, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
@@ -320,7 +334,8 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
 
     let isScroll = false;
 
-    const filteredMessageHistory = filterMessageHistory(messageHistory);
+    const noImageMessageHistory = messageHistory.map(({ role, content }) => ({ role, content }));
+    const filteredMessageHistory = filterMessageHistory(noImageMessageHistory);
     const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
 
     const messageContainerEl = document.querySelector('#messageContainer');
@@ -438,9 +453,22 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
                     const fragment = document.createDocumentFragment();
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
+
+                    // Remove the rendered block from the message content
+                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                    message = message.replace(regexRenderedBlock, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
+
+                    // const lastUserMessageDiv = messageContainerElDivs[messageContainerElDivs.length - 2];
+                    // const lastBotMessageDiv = lastUserMessageDiv.nextElementSibling;
+                    // console.log(lastUserMessageDiv);
+                    // const lastBotMessageBlock = lastBotMessageDiv?.querySelector('.messageBlock');
+            
+                    // const xx = htmlToMarkdown(lastBotMessageBlock as HTMLElement || '');
+            
+                    // console.log('messageBlock', xx);
         
                     // Once rendering is complete, move the content to the actual message block
                     while (tempContainer.firstChild) {
@@ -469,6 +497,7 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
             }
 
         }
+
         addMessage(plugin, message, 'botMessage', settings, index);
         
     } catch (error) {
@@ -522,7 +551,7 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
             }),
         });
 
-        const message = response.json.content[0].text;
+        let message = response.json.content[0].text;
 
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
@@ -536,6 +565,10 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
+
+                // Remove the rendered block from the message content
+                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                message = message.replace(regexRenderedBlock, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
@@ -636,7 +669,7 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
             }),
         });
         
-        const message = response.json.candidates[0].content.parts[0].text;
+        let message = response.json.candidates[0].content.parts[0].text;
 
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
@@ -650,6 +683,10 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
+
+                // Remove the rendered block from the message content
+                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                message = message.replace(regexRenderedBlock, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
@@ -720,7 +757,7 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
             }),
         });
 
-        const message = response.json.choices[0].message.content;
+        let message = response.json.choices[0].message.content;
 
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
@@ -734,6 +771,11 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
+
+                // Remove the rendered block from the message content
+                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                message = message.replace(regexRenderedBlock, '').trim();
+                
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
                 addParagraphBreaks(messageBlock);
@@ -893,6 +935,10 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
                     const fragment = document.createDocumentFragment();
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
+
+                    // Remove the rendered block from the message content
+                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                    message = message.replace(regexRenderedBlock, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -973,7 +1019,7 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
             ],
         });
 
-        const message = completion.choices[0].message.content;
+        let message = completion.choices[0].message.content || '';
         
         if (messageContainerEl) {
             const targetUserMessage = messageContainerElDivs[index];
@@ -986,6 +1032,10 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
+
+                // Remove the rendered block from the message content
+                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                message = message?.replace(regexRenderedBlock, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
 
@@ -1098,6 +1148,10 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
                     const fragment = document.createDocumentFragment();
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
+
+                    // Remove the rendered block from the message content
+                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                    message = message.replace(regexRenderedBlock, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -1133,6 +1187,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
                 break;
             }
         }
+        
         addMessage(plugin, message, 'botMessage', settings, index);
 
     } catch (error) {
@@ -1187,7 +1242,7 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
             }),
         });
 
-        const message = response.json.choices[0].message.content;
+        let message = response.json.choices[0].message.content;
 
         const messageContainerEl = document.querySelector('#messageContainer');
         if (messageContainerEl) {
@@ -1201,6 +1256,10 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
+
+                // Remove the rendered block from the message content
+                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                message = message.replace(regexRenderedBlock, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
@@ -1362,6 +1421,10 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
                     const fragment = document.createDocumentFragment();
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
+
+                    // Remove the rendered block from the message content
+                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+                    message = message.replace(regexRenderedBlock, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);

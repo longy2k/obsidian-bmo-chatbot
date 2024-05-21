@@ -28,6 +28,10 @@ export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, message
     const messageBlockDiv = document.createElement('div');
     messageBlockDiv.className = 'messageBlock';
 
+    // Remove the rendered block from the message content
+    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+    message = message.replace(regexRenderedBlock, '').trim();
+
     MarkdownRenderer.render(plugin.app, message, messageBlockDiv, '', plugin);
 
     // Add buttons to the bot message

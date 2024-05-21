@@ -245,20 +245,6 @@ export class BMOView extends ItemView {
             this.handleInput(event);  // Trigger the input event manually
             return;  // Exit the function early
         }
-
-        // // Assume you have the link to the image file
-        // const imageLink = 'king.png';
-
-        // // Get the file object from the link
-        // const imageFile = this.app.metadataCache.getFirstLinkpathDest(imageLink, '');
-
-        // if (imageFile && imageFile instanceof TFile) {
-        //     // Get the absolute URL
-        //     const absoluteImageUrl = this.app.vault.adapter.getResourcePath(imageFile.path);
-        //     console.log('Absolute URL:', imageFile.path);
-        // } else {
-        //     console.log('File not found or is not a file');
-        // }
         
         const input = this.textareaElement.value;
         const index = messageHistory.length - 1;
