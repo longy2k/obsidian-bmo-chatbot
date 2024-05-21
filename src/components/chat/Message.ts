@@ -91,7 +91,7 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
             if (lastBotMessage) {
                 const getBlockLanguage = lastBotMessage.querySelectorAll('div[class^="block-language-"]');
         
-                const replacedBlocks = new Set<string>();
+                const replacedLangaugeBlocks = new Set<string>();
 
                 getBlockLanguage.forEach(async block => {
                     if (!block.querySelector('.rendered-markdown-output') && messageType === 'botMessage') {
@@ -109,7 +109,7 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
                             return `[[${filename}]]`;
                         });
                         
-                        console.log('renderedMarkdownOutput', renderedMarkdownOutput);
+                        // console.log('renderedMarkdownOutput', renderedMarkdownOutput);
                 
                         const extractBlocks = (message: string) => {
                             const regex = /```(\w+)\n([\s\S]*?)```(\s*(<block-rendered>[\s\S]*?<\/block-rendered>\s*)?)/g;
@@ -120,7 +120,7 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
                                 const blockContent = match[2].trim();
                 
                                 // Check if this block has already been replaced
-                                if (replacedBlocks.has(oldBlock)) {
+                                if (replacedLangaugeBlocks.has(oldBlock)) {
                                     continue; // Skip if already replaced
                                 }
                 
@@ -131,7 +131,7 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
                                 updatedMessage = updatedMessage.replace(oldBlock, newBlock);
                                 
                                 // Mark this block as replaced
-                                replacedBlocks.add(newBlock);
+                                replacedLangaugeBlocks.add(newBlock);
                                 break; // Stop the loop after updating the first eligible block
                             }
                 
@@ -149,6 +149,63 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
                         await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), updatedJsonString);
                     }
                 });
+
+
+                const getNoteContent = lastBotMessage.querySelectorAll('.internal-embed.markdown-embed.inline-embed.is-loaded');
+
+                const replacedNoteBlocks = new Set<string>();
+
+                getNoteContent.forEach(async link => {
+                    if (!link.querySelector('.rendered-markdown-output')) {
+                        const blockToMarkdown = htmlToMarkdown(link as HTMLElement || '');
+                        const markdownNode = document.createElement('div');
+                        markdownNode.classList.add('rendered-markdown-output');
+                        markdownNode.textContent = `\n\n<link-rendered>\n${blockToMarkdown}\n</link-rendered>\n\n`;
+                
+                        const renderedMarkdownOutput = markdownNode.textContent;
+                
+                        const extractLinks = (message: string) => {
+                            const regex = /(!\[\[.*?\]\])(\s*(<link-rendered>[\s\S]*?<\/link-rendered>\s*)?)/g;
+                            let updatedMessage = message;
+                
+                            // console.log('message', message);
+                
+                            for (const match of [...message.matchAll(regex)]) {
+                                const oldLink = match[0];
+                                const noteLink = match[1];
+                
+                                // Check if this block has already been replaced
+                                if (replacedNoteBlocks.has(oldLink)) {
+                                    continue; // Skip if already replaced
+                                }
+                
+                                // Format the new block with renderedMarkdownOutput
+                                const newLink = `${noteLink}\n${renderedMarkdownOutput}`;
+                
+                                // Replace only the first occurrence of oldBlock in updatedMessage with newBlock
+                                updatedMessage = updatedMessage.replace(oldLink, newLink);
+                
+                                // Mark this block as replaced
+                                replacedNoteBlocks.add(newLink);
+                                break; // Stop the loop after updating the first eligible block
+                            }
+                
+                            return updatedMessage;
+                        };
+                
+                        const updatedMessageContent = extractLinks(messageObj.content);
+                        // console.log('updatedMessageContent', updatedMessageContent);
+                
+                        // Update the message content with the rendered markdown output
+                        messageObj.content = updatedMessageContent;
+                
+                        // Save the updated message history
+                        const updatedJsonString = JSON.stringify(messageHistory, null, 4);
+                        await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), updatedJsonString);
+                    }
+                });
+                
+                
             }   
         }
     } catch (error) {

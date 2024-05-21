@@ -66,6 +66,10 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
                 const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                 message = message.replace(regexRenderedBlock, '').trim();
 
+                // Remove the rendered note link from the message content
+                const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                message = message.replace(regexRenderedNote, '').trim();
+
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
                 updateUnresolvedInternalLinks(plugin, messageBlock);
@@ -185,6 +189,10 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
                     // Remove the rendered block from the message content
                     const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                     message = message.replace(regexRenderedBlock, '').trim();
+
+                    // Remove the rendered note link from the message content
+                    const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                    message = message.replace(regexRenderedNote, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -286,6 +294,10 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
                 // Remove the rendered block from the message content
                 const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                 message = message.replace(regexRenderedBlock, '').trim();
+
+                // Remove the rendered note link from the message content
+                const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                message = message.replace(regexRenderedNote, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
@@ -460,6 +472,10 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
                     // Remove the rendered block from the message content
                     const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                     message = message.replace(regexRenderedBlock, '').trim();
+
+                    // Remove the rendered note link from the message content
+                    const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                    message = message.replace(regexRenderedNote, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -564,6 +580,10 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
                 // Remove the rendered block from the message content
                 const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                 message = message.replace(regexRenderedBlock, '').trim();
+
+                // Remove the rendered note link from the message content
+                const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                message = message.replace(regexRenderedNote, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
@@ -684,6 +704,10 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
                 const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                 message = message.replace(regexRenderedBlock, '').trim();
 
+                // Remove the rendered note link from the message content
+                const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                message = message.replace(regexRenderedNote, '').trim();
+
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
                 updateUnresolvedInternalLinks(plugin, messageBlock);
@@ -772,6 +796,10 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
                 // Remove the rendered block from the message content
                 const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                 message = message.replace(regexRenderedBlock, '').trim();
+
+                // Remove the rendered note link from the message content
+                const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                message = message.replace(regexRenderedNote, '').trim();
                 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
@@ -937,6 +965,10 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
                     // Remove the rendered block from the message content
                     const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                     message = message.replace(regexRenderedBlock, '').trim();
+
+                    // Remove the rendered note link from the message content
+                    const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                    message = message.replace(regexRenderedNote, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -1035,6 +1067,10 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
                 // Remove the rendered block from the message content
                 const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                 message = message?.replace(regexRenderedBlock, '').trim();
+
+                // Remove the rendered note link from the message content
+                const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                message = message.replace(regexRenderedNote, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
 
@@ -1152,6 +1188,10 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
                     // Remove the rendered block from the message content
                     const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                     message = message.replace(regexRenderedBlock, '').trim();
+
+                    // Remove the rendered note link from the message content
+                    const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                    message = message.replace(regexRenderedNote, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -1261,6 +1301,10 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
                 // Remove the rendered block from the message content
                 const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                 message = message.replace(regexRenderedBlock, '').trim();
+
+                // Remove the rendered note link from the message content
+                const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                message = message.replace(regexRenderedNote, '').trim();
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
@@ -1427,6 +1471,10 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
                     // Remove the rendered block from the message content
                     const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
                     message = message.replace(regexRenderedBlock, '').trim();
+
+                    // Remove the rendered note link from the message content
+                    const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+                    message = message.replace(regexRenderedNote, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
