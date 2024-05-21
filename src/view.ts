@@ -3,7 +3,7 @@ import {DEFAULT_SETTINGS, BMOSettings} from './main';
 import BMOGPT from './main';
 import { commandMap, executeCommand } from './components/chat/Commands';
 import { getActiveFileContent } from './components/editor/ReferenceCurrentNote';
-import { addMessage } from './components/chat/Message';
+import { addMessage, updateUnresolvedInternalLinks } from './components/chat/Message';
 import { displayUserMessage } from './components/chat/UserMessage';
 import { displayBotMessage, displayErrorBotMessage } from './components/chat/BotMessage';
 import { fetchOpenAIAPIResponseStream, 
@@ -147,6 +147,8 @@ export class BMOView extends ItemView {
         
             if (messageData.role == 'assistant') {
                 const botMessageDiv = displayBotMessage(this.plugin, this.settings, messageHistory, messageData.content);
+
+                updateUnresolvedInternalLinks(this.plugin, botMessageDiv);
                 messageContainer.appendChild(botMessageDiv);
             }
         });
@@ -158,6 +160,7 @@ export class BMOView extends ItemView {
                 const link = target as HTMLAnchorElement;
                 const linkName = link.getAttribute('data-href') || '';
                 this.plugin.app.workspace.openLinkText(linkName, '', false);
+                link.style.color = 'var(--link-color)';
             }
         });
         

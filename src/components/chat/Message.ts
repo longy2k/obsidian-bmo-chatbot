@@ -171,3 +171,19 @@ export function addParagraphBreaks(messageBlock: { querySelectorAll: (arg0: stri
         }
     }
 }
+
+export function updateUnresolvedInternalLinks(plugin: BMOGPT, divBlock: { querySelectorAll: (arg0: string) =>  NodeListOf<HTMLElement>; }) {
+    const internalLinks = divBlock.querySelectorAll('a');
+
+    internalLinks.forEach(link => {
+        const linkHref = link.getAttribute('href');
+        
+        if (linkHref) {
+            const linkExists = plugin.app.metadataCache.getFirstLinkpathDest(linkHref, '');
+            
+            if (!linkExists) {
+                link.style.color = 'grey';
+            } 
+        }
+    });
+}

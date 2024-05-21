@@ -99,8 +99,8 @@ export function addChatHistorySettings(containerEl: HTMLElement, plugin: BMOGPT,
         );
 
     new Setting(settingsContainer)
-        .setName('Allow Rename Note Title')
-        .setDesc('Allow model to rename the note title when saving chat history.')
+        .setName('Enable Rename Note Title')
+        .setDesc('Enable model to rename the note title when saving chat history.')
         .addToggle((toggle) =>
             toggle.setValue(plugin.settings.chatHistory.allowRenameNoteTitle).onChange((value) => {
                 plugin.settings.chatHistory.allowRenameNoteTitle = value;

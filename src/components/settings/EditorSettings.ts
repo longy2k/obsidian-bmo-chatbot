@@ -32,8 +32,8 @@ export async function addEditorSettings(containerEl: HTMLElement, plugin: BMOGPT
     });
 
     new Setting(settingsContainer)
-        .setName('Prompt Select Generate System')
-        .setDesc(addDescriptionLink('System role for Prompt Select Generate.', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/Prompt---Select---Generate-Command', '', '[Instructions]'))
+        .setName('\'Prompt Select Generate\' System')
+        .setDesc(addDescriptionLink('System role for \'Prompt Select Generate\' command.', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/Prompt---Select---Generate-Command', '', '[Instructions]'))
         .addTextArea(text => text
             .setPlaceholder('You are a helpful assistant.')
             .setValue(plugin.settings.editor.prompt_select_generate_system_role !== undefined ? plugin.settings.editor.prompt_select_generate_system_role : DEFAULT_SETTINGS.editor.prompt_select_generate_system_role)

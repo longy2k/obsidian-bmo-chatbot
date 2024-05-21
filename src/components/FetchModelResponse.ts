@@ -2,7 +2,7 @@ import { MarkdownRenderer, Notice, requestUrl, setIcon } from 'obsidian';
 import BMOGPT, { BMOSettings } from '../main';
 import { messageHistory } from '../view';
 import { ChatCompletionMessageParam } from 'openai/resources/chat';
-import { addMessage, addParagraphBreaks } from './chat/Message';
+import { addMessage, addParagraphBreaks, updateUnresolvedInternalLinks } from './chat/Message';
 import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
 import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
 import ollama from 'ollama';
@@ -68,6 +68,7 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
+                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -193,6 +194,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -287,6 +289,7 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
+                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -460,21 +463,13 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
-
-                    // const lastUserMessageDiv = messageContainerElDivs[messageContainerElDivs.length - 2];
-                    // const lastBotMessageDiv = lastUserMessageDiv.nextElementSibling;
-                    // console.log(lastUserMessageDiv);
-                    // const lastBotMessageBlock = lastBotMessageDiv?.querySelector('.messageBlock');
-            
-                    // const xx = htmlToMarkdown(lastBotMessageBlock as HTMLElement || '');
-            
-                    // console.log('messageBlock', xx);
         
                     // Once rendering is complete, move the content to the actual message block
                     while (tempContainer.firstChild) {
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -572,6 +567,7 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
+                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -690,6 +686,7 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
+                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -778,6 +775,7 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
                 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
+                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -948,6 +946,7 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -1039,6 +1038,7 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
 
+                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -1161,6 +1161,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -1263,6 +1264,7 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
+                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -1434,6 +1436,7 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
