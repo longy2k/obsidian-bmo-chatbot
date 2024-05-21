@@ -116,6 +116,10 @@ To start using the plugin, enable it in your settings menu and insert an API key
     -   gpt-3.5-turbo-1106
     -   gpt-4
     -   gpt-4-turbo-preview
+    -   gpt-4-turbo
+    -   gpt-4-turbo-2024-04-09
+    -   gpt-4o
+    -   gpt-4o-2024-05-13
 -   Any Openrouter provided models.
 
 ## Other Notes
