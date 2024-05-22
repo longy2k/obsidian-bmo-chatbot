@@ -1592,6 +1592,7 @@ function ollamaParametersOptions(settings: BMOSettings) {
         num_predict: parseInt(settings.general.max_tokens) || -1,
         top_k: parseInt(settings.OllamaConnection.ollamaParameters.top_k),
         top_p: parseFloat(settings.OllamaConnection.ollamaParameters.top_p),
+        min_p: parseFloat(settings.OllamaConnection.ollamaParameters.min_p),
     };
 }
 

@@ -410,6 +410,30 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
     );
 
     new Setting(advancedSettingsContainer)
+    .setName('min_p')
+    .setDesc('Alternative to the top_p, and aims to ensure a balance of quality and variety. The parameter p represents the minimum probability for a token to be considered, relative to the probability of the most likely token. (Default: 0.0)')
+    .addText(text => text
+        .setPlaceholder('0.0')
+        .setValue(plugin.settings.OllamaConnection.ollamaParameters.min_p || DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.min_p)
+        .onChange(async (value) => {
+            // Parse the input value as an integer
+            const floatValue = parseFloat(value); // 10 is the radix parameter to ensure parsing is done in base 10
+            
+            // Determine if the float value is an integer (whole number)
+            if (isNaN(floatValue)) {
+                plugin.settings.OllamaConnection.ollamaParameters.min_p = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.min_p;
+            } else {
+                plugin.settings.OllamaConnection.ollamaParameters.min_p = floatValue.toFixed(2).toString();
+            }
+
+            await plugin.saveSettings();
+        })
+        .inputEl.addEventListener('focusout', async () => {
+            SettingTab.display();
+        })
+    );
+
+    new Setting(advancedSettingsContainer)
     .setName('keep_alive')
     .setDesc('If set to a positive duration (e.g. 20m, 1hr or 30), the model will stay loaded for the provided duration in seconds. If set to a negative duration (e.g. -1), the model will stay loaded indefinitely. If set to 0, the model will be unloaded immediately once finished. If not set, the model will stay loaded for 5 minutes by default.')
     .addText(text => text

@@ -59,6 +59,7 @@ export interface BMOSettings {
 			tfs_z: string,
 			top_k: string,
 			top_p: string,
+			min_p: string,
 			keep_alive: string,
 		},
 		ollamaModels: string[],
@@ -154,7 +155,6 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		RESTAPIURL: '',
 		enableStream: true,
 		ollamaParameters: {
-			keep_alive: '',
 			mirostat: '0',
 			mirostat_eta: '0.10',
 			mirostat_tau: '5.00',
@@ -168,6 +168,8 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 			tfs_z: '1.00',
 			top_k: '40',
 			top_p: '0.90',
+			min_p: '0.0',
+			keep_alive: '',
 		},
 		ollamaModels: [],
 	},
@@ -502,6 +504,7 @@ export async function defaultFrontMatter(plugin: BMOGPT, file: TFile) {
 		frontmatter.ollama_tfs_z = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.tfs_z);
 		frontmatter.ollama_top_k = parseInt(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.top_k);
 		frontmatter.ollama_top_p = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.top_p);
+		frontmatter.ollama_min_p = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.min_p);
 		frontmatter.ollama_keep_alive = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.keep_alive;
     };
 
@@ -554,6 +557,7 @@ export async function updateSettingsFromFrontMatter(plugin: BMOGPT, file: TFile)
 		plugin.settings.OllamaConnection.ollamaParameters.tfs_z = frontmatter.ollama_tfs_z;
 		plugin.settings.OllamaConnection.ollamaParameters.top_k = frontmatter.ollama_top_k;
 		plugin.settings.OllamaConnection.ollamaParameters.top_p = frontmatter.ollama_top_p;
+		plugin.settings.OllamaConnection.ollamaParameters.min_p = frontmatter.ollama_min_p;
 		plugin.settings.OllamaConnection.ollamaParameters.keep_alive = frontmatter.ollama_keep_alive;
     };
 
@@ -607,6 +611,7 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
 		frontmatter.ollama_tfs_z = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.tfs_z);
 		frontmatter.ollama_top_k = parseInt(plugin.settings.OllamaConnection.ollamaParameters.top_k);
 		frontmatter.ollama_top_p = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.top_p);
+		frontmatter.ollama_min_p = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.min_p);
 		frontmatter.ollama_keep_alive = plugin.settings.OllamaConnection.ollamaParameters.keep_alive;
     };
 
@@ -1023,13 +1028,20 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 				frontmatter.ollama_top_k = parseInt(plugin.settings.OllamaConnection.ollamaParameters.top_k);
 			}
 
-
 			if (isNaN(parseInt(frontmatter.ollama_top_p))) {
 				plugin.settings.OllamaConnection.ollamaParameters.top_p = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.top_p;
 				frontmatter.ollama_top_p = plugin.settings.OllamaConnection.ollamaParameters.top_p;
 			} else {
 				plugin.settings.OllamaConnection.ollamaParameters.top_p = parseFloat(frontmatter.ollama_top_p).toFixed(2).toString();
 				frontmatter.ollama_top_p = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.top_p);
+			}
+
+			if (isNaN(parseInt(frontmatter.ollama_min_p))) {
+				plugin.settings.OllamaConnection.ollamaParameters.min_p = DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.min_p;
+				frontmatter.ollama_min_p = plugin.settings.OllamaConnection.ollamaParameters.min_p;
+			} else {
+				plugin.settings.OllamaConnection.ollamaParameters.min_p = parseFloat(frontmatter.ollama_min_p).toFixed(2).toString();
+				frontmatter.ollama_min_p = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.min_p);
 			}
 
 			// Regular expression to validate the input value and capture the number and unit
