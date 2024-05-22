@@ -33,7 +33,11 @@ export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, message
     message = message.replace(regexRenderedBlock, '').trim();
 
     // Remove the rendered note link from the message content
-    const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+    const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+    message = message.replace(regexRenderedLink, '').trim();
+
+    // Remove rendered note
+    const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
     message = message.replace(regexRenderedNote, '').trim();
 
     MarkdownRenderer.render(plugin.app, message, messageBlockDiv, '', plugin);

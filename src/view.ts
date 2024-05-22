@@ -263,6 +263,76 @@ export class BMOView extends ItemView {
             }
         }
 
+        // Check if the input contains any internal links and replace them with the content of the linked file ([[]], ![[]], [[#]])
+        const regex = /!?\[\[(.*?)\]\]/g;
+        let matches;
+        let inputModified = input;
+        
+        console.log('Input:', input);
+        
+        while ((matches = regex.exec(input)) !== null) {
+            const linktext = matches[1];
+            console.log(`Found match: ${linktext}`);
+            
+            // Split the linktext into path and subpath
+            const [path, subpath] = linktext.split('#');
+            console.log(`Path: ${path}, Subpath: ${subpath}`);
+            
+            const file = this.plugin.app.metadataCache.getFirstLinkpathDest(path, '');
+            console.log(`File: ${file}`);
+            
+            if (file && file instanceof TFile) {
+                try {
+                    const content = await this.app.vault.read(file);
+                    let contentToInsert = content;
+        
+                    // If there is a subpath, find the relevant section
+                    if (subpath) {
+                        const lines = content.split('\n');
+                        let inSubpath = false;
+                        const subpathContent = [];
+                        let subpathLevel = 0;
+        
+                        for (const line of lines) {
+                            if (line.startsWith('#')) {
+                                const match = line.match(/^#+/);
+                                const headingLevel = match ? match[0].length : 0;
+
+                                if (inSubpath) {
+                                    if (headingLevel <= subpathLevel) {
+                                        break;
+                                    }
+                                }
+
+                                if (!inSubpath && line.toLowerCase().includes(subpath.toLowerCase())) {
+                                    inSubpath = true;
+                                    subpathLevel = headingLevel;
+                                }
+                            }
+        
+                            if (inSubpath) {
+                                subpathContent.push(line);
+                            }
+                        }
+        
+                        contentToInsert = subpathContent.join('\n');
+                    }
+        
+                    // Append the file content next to the file link with <note-rendered> tags
+                    inputModified = inputModified.replace(`[[${matches[1]}]]`, `[[${matches[1]}]]<note-rendered>${contentToInsert}</note-rendered>`);
+                } catch (err) {
+                    console.error(`Failed to read the content of "${path}": ${err}`);
+                }
+            } else {
+                console.log(`File "${path}" does not exist in the vault or is not a TFile.`);
+            }
+        }
+        
+        console.log('Modified Input:', inputModified);
+        
+
+        // console.log(`Modified input: ${inputModified}`);
+
         if (this.preventEnter === false && !event.shiftKey && event.key === 'Enter') {
             loadData(this.plugin);
             event.preventDefault();
@@ -310,7 +380,8 @@ export class BMOView extends ItemView {
                         // console.log('Command processed:', commandMap[baseCommand], 'with parameters:', parts.slice(1).join(' ')); // Logs the processed command and parameters
                     } else if (!baseCommand.startsWith('/')) {
                         // This block handles non-command inputs
-                        addMessage(this.plugin, input, 'userMessage', this.settings, index);
+                        // console.log('User input modified:', inputModified);
+                        addMessage(this.plugin, inputModified, 'userMessage', this.settings, index);
                         const userMessageDiv = displayUserMessage(this.plugin, this.settings, input);
                         messageContainer.appendChild(userMessageDiv);
                     } else {

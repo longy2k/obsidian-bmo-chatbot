@@ -3,7 +3,7 @@ import { colorToHex } from 'src/utils/ColorConverter';
 import { displayUserEditButton, displayTrashButton, displayUserCopyButton, regenerateUserButton } from './Buttons';
 
 export function displayUserMessage(plugin: BMOGPT, settings: BMOSettings, message: string) {
-    const trimmedMessage = message.trim();
+    let trimmedMessage = message.trim();
 
     const userMessageDiv = document.createElement('div');
     userMessageDiv.className = 'userMessage';
@@ -29,6 +29,10 @@ export function displayUserMessage(plugin: BMOGPT, settings: BMOSettings, messag
     const preUserMessage = document.createElement('span');
     preUserMessage.className = 'preUserMessage';
     userPre.appendChild(preUserMessage);
+
+    // Remove rendered note
+    const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
+    trimmedMessage = trimmedMessage.replace(regexRenderedNote, '').trim();
 
     preUserMessage.innerHTML = trimmedMessage;
 

@@ -2,7 +2,7 @@ import { fileNameMessageHistoryJson, messageHistory } from 'src/view';
 import { displayAppendButton, displayBotCopyButton, displayBotEditButton } from './Buttons';
 import BMOGPT, { BMOSettings } from 'src/main';
 import { getCurrentNoteContent } from '../editor/ReferenceCurrentNote';
-import { htmlToMarkdown, setIcon } from 'obsidian';
+import {htmlToMarkdown, setIcon } from 'obsidian';
 
 // Add a new message to the messageHistory array and save it to the file
 export async function addMessage(plugin: BMOGPT, input: string, messageType: 'userMessage' | 'botMessage', settings: BMOSettings, index: number) {
@@ -74,13 +74,12 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
         }
 
     }
-
-    messageHistory.splice(index+1, 0, messageObj);
-
-    const jsonString = JSON.stringify(messageHistory, null, 4);
-
+    
     try {
+        messageHistory.splice(index + 1, 0, messageObj);
+        const jsonString = JSON.stringify(messageHistory, null, 4);
         await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), jsonString);
+
         const messageContainerEl = document.getElementById('messageContainer');
 
         if (messageContainerEl) {
@@ -236,7 +235,10 @@ export function updateUnresolvedInternalLinks(plugin: BMOGPT, divBlock: { queryS
         const linkHref = link.getAttribute('href');
         
         if (linkHref) {
-            const linkExists = plugin.app.metadataCache.getFirstLinkpathDest(linkHref, '');
+            // Split the linktext into path and subpath
+            const [path, subpath] = linkHref.split('#');
+            console.log(`Path: ${path}, Subpath: ${subpath}`);
+            const linkExists = plugin.app.metadataCache.getFirstLinkpathDest(`${path}.md`, '');
             
             if (!linkExists) {
                 link.style.color = 'grey';

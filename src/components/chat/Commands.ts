@@ -833,6 +833,20 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
           let roleText = message.role.toUpperCase();
           roleText = roleText === 'USER' ? userNameText : roleText;
           roleText = roleText === 'ASSISTANT' ? chatbotNameText : roleText;
+
+          // Remove the rendered block from the message content
+          const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
+          message.content = message.content.replace(regexRenderedBlock, '').trim();
+
+          // Remove the rendered note link from the message content
+          const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+          message.content = message.content.replace(regexRenderedLink, '').trim();
+
+          // Remove rendered note
+          const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
+          message.content = message.content.replace(regexRenderedNote, '').trim();
+
+
           return `###### ${roleText}\n${message.content}\n`;
         })
         .join('\n');

@@ -1,4 +1,4 @@
-import { MarkdownRenderer, Modal, Notice, setIcon } from 'obsidian';
+import { MarkdownRenderer, Modal, Notice, TFile, setIcon } from 'obsidian';
 import BMOGPT, { BMOSettings, checkActiveFile } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, fileNameMessageHistoryJson, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
 import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse, fetchOpenRouterResponseStream, fetchOpenRouterResponse } from '../FetchModelResponse';
@@ -153,6 +153,38 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                     messageHistory[index].content = textArea.value.trim();
                     deleteMessage(plugin, index+1);
 
+                    const regex = /!?\[\[(.*?)\]\]/g;
+                    let matches;
+                    let inputModified = messageHistory[index].content;
+                
+                    while ((matches = regex.exec(messageHistory[index].content)) !== null) {
+                        const filePath = matches[1] + '.md';
+                        // console.log(`Found match: ${filePath}`);
+                        
+                        const file = plugin.app.vault.getAbstractFileByPath(filePath);
+                        if (file && file instanceof TFile) {
+                            // console.log(`File "${filePath}" exists in the vault.`);
+                            
+                            // Assuming the file is a TFile and we can read its content
+                            try {
+                                const content = await plugin.app.vault.read(file);
+                                // console.log(`Content of "${filePath}":\n${content}`);
+            
+                                
+                                // Append the file content next to the file link with <note-rendered> tags
+                                inputModified = inputModified.replace(`[[${matches[1]}]]`, `[[${matches[1]}]]<note-rendered>${content}</note-rendered>`);
+                            } catch (err) {
+                                console.error(`Failed to read the content of "${filePath}": ${err}`);
+                            }
+                        } else {
+                            console.log(`File "${filePath}" does not exist in the vault or is not a TFile.`);
+                        }
+                    }
+            
+                    // console.log(`Modified input: ${inputModified}`);
+                    messageHistory[index].content = inputModified;
+
+
                     if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
                         if (settings.OllamaConnection.enableStream) {
                             await fetchOllamaResponseStream(plugin, settings, index);
@@ -301,8 +333,13 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
             message = message.replace(regexRenderedBlock, '').trim();
 
             // Remove the rendered note link from the message content
-            const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+            const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+            message = message.replace(regexRenderedLink, '').trim();
+
+            // Remove rendered note
+            const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
             message = message.replace(regexRenderedNote, '').trim();
+
 
             await MarkdownRenderer.render(plugin.app, message, messageBlock as HTMLElement, '/', plugin);
 
@@ -346,7 +383,11 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
             message = message.replace(regexRenderedBlock, '').trim();
 
             // Remove the rendered note link from the message content
-            const regexRenderedNote = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+            const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
+            message = message.replace(regexRenderedLink, '').trim();
+
+            // Remove rendered note
+            const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
             message = message.replace(regexRenderedNote, '').trim();
 
             await MarkdownRenderer.render(plugin.app, message, messageBlock as HTMLElement, '/', plugin);
