@@ -49,7 +49,7 @@ export async function fetchOllamaResponseEditor(settings: BMOSettings, selection
             },
         });
 
-        const message = response.response;
+        const message = response.response.trim();
 
         return message;
 
@@ -80,7 +80,7 @@ export async function fetchRESTAPIURLDataEditor(settings: BMOSettings, selection
             }),
         });
 
-        const message = response.json.choices[0].message.content;
+        const message = response.json.choices[0].message.content.trim();
         return message;
 
     } catch (error) {
@@ -111,7 +111,7 @@ export async function fetchAnthropicResponseEditor(settings: BMOSettings, select
             }),
         });
 
-        const message = response.json.content[0].text;
+        const message = response.json.content[0].text.trim();
         return message;
 
     } catch (error) {
@@ -141,7 +141,7 @@ export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, selecti
             body: JSON.stringify(requestBody),
         });
         
-        const message = response.json.candidates[0].content.parts[0].text;
+        const message = response.json.candidates[0].content.parts[0].text.trim();
         return message;
     } catch (error) {
         console.error(error);
@@ -170,7 +170,7 @@ export async function fetchMistralDataEditor(settings: BMOSettings, selectionStr
             }),
         });
 
-        const message = response.json.choices[0].message.content;
+        const message = response.json.choices[0].message.content.trim();
         return message;
 
     } catch (error) {
@@ -196,7 +196,7 @@ export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, se
     });
 
 
-    const message = completion.choices[0].message.content;
+    const message = completion.choices[0].message.content?.trim();
     return message;
 }
 
@@ -221,7 +221,7 @@ export async function fetchOpenRouterEditor(settings: BMOSettings, selectionStri
             }),
         });
 
-        const message = response.json.choices[0].message.content;
+        const message = response.json.choices[0].message.content.trim();
         return message;
 
     } catch (error) {

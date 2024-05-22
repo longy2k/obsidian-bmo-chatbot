@@ -91,7 +91,7 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
             message = message.replace(pattern, '').trim();
         });
 
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
 
     } catch (error) {
         const targetUserMessage = messageContainerElDivs[index];
@@ -233,10 +233,10 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
             message = message.replace(pattern, '').trim();
         });
 
-        addMessage(plugin, message, 'botMessage', settings, index);   
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);   
         
     } catch (error) {
-        addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
+        addMessage(plugin, message.trim(), 'botMessage', settings, index); // This will save mid-stream conversation.
         new Notice('Stream stopped.');
         console.error('Error fetching chat response from Ollama:', error);
     }
@@ -328,7 +328,7 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
             message = message.replace(pattern, '').trim();
         });
 
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
         return;
 
     } catch (error) {
@@ -525,10 +525,10 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
             message = message.replace(pattern, '').trim();
         });
 
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
         
     } catch (error) {
-        addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
+        addMessage(plugin, message.trim(), 'botMessage', settings, index); // This will save mid-stream conversation.
         new Notice('Stream stopped.');
         console.error(error);
     }
@@ -622,7 +622,7 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
             message = message.replace(pattern, '').trim();
         });
 
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
         return;
 
     } catch (error) {
@@ -749,7 +749,7 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
             message = message.replace(pattern, '').trim();
         });
 
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
         return;
 
     } catch (error) {
@@ -846,7 +846,7 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
             message = message.replace(pattern, '').trim();
         });
 
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
         return;
 
     } catch (error) {
@@ -1034,10 +1034,10 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
             message = message.replace(pattern, '').trim();
         });
 
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
         
     } catch (error) {
-        addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
+        addMessage(plugin, message.trim(), 'botMessage', settings, index); // This will save mid-stream conversation.
         new Notice('Stream stopped.');
         console.error(error);
     }
@@ -1125,7 +1125,7 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
             regexPatterns.forEach(pattern => {
                 message = message.replace(pattern, '').trim();
             });
-            addMessage(plugin, message, 'botMessage', settings, index);
+            addMessage(plugin, message.trim(), 'botMessage', settings, index);
         }
 
     } catch (error) {
@@ -1269,7 +1269,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
             message = message.replace(pattern, '').trim();
         });
         
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
 
     } catch (error) {
         const targetUserMessage = messageContainerElDivs[index];
@@ -1367,7 +1367,7 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
             message = message.replace(pattern, '').trim();
         });
 
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
         return;
 
     } catch (error) {
@@ -1556,10 +1556,10 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
             message = message.replace(pattern, '').trim();
         });
         
-        addMessage(plugin, message, 'botMessage', settings, index);
+        addMessage(plugin, message.trim(), 'botMessage', settings, index);
         
     } catch (error) {
-        addMessage(plugin, message, 'botMessage', settings, index); // This will save mid-stream conversation.
+        addMessage(plugin, message.trim(), 'botMessage', settings, index); // This will save mid-stream conversation.
         new Notice('Stream stopped.');
         console.error(error);
     }

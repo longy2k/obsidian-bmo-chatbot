@@ -288,7 +288,7 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
 
     new Setting(settingsContainer)
         .setName('Max Tokens')
-        .setDesc(descLink('The maximum number of tokens, or words, that the model is allowed to generate in its output.', 'https://platform.openai.com/tokenizer'))
+        .setDesc('The maximum number of tokens, or words, that the model is allowed to generate in its output. Some models require a minimum number of tokens to be set. The default value is empty.')
         .addText(text => text
             .setPlaceholder('4096')
             .setValue(plugin.settings.general.max_tokens)
@@ -349,20 +349,4 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                 }
             })
         );
-
-    function descLink(text: string, link: string): DocumentFragment {
-        const frag = new DocumentFragment();
-        const desc = document.createElement('span');
-        desc.innerText = text + ' ';
-        frag.appendChild(desc);
-
-        const anchor = document.createElement('a');
-        anchor.href = link;
-        anchor.target = '_blank';
-        anchor.rel = 'noopener noreferrer';
-        anchor.innerText = '(https://platform.openai.com/tokenizer)';
-        frag.appendChild(anchor);
-
-        return frag;
-    }
 }

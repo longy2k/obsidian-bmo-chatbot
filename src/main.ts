@@ -268,6 +268,8 @@ export default class BMOGPT extends Plugin {
 
 					if (file.path === defaultFilePath) {
 						this.app.vault.create(defaultFilePath, '');
+						this.settings = DEFAULT_SETTINGS;
+						await this.saveSettings();
 					}
 					else {
 						if (this.settings.profiles.profile === file.name) {
