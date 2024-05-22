@@ -62,22 +62,10 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
                     targetBotMessage?.removeChild(loadingEl);
                 }
 
-                // Remove the rendered block from the message content
-                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                message = message.replace(regexRenderedBlock, '').trim();
-
-                // Remove the rendered note link from the message content
-                const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                message = message.replace(regexRenderedLink, '').trim();
-
-                // Remove rendered note
-                const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                message = message.replace(regexRenderedNote, '').trim();
-
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
-                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
+                updateUnresolvedInternalLinks(plugin, messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                 copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -90,6 +78,18 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
             targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
 
         addMessage(plugin, message, 'botMessage', settings, index);
 
@@ -189,18 +189,6 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
                     const fragment = document.createDocumentFragment();
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
-
-                    // Remove the rendered block from the message content
-                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                    message = message.replace(regexRenderedBlock, '').trim();
-
-                    // Remove the rendered note link from the message content
-                    const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                    message = message.replace(regexRenderedLink, '').trim();
-
-                    // Remove rendered note
-                    const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                    message = message.replace(regexRenderedNote, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -210,8 +198,8 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
-                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                     copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -232,6 +220,18 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
                 }
             }
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
 
         addMessage(plugin, message, 'botMessage', settings, index);   
         
@@ -299,22 +299,10 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
                     targetBotMessage?.removeChild(loadingEl);
                 }
 
-                // Remove the rendered block from the message content
-                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                message = message.replace(regexRenderedBlock, '').trim();
-
-                // Remove the rendered note link from the message content
-                const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                message = message.replace(regexRenderedLink, '').trim();
-
-                // Remove rendered note
-                const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                message = message.replace(regexRenderedNote, '').trim();
-
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
-                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
+                updateUnresolvedInternalLinks(plugin, messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                 copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -327,6 +315,18 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
             targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
 
         addMessage(plugin, message, 'botMessage', settings, index);
         return;
@@ -480,18 +480,6 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
                     const fragment = document.createDocumentFragment();
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
-
-                    // Remove the rendered block from the message content
-                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                    message = message.replace(regexRenderedBlock, '').trim();
-
-                    // Remove the rendered note link from the message content
-                    const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                    message = message.replace(regexRenderedLink, '').trim();
-
-                    // Remove rendered note
-                    const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                    message = message.replace(regexRenderedNote, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -501,8 +489,8 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
-                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                     copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -524,6 +512,18 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
             }
 
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
 
         addMessage(plugin, message, 'botMessage', settings, index);
         
@@ -593,22 +593,10 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
                     targetBotMessage?.removeChild(loadingEl);
                 }
 
-                // Remove the rendered block from the message content
-                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                message = message.replace(regexRenderedBlock, '').trim();
-
-                // Remove the rendered note link from the message content
-                const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                message = message.replace(regexRenderedLink, '').trim();
-
-                // Remove rendered note
-                const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                message = message.replace(regexRenderedNote, '').trim();
-
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
-                
-                updateUnresolvedInternalLinks(plugin, messageBlock);
+
                 addParagraphBreaks(messageBlock);
+                updateUnresolvedInternalLinks(plugin, messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                 copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -621,6 +609,18 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
             targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
 
         addMessage(plugin, message, 'botMessage', settings, index);
         return;
@@ -720,22 +720,10 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
                     targetBotMessage?.removeChild(loadingEl);
                 }
 
-                // Remove the rendered block from the message content
-                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                message = message.replace(regexRenderedBlock, '').trim();
-
-                // Remove the rendered note link from the message content
-                const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                message = message.replace(regexRenderedLink, '').trim();
-
-                // Remove rendered note
-                const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                message = message.replace(regexRenderedNote, '').trim();
-
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
-                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
+                updateUnresolvedInternalLinks(plugin, messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                 copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -748,6 +736,18 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
             targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
 
         addMessage(plugin, message, 'botMessage', settings, index);
         return;
@@ -816,23 +816,11 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
                 if (loadingEl) {
                     targetBotMessage?.removeChild(loadingEl);
                 }
-
-                // Remove the rendered block from the message content
-                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                message = message.replace(regexRenderedBlock, '').trim();
-
-                // Remove the rendered note link from the message content
-                const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                message = message.replace(regexRenderedLink, '').trim();
-
-                // Remove rendered note
-                const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                message = message.replace(regexRenderedNote, '').trim();
                 
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
-                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
+                updateUnresolvedInternalLinks(plugin, messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                 copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -845,6 +833,18 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
             targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
 
         addMessage(plugin, message, 'botMessage', settings, index);
         return;
@@ -990,18 +990,6 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
 
-                    // Remove the rendered block from the message content
-                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                    message = message.replace(regexRenderedBlock, '').trim();
-
-                    // Remove the rendered note link from the message content
-                    const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                    message = message.replace(regexRenderedLink, '').trim();
-
-                    // Remove rendered note
-                    const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                    message = message.replace(regexRenderedNote, '').trim();
-        
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
         
@@ -1010,8 +998,8 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
-                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                     copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -1033,6 +1021,19 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
             }
 
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
+
         addMessage(plugin, message, 'botMessage', settings, index);
         
     } catch (error) {
@@ -1096,22 +1097,10 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
                     targetBotMessage?.removeChild(loadingEl);
                 }
 
-                // Remove the rendered block from the message content
-                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                message = message.replace(regexRenderedBlock, '').trim();
-
-                // Remove the rendered note link from the message content
-                const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                message = message.replace(regexRenderedLink, '').trim();
-
-                // Remove rendered note
-                const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                message = message.replace(regexRenderedNote, '').trim();
-
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
 
-                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
+                updateUnresolvedInternalLinks(plugin, messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                 copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -1125,6 +1114,17 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
         }
 
         if (message != null) {
+            // Define regex patterns for the unwanted tags and their content
+            const regexPatterns = [
+                /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+                /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+                /<note-rendered>[\s\S]*?<\/note-rendered>/g
+            ];
+
+            // Clean the message content by removing the unwanted tags and their content
+            regexPatterns.forEach(pattern => {
+                message = message.replace(pattern, '').trim();
+            });
             addMessage(plugin, message, 'botMessage', settings, index);
         }
 
@@ -1220,18 +1220,6 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
                     const fragment = document.createDocumentFragment();
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
-
-                    // Remove the rendered block from the message content
-                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                    message = message.replace(regexRenderedBlock, '').trim();
-
-                    // Remove the rendered note link from the message content
-                    const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                    message = message.replace(regexRenderedLink, '').trim();
-
-                    // Remove rendered note
-                    const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                    message = message.replace(regexRenderedNote, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -1241,8 +1229,8 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
-                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                     copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -1268,6 +1256,18 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
                 break;
             }
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
         
         addMessage(plugin, message, 'botMessage', settings, index);
 
@@ -1338,22 +1338,10 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
                     targetBotMessage?.removeChild(loadingEl);
                 }
 
-                // Remove the rendered block from the message content
-                const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                message = message.replace(regexRenderedBlock, '').trim();
-
-                // Remove the rendered note link from the message content
-                const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                message = message.replace(regexRenderedLink, '').trim();
-
-                // Remove rendered note
-                const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                message = message.replace(regexRenderedNote, '').trim();
-
                 await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
                 
-                updateUnresolvedInternalLinks(plugin, messageBlock);
                 addParagraphBreaks(messageBlock);
+                updateUnresolvedInternalLinks(plugin, messageBlock);
 
                 const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                 copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -1366,6 +1354,18 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
             targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
 
         addMessage(plugin, message, 'botMessage', settings, index);
         return;
@@ -1511,18 +1511,6 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
                     const fragment = document.createDocumentFragment();
                     const tempContainer = document.createElement('div');
                     fragment.appendChild(tempContainer);
-
-                    // Remove the rendered block from the message content
-                    const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-                    message = message.replace(regexRenderedBlock, '').trim();
-
-                    // Remove the rendered note link from the message content
-                    const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-                    message = message.replace(regexRenderedLink, '').trim();
-
-                    // Remove rendered note
-                    const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-                    message = message.replace(regexRenderedNote, '').trim();
         
                     // Render the accumulated message to the temporary container
                     await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
@@ -1532,8 +1520,8 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
                         messageBlock.appendChild(tempContainer.firstChild);
                     }
         
-                    updateUnresolvedInternalLinks(plugin, messageBlock);
                     addParagraphBreaks(messageBlock);
+                    updateUnresolvedInternalLinks(plugin, messageBlock);
 
                     const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
                     copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -1555,6 +1543,19 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
             }
 
         }
+
+        // Define regex patterns for the unwanted tags and their content
+        const regexPatterns = [
+            /<block-rendered>[\s\S]*?<\/block-rendered>/g,
+            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+            /<note-rendered>[\s\S]*?<\/note-rendered>/g
+        ];
+
+        // Clean the message content by removing the unwanted tags and their content
+        regexPatterns.forEach(pattern => {
+            message = message.replace(pattern, '').trim();
+        });
+        
         addMessage(plugin, message, 'botMessage', settings, index);
         
     } catch (error) {

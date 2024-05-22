@@ -153,34 +153,96 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                     messageHistory[index].content = textArea.value.trim();
                     deleteMessage(plugin, index+1);
 
-                    const regex = /!?\[\[(.*?)\]\]/g;
+                    // Check if the input contains any internal links and replace them with the content of the linked file ([[]], ![[]], [[#]])
+                    const regex = /(!?)\[\[(.*?)\]\]/g;
                     let matches;
                     let inputModified = messageHistory[index].content;
-                
+
+                    // Store all replacements to be made
+                    const replacements = new Map<string, string>();
+
                     while ((matches = regex.exec(messageHistory[index].content)) !== null) {
-                        const filePath = matches[1] + '.md';
-                        // console.log(`Found match: ${filePath}`);
+                        const exclamation = matches[1]; // Capture the optional exclamation mark
+                        const linktext = matches[2];
+                        // Split the linktext into path and subpath
+                        const [path, subpath] = linktext.split('#');
                         
-                        const file = plugin.app.vault.getAbstractFileByPath(filePath);
+                        const file = plugin.app.metadataCache.getFirstLinkpathDest(path, '');
+                        
                         if (file && file instanceof TFile) {
-                            // console.log(`File "${filePath}" exists in the vault.`);
-                            
-                            // Assuming the file is a TFile and we can read its content
                             try {
+                                const filePath = file.path; // Assuming file object has a path property
+                                const fileExtension = filePath.split('.').pop();
+                            
+                                // Check if the file extension is .md
+                                if (fileExtension !== 'md') {
+                                    const isImageFile = /\.(jpg|jpeg|png|gif|webp|bmp|tiff|tif|svg)$/i.test(filePath);
+
+                                    if (!plugin.settings.OllamaConnection.ollamaModels.includes(plugin.settings.general.model)) {
+                                        replacements.set(matches[0], `${exclamation}[[${matches[2]}]]<note-rendered>ERROR: File cannot be read.</note-rendered>`);
+                                    } else if (plugin.settings.OllamaConnection.ollamaModels.includes(plugin.settings.general.model)) {
+                                        if (!isImageFile) {
+                                            replacements.set(matches[0], `${exclamation}[[${matches[2]}]]<note-rendered>ERROR: File cannot be read.</note-rendered>`);
+                                        }
+                                    }
+                                    continue; // Skip to the next iteration
+                                }
+
                                 const content = await plugin.app.vault.read(file);
-                                // console.log(`Content of "${filePath}":\n${content}`);
-            
-                                
-                                // Append the file content next to the file link with <note-rendered> tags
-                                inputModified = inputModified.replace(`[[${matches[1]}]]`, `[[${matches[1]}]]<note-rendered>${content}</note-rendered>`);
+                                let contentToInsert = content;
+
+                                // If there is a subpath, find the relevant section
+                                if (subpath) {
+                                    const lines = content.split('\n');
+                                    let inSubpath = false;
+                                    const subpathContent = [];
+                                    let subpathLevel = 0;
+
+                                    for (const line of lines) {
+                                        if (line.startsWith('#')) {
+                                            const match = line.match(/^#+/);
+                                            const headingLevel = match ? match[0].length : 0;
+
+                                            if (inSubpath) {
+                                                if (headingLevel <= subpathLevel) {
+                                                    break;
+                                                }
+                                            }
+
+                                            if (!inSubpath && line.toLowerCase().includes(subpath.toLowerCase())) {
+                                                inSubpath = true;
+                                                subpathLevel = headingLevel;
+                                            }
+                                        }
+
+                                        if (inSubpath) {
+                                            subpathContent.push(line);
+                                        }
+                                    }
+
+                                    contentToInsert = subpathContent.join('\n');
+                                }
+
+                                // Prepare the replacement content
+                                replacements.set(matches[0], `${exclamation}[[${matches[2]}]]<note-rendered>${contentToInsert}</note-rendered>`);
                             } catch (err) {
-                                console.error(`Failed to read the content of "${filePath}": ${err}`);
+                                console.error(`Failed to read the content of "${path}": ${err}`);
                             }
                         } else {
-                            console.log(`File "${filePath}" does not exist in the vault or is not a TFile.`);
+                            // Handle case where the file does not exist or is not a TFile
+                            replacements.set(matches[0], `${exclamation}[[${matches[2]}]]<note-rendered>File cannot be read.</note-rendered>`);
                         }
                     }
-            
+
+                    // Apply all replacements to inputModified
+                    for (const [original, replacement] of replacements) {
+                        inputModified = inputModified.split(original).join(replacement);
+                    }
+
+                    // Remove duplicates in the final output
+                    inputModified = inputModified.replace(/(<note-rendered>File cannot be read.<\/note-rendered>)+/g, '<note-rendered>File cannot be read.</note-rendered>');
+
+
                     // console.log(`Modified input: ${inputModified}`);
                     messageHistory[index].content = inputModified;
 

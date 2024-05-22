@@ -16,29 +16,31 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
     const referenceCurrentNoteContent = getCurrentNoteContent() || '';
     const fullInput = referenceCurrentNoteContent + input;
 
-    // Extract image links from the input
-    const imageMatch = fullInput.match(/!?\[\[(.*?)\]\]/g);
-    const imageLink = imageMatch 
-    ? imageMatch
-        .map(item => item.startsWith('!') ? item.slice(3, -2) : item.slice(2, -2))
-        .filter(link => /\.(jpg|jpeg|png|gif|webp|bmp|tiff|tif|svg)$/i.test(link))
-    : [];
-
     // // Initialize an array to hold the absolute URLs
     const imagesVaultPath: Uint8Array[] | string[] | null = [];
 
-    // Loop through each image link to get the full path
-    if (imageLink.length > 0) {
-    imageLink.forEach(link => {
-        const imageFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
-        const image = imageFile ? this.app.vault.adapter.getFullPath(imageFile.path) : null;
-        if (image) {
-            imagesVaultPath.push(image);
-        }
-    });
-    }
+    if (plugin.settings.OllamaConnection.ollamaModels.includes(plugin.settings.general.model)) {
+        // Extract image links from the input
+        const imageMatch = fullInput.match(/!?\[\[(.*?)\]\]/g);
+        const imageLink = imageMatch 
+        ? imageMatch
+            .map(item => item.startsWith('!') ? item.slice(3, -2) : item.slice(2, -2))
+            .filter(link => /\.(jpg|jpeg|png|gif|webp|bmp|tiff|tif|svg)$/i.test(link))
+        : [];
 
-    // console.log('Image path:', imagesVaultPath);
+        // Loop through each image link to get the full path
+        if (imageLink.length > 0) {
+        imageLink.forEach(link => {
+            const imageFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
+            const image = imageFile ? this.app.vault.adapter.getFullPath(imageFile.path) : null;
+            if (image) {
+                imagesVaultPath.push(image);
+            }
+        });
+        }
+
+        // console.log('Image path:', imagesVaultPath);
+    }
 
     if (messageType === 'userMessage') {
         messageObj.role = 'user';
@@ -228,17 +230,19 @@ export function addParagraphBreaks(messageBlock: { querySelectorAll: (arg0: stri
     }
 }
 
-export function updateUnresolvedInternalLinks(plugin: BMOGPT, divBlock: { querySelectorAll: (arg0: string) =>  NodeListOf<HTMLElement>; }) {
+export function updateUnresolvedInternalLinks(plugin: BMOGPT, divBlock: Element) {
     const internalLinks = divBlock.querySelectorAll('a');
 
     internalLinks.forEach(link => {
-        const linkHref = link.getAttribute('href');
+        let linkHref = link.getAttribute('href') || link.getAttribute('data-href');
         
         if (linkHref) {
-            // Split the linktext into path and subpath
-            const [path, subpath] = linkHref.split('#');
-            console.log(`Path: ${path}, Subpath: ${subpath}`);
-            const linkExists = plugin.app.metadataCache.getFirstLinkpathDest(`${path}.md`, '');
+            // Get the content before the #
+            if (linkHref.includes('#')) {
+                linkHref = linkHref.split('#')[0];
+            }
+
+            const linkExists = plugin.app.metadataCache.getFirstLinkpathDest(linkHref, '');
             
             if (!linkExists) {
                 link.style.color = 'grey';
