@@ -161,12 +161,15 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
                         const blockToMarkdown = htmlToMarkdown(link as HTMLElement || '');
                         const markdownNode = document.createElement('div');
                         markdownNode.classList.add('rendered-markdown-output');
-                        markdownNode.textContent = `\n\n<link-rendered>\n${blockToMarkdown}\n</link-rendered>\n\n`;
+                        markdownNode.textContent = `\n\n<note-rendered>\n${blockToMarkdown}\n</note-rendered>\n\n`;
+
+                        console.log('markdownNode', markdownNode);
                 
                         const renderedMarkdownOutput = markdownNode.textContent;
                 
                         const extractLinks = (message: string) => {
-                            const regex = /(!\[\[.*?\]\])(\s*(<link-rendered>[\s\S]*?<\/link-rendered>\s*)?)/g;
+                            // Match the note link and the rendered markdown output (e.g ![[]] )
+                            const regex = /(!\[\[.*?\]\])(\s*(<note-rendered>[\s\S]*?<\/note-rendered>\s*)?)/g;
                             let updatedMessage = message;
                 
                             // console.log('message', message);

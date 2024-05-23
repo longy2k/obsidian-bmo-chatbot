@@ -34,7 +34,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
 
     new Setting(settingsContainer)
         .setName('OLLAMA REST API URL')
-        .setDesc(addDescriptionLink('Enter your REST API URL using', 'https://ollama.ai/', '', 'Ollama'))
+        .setDesc(addDescriptionLink('Enter your REST API URL. Additional setup required: ', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/How-to-setup-with-Ollama', '', '[Instructions]'))
         .addText(text => text
             .setPlaceholder('http://localhost:11434')
             .setValue(plugin.settings.OllamaConnection.RESTAPIURL || DEFAULT_SETTINGS.OllamaConnection.RESTAPIURL)
@@ -60,7 +60,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
 
     new Setting(settingsContainer)
         .setName('Enable Stream')
-        .setDesc(addDescriptionLink('Enable Ollama models to stream response. Additional setup required: ', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/How-to-setup-with-Ollama', '', '[Instructions]'))
+        .setDesc(addDescriptionLink('Enable Ollama models to stream response.', '', '', ''))
         .addToggle((toggle) =>
             toggle.setValue(plugin.settings.OllamaConnection.enableStream).onChange((value) => {
                 plugin.settings.OllamaConnection.enableStream = value;

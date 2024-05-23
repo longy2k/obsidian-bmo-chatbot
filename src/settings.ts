@@ -26,14 +26,34 @@ export class BMOSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('h1', {text: 'BMO Chatbot Settings'});
 
-		const changeLogLink = containerEl.createEl('a', {
+		// Create a container for the links
+		const linkContainer = containerEl.createEl('div');
+
+		// Changelog link
+		const changeLogLink = linkContainer.createEl('a', {
 			text: 'Changelog',
 			href: 'https://github.com/longy2k/obsidian-bmo-chatbot/releases',
 		});
-
 		changeLogLink.style.fontSize = '0.8rem'; 
+		changeLogLink.style.marginRight = '5px'; // Add some space before the separator
+
+		// Separator
+		const separator = linkContainer.createEl('span', {
+			text: ' | ',
+		});
+		separator.style.fontSize = '0.8rem';
+		separator.style.marginRight = '5px'; // Add some space after the separator
+
+		// Wiki link
+		const wikiLink = linkContainer.createEl('a', {
+			text: 'Wiki',
+			href: 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki',
+		});
+		wikiLink.style.fontSize = '0.8rem';
 
 		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
+
+
 
 		addHorizontalRule(this.containerEl);
 

@@ -50,7 +50,7 @@ export function addRESTAPIURLSettings(containerEl: HTMLElement, plugin: BMOGPT, 
 
     new Setting(settingsContainer)
     .setName('REST API URL')
-    .setDesc('Enter your REST API URL.')
+    .setDesc(addDescriptionLink('ENTER YOUR REST API URL.', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/How-to-setup-with-LM-Studio', '', '[Instructions]'))
     .addText(text => text
         .setPlaceholder('http://localhost:1234/v1')
         .setValue(plugin.settings.RESTAPIURLConnection.RESTAPIURL || DEFAULT_SETTINGS.RESTAPIURLConnection.RESTAPIURL)
@@ -76,7 +76,7 @@ export function addRESTAPIURLSettings(containerEl: HTMLElement, plugin: BMOGPT, 
 
     new Setting(settingsContainer)
     .setName('Enable Stream')
-    .setDesc(addDescriptionLink('Enable REST API models to stream response. Additional setup required: ', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/How-to-setup-with-LM-Studio', '', '[Instructions]'))
+    .setDesc(addDescriptionLink('Enable REST API models to stream response.', '', '', ''))
     .addToggle((toggle) =>
         toggle.setValue(plugin.settings.RESTAPIURLConnection.enableStream).onChange((value) => {
             plugin.settings.RESTAPIURLConnection.enableStream = value;

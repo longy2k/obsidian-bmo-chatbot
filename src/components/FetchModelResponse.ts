@@ -82,7 +82,6 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -224,7 +223,6 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -319,7 +317,6 @@ export async function fetchRESTAPIURLResponse(plugin: BMOGPT, settings: BMOSetti
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -516,7 +513,6 @@ export async function fetchRESTAPIURLResponseStream(plugin: BMOGPT, settings: BM
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -613,7 +609,6 @@ export async function fetchAnthropicResponse(plugin: BMOGPT, settings: BMOSettin
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -740,7 +735,6 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -837,7 +831,6 @@ export async function fetchMistralResponse(plugin: BMOGPT, settings: BMOSettings
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -1025,7 +1018,6 @@ export async function fetchMistralResponseStream(plugin: BMOGPT, settings: BMOSe
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -1117,7 +1109,7 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
             // Define regex patterns for the unwanted tags and their content
             const regexPatterns = [
                 /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-                /<link-rendered>[\s\S]*?<\/link-rendered>/g,
+                /<note-rendered>[\s\S]*?<\/note-rendered>/g,
                 /<note-rendered>[\s\S]*?<\/note-rendered>/g
             ];
 
@@ -1260,7 +1252,6 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -1358,7 +1349,6 @@ export async function fetchOpenRouterResponse(plugin: BMOGPT, settings: BMOSetti
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 
@@ -1547,7 +1537,6 @@ export async function fetchOpenRouterResponseStream(plugin: BMOGPT, settings: BM
         // Define regex patterns for the unwanted tags and their content
         const regexPatterns = [
             /<block-rendered>[\s\S]*?<\/block-rendered>/g,
-            /<link-rendered>[\s\S]*?<\/link-rendered>/g,
             /<note-rendered>[\s\S]*?<\/note-rendered>/g
         ];
 

@@ -390,19 +390,6 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
             messageBlock.className = 'messageBlock';
             lastClickedElement?.appendChild(messageBlock);
 
-            // Remove the rendered block from the message content
-            const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
-            message = message.replace(regexRenderedBlock, '').trim();
-
-            // Remove the rendered note link from the message content
-            const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-            message = message.replace(regexRenderedLink, '').trim();
-
-            // Remove rendered note
-            const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
-            message = message.replace(regexRenderedNote, '').trim();
-
-
             await MarkdownRenderer.render(plugin.app, message, messageBlock as HTMLElement, '/', plugin);
 
             const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
@@ -416,7 +403,98 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
                 const index = allMessages.indexOf(lastClickedElement);
 
                 if (index !== -1) {
-                    messageHistory[index].content = textArea.value;
+                    // Check if the input contains any internal links and replace them with the content of the linked file ([[]], ![[]], [[#]])
+                    const regex = /(!?)\[\[(.*?)\]\]/g;
+                    let matches;
+                    let inputModified = textArea.value;
+
+                    // Store all replacements to be made
+                    const replacements = new Map<string, string>();
+
+                    while ((matches = regex.exec(textArea.value)) !== null) {
+                        const exclamation = matches[1]; // Capture the optional exclamation mark
+                        const linktext = matches[2];
+                        // Split the linktext into path and subpath
+                        const [path, subpath] = linktext.split('#');
+                        
+                        const file = plugin.app.metadataCache.getFirstLinkpathDest(path, '');
+                        
+                        if (file && file instanceof TFile) {
+                            try {
+                                const filePath = file.path; // Assuming file object has a path property
+                                const fileExtension = filePath.split('.').pop();
+                            
+                                // Check if the file extension is .md
+                                if (fileExtension !== 'md') {
+                                    const isImageFile = /\.(jpg|jpeg|png|gif|webp|bmp|tiff|tif|svg)$/i.test(filePath);
+
+                                    if (!plugin.settings.OllamaConnection.ollamaModels.includes(plugin.settings.general.model)) {
+                                        replacements.set(matches[0], `${exclamation}[[${matches[2]}]]<note-rendered>ERROR: File cannot be read.</note-rendered>`);
+                                    } else if (plugin.settings.OllamaConnection.ollamaModels.includes(plugin.settings.general.model)) {
+                                        if (!isImageFile) {
+                                            replacements.set(matches[0], `${exclamation}[[${matches[2]}]]<note-rendered>ERROR: File cannot be read.</note-rendered>`);
+                                        }
+                                    }
+                                    continue; // Skip to the next iteration
+                                }
+
+                                const content = await plugin.app.vault.read(file);
+                                let contentToInsert = content;
+
+                                // If there is a subpath, find the relevant section
+                                if (subpath) {
+                                    const lines = content.split('\n');
+                                    let inSubpath = false;
+                                    const subpathContent = [];
+                                    let subpathLevel = 0;
+
+                                    for (const line of lines) {
+                                        if (line.startsWith('#')) {
+                                            const match = line.match(/^#+/);
+                                            const headingLevel = match ? match[0].length : 0;
+
+                                            if (inSubpath) {
+                                                if (headingLevel <= subpathLevel) {
+                                                    break;
+                                                }
+                                            }
+
+                                            if (!inSubpath && line.toLowerCase().includes(subpath.toLowerCase())) {
+                                                inSubpath = true;
+                                                subpathLevel = headingLevel;
+                                            }
+                                        }
+
+                                        if (inSubpath) {
+                                            subpathContent.push(line);
+                                        }
+                                    }
+
+                                    contentToInsert = subpathContent.join('\n');
+                                }
+
+                                // Prepare the replacement content
+                                replacements.set(matches[0], `${exclamation}[[${matches[2]}]]<note-rendered>${contentToInsert}</note-rendered>`);
+                            } catch (err) {
+                                console.error(`Failed to read the content of "${path}": ${err}`);
+                            }
+                        } else {
+                            // Handle case where the file does not exist or is not a TFile
+                            replacements.set(matches[0], `${exclamation}[[${matches[2]}]]<note-rendered>File cannot be read.</note-rendered>`);
+                        }
+                    }
+
+                    // Apply all replacements to inputModified
+                    for (const [original, replacement] of replacements) {
+                        inputModified = inputModified.split(original).join(replacement);
+                    }
+
+                    // Remove duplicates in the final output
+                    inputModified = inputModified.replace(/(<note-rendered>File cannot be read.<\/note-rendered>)+/g, '<note-rendered>File cannot be read.</note-rendered>');
+
+
+                    // console.log(`Modified input: ${inputModified}`);
+                    messageHistory[index].content = inputModified;
 
                     const jsonString = JSON.stringify(messageHistory, null, 4);
 
@@ -444,11 +522,7 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
             const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
             message = message.replace(regexRenderedBlock, '').trim();
 
-            // Remove the rendered note link from the message content
-            const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-            message = message.replace(regexRenderedLink, '').trim();
-
-            // Remove rendered note
+            // Remove rendered note tags from the message content
             const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
             message = message.replace(regexRenderedNote, '').trim();
 

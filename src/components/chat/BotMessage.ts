@@ -28,15 +28,11 @@ export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, message
     const messageBlockDiv = document.createElement('div');
     messageBlockDiv.className = 'messageBlock';
 
-    // Remove the rendered block from the message content
+    // Remove the rendered block tags from the message content
     const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
     message = message.replace(regexRenderedBlock, '').trim();
 
-    // Remove the rendered note link from the message content
-    const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-    message = message.replace(regexRenderedLink, '').trim();
-
-    // Remove rendered note
+    // Remove rendered note tags from the message content
     const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
     message = message.replace(regexRenderedNote, '').trim();
 

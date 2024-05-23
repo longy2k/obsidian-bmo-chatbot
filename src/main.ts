@@ -267,9 +267,9 @@ export default class BMOGPT extends Plugin {
 					this.app.vault.adapter.remove(filenameMessageHistory);
 
 					if (file.path === defaultFilePath) {
-						this.app.vault.create(defaultFilePath, '');
 						this.settings = DEFAULT_SETTINGS;
-						await this.saveSettings();
+						this.app.vault.create(defaultFilePath, '');
+						await updateSettingsFromFrontMatter(this, defaultProfile);
 					}
 					else {
 						if (this.settings.profiles.profile === file.name) {
@@ -277,11 +277,11 @@ export default class BMOGPT extends Plugin {
 							const fileContent = (await this.app.vault.read(defaultProfile)).replace(/^---\s*[\s\S]*?---/, '').trim();
 							this.settings.general.system_role = fileContent;
 							await updateSettingsFromFrontMatter(this, defaultProfile);
-							await this.saveSettings();
 						}
 					}
-					this.activateView();
 				}
+				await this.saveSettings();
+				this.activateView();
 			}
 		));
 
@@ -533,7 +533,7 @@ export async function updateSettingsFromFrontMatter(plugin: BMOGPT, file: TFile)
 		plugin.settings.general.max_tokens = frontmatter.max_tokens;
 		plugin.settings.general.temperature = frontmatter.temperature;
 		plugin.settings.general.enableReferenceCurrentNote = frontmatter.enable_reference_current_note;
-		plugin.settings.prompts.prompt = frontmatter.prompt + '.md';
+		plugin.settings.prompts.prompt = frontmatter.prompt;
 		plugin.settings.appearance.userName = frontmatter.user_name;
 		plugin.settings.appearance.chatbotName = file.basename;
 		plugin.settings.appearance.enableHeader = frontmatter.enable_header;
@@ -674,7 +674,7 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 				}
 			}
 
-			if (frontmatter.prompt && frontmatter.prompt !== '') {
+			if (frontmatter.prompt && (frontmatter.prompt !== '')) {
 				plugin.settings.prompts.prompt = frontmatter.prompt + '.md'
 			} else {
 				plugin.settings.prompts.prompt = DEFAULT_SETTINGS.prompts.prompt;

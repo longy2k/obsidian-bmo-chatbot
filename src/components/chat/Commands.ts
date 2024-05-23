@@ -838,11 +838,7 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
           const regexRenderedBlock = /<block-rendered>[\s\S]*?<\/block-rendered>/g;
           message.content = message.content.replace(regexRenderedBlock, '').trim();
 
-          // Remove the rendered note link from the message content
-          const regexRenderedLink = /<link-rendered>[\s\S]*?<\/link-rendered>/g;
-          message.content = message.content.replace(regexRenderedLink, '').trim();
-
-          // Remove rendered note
+          // Remove rendered note tags from the message content
           const regexRenderedNote = /<note-rendered>[\s\S]*?<\/note-rendered>/g;
           message.content = message.content.replace(regexRenderedNote, '').trim();
 
