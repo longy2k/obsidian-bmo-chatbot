@@ -5,7 +5,6 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 <p align="center">
   <img src="README_images/original-example.png" alt="original_example">
   <img src="README_images/dataview-example.png" alt="dataview_example">
-  <img src="README_images/eli5-example.png" alt="eli5_example">
 </p>
 
 ## Breaking Changes
@@ -123,6 +122,8 @@ Be MOre!
 
 Any ideas or support is highly appreciated :)
 
-If you have any bugs, improvements, or questions please create an issue or discussion!
+If you have any bugs, improvements, or suggestions, please create an issue.
+
+If you like to share your ideas, profiles, or anything else, please join or create a discussion.
 
 <a href='https://ko-fi.com/K3K8PNYT8' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>

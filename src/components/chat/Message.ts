@@ -162,8 +162,6 @@ export async function addMessage(plugin: BMOGPT, input: string, messageType: 'us
                         const markdownNode = document.createElement('div');
                         markdownNode.classList.add('rendered-markdown-output');
                         markdownNode.textContent = `\n\n<note-rendered>\n${blockToMarkdown}\n</note-rendered>\n\n`;
-
-                        console.log('markdownNode', markdownNode);
                 
                         const renderedMarkdownOutput = markdownNode.textContent;
                 
