@@ -11,13 +11,18 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
 
 ### If you have <v2.0.0, please perform the following instructions:
 
+1. Go to `Options > Community plugins > BMO Chatbot` and uninstall the plugin.
+2. Re-install "BMO Chatbot"
+3. Restart Obsidian or toggle the plugin on/off to refresh.
+
+Or,
+
 1. Go to `Options > Community plugins` and click on the folder's icon:
 
  <img width="775" alt="Screenshot 2024-03-10 at 9 28 38 PM" src="https://github.com/longy2k/obsidian-bmo-chatbot/assets/40724177/62882d8d-77d9-4a46-88fc-4e6a9b1215fc">
 
 2. Close Obsidian completely.
 3. Find the `bmo-chatbot` folder and delete `data.json`.
-
 4. Restart Obsidian.
 
 ## Features
