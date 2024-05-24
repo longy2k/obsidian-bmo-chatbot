@@ -1,5 +1,5 @@
 import { Notice, requestUrl } from 'obsidian';
-import ollama from 'ollama';
+import { Ollama } from 'ollama';
 import OpenAI from 'openai';
 import { BMOSettings } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS } from 'src/view';
@@ -14,6 +14,7 @@ export async function fetchModelRenameTitle(settings: BMOSettings, referenceCurr
     try {
         if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
             try {
+                const ollama = new Ollama({ host: settings.OllamaConnection.RESTAPIURL});
                 const response = await ollama.generate({
                     model: settings.general.model,
                     system: prompt,

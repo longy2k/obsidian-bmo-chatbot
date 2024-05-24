@@ -5,7 +5,7 @@ import { ChatCompletionMessageParam } from 'openai/resources/chat';
 import { addMessage, addParagraphBreaks, updateUnresolvedInternalLinks } from './chat/Message';
 import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
 import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
-import ollama from 'ollama';
+import { Ollama } from 'ollama';
 import OpenAI from 'openai';
 import { getPrompt } from './chat/Prompt';
 
@@ -37,6 +37,7 @@ export async function fetchOllamaResponse(plugin: BMOGPT, settings: BMOSettings,
     const referenceCurrentNoteContent = getCurrentNoteContent();
 
     try {
+        const ollama = new Ollama({ host: ollamaRESTAPIURL});
         const response = await ollama.chat({
             model: settings.general.model,
             messages: [
@@ -145,6 +146,7 @@ export async function fetchOllamaResponseStream(plugin: BMOGPT, settings: BMOSet
     });
 
     try {
+        const ollama = new Ollama({ host: ollamaRESTAPIURL});
         const response = await ollama.chat({
             model: settings.general.model,
             messages: [

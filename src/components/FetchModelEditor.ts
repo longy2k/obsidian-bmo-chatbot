@@ -1,6 +1,6 @@
 import { requestUrl } from 'obsidian';
 import { BMOSettings } from 'src/main';
-import ollama from 'ollama';
+import { Ollama } from 'ollama';
 import OpenAI from 'openai';
 
 // Request response from Ollama
@@ -35,7 +35,7 @@ export async function fetchOllamaResponseEditor(settings: BMOSettings, selection
     }
 
     try {
-
+        const ollama = new Ollama({host: ollamaRESTAPIURL});
         const response = await ollama.generate({
             model: settings.general.model,
             system: settings.editor.prompt_select_generate_system_role,

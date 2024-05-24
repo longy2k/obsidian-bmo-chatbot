@@ -110,7 +110,7 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
 
   const generalCommandHeader = document.createElement('h4');
   generalCommandHeader.textContent = 'General Commands';
-  generalCommandHeader.style.textAlign = 'center';
+  generalCommandHeader.style.textAlign = 'left';
   displayCommandBotMessageDiv.appendChild(generalCommandHeader);
 
   const commandClearP = document.createElement('p');
@@ -135,7 +135,7 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
 
   const profileCommandHeader = document.createElement('h4');
   profileCommandHeader.textContent = 'Profile Commands';
-  profileCommandHeader.style.textAlign = 'center';
+  profileCommandHeader.style.textAlign = 'left';
   displayCommandBotMessageDiv.appendChild(profileCommandHeader);
 
   const commandProfileListP = document.createElement('p');
@@ -148,7 +148,7 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
 
   const modelCommandHeader = document.createElement('h4');
   modelCommandHeader.textContent = 'Model Commands';
-  modelCommandHeader.style.textAlign = 'center';
+  modelCommandHeader.style.textAlign = 'left';
   displayCommandBotMessageDiv.appendChild(modelCommandHeader);
 
   const commandModelListP = document.createElement('p');
@@ -161,7 +161,7 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
 
   const promptCommandHeader = document.createElement('h4');
   promptCommandHeader.textContent = 'Prompt Commands';
-  promptCommandHeader.style.textAlign = 'center';
+  promptCommandHeader.style.textAlign = 'left';
   displayCommandBotMessageDiv.appendChild(promptCommandHeader);
 
   const commandPromptListP = document.createElement('p');
@@ -178,7 +178,7 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
 
   const editorCommandHeader = document.createElement('h4');
   editorCommandHeader.textContent = 'Editor Commands';
-  editorCommandHeader.style.textAlign = 'center';
+  editorCommandHeader.style.textAlign = 'left';
   displayCommandBotMessageDiv.appendChild(editorCommandHeader);
 
   const commandAppendP = document.createElement('p');
@@ -191,7 +191,7 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
 
   const streamCommandHeader = document.createElement('h4');
   streamCommandHeader.textContent = 'Stream Commands';
-  streamCommandHeader.style.textAlign = 'center';
+  streamCommandHeader.style.textAlign = 'left';
   displayCommandBotMessageDiv.appendChild(streamCommandHeader);
 
   const commandStopP = document.createElement('p');

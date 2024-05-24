@@ -1,5 +1,5 @@
 import { requestUrl } from 'obsidian';
-import ollama from 'ollama'
+import { Ollama } from 'ollama'
 import OpenAI from 'openai';
 import BMOGPT from 'src/main';
 import { OPENAI_MODELS } from 'src/view';
@@ -7,20 +7,9 @@ import { OPENAI_MODELS } from 'src/view';
 export async function fetchOllamaModels(plugin: BMOGPT) {
         const ollamaRESTAPIURL = plugin.settings.OllamaConnection.RESTAPIURL;
 
-        // Check if the URL is functional
-        try {
-            const response = await fetch(ollamaRESTAPIURL);
-            if (!response.ok) {
-                console.error('OLLAMA URL is not responding:', ollamaRESTAPIURL);
-                return;
-            }
-        } catch (error) {
-            console.error('Error reaching OLLAMA URL:', error);
-            return;
-        }
-
         // Log the list of models using ollama.list()
         try {
+            const ollama = new Ollama({host: ollamaRESTAPIURL});
             const modelsList = await ollama.list();
             // console.log('Ollama Models:', modelsList);
             
