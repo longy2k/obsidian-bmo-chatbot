@@ -273,13 +273,13 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
     displayCommandBotMessageDiv.appendChild(currentModelP);
 
     const apiLists = [
-      { header: 'Ollama', items: ollamaModels },
-      { header: 'REST API', items: RESTAPIModels },
-      { header: 'Anthropic', items: anthropicModels},
-      { header: 'Google Gemini', items: googleGeminiModels },
-      { header: 'Mistral', items: mistralModels },
-      { header: 'OpenAI', items: openAIBaseModels },
-      { header: 'OpenRouter', items: openRouterModels }
+      { header: 'Ollama Models', items: ollamaModels },
+      { header: 'REST API Models', items: RESTAPIModels },
+      { header: 'Anthropic Models', items: anthropicModels},
+      { header: 'Google Gemini Models', items: googleGeminiModels },
+      { header: 'Mistral Models', items: mistralModels },
+      { header: 'OpenAI-Based Models', items: openAIBaseModels },
+      { header: 'OpenRouter Models', items: openRouterModels }
     ];
     
     let currentStartIndex = 1;

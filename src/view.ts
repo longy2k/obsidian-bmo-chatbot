@@ -91,6 +91,40 @@ export class BMOView extends ItemView {
             }
         });
 
+        // const modelName = chatbotContainer.createEl('select', {
+        //     attr: { id: 'modelName' }
+        // });
+        
+        // // Get models as arrays
+        // const modelGroups = [
+        //     { name: 'Ollama Models', models: this.settings.OllamaConnection.ollamaModels },
+        //     { name: 'REST API Models', models: this.settings.RESTAPIURLConnection.RESTAPIURLModels },
+        //     { name: 'Anthropic Models', models: this.settings.APIConnections.anthropic.anthropicModels },
+        //     { name: 'Google Gemini Models', models: this.settings.APIConnections.googleGemini.geminiModels },
+        //     { name: 'Mistral Models', models: this.settings.APIConnections.mistral.mistralModels },
+        //     { name: 'OpenAI-Based Models', models: this.settings.APIConnections.openAI.openAIBaseModels },
+        //     { name: 'OpenRouter Models', models: this.settings.APIConnections.openRouter.openRouterModels }
+        // ];
+        
+        // const defaultModel = this.settings.general.model || DEFAULT_SETTINGS.general.model;
+        
+        // modelGroups.forEach(group => {
+        //     if (group.models.length > 0) {
+        //         const optgroup = modelName.createEl('optgroup');
+        //         optgroup.label = group.name; // Set the label attribute directly
+        //         group.models.forEach(model => {
+        //             const optionEl = optgroup.createEl('option', {
+        //                 text: model,
+        //                 value: model
+        //             });
+        //             if (model === defaultModel) {
+        //                 optionEl.selected = true;
+        //             }
+        //         });
+        //     }
+        // });
+        
+
         const dotIndicator = chatbotContainer.createEl('span', {
             attr: {
                 class: 'dotIndicator',

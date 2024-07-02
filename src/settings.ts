@@ -19,7 +19,7 @@ export class BMOSettingTab extends PluginSettingTab {
 	}
 
 	async display(): Promise<void> {
-		// Display settings
+		// Display settings information
 		const {containerEl} = this;
 
 		containerEl.empty();
@@ -54,7 +54,7 @@ export class BMOSettingTab extends PluginSettingTab {
 		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
 
 
-
+		// Add horizontal rule
 		addHorizontalRule(this.containerEl);
 
 		// Display settings
@@ -65,14 +65,19 @@ export class BMOSettingTab extends PluginSettingTab {
 		addChatHistorySettings(this.containerEl, this.plugin, this);
 		addEditorSettings(this.containerEl, this.plugin, this);		
 
+		// Add horizontal rule
 		addHorizontalRule(this.containerEl);
 
+		// Display settings
 		addOllamaSettings(this.containerEl, this.plugin, this);
 		addRESTAPIURLSettings(this.containerEl, this.plugin, this);
 		addAPIConnectionSettings(this.containerEl, this.plugin, this);
 
+		// Add horizontal rule
 		addHorizontalRule(this.containerEl);
 
+
+		// Add reset button
 		const resetButton = containerEl.createEl('a', {
 			text: 'Reset Settings',
 			href: '#',
