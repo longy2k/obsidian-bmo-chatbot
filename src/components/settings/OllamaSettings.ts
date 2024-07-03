@@ -1,6 +1,7 @@
 import { Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
 import { fetchOllamaModels } from '../FetchModelList';
+import { addDescriptionLink } from 'src/utils/DescriptionLink';
 
 // Ollama Settings
 export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -33,7 +34,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
 
     new Setting(settingsContainer)
         .setName('OLLAMA REST API URL')
-        .setDesc('Enter your REST API URL. Update to Ollama >0.1.42 to avoid CORS restriction.')
+        .setDesc(addDescriptionLink('Enter your REST API URL. Update ', 'https://ollama.com/', 'to version >=0.1.42 to avoid CORS restriction.', 'Ollama'))
         .addText(text => text
             .setPlaceholder('http://localhost:11434')
             .setValue(plugin.settings.OllamaConnection.RESTAPIURL || DEFAULT_SETTINGS.OllamaConnection.RESTAPIURL)
@@ -55,7 +56,7 @@ export function addOllamaSettings(containerEl: HTMLElement, plugin: BMOGPT, Sett
                 await plugin.saveSettings();
                 SettingTab.display();
             })
-        );
+        )
 
     new Setting(settingsContainer)
         .setName('Enable Stream')

@@ -761,10 +761,10 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
     const allFiles = plugin.app.vault.getFiles(); // Retrieve all files from the vault
 
     // Retrieve model name
-    const modelNameElement = document.querySelector('#modelName') as HTMLHeadingElement;
-    let modelName = 'Unknown'; // Default model name
-    if (modelNameElement && modelNameElement.textContent) {
-        modelName = modelNameElement.textContent.replace('Model: ', '').toLowerCase();
+    const modelOptionsElement = document.querySelector('#modelOptions') as HTMLHeadingElement;
+    let modelOptions = 'Unknown'; // Default model name
+    if (modelOptionsElement && modelOptionsElement.textContent) {
+        modelOptions = modelOptionsElement.textContent.replace('Model: ', '').toLowerCase();
     }
 
     const templateFile = allFiles.find(file => file.path.toLowerCase() === settings.chatHistory.templateFilePath.toLowerCase());
@@ -775,11 +775,11 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
       // Check if the file content has YAML front matter
       if (/^---\s*[\s\S]*?---/.test(fileContent)) {
           // Insert model name into existing front matter
-          fileContent = fileContent.replace(/^---/, `---\nmodel: ${modelName}`);
+          fileContent = fileContent.replace(/^---/, `---\nmodel: ${modelOptions}`);
       } else {
           // Prepend new front matter
           fileContent = `---
-  model: ${modelName}
+  model: ${modelOptions}
 ---\n` + fileContent;
       }
       markdownContent += fileContent;
@@ -787,7 +787,7 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
       // YAML front matter
       markdownContent += 
       `---
-  model: ${modelName}
+  model: ${modelOptions}
 ---\n`;
   }
 

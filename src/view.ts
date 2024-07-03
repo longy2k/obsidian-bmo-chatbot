@@ -84,46 +84,11 @@ export class BMOView extends ItemView {
             }
         });
 
-        const modelName = chatbotContainer.createEl('p', {
-            text: 'Model: ' + this.settings.general.model || DEFAULT_SETTINGS.general.model,
-            attr: {
-                id: 'modelName'
-            }
+        const modelOptions = chatbotContainer.createEl('select', {
+            attr: { id: 'modelOptions' }
         });
 
-        // const modelName = chatbotContainer.createEl('select', {
-        //     attr: { id: 'modelName' }
-        // });
-        
-        // // Get models as arrays
-        // const modelGroups = [
-        //     { name: 'Ollama Models', models: this.settings.OllamaConnection.ollamaModels },
-        //     { name: 'REST API Models', models: this.settings.RESTAPIURLConnection.RESTAPIURLModels },
-        //     { name: 'Anthropic Models', models: this.settings.APIConnections.anthropic.anthropicModels },
-        //     { name: 'Google Gemini Models', models: this.settings.APIConnections.googleGemini.geminiModels },
-        //     { name: 'Mistral Models', models: this.settings.APIConnections.mistral.mistralModels },
-        //     { name: 'OpenAI-Based Models', models: this.settings.APIConnections.openAI.openAIBaseModels },
-        //     { name: 'OpenRouter Models', models: this.settings.APIConnections.openRouter.openRouterModels }
-        // ];
-        
-        // const defaultModel = this.settings.general.model || DEFAULT_SETTINGS.general.model;
-        
-        // modelGroups.forEach(group => {
-        //     if (group.models.length > 0) {
-        //         const optgroup = modelName.createEl('optgroup');
-        //         optgroup.label = group.name; // Set the label attribute directly
-        //         group.models.forEach(model => {
-        //             const optionEl = optgroup.createEl('option', {
-        //                 text: model,
-        //                 value: model
-        //             });
-        //             if (model === defaultModel) {
-        //                 optionEl.selected = true;
-        //             }
-        //         });
-        //     }
-        // });
-        
+        populateModelDropdown(this.plugin, this.settings);
 
         const dotIndicator = chatbotContainer.createEl('span', {
             attr: {
@@ -140,7 +105,7 @@ export class BMOView extends ItemView {
         });
 
         header.appendChild(chatbotNameHeading);
-        header.appendChild(modelName);
+        header.appendChild(modelOptions);
 
         referenceCurrentNoteElement.appendChild(dotIndicator);
 
@@ -457,11 +422,6 @@ export class BMOView extends ItemView {
                         const lastBotMessage = botMessages[botMessages.length - 1];
                         lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
-                    
-                    const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
-                    if (modelName) {
-                        modelName.textContent = 'Model: ' + this.settings.general.model.toLowerCase();
-                    }
                 }   
                 else {
                     this.preventEnter = true;
@@ -517,11 +477,6 @@ export class BMOView extends ItemView {
                 if (cursor != null && this.plugin.app.workspace.activeEditor != null) {
                     lastCursorPosition = cursor;
                     activeEditor = view.editor;
-                }
-
-                const modelName = document.querySelector('#modelName');
-                if (modelName) {
-                    modelName.textContent = 'Model: ' + this.plugin.settings.general.model;
                 }
             }
         };
@@ -671,4 +626,47 @@ export async function deleteAllMessages(plugin: BMOGPT) {
     } catch (error) {
         console.error('Error writing messageHistory.json', error);
     }
+}
+
+export function populateModelDropdown(plugin: BMOGPT, settings: BMOSettings) {
+    // Get the modelOptions element
+    const modelOptions = document.querySelector('#modelOptions') as HTMLSelectElement;
+    console.log('Model name:', modelOptions);
+
+    modelOptions.innerHTML = ''; // Clear existing options
+    // Get models as arrays
+    const modelGroups = [
+        { name: 'Ollama Models', models: settings.OllamaConnection.ollamaModels },
+        { name: 'REST API Models', models: settings.RESTAPIURLConnection.RESTAPIURLModels },
+        { name: 'Anthropic Models', models: settings.APIConnections.anthropic.anthropicModels },
+        { name: 'Google Gemini Models', models: settings.APIConnections.googleGemini.geminiModels },
+        { name: 'Mistral Models', models: settings.APIConnections.mistral.mistralModels },
+        { name: 'OpenAI-Based Models', models: settings.APIConnections.openAI.openAIBaseModels },
+        { name: 'OpenRouter Models', models: settings.APIConnections.openRouter.openRouterModels }
+    ];
+    
+    const defaultModel = settings.general.model || DEFAULT_SETTINGS.general.model;
+    
+    modelGroups.forEach(group => {
+        if (group.models.length > 0) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = group.name;
+            group.models.forEach(model => {
+                const optionEl = document.createElement('option');
+                optionEl.textContent = model;
+                optionEl.value = model;
+                if (model === defaultModel) {
+                    optionEl.selected = true;
+                }
+                optgroup.appendChild(optionEl);
+            });
+            modelOptions.appendChild(optgroup);
+        }
+    });
+
+    modelOptions.addEventListener('change', async function() {
+        plugin.settings.general.model = this.value;
+        console.log('Selected model:', this.value);
+        await plugin.saveSettings();
+    });
 }

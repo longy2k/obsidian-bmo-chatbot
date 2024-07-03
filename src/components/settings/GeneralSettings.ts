@@ -64,10 +64,6 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
         dropdown.onChange(async (value) => {
             plugin.settings.general.model = value;
             await plugin.saveSettings();
-            const modelName = document.querySelector('#modelName') as HTMLHeadingElement;
-            if (modelName) {
-                modelName.textContent = 'model: ' + plugin.settings.general.model.toLowerCase();
-            }
         });
     };
     

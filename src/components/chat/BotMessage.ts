@@ -50,7 +50,6 @@ export function displayBotMessage(plugin: BMOGPT, settings: BMOSettings, message
         addParagraphBreaks(messageBlockDiv); 
     } 
     
-
     const copyCodeBlocks = messageBlockDiv.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
     copyCodeBlocks.forEach((copyCodeBlock) => {
         copyCodeBlock.textContent = 'Copy';

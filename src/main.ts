@@ -1,5 +1,5 @@
 import { DataWriteOptions, Plugin, TFile} from 'obsidian';
-import { BMOView, VIEW_TYPE_CHATBOT} from './view';
+import { BMOView, VIEW_TYPE_CHATBOT, populateModelDropdown} from './view';
 import { BMOSettingTab } from './settings';
 import { promptSelectGenerateCommand, renameTitleCommand } from './components/editor/EditorCommands';
 import { colorToHex, isValidHexColor } from './utils/ColorConverter';
@@ -617,6 +617,8 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
 		frontmatter.ollama_keep_alive = plugin.settings.OllamaConnection.ollamaParameters.keep_alive;
     };
 
+	populateModelDropdown(plugin, plugin.settings);
+
     // Optional: Specify data write options
     const writeOptions: DataWriteOptions = {
         // Specify options if needed
@@ -636,11 +638,6 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 		await plugin.app.fileManager.processFrontMatter(file, (frontmatter: any) => {
 
 			plugin.settings.general.model = frontmatter.model || DEFAULT_SETTINGS.general.model;
-
-			const modelName = document.querySelector('#modelName');
-			if (modelName) {
-				modelName.textContent = 'Model: ' + plugin.settings.general.model;
-			}
 
 			if (frontmatter.max_tokens) {
 				plugin.settings.general.max_tokens = frontmatter.max_tokens.toString();
