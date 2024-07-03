@@ -7,24 +7,6 @@ Generate and brainstorm ideas while creating your notes using Large Language Mod
   <img src="README_images/dataview-example.png" alt="dataview_example">
 </p>
 
-## Breaking Changes
-
-### If you have <v2.0.0, please perform the following instructions:
-
-1. Go to `Options > Community plugins > BMO Chatbot` and uninstall the plugin.
-2. Re-install "BMO Chatbot"
-3. Restart Obsidian or toggle the plugin on/off to refresh.
-
-Or,
-
-1. Go to `Options > Community plugins` and click on the folder's icon:
-
- <img width="775" alt="Screenshot 2024-03-10 at 9 28 38 PM" src="https://github.com/longy2k/obsidian-bmo-chatbot/assets/40724177/62882d8d-77d9-4a46-88fc-4e6a9b1215fc">
-
-2. Close Obsidian completely.
-3. Find the `bmo-chatbot` folder and delete `data.json`.
-4. Restart Obsidian.
-
 ## Features
 
 -   **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URLs provided to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LM Studio](https://lmstudio.ai/).
@@ -107,14 +89,15 @@ To start using the plugin, enable it in your settings menu and insert an API key
     -   claude-2.1
     -   claude-3-haiku-20240307
     -   claude-3-sonnet-20240229
+    -   claude-3-5-sonnet-20240620
     -   claude-3-opus-20240229
 -   Mistral AI's models
 -   Google Gemini Pro
 -   OpenAI
     -   gpt-3.5-turbo
-    -   gpt-3.5-turbo-1106
     -   gpt-4
-    -   gpt-4-turbo-preview
+    -   gpt-4-turbo
+    -   gpt-4o
 -   Any Openrouter provided models.
 
 ## Other Notes
@@ -127,7 +110,7 @@ Be MOre!
 
 Any ideas or support is highly appreciated :)
 
-If you have any bugs, improvements, or suggestions, please create an issue.
+If you have any bugs or improvements, please create an issue.
 
 If you like to share your ideas, profiles, or anything else, please join or create a discussion.
 

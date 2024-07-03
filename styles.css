@@ -537,7 +537,7 @@ ul#dropdownOptions li:hover {
 
 #modelOptions {
 	height: 24px;
-	font-size: 0.8em;
+	font-size: 0.7em;
 	color: var(--interactive-accent);
 	margin: 5px auto;
 	padding: 0;

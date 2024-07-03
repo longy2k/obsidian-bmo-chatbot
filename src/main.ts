@@ -1,5 +1,5 @@
 import { DataWriteOptions, Plugin, TFile} from 'obsidian';
-import { BMOView, VIEW_TYPE_CHATBOT, populateModelDropdown} from './view';
+import { BMOView, VIEW_TYPE_CHATBOT, populateModelDropdown } from './view';
 import { BMOSettingTab } from './settings';
 import { promptSelectGenerateCommand, renameTitleCommand } from './components/editor/EditorCommands';
 import { colorToHex, isValidHexColor } from './utils/ColorConverter';
@@ -468,6 +468,17 @@ export default class BMOGPT extends Plugin {
 		const currentProfileFile = `${this.settings.profiles.profileFolderPath}/${this.settings.profiles.profile}`
 		const currentProfile = this.app.vault.getAbstractFileByPath(currentProfileFile) as TFile;
 		updateFrontMatter(this, currentProfile);
+
+		// Update the model dropdown in the header
+		const header = document.querySelector('#header') as HTMLElement;
+		const modelOptions = header.querySelector('#modelOptions');
+		if (modelOptions) {
+			modelOptions.remove();
+		}
+		const populateModelOptions = populateModelDropdown(this, this.settings);
+		header.appendChild(populateModelOptions);
+
+		// Save the settings
 		await this.saveData(this.settings);
 	}
 }
@@ -616,8 +627,6 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
 		frontmatter.ollama_min_p = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.min_p);
 		frontmatter.ollama_keep_alive = plugin.settings.OllamaConnection.ollamaParameters.keep_alive;
     };
-
-	populateModelDropdown(plugin, plugin.settings);
 
     // Optional: Specify data write options
     const writeOptions: DataWriteOptions = {

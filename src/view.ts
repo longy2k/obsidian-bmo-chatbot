@@ -84,11 +84,8 @@ export class BMOView extends ItemView {
             }
         });
 
-        const modelOptions = chatbotContainer.createEl('select', {
-            attr: { id: 'modelOptions' }
-        });
-
-        populateModelDropdown(this.plugin, this.settings);
+        // Models dropdown
+        const modelOptions = populateModelDropdown(this.plugin, this.settings);
 
         const dotIndicator = chatbotContainer.createEl('span', {
             attr: {
@@ -628,12 +625,14 @@ export async function deleteAllMessages(plugin: BMOGPT) {
     }
 }
 
-export function populateModelDropdown(plugin: BMOGPT, settings: BMOSettings) {
-    // Get the modelOptions element
-    const modelOptions = document.querySelector('#modelOptions') as HTMLSelectElement;
-    console.log('Model name:', modelOptions);
+export function populateModelDropdown(plugin: BMOGPT, settings: BMOSettings): HTMLSelectElement {
+    const modelOptions = document.createElement('select');
+    modelOptions.id = 'modelOptions';
 
-    modelOptions.innerHTML = ''; // Clear existing options
+    if (modelOptions) {
+        modelOptions.innerHTML = ''; // Clear existing options
+    }
+
     // Get models as arrays
     const modelGroups = [
         { name: 'Ollama Models', models: settings.OllamaConnection.ollamaModels },
@@ -666,7 +665,8 @@ export function populateModelDropdown(plugin: BMOGPT, settings: BMOSettings) {
 
     modelOptions.addEventListener('change', async function() {
         plugin.settings.general.model = this.value;
-        console.log('Selected model:', this.value);
         await plugin.saveSettings();
     });
+
+    return modelOptions;
 }
