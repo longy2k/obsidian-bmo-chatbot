@@ -3,6 +3,7 @@ import BMOGPT, { BMOSettings, checkActiveFile } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, fileNameMessageHistoryJson, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
 import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse, fetchOpenRouterResponseStream, fetchOpenRouterResponse } from '../FetchModelResponse';
 import { getActiveFileContent } from '../editor/ReferenceCurrentNote';
+import { addParagraphBreaks } from './Message';
 
 export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
     const regenerateButton = document.createElement('button');
@@ -391,6 +392,7 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
             lastClickedElement?.appendChild(messageBlock);
 
             await MarkdownRenderer.render(plugin.app, message, messageBlock as HTMLElement, '/', plugin);
+            addParagraphBreaks(messageBlock);
 
             const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
             copyCodeBlocks.forEach((copyCodeBlock) => {
@@ -527,6 +529,7 @@ export function displayBotEditButton (plugin: BMOGPT, message: string) {
             message = message.replace(regexRenderedNote, '').trim();
 
             await MarkdownRenderer.render(plugin.app, message, messageBlock as HTMLElement, '/', plugin);
+            addParagraphBreaks(messageBlock);
             
             const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
             copyCodeBlocks.forEach((copyCodeBlock) => {
