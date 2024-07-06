@@ -1,11 +1,10 @@
 import { requestUrl } from 'obsidian';
 import { BMOSettings } from 'src/main';
-import { Ollama } from 'ollama';
 import OpenAI from 'openai';
 
 // Request response from Ollama
 // NOTE: Abort does not work for requestUrl
-export async function fetchOllamaResponseEditor(settings: BMOSettings, selectionString: string) {
+export async function fetchOllamaResponseEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
     if (!ollamaRESTAPIURL) {
@@ -13,7 +12,7 @@ export async function fetchOllamaResponseEditor(settings: BMOSettings, selection
     }
 
     // Extract image links from the input
-    const imageMatch = selectionString.match(/!?\[\[(.*?)\]\]/g);
+    const imageMatch = prompt.match(/!?\[\[(.*?)\]\]/g);
     const imageLink = imageMatch 
     ? imageMatch
         .map(item => item.startsWith('!') ? item.slice(3, -2) : item.slice(2, -2))
@@ -25,62 +24,76 @@ export async function fetchOllamaResponseEditor(settings: BMOSettings, selection
 
     // Loop through each image link to get the full path
     if (imageLink.length > 0) {
-    imageLink.forEach(link => {
-        const imageFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
-        const image = imageFile ? this.app.vault.adapter.getFullPath(imageFile.path) : null;
-        if (image) {
-            imagesVaultPath.push(image);
-        }
-    });
+        imageLink.forEach(link => {
+            const imageFile = this.app.metadataCache.getFirstLinkpathDest(link, '');
+            const image = imageFile ? this.app.vault.adapter.getFullPath(imageFile.path) : null;
+            if (image) {
+                imagesVaultPath.push(image);
+            }
+        });
     }
 
     try {
-        const ollama = new Ollama({host: ollamaRESTAPIURL});
-        const response = await ollama.generate({
-            model: settings.general.model,
-            system: settings.editor.prompt_select_generate_system_role,
-            prompt: selectionString,
-            images: imagesVaultPath,
-            stream: false,
-            keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
-            options: {
-                temperature: parseInt(settings.general.temperature),
-                num_predict: parseInt(settings.general.max_tokens),
+        const response = await fetch(ollamaRESTAPIURL + '/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             },
+            body: JSON.stringify({
+                model: model || settings.general.model,
+                system: settings.editor.prompt_select_generate_system_role,
+                prompt: prompt,
+                images: imagesVaultPath,
+                stream: false,
+                keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
+                options: {
+                    temperature: temperature ? parseInt(temperature) : parseInt(settings.general.temperature),
+                    num_predict: maxTokens ? parseInt(maxTokens) : parseInt(settings.general.max_tokens),
+                },
+            }),
+            signal: signal,
         });
-
-        const message = response.response.trim();
+        const data = await response.json();
+        const message = data.response.trim();
 
         return message;
-
     } catch (error) {
-        console.error('Ollama request:', error);
-        throw error;
+        if (error.name === 'AbortError') {
+            console.log('Request aborted');
+        } else {
+            console.error('Ollama request:', error);
+            throw error;
+        }
     }
 }
 
 // Request response from openai-based rest api url (editor)
-export async function fetchRESTAPIURLDataEditor(settings: BMOSettings, selectionString: string) {
+export async function fetchRESTAPIURLDataEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     try {
-        const response = await requestUrl({
-            url: settings.RESTAPIURLConnection.RESTAPIURL + '/chat/completions',
+        const response = await fetch(settings.RESTAPIURLConnection.RESTAPIURL + '/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${settings.RESTAPIURLConnection.APIKey}`
             },
             body: JSON.stringify({
-                model: settings.general.model,
+                model: model || settings.general.model,
                 messages: [
                     { role: 'system', content: settings.editor.prompt_select_generate_system_role || 'You are a helpful assistant.' },
-                    { role: 'user', content: selectionString}
+                    { role: 'user', content: prompt }
                 ],
-                max_tokens: parseInt(settings.general.max_tokens) || -1,
-                temperature: parseInt(settings.general.temperature),
+                max_tokens: parseInt(maxTokens || settings.general.max_tokens || '-1'),
+                temperature: parseFloat(temperature || settings.general.temperature),
             }),
+            signal: signal
         });
 
-        const message = response.json.choices[0].message.content.trim();
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const message = data.choices[0].message.content.trim();
         return message;
 
     } catch (error) {
@@ -90,7 +103,7 @@ export async function fetchRESTAPIURLDataEditor(settings: BMOSettings, selection
 }
 
 // Fetch Anthropic API Editor
-export async function fetchAnthropicResponseEditor(settings: BMOSettings, selectionString: string) {
+export async function fetchAnthropicResponseEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     try {
         const response = await requestUrl({
             url: 'https://api.anthropic.com/v1/messages',
@@ -101,13 +114,13 @@ export async function fetchAnthropicResponseEditor(settings: BMOSettings, select
                 'x-api-key': settings.APIConnections.anthropic.APIKey,
             },
             body: JSON.stringify({
-                model: settings.general.model,
+                model: model || settings.general.model,
                 system: settings.editor.prompt_select_generate_system_role,
                 messages: [
-                    { role: 'user', content: selectionString}
+                    { role: 'user', content: prompt}
                 ],
-                max_tokens: parseInt(settings.general.max_tokens) || 4096,
-                temperature: parseInt(settings.general.temperature),
+                max_tokens: parseInt(maxTokens || settings.general.max_tokens) || 4096,
+                temperature: parseInt(temperature || settings.general.temperature),
             }),
         });
 
@@ -120,14 +133,14 @@ export async function fetchAnthropicResponseEditor(settings: BMOSettings, select
 }
 
 // Fetch Google Gemini API Editor
-export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, selectionString: string) {
+export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     try {        
         const API_KEY = settings.APIConnections.googleGemini.APIKey;
 
         const requestBody = {
             contents: [{
                 parts: [
-                    {text: settings.editor.prompt_select_generate_system_role + selectionString}
+                    {text: settings.editor.prompt_select_generate_system_role + prompt}
                 ]
             }],
         }
@@ -150,7 +163,7 @@ export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, selecti
 }
 
 // Fetch Mistral API Editor
-export async function fetchMistralDataEditor(settings: BMOSettings, selectionString: string) {
+export async function fetchMistralDataEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     try {
         const response = await requestUrl({
             url: 'https://api.mistral.ai/v1/chat/completions',
@@ -160,13 +173,13 @@ export async function fetchMistralDataEditor(settings: BMOSettings, selectionStr
                 'Authorization': `Bearer ${settings.APIConnections.mistral.APIKey}`
             },
             body: JSON.stringify({
-                model: settings.general.model,
+                model: model || settings.general.model,
                 messages: [
                     { role: 'system', content: settings.editor.prompt_select_generate_system_role },
-                    { role: 'user', content: selectionString}
+                    { role: 'user', content: prompt}
                 ],
-                max_tokens: parseInt(settings.general.max_tokens),
-                temperature: parseInt(settings.general.temperature),
+                max_tokens: parseInt(maxTokens || settings.general.max_tokens),
+                temperature: parseInt(temperature || settings.general.temperature),
             }),
         });
 
@@ -179,7 +192,7 @@ export async function fetchMistralDataEditor(settings: BMOSettings, selectionStr
 }
 
 // Fetch OpenAI-Based API Editor
-export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, selectionString: string) {
+export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     const openai = new OpenAI({
         apiKey: settings.APIConnections.openAI.APIKey,
         baseURL: settings.APIConnections.openAI.openAIBaseUrl,
@@ -187,11 +200,12 @@ export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, se
     });
 
     const completion = await openai.chat.completions.create({
-        model: settings.general.model,
-        max_tokens: parseInt(settings.general.max_tokens),
+        model: model ||settings.general.model,
+        max_tokens: parseInt(maxTokens || settings.general.max_tokens),
+        temperature: parseInt(temperature || settings.general.temperature),
         messages: [
             { role: 'system', content: settings.editor.prompt_select_generate_system_role },
-            { role: 'user', content: selectionString}
+            { role: 'user', content: prompt}
         ],
     });
 
@@ -201,7 +215,7 @@ export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, se
 }
 
 // Request response from openai-based rest api url (editor)
-export async function fetchOpenRouterEditor(settings: BMOSettings, selectionString: string) {
+export async function fetchOpenRouterEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     try {
         const response = await requestUrl({
             url: 'https://openrouter.ai/api/v1/chat/completions',
@@ -211,13 +225,13 @@ export async function fetchOpenRouterEditor(settings: BMOSettings, selectionStri
                 'Authorization': `Bearer ${settings.APIConnections.openRouter.APIKey}`
             },
             body: JSON.stringify({
-                model: settings.general.model,
+                model: model || settings.general.model,
                 messages: [
                     { role: 'system', content: settings.editor.prompt_select_generate_system_role },
-                    { role: 'user', content: selectionString}
+                    { role: 'user', content: prompt}
                 ],
-                max_tokens: parseInt(settings.general.max_tokens),
-                temperature: parseInt(settings.general.temperature),
+                max_tokens: parseInt(maxTokens || settings.general.max_tokens),
+                temperature: parseInt(temperature || settings.general.temperature),
             }),
         });
 

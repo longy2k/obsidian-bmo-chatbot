@@ -3,6 +3,7 @@ import { BMOView, VIEW_TYPE_CHATBOT, populateModelDropdown } from './view';
 import { BMOSettingTab } from './settings';
 import { promptSelectGenerateCommand, renameTitleCommand } from './components/editor/EditorCommands';
 import { colorToHex, isValidHexColor } from './utils/ColorConverter';
+import { bmoCodeBlockProcessor } from './components/BMOCodeBlockProcessor';
 
 export interface BMOSettings {
 	profiles: {
@@ -29,6 +30,8 @@ export interface BMOSettings {
 		chatBoxBackgroundColor: string,
 		enableHeader: boolean,
 		enableScrollBar: boolean,
+		bmoGenerateBackgroundColor: string,
+		bmoGenerateFontColor: string,
 	},
 	prompts: {
 		prompt: string,
@@ -138,6 +141,8 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		chatBoxBackgroundColor: '--interactive-accent',
 		enableHeader: true,
 		enableScrollBar: false,
+		bmoGenerateBackgroundColor: '#0c0a12',
+		bmoGenerateFontColor: '--text-normal',
 	},
 	prompts: {
 		prompt: '',
@@ -329,7 +334,6 @@ export default class BMOGPT extends Plugin {
 			})
 		);
 
-		// BUG??
         this.registerEvent(
             this.app.workspace.on('active-leaf-change', () => {
                 this.handleFileSwitch();
@@ -401,6 +405,9 @@ export default class BMOGPT extends Plugin {
             ],
         });
 
+		// Register BMO code block processor
+		bmoCodeBlockProcessor(this, this.settings);
+
 		this.addSettingTab(new BMOSettingTab(this.app, this));
 	}
 
@@ -471,12 +478,12 @@ export default class BMOGPT extends Plugin {
 
 		// Update the model dropdown in the header
 		const header = document.querySelector('#header') as HTMLElement;
-		const modelOptions = header.querySelector('#modelOptions');
+		const modelOptions = header?.querySelector('#modelOptions');
 		if (modelOptions) {
 			modelOptions.remove();
 		}
 		const populateModelOptions = populateModelDropdown(this, this.settings);
-		header.appendChild(populateModelOptions);
+		header?.appendChild(populateModelOptions);
 
 		// Save the settings
 		await this.saveData(this.settings);
@@ -503,6 +510,8 @@ export async function defaultFrontMatter(plugin: BMOGPT, file: TFile) {
 		frontmatter.chatbot_message_background_color = DEFAULT_SETTINGS.appearance.botMessageBackgroundColor.replace(/^#/, '');
 		frontmatter.chatbox_font_color = DEFAULT_SETTINGS.appearance.chatBoxFontColor.replace(/^#/, '');
 		frontmatter.chatbox_background_color = DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor.replace(/^#/, '');
+		frontmatter.bmo_generate_background_color = DEFAULT_SETTINGS.appearance.bmoGenerateBackgroundColor.replace(/^#/, '');
+		frontmatter.bmo_generate_font_color = DEFAULT_SETTINGS.appearance.bmoGenerateFontColor.replace(/^#/, '');
 		frontmatter.prompt_select_generate_system_role = DEFAULT_SETTINGS.editor.prompt_select_generate_system_role;
 		frontmatter.ollama_mirostat = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat);
 		frontmatter.ollama_mirostat_eta = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_eta);
@@ -556,6 +565,8 @@ export async function updateSettingsFromFrontMatter(plugin: BMOGPT, file: TFile)
 		plugin.settings.appearance.botMessageBackgroundColor = '#' + frontmatter.chatbot_message_background_color;
 		plugin.settings.appearance.chatBoxFontColor = '#' + frontmatter.chatbox_font_color;
 		plugin.settings.appearance.chatBoxBackgroundColor = '#' + frontmatter.chatbox_background_color;
+		plugin.settings.appearance.bmoGenerateBackgroundColor = '#' + frontmatter.bmo_generate_background_color;
+		plugin.settings.appearance.bmoGenerateFontColor = '#' + frontmatter.bmo_generate_font_color;
 		plugin.settings.editor.prompt_select_generate_system_role = frontmatter.prompt_select_generate_system_role;
 		plugin.settings.OllamaConnection.ollamaParameters.mirostat = frontmatter.ollama_mirostat;
 		plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = frontmatter.ollama_mirostat_eta;
@@ -610,6 +621,8 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
 		frontmatter.chatbot_message_background_color = plugin.settings.appearance.botMessageBackgroundColor.replace(/^#/, '');
 		frontmatter.chatbox_font_color = plugin.settings.appearance.chatBoxFontColor.replace(/^#/, '');
 		frontmatter.chatbox_background_color = plugin.settings.appearance.chatBoxBackgroundColor.replace(/^#/, '');
+		frontmatter.bmo_generate_background_color = plugin.settings.appearance.bmoGenerateBackgroundColor.replace(/^#/, '');
+		frontmatter.bmo_generate_font_color = plugin.settings.appearance.bmoGenerateFontColor.replace(/^#/, '');
 		frontmatter.prompt_select_generate_system_role = plugin.settings.editor.prompt_select_generate_system_role;
 		frontmatter.ollama_mirostat = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.mirostat);
 		frontmatter.ollama_mirostat_eta = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta);
@@ -923,6 +936,46 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 					}
 
 				}
+			}
+
+			if (isValidHexColor(frontmatter.bmo_generate_background_color)) {
+				plugin.settings.appearance.bmoGenerateBackgroundColor = '#' + frontmatter.bmo_generate_background_color.substring(0, 6);
+				
+				const containers = document.querySelectorAll('.bmoCodeBlockContainer');
+				containers.forEach((container) => {
+					const element = container as HTMLElement;
+					element.style.backgroundColor = plugin.settings.appearance.bmoGenerateBackgroundColor;
+				});
+			} else {
+				plugin.settings.appearance.bmoGenerateBackgroundColor = colorToHex(DEFAULT_SETTINGS.appearance.bmoGenerateBackgroundColor);
+				frontmatter.bmo_generate_background_color = plugin.settings.appearance.bmoGenerateBackgroundColor.replace(/^#/, '');
+				
+				const containers = document.querySelectorAll('.bmoCodeBlockContainer');
+				containers.forEach((container) => {
+					const element = container as HTMLElement;
+					const defaultBMOGenerateBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.bmoGenerateBackgroundColor).trim();
+					element.style.backgroundColor = defaultBMOGenerateBackgroundColor;
+				});
+			}
+
+			if (isValidHexColor(frontmatter.bmo_generate_font_color)) {
+				plugin.settings.appearance.bmoGenerateFontColor = '#' + frontmatter.bmo_generate_font_color.substring(0, 6);
+				
+				const containers = document.querySelectorAll('.bmoCodeBlockContent');
+				containers.forEach((container) => {
+					const element = container as HTMLElement;
+					element.style.color = plugin.settings.appearance.bmoGenerateFontColor;
+				});
+			} else {
+				plugin.settings.appearance.bmoGenerateFontColor = colorToHex(DEFAULT_SETTINGS.appearance.bmoGenerateFontColor);
+				frontmatter.bmo_generate_font_color = plugin.settings.appearance.bmoGenerateFontColor.replace(/^#/, '');
+				
+				const containers = document.querySelectorAll('.bmoCodeBlockContent');
+				containers.forEach((container) => {
+					const element = container as HTMLElement;
+					const defaultBMOGenerateFontColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.bmoGenerateFontColor).trim();
+					element.style.color = defaultBMOGenerateFontColor;
+				});
 			}
 
 			plugin.settings.editor.prompt_select_generate_system_role = frontmatter.prompt_select_generate_system_role;

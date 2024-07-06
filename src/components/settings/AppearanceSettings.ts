@@ -30,6 +30,8 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
         await plugin.saveSettings();
     });
 
+    settingsContainer.createEl('h6', {text: 'Chat View'});
+
     new Setting(settingsContainer)
     .setName('Enable Header')
     .setDesc('Display chatbot name and model name in header.')
@@ -74,27 +76,6 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
                 });
             })
         );
-
-    // new Setting(settingsContainer)
-    //     .setName('Chatbot Name')
-    //     .setDesc('Name your chatbot.')
-    //     .addText(text => text
-    //         .setPlaceholder('Enter chatbot name')
-    //         .setValue(plugin.settings.appearance.chatbotName || DEFAULT_SETTINGS.appearance.chatbotName)
-    //         .onChange(async (value) => {
-    //             plugin.settings.appearance.chatbotName = value ? value.toUpperCase() : DEFAULT_SETTINGS.appearance.chatbotName;
-    //             text.inputEl.maxLength = 30;
-    //             await plugin.saveSettings();
-    //             const chatbotNameHeading = document.querySelector('#chatbotNameHeading') as HTMLHeadingElement;
-    //             const chatbotNames = document.querySelectorAll('.chatbotName') as NodeListOf<HTMLHeadingElement>;
-    //             if (chatbotNameHeading) {
-    //                 chatbotNameHeading.textContent = plugin.settings.appearance.chatbotName;
-    //             }
-    //             chatbotNames.forEach(chatbotName => {
-    //                 chatbotName.textContent = plugin.settings.appearance.chatbotName;
-    //             });
-    //         })
-    //     );
 
     let colorPicker1: ColorComponent;
     const defaultChatbotContainerBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.chatbotContainerBackgroundColor).trim();
@@ -537,4 +518,100 @@ export function addAppearanceSettings(containerEl: HTMLElement, plugin: BMOGPT, 
             plugin.saveSettings();
         })
     );
+
+    settingsContainer.createEl('h6', {text: 'Generate View'});
+
+    let colorPicker9: ColorComponent;
+    // const defaultBMOGenerateBackgroundColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.bmoGenerateBackgroundColor).trim();
+
+    let colorPicker10: ColorComponent;
+    const defaultBMOGenerateFontColor = getComputedStyle(document.body).getPropertyValue(DEFAULT_SETTINGS.appearance.bmoGenerateFontColor).trim();
+
+    new Setting(settingsContainer)
+    .setName('BMO Generate Background Color')
+    .setDesc('Modify the background color of BMO Generate.')
+    .addButton(button => button
+        .setButtonText('Restore Default')
+        .setIcon('rotate-cw')
+        .setClass('clickable-icon')
+        .onClick(async () => {
+            colorPicker9.setValue(DEFAULT_SETTINGS.appearance.bmoGenerateBackgroundColor);
+            
+            const containers = document.querySelectorAll('.bmoCodeBlockContainer');
+            containers.forEach((container) => {
+                const element = container as HTMLElement;
+                element.style.backgroundColor = DEFAULT_SETTINGS.appearance.bmoGenerateBackgroundColor;
+            });
+            await plugin.saveSettings();
+        })
+    )
+    .addColorPicker(async (color) => {
+        colorPicker9 = color;
+        
+        const defaultValue = plugin.settings.appearance.bmoGenerateBackgroundColor;
+        
+        color.setValue(defaultValue)
+            .onChange(async (value) => {
+                const hexValue = colorToHex(value);
+                plugin.settings.appearance.bmoGenerateBackgroundColor = hexValue;
+                
+                const containers = document.querySelectorAll('.bmoCodeBlockContainer');
+                containers.forEach((container) => {
+                    const element = container as HTMLElement;
+                    element.style.backgroundColor = hexValue;
+                });
+                await plugin.saveSettings();
+            });
+    });
+
+    new Setting(settingsContainer)
+    .setName('BMO Generate Font Color')
+    .setDesc('Modify the font color of BMO Generate.')
+    .addButton(button => button
+        .setButtonText('Restore Default')
+        .setIcon('rotate-cw')
+        .setClass('clickable-icon')
+        .onClick(async () => {
+            const defaultValue = colorToHex(defaultBMOGenerateFontColor);
+            colorPicker10.setValue(defaultValue);
+            
+            const bmoCodeBlockContents = document.querySelectorAll('.bmoCodeBlockContent');
+            bmoCodeBlockContents.forEach((content) => {
+                const element = content as HTMLElement;
+                element.style.color = defaultValue;
+            });
+            
+            await plugin.saveSettings();
+        })
+    )
+    .addColorPicker(async (color) => {
+        colorPicker10 = color;
+        
+        let defaultValue = plugin.settings.appearance.bmoGenerateFontColor;
+        
+        if (defaultValue == '--text-normal') {
+            defaultValue = colorToHex(defaultBMOGenerateFontColor);
+        }
+        
+        color.setValue(defaultValue)
+            .onChange(async (value) => {
+                const hexValue = colorToHex(value);
+                plugin.settings.appearance.bmoGenerateFontColor = hexValue;
+                
+                const bmoCodeBlockContents = document.querySelectorAll('.bmoCodeBlockContent');
+                bmoCodeBlockContents.forEach((content) => {
+                    const element = content as HTMLElement;
+                    element.style.color = hexValue;
+                });
+                
+                await plugin.saveSettings();
+            });
+        
+        // Set the initial font color of .bmoCodeBlockContent elements
+        const bmoCodeBlockContents = document.querySelectorAll('.bmoCodeBlockContent');
+        bmoCodeBlockContents.forEach((content) => {
+            const element = content as HTMLElement;
+            element.style.color = defaultValue;
+        });
+    });
 }
