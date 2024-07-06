@@ -23,6 +23,7 @@
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
+		"@google/generative-ai": "^0.14.1",
 		"marked": "^4.3.0",
 		"ollama": "^0.5.1",
 		"openai": "^4.6.0"

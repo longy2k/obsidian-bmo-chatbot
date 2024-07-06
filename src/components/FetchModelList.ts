@@ -78,9 +78,11 @@ export async function fetchGoogleGeminiModels(plugin: BMOGPT) {
             },
         });
 
+        console.log(response.json.models);
+
         // Check if the response is valid and has data
         if (response.json && response.json.models) {
-            const models = response.json.models.map((model: { name: string; }) => model.name).filter((model: string) => model.endsWith('models/gemini-pro'));
+            const models = response.json.models.map((model: { name: string; }) => model.name).filter((model: string) => model.startsWith('models/gemini'));
             
             // Store the models in your plugin's settings or handle them as needed
             plugin.settings.APIConnections.googleGemini.geminiModels = models;

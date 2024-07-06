@@ -174,7 +174,6 @@ export function bmoCodeBlockProcessor(plugin: Plugin, settings: BMOSettings) {
                     button.disabled = true;
                     modelResponse = await fetchAnthropicResponseEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
                 } else if (settings.APIConnections.googleGemini.geminiModels.includes(modelName)) {
-                    button.disabled = true;
                     modelResponse = await fetchGoogleGeminiDataEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
                 } else if (settings.APIConnections.mistral.mistralModels.includes(modelName)) {
                     button.disabled = true;

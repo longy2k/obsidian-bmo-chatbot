@@ -134,32 +134,36 @@ export async function fetchAnthropicResponseEditor(settings: BMOSettings, prompt
 
 // Fetch Google Gemini API Editor
 export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
-    try {        
-        const API_KEY = settings.APIConnections.googleGemini.APIKey;
-
-        const requestBody = {
-            contents: [{
-                parts: [
-                    {text: settings.editor.prompt_select_generate_system_role + prompt}
-                ]
-            }],
-        }
-        
-        const response = await requestUrl({
-            url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
+    console.log(prompt);
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${settings.APIConnections.googleGemini.APIKey}`, {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(requestBody),
+            body: JSON.stringify({
+                contents: [
+                    {
+                        parts: [
+                            { text: settings.editor.prompt_select_generate_system_role + prompt }
+                        ]
+                    }
+                ],
+                model: model || settings.general.model,
+                generationConfig: {
+                    temperature: parseFloat(temperature || settings.general.temperature),
+                    maxOutputTokens: parseInt(maxTokens || settings.general.max_tokens) || 4096,
+                }
+            }),
+            signal: signal,
         });
-        
-        const message = response.json.candidates[0].content.parts[0].text.trim();
+
+        const data = await response.json();
+        const message = data.candidates[0].content.parts[0].text.trim();
         return message;
     } catch (error) {
         console.error(error);
     }
-
 }
 
 // Fetch Mistral API Editor
