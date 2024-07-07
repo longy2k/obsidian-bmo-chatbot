@@ -38,7 +38,7 @@ export interface BMOSettings {
 		promptFolderPath: string,
 	},
 	editor: {
-		prompt_select_generate_system_role: string,
+		systen_role: string,
 	},
 	chatHistory: {
 		chatHistoryPath: string,
@@ -80,6 +80,7 @@ export interface BMOSettings {
 		},
 		googleGemini: {
 			APIKey: string,
+			enableStream: boolean,
 			geminiModels: string[],
 		},
 		mistral: {
@@ -149,7 +150,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		promptFolderPath: 'BMO/Prompts',
 	},
 	editor: {
-		prompt_select_generate_system_role: 'Output user request.',
+		systen_role: 'You are a helpful assistant.',
 	},
 	chatHistory: {
 		chatHistoryPath: 'BMO/History',
@@ -157,7 +158,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		allowRenameNoteTitle: false,
 	},
 	OllamaConnection: {
-		RESTAPIURL: '',
+		RESTAPIURL: 'http://localhost:11434',
 		enableStream: true,
 		ollamaParameters: {
 			mirostat: '0',
@@ -191,6 +192,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 		},
 		googleGemini: {
 			APIKey: '',
+			enableStream: false,
 			geminiModels: [],
 		},
 		mistral: {
@@ -512,7 +514,7 @@ export async function defaultFrontMatter(plugin: BMOGPT, file: TFile) {
 		frontmatter.chatbox_background_color = DEFAULT_SETTINGS.appearance.chatBoxBackgroundColor.replace(/^#/, '');
 		frontmatter.bmo_generate_background_color = DEFAULT_SETTINGS.appearance.bmoGenerateBackgroundColor.replace(/^#/, '');
 		frontmatter.bmo_generate_font_color = DEFAULT_SETTINGS.appearance.bmoGenerateFontColor.replace(/^#/, '');
-		frontmatter.prompt_select_generate_system_role = DEFAULT_SETTINGS.editor.prompt_select_generate_system_role;
+		frontmatter.systen_role = DEFAULT_SETTINGS.editor.systen_role;
 		frontmatter.ollama_mirostat = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat);
 		frontmatter.ollama_mirostat_eta = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_eta);
 		frontmatter.ollama_mirostat_tau = parseFloat(DEFAULT_SETTINGS.OllamaConnection.ollamaParameters.mirostat_tau);
@@ -567,7 +569,7 @@ export async function updateSettingsFromFrontMatter(plugin: BMOGPT, file: TFile)
 		plugin.settings.appearance.chatBoxBackgroundColor = '#' + frontmatter.chatbox_background_color;
 		plugin.settings.appearance.bmoGenerateBackgroundColor = '#' + frontmatter.bmo_generate_background_color;
 		plugin.settings.appearance.bmoGenerateFontColor = '#' + frontmatter.bmo_generate_font_color;
-		plugin.settings.editor.prompt_select_generate_system_role = frontmatter.prompt_select_generate_system_role;
+		plugin.settings.editor.systen_role = frontmatter.systen_role;
 		plugin.settings.OllamaConnection.ollamaParameters.mirostat = frontmatter.ollama_mirostat;
 		plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta = frontmatter.ollama_mirostat_eta;
 		plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau = frontmatter.ollama_mirostat_tau;
@@ -623,7 +625,7 @@ export async function updateFrontMatter(plugin: BMOGPT, file: TFile){
 		frontmatter.chatbox_background_color = plugin.settings.appearance.chatBoxBackgroundColor.replace(/^#/, '');
 		frontmatter.bmo_generate_background_color = plugin.settings.appearance.bmoGenerateBackgroundColor.replace(/^#/, '');
 		frontmatter.bmo_generate_font_color = plugin.settings.appearance.bmoGenerateFontColor.replace(/^#/, '');
-		frontmatter.prompt_select_generate_system_role = plugin.settings.editor.prompt_select_generate_system_role;
+		frontmatter.systen_role = plugin.settings.editor.systen_role;
 		frontmatter.ollama_mirostat = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.mirostat);
 		frontmatter.ollama_mirostat_eta = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.mirostat_eta);
 		frontmatter.ollama_mirostat_tau = parseFloat(plugin.settings.OllamaConnection.ollamaParameters.mirostat_tau);
@@ -978,7 +980,7 @@ export async function updateProfile(plugin: BMOGPT, file: TFile) {
 				});
 			}
 
-			plugin.settings.editor.prompt_select_generate_system_role = frontmatter.prompt_select_generate_system_role;
+			plugin.settings.editor.systen_role = frontmatter.systen_role;
 
 			plugin.settings.appearance.enableHeader = frontmatter.enable_header;
 			if (frontmatter.enable_header === true) {

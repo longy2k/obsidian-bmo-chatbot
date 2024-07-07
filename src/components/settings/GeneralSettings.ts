@@ -44,6 +44,15 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
     
         const selectEl = dropdown.selectEl;
         selectEl.innerHTML = ''; // Clear existing options
+
+        // Add the default model option
+        const defaultOption = selectEl.createEl('option', {
+            value: '',
+            text: 'No Model'
+        });
+        if (plugin.settings.general.model === 'No Model') {
+            defaultOption.selected = true;
+        }
     
         modelGroups.forEach(group => {
             if (group.models.length > 0) {
@@ -128,26 +137,6 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             modelDropdown = dropdown;
             createModelDropdown(dropdown);
         });
-
-
-    // const currentProfileFile = `${plugin.settings.profiles.profileFolderPath}/${plugin.settings.profiles.profile}`
-    // const currentProfile = plugin.app.vault.getAbstractFileByPath(currentProfileFile) as TFile;
-
-    // new Setting(settingsContainer)
-    //     .setName('System')
-    //     .setDesc('System role prompt.')
-    //     .addTextArea(text => text
-    //         .setPlaceholder('You are a helpful assistant.')
-    //         .setValue(plugin.settings.general.system_role !== undefined ? plugin.settings.general.system_role : DEFAULT_SETTINGS.general.system_role)
-    //         .onChange(async (value) => {
-    //             plugin.settings.general.system_role = value !== undefined ? value : DEFAULT_SETTINGS.general.system_role;
-    //         })
-    //         .inputEl.addEventListener('focusout', async () => {
-    //             plugin.app.vault.modify(currentProfile, plugin.settings.general.system_role);
-    //             await plugin.saveSettings();
-    //             SettingTab.display();
-    //         })
-    //     );
 
     new Setting(settingsContainer)
         .setName('Max Tokens')

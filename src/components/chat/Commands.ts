@@ -190,12 +190,12 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
   displayCommandBotMessageDiv.appendChild(commandSaveP);
 
   const streamCommandHeader = document.createElement('h4');
-  streamCommandHeader.textContent = 'Stream Commands';
+  streamCommandHeader.textContent = 'Response Commands';
   streamCommandHeader.style.textAlign = 'left';
   displayCommandBotMessageDiv.appendChild(streamCommandHeader);
 
   const commandStopP = document.createElement('p');
-  commandStopP.innerHTML = '<code>/stop</code> or <code>/s</code> - Stop fetching response for streaming models only.';
+  commandStopP.innerHTML = '<code>/stop</code> or <code>/s</code> - Stop fetching response. Warning: Anthropric models cannot be aborted. Please use with caution.';
   displayCommandBotMessageDiv.appendChild(commandStopP);
 
   messageBlockDiv.appendChild(displayCommandBotMessageDiv);

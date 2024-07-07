@@ -540,7 +540,7 @@ ul#dropdownOptions li:hover {
 	font-size: 0.7em;
 	color: var(--interactive-accent);
 	margin: 5px auto;
-	padding: 0;
+	padding: 0 8px;
 	display: flex;
 	justify-content: center;
 	align-items: center;

@@ -17,7 +17,8 @@ import { fetchOpenAIAPIResponseStream,
         fetchGoogleGeminiResponse, 
         fetchAnthropicResponse, 
         fetchOpenRouterResponseStream,
-        fetchOpenRouterResponse} from './components/FetchModelResponse';
+        fetchOpenRouterResponse,
+        fetchGoogleGeminiResponseStream} from './components/FetchModelResponse';
 
 export const VIEW_TYPE_CHATBOT = 'chatbot-view';
 export const ANTHROPIC_MODELS = ['claude-instant-1.2', 'claude-2.0', 'claude-2.1', 'claude-3-haiku-20240307', 'claude-3-sonnet-20240229', 'claude-3-5-sonnet-20240620', 'claude-3-opus-20240229'];
@@ -538,7 +539,11 @@ export class BMOView extends ItemView {
                 }
             }
             else if (this.settings.APIConnections.googleGemini.geminiModels.includes(this.settings.general.model)) {
-                await fetchGoogleGeminiResponse(this.plugin, this.settings, index);
+                if (this.settings.APIConnections.googleGemini.enableStream) {
+                    await fetchGoogleGeminiResponseStream(this.plugin, this.settings, index);
+                } else {
+                    await fetchGoogleGeminiResponse(this.plugin, this.settings, index);
+                }
             }
             else if (this.settings.APIConnections.openAI.openAIBaseModels.includes(this.settings.general.model)) {
                 if (this.settings.APIConnections.openAI.enableStream) {
@@ -633,6 +638,8 @@ export function populateModelDropdown(plugin: BMOGPT, settings: BMOSettings): HT
         modelOptions.innerHTML = ''; // Clear existing options
     }
 
+    const defaultModel = settings.general.model || DEFAULT_SETTINGS.general.model;
+
     // Get models as arrays
     const modelGroups = [
         { name: 'Ollama Models', models: settings.OllamaConnection.ollamaModels },
@@ -643,8 +650,14 @@ export function populateModelDropdown(plugin: BMOGPT, settings: BMOSettings): HT
         { name: 'OpenAI-Based Models', models: settings.APIConnections.openAI.openAIBaseModels },
         { name: 'OpenRouter Models', models: settings.APIConnections.openRouter.openRouterModels }
     ];
-    
-    const defaultModel = settings.general.model || DEFAULT_SETTINGS.general.model;
+
+    if (defaultModel === '') {
+        const optionEl = document.createElement('option');
+        optionEl.textContent = 'No Model';
+        optionEl.value = '';
+        optionEl.selected = true;
+        modelOptions.appendChild(optionEl);
+    }
     
     modelGroups.forEach(group => {
         if (group.models.length > 0) {

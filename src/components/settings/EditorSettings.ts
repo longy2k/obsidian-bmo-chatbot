@@ -1,6 +1,5 @@
 import { Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
-import { addDescriptionLink } from 'src/utils/DescriptionLink';
 
 
 export async function addEditorSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -32,13 +31,13 @@ export async function addEditorSettings(containerEl: HTMLElement, plugin: BMOGPT
     });
 
     new Setting(settingsContainer)
-        .setName('\'Prompt Select Generate\' System')
-        .setDesc(addDescriptionLink('System role for \'Prompt Select Generate\' command.', 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki/Prompt---Select---Generate-Command', '', '[Instructions]'))
+        .setName('Editor System Role')
+        .setDesc('System role for BMO Generate and \'Prompt Select Generate\' command.')
         .addTextArea(text => text
             .setPlaceholder('You are a helpful assistant.')
-            .setValue(plugin.settings.editor.prompt_select_generate_system_role !== undefined ? plugin.settings.editor.prompt_select_generate_system_role : DEFAULT_SETTINGS.editor.prompt_select_generate_system_role)
+            .setValue(plugin.settings.editor.systen_role !== undefined ? plugin.settings.editor.systen_role : DEFAULT_SETTINGS.editor.systen_role)
             .onChange(async (value) => {
-                plugin.settings.editor.prompt_select_generate_system_role = value !== undefined ? value : DEFAULT_SETTINGS.editor.prompt_select_generate_system_role;
+                plugin.settings.editor.systen_role = value !== undefined ? value : DEFAULT_SETTINGS.editor.systen_role;
                 await plugin.saveSettings();
             })
         );

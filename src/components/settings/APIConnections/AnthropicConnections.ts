@@ -32,7 +32,7 @@ export function addAnthropicConnectionSettings(containerEl: HTMLElement, plugin:
 
     new Setting(settingsContainer)
     .setName('Anthropic API Key')
-    .setDesc('Insert Anthropic API Key.')
+    .setDesc('Insert Anthropic API Key. Warning: Anthropic models cannot be aborted. Please use with caution.')
     .addText(text => text
         .setPlaceholder('insert-api-key')
         .setValue(plugin.settings.APIConnections.anthropic.APIKey ? `${plugin.settings.APIConnections.anthropic.APIKey.slice(0, 6)}-...${plugin.settings.APIConnections.anthropic.APIKey.slice(-4)}` : '')

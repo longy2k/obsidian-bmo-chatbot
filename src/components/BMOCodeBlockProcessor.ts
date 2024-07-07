@@ -141,7 +141,7 @@ export function bmoCodeBlockProcessor(plugin: Plugin, settings: BMOSettings) {
                 }
                 button.textContent = 'Generate';
                 loaderCircle.style.display = 'none';
-                bmoGenerationNotice.textContent = 'Cancelled.';
+                bmoGenerationNotice.textContent = 'Aborted.';
                 bmoGenerationNotice.style.color = '#ff6666';
                 bmoGenerationNotice.style.display = 'inline';
                 setTimeout(() => {
@@ -176,13 +176,10 @@ export function bmoCodeBlockProcessor(plugin: Plugin, settings: BMOSettings) {
                 } else if (settings.APIConnections.googleGemini.geminiModels.includes(modelName)) {
                     modelResponse = await fetchGoogleGeminiDataEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
                 } else if (settings.APIConnections.mistral.mistralModels.includes(modelName)) {
-                    button.disabled = true;
                     modelResponse = await fetchMistralDataEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
                 } else if (settings.APIConnections.openAI.openAIBaseModels.includes(modelName)) {
-                    button.disabled = true;
                     modelResponse = await fetchOpenAIBaseAPIResponseEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
                 } else if (settings.APIConnections.openRouter.openRouterModels.includes(modelName)) {
-                    button.disabled = true;
                     modelResponse = await fetchOpenRouterEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
                 } else {
                     bmoGenerationNotice.textContent = 'Model not found.';
@@ -238,7 +235,7 @@ export function bmoCodeBlockProcessor(plugin: Plugin, settings: BMOSettings) {
 
             } catch (error) {
                 if (error.name === 'AbortError') {
-                    console.log('Generation aborted');
+                    console.log('BMO Generate Aborted.');
                     button.textContent = 'Generate';
                     loaderCircle.style.display = 'none';
                     bmoGenerationNotice.textContent = 'Aborted.';

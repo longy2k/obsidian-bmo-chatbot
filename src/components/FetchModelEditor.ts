@@ -1,9 +1,7 @@
 import { requestUrl } from 'obsidian';
 import { BMOSettings } from 'src/main';
-import OpenAI from 'openai';
 
-// Request response from Ollama
-// NOTE: Abort does not work for requestUrl
+// Request response from Ollama REST API URL (editor)
 export async function fetchOllamaResponseEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     const ollamaRESTAPIURL = settings.OllamaConnection.RESTAPIURL;
 
@@ -41,7 +39,7 @@ export async function fetchOllamaResponseEditor(settings: BMOSettings, prompt: s
             },
             body: JSON.stringify({
                 model: model || settings.general.model,
-                system: settings.editor.prompt_select_generate_system_role,
+                system: settings.editor.systen_role,
                 prompt: prompt,
                 images: imagesVaultPath,
                 stream: false,
@@ -79,7 +77,7 @@ export async function fetchRESTAPIURLDataEditor(settings: BMOSettings, prompt: s
             body: JSON.stringify({
                 model: model || settings.general.model,
                 messages: [
-                    { role: 'system', content: settings.editor.prompt_select_generate_system_role || 'You are a helpful assistant.' },
+                    { role: 'system', content: settings.editor.systen_role || 'You are a helpful assistant.' },
                     { role: 'user', content: prompt }
                 ],
                 max_tokens: parseInt(maxTokens || settings.general.max_tokens || '-1'),
@@ -115,7 +113,7 @@ export async function fetchAnthropicResponseEditor(settings: BMOSettings, prompt
             },
             body: JSON.stringify({
                 model: model || settings.general.model,
-                system: settings.editor.prompt_select_generate_system_role,
+                system: settings.editor.systen_role,
                 messages: [
                     { role: 'user', content: prompt}
                 ],
@@ -134,7 +132,6 @@ export async function fetchAnthropicResponseEditor(settings: BMOSettings, prompt
 
 // Fetch Google Gemini API Editor
 export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
-    console.log(prompt);
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${settings.APIConnections.googleGemini.APIKey}`, {
             method: 'POST',
@@ -145,7 +142,7 @@ export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, prompt:
                 contents: [
                     {
                         parts: [
-                            { text: settings.editor.prompt_select_generate_system_role + prompt }
+                            { text: settings.editor.systen_role + prompt }
                         ]
                     }
                 ],
@@ -169,25 +166,26 @@ export async function fetchGoogleGeminiDataEditor(settings: BMOSettings, prompt:
 // Fetch Mistral API Editor
 export async function fetchMistralDataEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     try {
-        const response = await requestUrl({
-            url: 'https://api.mistral.ai/v1/chat/completions',
+        const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${settings.APIConnections.mistral.APIKey}`
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${settings.APIConnections.mistral.APIKey}`
             },
             body: JSON.stringify({
-                model: model || settings.general.model,
-                messages: [
-                    { role: 'system', content: settings.editor.prompt_select_generate_system_role },
-                    { role: 'user', content: prompt}
-                ],
-                max_tokens: parseInt(maxTokens || settings.general.max_tokens),
-                temperature: parseInt(temperature || settings.general.temperature),
+              model: model || settings.general.model,
+              messages: [
+                { role: 'system', content: settings.editor.systen_role },
+                { role: 'user', content: prompt }
+              ],
+              max_tokens: parseInt(maxTokens || settings.general.max_tokens),
+              temperature: parseInt(temperature || settings.general.temperature),
             }),
+            signal: signal,
         });
-
-        const message = response.json.choices[0].message.content.trim();
+        
+        const data = await response.json();
+        const message = data.choices[0].message.content.trim();
         return message;
 
     } catch (error) {
@@ -197,32 +195,34 @@ export async function fetchMistralDataEditor(settings: BMOSettings, prompt: stri
 
 // Fetch OpenAI-Based API Editor
 export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
-    const openai = new OpenAI({
-        apiKey: settings.APIConnections.openAI.APIKey,
-        baseURL: settings.APIConnections.openAI.openAIBaseUrl,
-        dangerouslyAllowBrowser: true, // apiKey is stored within data.json
-    });
-
-    const completion = await openai.chat.completions.create({
-        model: model ||settings.general.model,
-        max_tokens: parseInt(maxTokens || settings.general.max_tokens),
-        temperature: parseInt(temperature || settings.general.temperature),
-        messages: [
-            { role: 'system', content: settings.editor.prompt_select_generate_system_role },
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${settings.APIConnections.openAI.APIKey}`,
+        },
+        body: JSON.stringify({
+          model: model || settings.general.model,
+          max_tokens: parseInt(maxTokens || settings.general.max_tokens),
+          temperature: parseInt(temperature || settings.general.temperature),
+          stream: false,
+          messages: [
+            { role: 'system', content: settings.editor.systen_role },
             { role: 'user', content: prompt}
         ],
+        }),
+        signal: signal,
     });
-
-
-    const message = completion.choices[0].message.content?.trim();
+      
+    const data = await response.json();
+    const message = data.choices[0].message.content || '';
     return message;
 }
 
 // Request response from openai-based rest api url (editor)
 export async function fetchOpenRouterEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
     try {
-        const response = await requestUrl({
-            url: 'https://openrouter.ai/api/v1/chat/completions',
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -231,15 +231,17 @@ export async function fetchOpenRouterEditor(settings: BMOSettings, prompt: strin
             body: JSON.stringify({
                 model: model || settings.general.model,
                 messages: [
-                    { role: 'system', content: settings.editor.prompt_select_generate_system_role },
+                    { role: 'system', content: settings.editor.systen_role },
                     { role: 'user', content: prompt}
                 ],
                 max_tokens: parseInt(maxTokens || settings.general.max_tokens),
                 temperature: parseInt(temperature || settings.general.temperature),
             }),
+            signal: signal,
         });
-
-        const message = response.json.choices[0].message.content.trim();
+        
+        const data = await response.json();
+        const message = data.choices[0].message.content.trim();
         return message;
 
     } catch (error) {

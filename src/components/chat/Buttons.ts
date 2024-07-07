@@ -1,7 +1,7 @@
 import { MarkdownRenderer, Modal, Notice, TFile, setIcon } from 'obsidian';
 import BMOGPT, { BMOSettings, checkActiveFile } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, fileNameMessageHistoryJson, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
-import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse, fetchOpenRouterResponseStream, fetchOpenRouterResponse } from '../FetchModelResponse';
+import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse, fetchOpenRouterResponseStream, fetchOpenRouterResponse, fetchGoogleGeminiResponseStream } from '../FetchModelResponse';
 import { getActiveFileContent } from '../editor/ReferenceCurrentNote';
 import { addParagraphBreaks } from './Message';
 
@@ -83,7 +83,11 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
             }
             else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
                 try {
-                    await fetchGoogleGeminiResponse(plugin, settings, index);
+                    if (settings.APIConnections.googleGemini.enableStream) {
+                        await fetchGoogleGeminiResponseStream(plugin, settings, index);
+                    } else {
+                        await fetchGoogleGeminiResponse(plugin, settings, index);
+                    }
                 }
                 catch (error) {
                     console.error('Google Gemini Error:', error);
@@ -274,7 +278,11 @@ export function displayUserEditButton (plugin: BMOGPT, settings: BMOSettings, us
                     }
                     else if (settings.APIConnections.googleGemini.geminiModels.includes(settings.general.model)) {
                         try {
-                            await fetchGoogleGeminiResponse(plugin, settings, index);
+                            if (settings.APIConnections.googleGemini.enableStream) {
+                                await fetchGoogleGeminiResponseStream(plugin, settings, index);
+                            } else {
+                                await fetchGoogleGeminiResponse(plugin, settings, index);
+                            }
                         }
                         catch (error) {
                             console.error('Google GeminiError:', error);
