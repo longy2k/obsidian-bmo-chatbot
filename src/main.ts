@@ -3,7 +3,7 @@ import { BMOView, VIEW_TYPE_CHATBOT, populateModelDropdown } from './view';
 import { BMOSettingTab } from './settings';
 import { promptSelectGenerateCommand, renameTitleCommand } from './components/editor/EditorCommands';
 import { colorToHex, isValidHexColor } from './utils/ColorConverter';
-import { bmoCodeBlockProcessor } from './components/BMOCodeBlockProcessor';
+import { bmoCodeBlockProcessor } from './components/editor/BMOCodeBlockProcessor';
 
 export interface BMOSettings {
 	profiles: {

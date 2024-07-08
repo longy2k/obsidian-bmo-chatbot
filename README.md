@@ -1,6 +1,6 @@
 # BMO Chatbot for Obsidian
 
-Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, Google Gemini, OpenAI, Mistral AI, and more for Obsidian.
+Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, Google Gemini, Mistral AI, OpenAI, and more for Obsidian.
 
 <p align="center">
   <img src="README_images/original-example.png" alt="original_example">

@@ -1,6 +1,6 @@
 import { MarkdownPostProcessorContext, MarkdownRenderer, Plugin } from 'obsidian';
 import { BMOSettings } from 'src/main';
-import { fetchAnthropicResponseEditor, fetchOllamaResponseEditor, fetchRESTAPIURLDataEditor, fetchGoogleGeminiDataEditor, fetchMistralDataEditor, fetchOpenAIBaseAPIResponseEditor, fetchOpenRouterEditor } from './FetchModelEditor';
+import { fetchAnthropicResponseEditor, fetchOllamaResponseEditor, fetchRESTAPIURLDataEditor, fetchGoogleGeminiDataEditor, fetchMistralDataEditor, fetchOpenAIBaseAPIResponseEditor, fetchOpenRouterEditor } from '../FetchModelEditor';
 
 export function bmoCodeBlockProcessor(plugin: Plugin, settings: BMOSettings) {
     let previousPrompt = '';
@@ -192,8 +192,10 @@ export function bmoCodeBlockProcessor(plugin: Plugin, settings: BMOSettings) {
                 }
 
                 if (modelResponse !== '') {
-                    // Replace backticks with escaped backticks
-                    modelResponse = modelResponse.replace(/`/g, '\\`');
+                    // Replace backticks with escaped backticks if it doesn't already exist
+                    if (!modelResponse.includes('\\`')) {
+                        modelResponse = modelResponse.replace(/`/g, '\\`');
+                    }
 
                     // Check if <response> tags exist in the source
                     const responseTagsExist = source.includes('<response>') && source.includes('</response>');
