@@ -337,7 +337,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
     }
     else if (Object.entries(modelAliases).find(([key, val]) => val === inputModel)) {
       settings.general.model = modelAliases[Object.keys(modelAliases).find(key => modelAliases[key] === inputModel) || ''];
-      new Notice('Updated model to {settings.general.model}');
+      new Notice(`Updated model to ${settings.general.model}`);
     }
     else {
       new Notice('Invalid model.');
