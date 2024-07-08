@@ -886,8 +886,6 @@ export async function fetchGoogleGeminiResponse(plugin: BMOGPT, settings: BMOSet
             }),
             signal: abortController?.signal,
           });
-
-          console.log(response);
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

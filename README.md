@@ -1,21 +1,52 @@
 # BMO Chatbot for Obsidian
 
-Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, OpenAI, Mistral AI, and more for Obsidian.
+Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, Google Gemini, OpenAI, Mistral AI, and more for Obsidian.
 
 <p align="center">
   <img src="README_images/original-example.png" alt="original_example">
-  <img src="README_images/dataview-example.png" alt="dataview_example">
 </p>
 
 ## Features
 
+### Profiles
+
+Create chatbots with specific knowledge, personalities, and presets.
+
+<p align="center">
+  <img src="README_images/profiles.gif" alt="profiles_example">
+</p>
+
+### BMO Generate
+
+Generate a response from the editor using your connected LLMs.
+
+<p align="center">
+  <img src="README_images/bmo-generate.gif" alt="bmo_generate_example">
+</p>
+
+### 'Prompt Select Generate' Command
+
+Prompt, select, and generate within your editor.
+
+<p align="center">
+  <img src="README_images/prompt-select-generate.gif" alt="prompt_select_generate_example">
+</p>
+
+### Obsidian Markdown Rendering
+
+Render codeblocks (e.g. Dataview) that can be displayed in your chat view. Use the system prompt to customize your chatbot responses.
+
+<p align="center">
+  <img src="README_images/dataview-example.png" alt="dataview_example">
+</p>
+
+### And More!
+
 -   **Interact with self-hosted Large Language Models (LLMs):** Use the REST API URLs provided to interact with self-hosted Large Language Models (LLMs) using [Ollama](https://ollama.ai) or [LM Studio](https://lmstudio.ai/).
--   **Profiles:** Create chatbots with specific knowledge, personalities, and presets.
--   **Chat from anywhere in Obsidian:** Chat with your bot from anywhere within Obsidian.
 -   **Chat with current note:** Use your chatbot to reference and engage within your current note.
--   **Chatbot renders in Obsidian Markdown:** Receive formatted responses in Obsidian Markdown for consistency.
+-   **Chat from anywhere in Obsidian:** Chat with your bot from anywhere within Obsidian.
 -   **Customizable bot name:** Personalize the chatbot's name.
--   **Prompt Select Generate:** Prompt, select, and generate within your editor.
+-   **Chatbot renders in Obsidian Markdown:** Receive formatted responses in Obsidian Markdown for consistency.
 -   **Save current chat history as markdown:** Use the `/save` command in chat to save current conversation.
 
 ## Requirements
@@ -69,7 +100,7 @@ To start using the plugin, enable it in your settings menu and insert an API key
 -   `/prompt` - List or change prompts.
     -   `/prompt 1` or `/prompt [PROMPT-NAME]`
 -   `/maxtokens [VALUE]` - Set max tokens.
--   `/temp [VALUE]` - Change temperature range from 0 to 1.
+-   `/temp [VALUE]` - Change temperature range from 0 to 2.
 -   `/ref on | off` - Turn on or off reference current note.
 -   `/append` - Append current chat history to current active note.
 -   `/save` - Save current chat history to a note.
@@ -80,10 +111,10 @@ To start using the plugin, enable it in your settings menu and insert an API key
 
 -   Any self-hosted models using [Ollama](https://ollama.ai).
     -   See [instructions](https://github.com/longy2k/obsidian-bmo-chatbot/wiki) to setup Ollama with Obsidian.
--   Any self-hosted models using OpenAI's REST API URL endpoints.
+-   Any self-hosted models using OpenAI-based endpoints.
     -   [LM Studio](https://lmstudio.ai/)
     -   [LocalAI](https://github.com/mudler/LocalAI)
--   Anthropic
+-   Anthropic (Warning: Anthropric models cannot be aborted. Please use with caution. Reload plugin if necessary.)
     -   claude-instant-1.2
     -   claude-2.0
     -   claude-2.1
@@ -92,7 +123,7 @@ To start using the plugin, enable it in your settings menu and insert an API key
     -   claude-3-5-sonnet-20240620
     -   claude-3-opus-20240229
 -   Mistral AI's models
--   Google Gemini Pro
+-   Google Gemini Models
 -   OpenAI
     -   gpt-3.5-turbo
     -   gpt-4
