@@ -45,7 +45,7 @@ export async function fetchOllamaResponseEditor(settings: BMOSettings, prompt: s
                 stream: false,
                 keep_alive: parseInt(settings.OllamaConnection.ollamaParameters.keep_alive),
                 options: {
-                    temperature: temperature ? parseInt(temperature) : parseInt(settings.general.temperature),
+                    temperature: temperature ? parseFloat(temperature) : parseFloat(settings.general.temperature),
                     num_predict: maxTokens ? parseInt(maxTokens) : parseInt(settings.general.max_tokens),
                 },
             }),
@@ -118,7 +118,7 @@ export async function fetchAnthropicResponseEditor(settings: BMOSettings, prompt
                     { role: 'user', content: prompt}
                 ],
                 max_tokens: parseInt(maxTokens || settings.general.max_tokens) || 4096,
-                temperature: parseInt(temperature || settings.general.temperature),
+                temperature: parseFloat(temperature || settings.general.temperature),
             }),
         });
 
@@ -179,7 +179,7 @@ export async function fetchMistralDataEditor(settings: BMOSettings, prompt: stri
                 { role: 'user', content: prompt }
               ],
               max_tokens: parseInt(maxTokens || settings.general.max_tokens),
-              temperature: parseInt(temperature || settings.general.temperature),
+              temperature: parseFloat(temperature || settings.general.temperature),
             }),
             signal: signal,
         });
@@ -204,7 +204,7 @@ export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, pr
         body: JSON.stringify({
           model: model || settings.general.model,
           max_tokens: parseInt(maxTokens || settings.general.max_tokens),
-          temperature: parseInt(temperature || settings.general.temperature),
+          temperature: parseFloat(temperature || settings.general.temperature),
           stream: false,
           messages: [
             { role: 'system', content: settings.editor.systen_role },
@@ -216,6 +216,7 @@ export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, pr
       
     const data = await response.json();
     const message = data.choices[0].message.content || '';
+
     return message;
 }
 
@@ -235,7 +236,7 @@ export async function fetchOpenRouterEditor(settings: BMOSettings, prompt: strin
                     { role: 'user', content: prompt}
                 ],
                 max_tokens: parseInt(maxTokens || settings.general.max_tokens),
-                temperature: parseInt(temperature || settings.general.temperature),
+                temperature: parseFloat(temperature || settings.general.temperature),
             }),
             signal: signal,
         });
