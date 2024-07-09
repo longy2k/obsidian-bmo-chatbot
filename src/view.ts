@@ -368,6 +368,7 @@ export class BMOView extends ItemView {
                     '/s', 
                     '/stop', 
                     '/save', 
+                    '/load ',
                     '/m ', 
                     '/model ', 
                     '/models ', 

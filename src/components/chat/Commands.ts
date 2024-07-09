@@ -1,4 +1,4 @@
-import { Notice, TFile } from 'obsidian';
+import { Modal, Notice, TFile } from 'obsidian';
 import { BMOSettings, DEFAULT_SETTINGS, updateSettingsFromFrontMatter } from '../../main';
 import { colorToHex } from '../../utils/ColorConverter';
 import { fileNameMessageHistoryJson, messageHistory } from '../../view';
@@ -9,6 +9,8 @@ import { displayCommandBotMessage } from './BotMessage';
 import { addMessage } from './Message';
 // Define handler function signatures
 type CommandHandler = (input: string, settings: BMOSettings, plugin: BMOGPT) => void | Promise<void>;
+
+export let lastLoadedChatHistoryFile: TFile | null = null;
 
 // Define the command map with explicit typing
 export const commandMap: Record<string, CommandHandler> = {
@@ -21,6 +23,7 @@ export const commandMap: Record<string, CommandHandler> = {
   '/maxtokens': (input, settings, plugin) => commandMaxTokens(input, settings, plugin),
   '/append': (input, settings, plugin) => commandAppend(plugin, settings),
   '/save': (input, settings, plugin) => commandSave(plugin, settings),
+  '/load': (input, settings, plugin) => commandLoad(input, plugin, settings),
   '/clear': (input, settings, plugin) => removeMessageThread(plugin, 0),
   '/stop': (input, settings, plugin) => commandStop()
 };
@@ -189,6 +192,10 @@ export function commandHelp(plugin: BMOGPT, settings: BMOSettings) {
   commandSaveP.innerHTML = '<code>/save</code> - Save current chat history to a note.';
   displayCommandBotMessageDiv.appendChild(commandSaveP);
 
+  const commandLoadP = document.createElement('p');
+  commandLoadP.innerHTML = '<code>/load</code> - List or load a chat history into view.';
+  displayCommandBotMessageDiv.appendChild(commandLoadP);
+
   const streamCommandHeader = document.createElement('h4');
   streamCommandHeader.textContent = 'Response Commands';
   streamCommandHeader.style.textAlign = 'left';
@@ -349,7 +356,6 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
 
 // `/profile "[VALUE]"` to change profile.
 export async function commandProfile(input: string, settings: BMOSettings, plugin: BMOGPT) {
-  
   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
 
   if (!settings.profiles.profileFolderPath) {
@@ -367,6 +373,8 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
   // Sorting the files array alphabetically by file name
   files.sort((a, b) => a.name.localeCompare(b.name));
 
+  let currentProfile = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+
   // Check if the user has not specified a profile
   if (!input.split(' ')[1]) {
 
@@ -375,8 +383,6 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
       const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, ''); // Removing the last dot and what follows
       return `<li>${fileNameWithoutExtension}</li>`;
     }).join('');
-
-    let currentProfile = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
 
     // Check if currentProfile is empty, and set it to "Empty" if it is
     if (!currentProfile) {
@@ -420,6 +426,14 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
       plugin.settings.profiles.profile = profileAliases[inputValue] + '.md';
       const profileFilePath = plugin.settings.profiles.profileFolderPath + '/' + profileAliases[inputValue] + '.md';
       const currentProfile = plugin.app.vault.getAbstractFileByPath(profileFilePath) as TFile;
+
+      const currentProfileName = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+  
+      // Finding the index of the currentProfile in the profileFiles array
+      const profileIndex = files.findIndex((file) => file.basename === currentProfileName);
+
+      settings.profiles.lastLoadedChatHistoryPath = settings.profiles.lastLoadedChatHistory[profileIndex];
+
       // new Notice(`Profile updated to '${profileAliases[inputValue]}'`);
       plugin.activateView();
       await updateSettingsFromFrontMatter(plugin, currentProfile);
@@ -431,6 +445,14 @@ export async function commandProfile(input: string, settings: BMOSettings, plugi
             plugin.settings.profiles.profile = matchedProfile[1] + '.md';
             const profileFilePath = plugin.settings.profiles.profileFolderPath + '/' + matchedProfile[1] + '.md';
             const currentProfile = plugin.app.vault.getAbstractFileByPath(profileFilePath) as TFile;
+
+            const currentProfileName = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+  
+            // Finding the index of the currentProfile in the profileFiles array
+            const profileIndex = files.findIndex((file) => file.basename === currentProfileName);
+      
+            settings.profiles.lastLoadedChatHistoryPath = settings.profiles.lastLoadedChatHistory[profileIndex];
+            
             plugin.activateView();
             await updateSettingsFromFrontMatter(plugin, currentProfile);
             await plugin.saveSettings();
@@ -621,41 +643,6 @@ export async function commandMaxTokens(input: string, settings: BMOSettings, plu
   await plugin.saveSettings();
 }
 
-// `/system "[VALUE]"` to change system prompt
-// export async function commandSystem(input: string, settings: BMOSettings, plugin: BMOGPT) {
-//   let commandBotMessage = '';
-//   const commandParts = input.split(' ');
-//   const commandAction = commandParts[1] ? commandParts[1].toLowerCase() : '';
-//   let systemSettingMessage: string;
-
-//   // Check for clear command first
-//   if (commandAction === 'c' || commandAction === 'clear') {
-//     settings.general.system_role = '';
-//     systemSettingMessage = 'System cleared.';
-//   } else if (commandAction !== '') {
-//     const systemPromptValue = input.match(/['"]([^'"]+)['"]/) || [null, commandAction];
-
-//     if (systemPromptValue[1] !== null) {
-//       // Update system_role with the provided value
-//       settings.general.system_role = systemPromptValue[1];
-//       systemSettingMessage = `System updated: "${systemPromptValue[1]}"`;
-//     } else {
-//       // Handle case where no valid system value is provided
-//       systemSettingMessage = `Current system: "${settings.general.system_role}"`;
-//     }
-//   } else {
-//     // No action specified
-//     systemSettingMessage = `Current system: "${settings.general.system_role}"`;
-//   }
-  
-//   commandBotMessage += `<p><strong>${systemSettingMessage}</strong></p>`;
-//   const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
-//   const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
-//   messageContainer.appendChild(botMessageDiv);
-
-//   await plugin.saveSettings();
-// }
-
 // `/append` to append current chat history to current active note.
 export async function commandAppend(plugin: BMOGPT, settings: BMOSettings) {
   let markdownContent = '';
@@ -760,13 +747,6 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
     let markdownContent = '';
     const allFiles = plugin.app.vault.getFiles(); // Retrieve all files from the vault
 
-    // Retrieve model name
-    const modelOptionsElement = document.querySelector('#modelOptions') as HTMLHeadingElement;
-    let modelOptions = 'Unknown'; // Default model name
-    if (modelOptionsElement && modelOptionsElement.textContent) {
-        modelOptions = modelOptionsElement.textContent.replace('Model: ', '').toLowerCase();
-    }
-
     const templateFile = allFiles.find(file => file.path.toLowerCase() === settings.chatHistory.templateFilePath.toLowerCase());
 
     if (templateFile) {
@@ -774,12 +754,15 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
   
       // Check if the file content has YAML front matter
       if (/^---\s*[\s\S]*?---/.test(fileContent)) {
-          // Insert model name into existing front matter
-          fileContent = fileContent.replace(/^---/, `---\nmodel: ${modelOptions}`);
+        // Check if the model property already exists in the front matter
+        if (!/^model:\s/m.test(fileContent)) {
+          // Insert model name into existing front matter if it doesn't exist
+          fileContent = fileContent.replace(/^---/, `---\nmodel: ${settings.general.model}`);
+        }
       } else {
           // Prepend new front matter
           fileContent = `---
-  model: ${modelOptions}
+  model: ${settings.general.model}
 ---\n` + fileContent;
       }
       markdownContent += fileContent;
@@ -787,7 +770,7 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
       // YAML front matter
       markdownContent += 
       `---
-  model: ${modelOptions}
+  model: ${settings.general.model}
 ---\n`;
   }
 
@@ -879,17 +862,381 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
     else {
       fileName = folderName + baseFileName + ' ' + dateTimeStamp + fileExtension;
     }
-
-    // Create the new note with formatted Markdown content
-    const file = await plugin.app.vault.create(fileName, markdownContent);
-    if (file) {
-      new Notice('Saved conversation.');
-
-      // Open the newly created note in a new pane
-      plugin.app.workspace.openLinkText(fileName, '', true, { active: true });
+  
+    // Update if lastLoadedChatHistoryPath is not null
+    if (settings.profiles.lastLoadedChatHistoryPath !== null) {
+      lastLoadedChatHistoryFile = plugin.app.vault.getAbstractFileByPath(settings.profiles.lastLoadedChatHistoryPath) as TFile;
     }
+
+    if (lastLoadedChatHistoryFile === null) {
+      // Create the new note with formatted Markdown content
+      const file = await plugin.app.vault.create(fileName, markdownContent);
+        // Fetching files from the specified folder (profiles)
+				const profileFiles = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(settings.profiles.profileFolderPath));
+
+				// Sorting the files array alphabetically by file name
+				profileFiles.sort((a, b) => a.name.localeCompare(b.name));
+        const currentProfile = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+				
+				// Finding the index of the currentProfile in the profileFiles array
+				const profileIndex = profileFiles.findIndex((file) => file.basename === currentProfile);
+        if (file) {
+          settings.profiles.lastLoadedChatHistoryPath = file.path;
+          settings.profiles.lastLoadedChatHistory[profileIndex] = file.path;
+          // Open the newly created note in a new pane
+          plugin.app.workspace.openLinkText(fileName, '', true, { active: true });
+        }
+    } else {
+      // Update the existing note with the formatted Markdown content
+      await plugin.app.vault.modify(lastLoadedChatHistoryFile, markdownContent);
+      plugin.app.workspace.openLinkText(lastLoadedChatHistoryFile.path, lastLoadedChatHistoryFile.path, true, { active: true });
+    }
+    new Notice('Saved conversation.');
+    await plugin.saveSettings();
   } catch (error) {
     console.error('Failed to create note:', error);
+  }
+}
+
+// `/load` to load chat history.
+export async function commandLoad(input: string, plugin: BMOGPT, settings: BMOSettings) {
+  const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+  const folderPath = plugin.settings.chatHistory.chatHistoryPath.trim() || DEFAULT_SETTINGS.chatHistory.chatHistoryPath;      
+
+  // Fetching files from the specified folder
+  const files = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(folderPath));
+
+  // Sorting the files array alphabetically by file name
+  files.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Fetching files from the specified folder (profiles)
+  const profileFiles = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.profiles.profileFolderPath));
+
+  // Sorting the files array alphabetically by file name
+  profileFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+  const currentProfile = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+
+  // Finding the index of the currentProfile in the profileFiles array
+  const profileIndex = profileFiles.findIndex((file) => file.basename === currentProfile);
+
+
+// Check if the user has not specified a profile
+if (!input.split(' ')[1]) {
+  // Group files with the same name and create list items
+  const fileGroups: { [key: string]: { count: number } } = files.reduce((acc, file) => {
+    const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, '');
+    if (acc[fileNameWithoutExtension]) {
+      acc[fileNameWithoutExtension].count++;
+    } else {
+      acc[fileNameWithoutExtension] = { count: 1 };
+    }
+    return acc;
+  }, {} as { [key: string]: { count: number } });
+
+  const fileListItems = Object.entries(fileGroups)
+    .map(([fileName, { count }]) => {
+      return count > 1 ? `<li>${fileName} [${count} files found]</li>` : `<li>${fileName}</li>`;
+    })
+    .join('');
+
+  const commandBotMessage = 
+  `<h2 style="text-align: center;">Chat History</h2>
+   <p style="text-align: center;"><b>Current Chat History:</b> ${settings.profiles.lastLoadedChatHistory[profileIndex] ? settings.profiles.lastLoadedChatHistory[profileIndex] : 'Empty'}</p>
+    <ol>${fileListItems}</ol>`;
+
+  const botMessageDiv = displayCommandBotMessage(plugin, settings, messageHistory, commandBotMessage);
+  messageContainer.appendChild(botMessageDiv);
+
+  return;
+}
+
+// Check if the user has specified a prompt after the "/prompt" command
+if (input.startsWith('/load')) {
+  let inputValue = input.split(' ').slice(1).join(' ').trim();
+
+  // Remove quotation marks if present
+  if ((inputValue.startsWith('"') && inputValue.endsWith('"')) ||
+      (inputValue.startsWith('\'') && inputValue.endsWith('\''))) {
+    inputValue = inputValue.substring(1, inputValue.length - 1);
+  }
+
+  const loadAliases: { [key: string]: string } = {};
+  let currentIndex = 1;
+  
+  // Create aliases for each file
+  for (let i = 0; i < files.length; i++) {
+    const fileNameWithoutExtension = files[i].name.replace(/\.[^/.]+$/, '');
+  
+    // Check if an entry with the same file name already exists
+    const existingKey = Object.values(loadAliases).find(
+      value => value === fileNameWithoutExtension
+    );
+  
+    if (!existingKey) {
+      // Add the entry only if it doesn't exist
+      loadAliases[currentIndex.toString().toLowerCase()] = fileNameWithoutExtension;
+      currentIndex++;
+    }
+  }
+    const messageHistory: { role: string; content: string }[] = [];
+
+    const loadChatHistory = async (filePath: string): Promise<boolean> => {
+      const currentLoad = plugin.app.vault.getAbstractFileByPath(filePath) as TFile;
+      const fileContent = await plugin.app.vault.cachedRead(currentLoad);
+      const contentWithoutFrontmatter = fileContent.replace(/^---\n[\s\S]*?\n---\n/, '');
+    
+      const lines = contentWithoutFrontmatter.split('\n');
+      let currentRole = '';
+      let currentContent = '';
+      let headerCount = 0;
+    
+      for (const line of lines) {
+        if (line.startsWith('###### ')) {
+          headerCount++;
+          if (currentContent) {
+            messageHistory.push({
+              role: currentRole,
+              content: currentContent.trim(),
+            });
+          }
+          currentRole = currentRole === 'user' ? 'assistant' : 'user';
+          currentContent = '';
+        } else {
+          currentContent += line + '\n';
+        }
+      }
+    
+      if (currentContent) {
+        messageHistory.push({
+          role: currentRole,
+          content: currentContent.trim(),
+        });
+      }
+    
+      if (headerCount % 2 !== 0) {
+        new Notice('Incorrect formatting.');
+        return false;
+      }
+    
+      const updatedJsonString = JSON.stringify(messageHistory, null, 4);
+      await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), updatedJsonString);
+      plugin.activateView();
+      return true;
+    };
+    
+    if (loadAliases[inputValue]) {    
+      const matchingFiles = files.filter(file => file.name.includes(loadAliases[inputValue]));
+
+      // Create modal content
+      const modal = new Modal(plugin.app);
+      const modalContent = document.createElement('div');
+      modalContent.classList.add('modal-content');
+    
+      const heading = document.createElement('h2');
+      heading.textContent = 'Load Chat History';
+      modalContent.appendChild(heading);
+    
+      if (matchingFiles.length === 1) {
+        // Display confirmation message for a single file
+        const message = document.createElement('p');
+        message.textContent = `Are you sure you want to override your current chat history with "${matchingFiles[0].name}"?`;
+        modalContent.appendChild(message);
+    
+        const confirmLoadButton = document.createElement('button');
+        confirmLoadButton.id = 'confirmLoad';
+        confirmLoadButton.textContent = 'Confirm';
+        modalContent.appendChild(confirmLoadButton);
+    
+        confirmLoadButton?.addEventListener('click', async function () {
+          const selectedFile = matchingFiles[0];
+          const chatHistoryFilePath = selectedFile.path;
+          const success = await loadChatHistory(chatHistoryFilePath);
+          if (success) {
+            new Notice(`Switched to '${selectedFile.path}' chat history.`);
+            lastLoadedChatHistoryFile = selectedFile;
+
+            settings.profiles.lastLoadedChatHistoryPath = selectedFile.path;
+
+            // Update the lastLoadedChatHistoryPath for the current profile
+            settings.profiles.lastLoadedChatHistory[profileIndex] = settings.profiles.lastLoadedChatHistoryPath;
+            await plugin.saveSettings();
+          }
+          modal.close();
+        });
+      } else {
+        // Display file options for multiple matching files
+        const message = document.createElement('p');
+        message.textContent = 'Select a chat history to override:';
+        modalContent.appendChild(message);
+    
+        // Create a container for file options
+        const optionsContainer = document.createElement('div');
+        optionsContainer.classList.add('file-options');
+        optionsContainer.style.marginBottom = '16px';
+    
+        // Create a radio button and label for each matching file
+        matchingFiles.forEach((file, index) => {
+          const radioElement = document.createElement('input');
+          radioElement.type = 'radio';
+          radioElement.name = 'fileOption';
+          radioElement.value = file.path;
+          radioElement.id = `file-${index}`;
+    
+          const labelElement = document.createElement('label');
+          labelElement.htmlFor = `file-${index}`;
+          labelElement.textContent = file.path;
+    
+          optionsContainer.appendChild(radioElement);
+          optionsContainer.appendChild(labelElement);
+          optionsContainer.appendChild(document.createElement('br'));
+        });
+    
+        modalContent.appendChild(optionsContainer);
+    
+        const confirmLoadButton = document.createElement('button');
+        confirmLoadButton.id = 'confirmLoad';
+        confirmLoadButton.textContent = 'Load';
+        modalContent.appendChild(confirmLoadButton);
+    
+        confirmLoadButton?.addEventListener('click', async function () {
+          const selectedRadio = optionsContainer.querySelector('input[type="radio"]:checked') as HTMLInputElement;
+          if (selectedRadio) {
+            const selectedFilePath = selectedRadio.value;
+            const selectedFile = matchingFiles.find(file => file.path === selectedFilePath);
+            if (selectedFile) {
+              const chatHistoryFilePath = selectedFile.path;
+              const success = await loadChatHistory(chatHistoryFilePath);
+              if (success) {
+                new Notice(`Switched to '${selectedFile.path}' chat history.`);
+                lastLoadedChatHistoryFile = selectedFile;
+    
+                settings.profiles.lastLoadedChatHistoryPath = selectedFile.path;
+    
+                // Update the lastLoadedChatHistoryPath for the current profile
+                settings.profiles.lastLoadedChatHistory[profileIndex] = settings.profiles.lastLoadedChatHistoryPath;
+                await plugin.saveSettings();
+              }
+              modal.close();
+            }
+          }
+        });
+      }
+    
+      modal.contentEl.appendChild(modalContent);
+      modal.open();
+    } else if (Object.values(loadAliases).map(v => v.toLowerCase()).includes(inputValue.toLowerCase())) {
+      const matchedFile = Object.entries(loadAliases).find(([key, value]) => value.toLowerCase() === inputValue.toLowerCase());
+    
+      if (matchedFile) {
+        const matchingFiles = files.filter(file => file.name.includes(matchedFile[1]));
+    
+        // matchingFiles.forEach(file => {
+        //   console.log(file.path);
+        // });
+    
+        // Create modal content
+        const modal = new Modal(plugin.app);
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('modal-content');
+    
+        const heading = document.createElement('h2');
+        heading.textContent = 'Load Chat History';
+        modalContent.appendChild(heading);
+    
+        if (matchingFiles.length === 1) {
+          // Display confirmation message for a single file
+          const message = document.createElement('p');
+          message.textContent = `Are you sure you want to override your current chat history with "${matchingFiles[0].name}"?`;
+          modalContent.appendChild(message);
+      
+          const confirmLoadButton = document.createElement('button');
+          confirmLoadButton.id = 'confirmLoad';
+          confirmLoadButton.textContent = 'Confirm';
+          modalContent.appendChild(confirmLoadButton);
+    
+          confirmLoadButton?.addEventListener('click', async function () {
+            const selectedFile = matchingFiles[0];
+            const chatHistoryFilePath = selectedFile.path;
+            const success = await loadChatHistory(chatHistoryFilePath);
+            if (success) {
+              new Notice(`Switched to '${selectedFile.path}' chat history.`);
+              lastLoadedChatHistoryFile = selectedFile;
+  
+              settings.profiles.lastLoadedChatHistoryPath = selectedFile.path;
+  
+              // Update the lastLoadedChatHistoryPath for the current profile
+              settings.profiles.lastLoadedChatHistory[profileIndex] = settings.profiles.lastLoadedChatHistoryPath;
+              await plugin.saveSettings();
+            }
+            modal.close();
+          });
+        } else {
+          // Display file options for multiple matching files
+          const message = document.createElement('p');
+          message.textContent = 'Select a chat history to override:';
+          modalContent.appendChild(message);
+    
+          // Create a container for file options
+          const optionsContainer = document.createElement('div');
+          optionsContainer.classList.add('file-options');
+          optionsContainer.style.marginBottom = '16px';
+    
+          // Create a radio button and label for each matching file
+          matchingFiles.forEach((file, index) => {
+            const radioElement = document.createElement('input');
+            radioElement.type = 'radio';
+            radioElement.name = 'fileOption';
+            radioElement.value = file.path;
+            radioElement.id = `file-${index}`;
+    
+            const labelElement = document.createElement('label');
+            labelElement.htmlFor = `file-${index}`;
+            labelElement.textContent = file.path;
+    
+            optionsContainer.appendChild(radioElement);
+            optionsContainer.appendChild(labelElement);
+            optionsContainer.appendChild(document.createElement('br'));
+          });
+    
+          modalContent.appendChild(optionsContainer);
+    
+          const confirmLoadButton = document.createElement('button');
+          confirmLoadButton.id = 'confirmLoad';
+          confirmLoadButton.textContent = 'Load';
+          modalContent.appendChild(confirmLoadButton);
+    
+          confirmLoadButton?.addEventListener('click', async function () {
+            const selectedRadio = optionsContainer.querySelector('input[type="radio"]:checked') as HTMLInputElement;
+            if (selectedRadio) {
+              const selectedFilePath = selectedRadio.value;
+              const selectedFile = matchingFiles.find(file => file.path === selectedFilePath);
+              if (selectedFile) {
+                const chatHistoryFilePath = selectedFile.path;
+                const success = await loadChatHistory(chatHistoryFilePath);
+                if (success) {
+                  new Notice(`Switched to '${selectedFile.path}' chat history.`);
+                  lastLoadedChatHistoryFile = selectedFile;
+      
+                  settings.profiles.lastLoadedChatHistoryPath = selectedFile.path;
+      
+                  // Update the lastLoadedChatHistoryPath for the current profile
+                  settings.profiles.lastLoadedChatHistory[profileIndex] = settings.profiles.lastLoadedChatHistoryPath;
+                  await plugin.saveSettings();
+                }
+                modal.close();
+              }
+            }
+          });
+        }
+    
+        modal.contentEl.appendChild(modalContent);
+        modal.open();
+      }
+    } else {
+      new Notice('File does not exist.');
+    }
+
   }
 }
 
@@ -917,6 +1264,23 @@ export async function removeMessageThread(plugin: BMOGPT, index: number) {
 
   try {
       await plugin.app.vault.adapter.write(fileNameMessageHistoryJson(plugin), jsonString);
+        // Fetching files from the specified folder (profiles)
+        const profileFiles = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(plugin.settings.profiles.profileFolderPath));
+
+        // Sorting the files array alphabetically by file name
+        profileFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+        const currentProfile = plugin.settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+
+        // Finding the index of the currentProfile in the profileFiles array
+        const profileIndex = profileFiles.findIndex((file) => file.basename === currentProfile);
+      lastLoadedChatHistoryFile = null;
+      plugin.settings.profiles.lastLoadedChatHistoryPath = null;
+
+      // Update the lastLoadedChatHistoryPath for the current profile
+      plugin.settings.profiles.lastLoadedChatHistory[profileIndex] = plugin.settings.profiles.lastLoadedChatHistoryPath;
+
+      await plugin.saveSettings();
       new Notice('Chat history cleared.');
   } catch (error) {
       console.error('Error writing messageHistory.json', error);

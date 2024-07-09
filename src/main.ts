@@ -9,6 +9,8 @@ export interface BMOSettings {
 	profiles: {
 		profile: string,
 		profileFolderPath: string,
+		lastLoadedChatHistoryPath: string | null,
+		lastLoadedChatHistory: (string | null)[],
 	},
 	general: {
 		model: string,
@@ -121,6 +123,8 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	profiles: {
 		profile: 'BMO.md',
 		profileFolderPath: 'BMO/Profiles',
+		lastLoadedChatHistoryPath: null,
+		lastLoadedChatHistory: [],
 	},
 	general: {
 		model: '',
@@ -255,23 +259,76 @@ export default class BMOGPT extends Plugin {
 
 		this.registerEvent(
 			this.app.vault.on('create', async (file: TFile) => {
-				if (file instanceof TFile && file.path.startsWith(folderPath)) {
-					const fileContent = await this.app.vault.read(file);
-			
-					// Check if the file content is empty
-					if (fileContent.trim() === '') {
-						// File content is empty, proceed with default front matter and appending content
-						defaultFrontMatter(this, file);
+			if (file instanceof TFile && file.path.startsWith(folderPath)) {
+				const fileContent = await this.app.vault.read(file);
+		
+				// Check if the file content is empty
+				if (fileContent.trim() === '') {
+					// File content is empty, proceed with default front matter and appending content
+					defaultFrontMatter(this, file);
+				}
+
+				// Fetching files from the specified folder (profiles)
+				const profileFiles = this.app.vault.getFiles().filter((file) => file.path.startsWith(this.settings.profiles.profileFolderPath));
+
+				// Sorting the files array alphabetically by file name
+				profileFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+				if (this.settings.profiles.lastLoadedChatHistory.length === 0) {
+					// Ensure each profile has a corresponding element in lastLoadedChatHistory
+					profileFiles.forEach((profile, index) => {
+						if (!this.settings.profiles.lastLoadedChatHistory[index]) {
+						this.settings.profiles.lastLoadedChatHistory[index] = null;
+						}
+					});
+				} else {
+					if (this.settings.profiles.lastLoadedChatHistory.length !== profileFiles.length) {
+						// Finding the index of the currentProfile in the profileFiles array
+						const profileIndex = profileFiles.findIndex((profileFiles) => profileFiles.basename === file.basename);
+
+						this.settings.profiles.lastLoadedChatHistory.splice(profileIndex, 0, null);
 					}
 				}
+
+
+		
+				await this.saveSettings();
+			}
 			})
 		);
 
 		this.registerEvent(
 			this.app.vault.on('delete', async (file: TFile) => {
+				// Fetching files from the specified folder (profiles)
+				const profileFiles = this.app.vault.getFiles().filter((file) => file.path.startsWith(this.settings.profiles.profileFolderPath));
+
+				// Sorting the files array alphabetically by file name
+				profileFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+				if (file instanceof TFile && file.path.startsWith(this.settings.chatHistory.chatHistoryPath)) {
+					const currentProfile = this.settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+					
+					// Finding the index of the currentProfile in the profileFiles array
+					const profileIndex = profileFiles.findIndex((file) => file.basename === currentProfile);
+
+					const currentIndex = this.settings.profiles.lastLoadedChatHistory.indexOf(file.path);
+
+					if (this.settings.profiles.lastLoadedChatHistory[currentIndex] === file.path) {
+						this.settings.profiles.lastLoadedChatHistory[currentIndex] = null;
+					}
+
+					if (profileIndex === currentIndex) {
+						this.settings.profiles.lastLoadedChatHistoryPath = null;
+					} 
+				}
+
 				if (file instanceof TFile && file.path.startsWith(folderPath)) {
 					const filenameMessageHistory = './.obsidian/plugins/bmo-chatbot/data/' + 'messageHistory_' + file.name.replace('.md', '.json');
 					this.app.vault.adapter.remove(filenameMessageHistory);
+
+					const profileIndex = profileFiles.findIndex((profileFile) => profileFile.name > file.name);
+
+					this.settings.profiles.lastLoadedChatHistory.splice(profileIndex, 1);
 
 					if (file.path === defaultFilePath) {
 						this.settings = DEFAULT_SETTINGS;
@@ -281,6 +338,22 @@ export default class BMOGPT extends Plugin {
 					else {
 						if (this.settings.profiles.profile === file.name) {
 							this.settings.profiles.profile = DEFAULT_SETTINGS.profiles.profile;
+
+							// Fetching files from the specified folder (profiles)
+							const profileFiles = this.app.vault.getFiles().filter((file) => file.path.startsWith(this.settings.profiles.profileFolderPath));
+
+							// Sorting the files array alphabetically by file name
+							profileFiles.sort((a, b) => a.name.localeCompare(b.name));
+					
+							const currentProfile = this.settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+					
+							// Finding the index of the currentProfile in the profileFiles array
+							const profileIndex = profileFiles.findIndex((file) => file.basename === currentProfile);
+
+							if (this.settings.profiles.lastLoadedChatHistoryPath !== null) {
+								this.settings.profiles.lastLoadedChatHistoryPath = this.settings.profiles.lastLoadedChatHistory[profileIndex];
+							}
+
 							const fileContent = (await this.app.vault.read(defaultProfile)).replace(/^---\s*[\s\S]*?---/, '').trim();
 							this.settings.general.system_role = fileContent;
 							await updateSettingsFromFrontMatter(this, defaultProfile);
@@ -315,14 +388,14 @@ export default class BMOGPT extends Plugin {
 						await this.saveSettings();
 					}
 
-					if(file instanceof TFile && file.path.startsWith(folderPath)) {
+					if (file instanceof TFile && file.path.startsWith(folderPath)) {
 						const filenameMessageHistoryPath = './.obsidian/plugins/bmo-chatbot/data/';
 						const oldProfileMessageHistory = 'messageHistory_' + oldPath.replace(folderPath + '/', '').replace('.md', '.json');
-
+					
 						await this.app.vault.adapter.rename(filenameMessageHistoryPath + oldProfileMessageHistory, filenameMessageHistoryPath + 'messageHistory_' + file.name.replace('.md', '.json'))
-							.catch((error) => {
-								console.error('Error handling rename event:', error);
-							});
+						.catch((error) => {
+							console.error('Error handling rename event:', error);
+						});
 					
 						await this.app.vault.adapter.remove(filenameMessageHistoryPath + oldProfileMessageHistory);
 					}
@@ -333,6 +406,55 @@ export default class BMOGPT extends Plugin {
 						console.error('Error handling rename event:', error);
 					}
 				}
+
+				// Fetching files from the specified folder (profiles)
+				const profileFiles = this.app.vault.getFiles().filter((file) => file.path.startsWith(this.settings.profiles.profileFolderPath));
+
+				// Sorting the files array alphabetically by file name
+				profileFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+				const currentIndex = profileFiles.findIndex((profileFile) => profileFile.path === file.path);
+
+				const prevFileName = oldPath.replace(folderPath + '/', '');
+
+				// Create a new array with prevFileName added
+				const updatedProfileFiles = [...profileFiles, { name: prevFileName }];
+
+				// Sort the updated array
+				updatedProfileFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+				const fileIndex = updatedProfileFiles.findIndex((profileFile) => profileFile.name === file.name);
+
+				// Remove the currentIndex from the updated array
+				if (fileIndex !== -1) {
+					updatedProfileFiles.splice(fileIndex, 1);
+				} 
+
+				const prevIndex = updatedProfileFiles.findIndex((profileFile) => profileFile.name === prevFileName);
+
+				if (currentIndex !== -1) {
+					const [removed] = this.settings.profiles.lastLoadedChatHistory.splice(prevIndex, 1);
+					this.settings.profiles.lastLoadedChatHistory.splice(currentIndex, 0, removed);
+				}
+
+				const currentProfile = this.settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
+					
+				// Finding the index of the currentProfile in the profileFiles array
+				const profileIndex = profileFiles.findIndex((file) => file.basename === currentProfile);
+
+
+				// // Find and replace the oldPath with the new path in lastLoadedChatHistory
+				const index = this.settings.profiles.lastLoadedChatHistory.indexOf(oldPath);
+
+
+				if (this.settings.profiles.lastLoadedChatHistory[profileIndex] === oldPath) {
+					this.settings.profiles.lastLoadedChatHistory[index] = file.path;
+					this.settings.profiles.lastLoadedChatHistoryPath = file.path;
+				} else if (this.settings.profiles.lastLoadedChatHistory[index] === oldPath) {
+					this.settings.profiles.lastLoadedChatHistory[index] = file.path;
+				}
+
+				await this.saveSettings();
 			})
 		);
 
