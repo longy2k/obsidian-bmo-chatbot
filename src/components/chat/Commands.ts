@@ -869,17 +869,17 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
     }
 
     if (lastLoadedChatHistoryFile === null) {
-      // Create the new note with formatted Markdown content
-      const file = await plugin.app.vault.create(fileName, markdownContent);
+        // Create the new note with formatted Markdown content
+        const file = await plugin.app.vault.create(fileName, markdownContent);
         // Fetching files from the specified folder (profiles)
-				const profileFiles = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(settings.profiles.profileFolderPath));
+        const profileFiles = plugin.app.vault.getFiles().filter((file) => file.path.startsWith(settings.profiles.profileFolderPath));
 
-				// Sorting the files array alphabetically by file name
-				profileFiles.sort((a, b) => a.name.localeCompare(b.name));
+        // Sorting the files array alphabetically by file name
+        profileFiles.sort((a, b) => a.name.localeCompare(b.name));
         const currentProfile = settings.profiles.profile.replace(/\.[^/.]+$/, ''); // Removing the file extension
-				
-				// Finding the index of the currentProfile in the profileFiles array
-				const profileIndex = profileFiles.findIndex((file) => file.basename === currentProfile);
+        
+        // Finding the index of the currentProfile in the profileFiles array
+        const profileIndex = profileFiles.findIndex((file) => file.basename === currentProfile);
         if (file) {
           settings.profiles.lastLoadedChatHistoryPath = file.path;
           settings.profiles.lastLoadedChatHistory[profileIndex] = file.path;
@@ -889,8 +889,15 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
     } else {
       // Update the existing note with the formatted Markdown content
       await plugin.app.vault.modify(lastLoadedChatHistoryFile, markdownContent);
-      plugin.app.workspace.openLinkText(lastLoadedChatHistoryFile.path, lastLoadedChatHistoryFile.path, true, { active: true });
+      // Get active file
+      const activeFile = plugin.app.workspace.getActiveFile();
+
+      // Log the active files to the console
+      if (activeFile?.path !== lastLoadedChatHistoryFile.path) {
+        plugin.app.workspace.openLinkText(lastLoadedChatHistoryFile.path, lastLoadedChatHistoryFile.path, true, { active: true });
+      }
     }
+    
     new Notice('Saved conversation.');
     await plugin.saveSettings();
   } catch (error) {

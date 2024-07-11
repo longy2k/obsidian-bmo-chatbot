@@ -20,38 +20,43 @@ export class BMOSettingTab extends PluginSettingTab {
 
 	async display(): Promise<void> {
 		// Display settings information
-		const {containerEl} = this;
-
+		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl('h1', {text: 'BMO Chatbot Settings'});
+		containerEl.createEl('h1', { text: 'BMO Chatbot Settings' });
 
 		// Create a container for the links
 		const linkContainer = containerEl.createEl('div');
 
-		// Changelog link
-		const changeLogLink = linkContainer.createEl('a', {
-			text: 'Changelog',
-			href: 'https://github.com/longy2k/obsidian-bmo-chatbot/releases',
-		});
-		changeLogLink.style.fontSize = '0.8rem'; 
-		changeLogLink.style.marginRight = '5px'; // Add some space before the separator
+		// Define link data
+		const links = [
+			{ text: 'Changelog', href: 'https://github.com/longy2k/obsidian-bmo-chatbot/releases' },
+			{ text: 'Wiki', href: 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki' },
+			{ text: 'Report a Bug', href: 'https://github.com/longy2k/obsidian-bmo-chatbot/issues' },
+			{ text: 'Support Me', href: 'https://ko-fi.com/longy2k' }
+		];
 
-		// Separator
-		const separator = linkContainer.createEl('span', {
-			text: ' | ',
-		});
-		separator.style.fontSize = '0.8rem';
-		separator.style.marginRight = '5px'; // Add some space after the separator
+		// Create links and separators
+		links.forEach((link, index) => {
+			if (index > 0) {
+				linkContainer.createEl('span', {
+					text: ' | ',
+					attr: { style: 'font-size: 0.8rem; margin-right: 5px;' }
+				});
+			}
 
-		// Wiki link
-		const wikiLink = linkContainer.createEl('a', {
-			text: 'Wiki',
-			href: 'https://github.com/longy2k/obsidian-bmo-chatbot/wiki',
-		});
-		wikiLink.style.fontSize = '0.8rem';
+			const linkEl = linkContainer.createEl('a', {
+				text: link.text,
+				href: link.href,
+				attr: { style: 'font-size: 0.8rem;' }
+			});
 
-		containerEl.createEl('p', {text: 'Type `/help` in chat for commands.'});
+			if (index < links.length - 1) {
+				linkEl.style.marginRight = '5px';
+			}
+		});
+
+		containerEl.createEl('p', { text: 'Type `/help` in chat for commands.' });
 
 
 		// Add horizontal rule
