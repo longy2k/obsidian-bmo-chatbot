@@ -898,7 +898,7 @@ export async function commandSave(plugin: BMOGPT, settings: BMOSettings) {
       }
     }
     
-    new Notice('Saved conversation.');
+    new Notice(`Saved to '${lastLoadedChatHistoryFile?.name}'`);
     await plugin.saveSettings();
   } catch (error) {
     console.error('Failed to create note:', error);
