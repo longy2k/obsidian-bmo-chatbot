@@ -47,7 +47,7 @@ Render codeblocks (e.g. Dataview) that can be displayed in your chat view. Use t
 -   **Chat from anywhere in Obsidian:** Chat with your bot from anywhere within Obsidian.
 -   **Customizable bot name:** Personalize the chatbot's name.
 -   **Chatbot renders in Obsidian Markdown:** Receive formatted responses in Obsidian Markdown for consistency.
--   **Save current chat history as markdown:** Use the `/save` command in chat to save current conversation.
+-   **Save and load a chat history as markdown:** Use the `/save` command in chat to save current conversation and `/load` to load a chat history.
 
 ## Requirements
 
@@ -104,6 +104,7 @@ To start using the plugin, enable it in your settings menu and insert an API key
 -   `/ref on | off` - Turn on or off reference current note.
 -   `/append` - Append current chat history to current active note.
 -   `/save` - Save current chat history to a note.
+-   `/load` - List or load a chat history.
 -   `/clear` or `/c` - Clear chat history.
 -   `/stop` or `/s` - Stop fetching response.
 
