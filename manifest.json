@@ -1,7 +1,7 @@
 {
 	"id": "bmo-chatbot",
 	"name": "BMO Chatbot",
-	"version": "2.3.0",
+	"version": "2.3.1",
 	"minAppVersion": "1.0.0",
 	"description": "Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, Google Gemini, Mistral AI, OpenAI, and more for Obsidian.",
 	"author": "Longy2k",
