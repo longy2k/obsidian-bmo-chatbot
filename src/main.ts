@@ -361,7 +361,6 @@ export default class BMOGPT extends Plugin {
 					}
 				}
 				await this.saveSettings();
-				this.activateView();
 			}
 		));
 
