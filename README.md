@@ -130,6 +130,7 @@ To start using the plugin, enable it in your settings menu and insert an API key
     -   gpt-4
     -   gpt-4-turbo
     -   gpt-4o
+    -   gpt-4o-mini
 -   Any Openrouter provided models.
 
 ## Other Notes
@@ -145,5 +146,12 @@ Any ideas or support is highly appreciated :)
 If you have any bugs or improvements, please create an issue.
 
 If you like to share your ideas, profiles, or anything else, please join or create a discussion.
+
+## Building
+
+1. Clone the repository into the .obsidian/plugins folder.
+2. Run `npm install` in the plugin's folder.
+3. Run `npm run dev`.
+4. Disable/Enable "BMO Chatbot" in the settings to refresh the plugin.
 
 <a href='https://ko-fi.com/K3K8PNYT8' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
