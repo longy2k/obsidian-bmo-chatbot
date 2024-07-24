@@ -1620,7 +1620,7 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
     });
 
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch(`${plugin.settings.APIConnections.openAI.openAIBaseUrl}/chat/completions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1761,7 +1761,7 @@ export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMO
     });
 
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch(`${plugin.settings.APIConnections.openAI.openAIBaseUrl}/chat/completions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

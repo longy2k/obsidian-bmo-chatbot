@@ -195,7 +195,7 @@ export async function fetchMistralDataEditor(settings: BMOSettings, prompt: stri
 
 // Fetch OpenAI-Based API Editor
 export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${settings.APIConnections.openAI.openAIBaseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
