@@ -1,6 +1,6 @@
 {
 	"name": "bmo-chatbot",
-	"version": "2.3.2",
+	"version": "2.3.3",
 	"description": "Generate and brainstorm ideas while creating your notes using Large Language Models (LLMs) from Ollama, LM Studio, Anthropic, Google Gemini, Mistral AI, OpenAI, and more for Obsidian.",
 	"main": "main.js",
 	"scripts": {
