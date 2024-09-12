@@ -141,7 +141,9 @@ Be MOre!
 
 ## Contributing
 
-Any ideas or support is highly appreciated :)
+Any ideas or support is highly appreciated!
+
+Happy to review any pull requests! :)
 
 If you have any bugs or improvements, please create an issue.
 
