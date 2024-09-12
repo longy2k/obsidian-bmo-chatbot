@@ -143,7 +143,7 @@ Be MOre!
 
 Any ideas or support is highly appreciated!
 
-Happy to review any pull requests! :)
+I am currently too busy to update the project. Feel free to submit pull requests! :)
 
 If you have any bugs or improvements, please create an issue.
 
