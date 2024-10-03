@@ -6,19 +6,21 @@ import { getActiveFileContent } from './components/editor/ReferenceCurrentNote';
 import { addMessage, updateUnresolvedInternalLinks } from './components/chat/Message';
 import { displayUserMessage } from './components/chat/UserMessage';
 import { displayBotMessage, displayErrorBotMessage } from './components/chat/BotMessage';
-import { fetchOpenAIAPIResponseStream, 
-        fetchOpenAIAPIResponse, 
-        fetchOllamaResponse, 
-        fetchOllamaResponseStream, 
-        fetchRESTAPIURLResponse, 
-        fetchRESTAPIURLResponseStream, 
-        fetchMistralResponse, 
-        fetchMistralResponseStream, 
-        fetchGoogleGeminiResponse, 
-        fetchAnthropicResponse, 
-        fetchOpenRouterResponseStream,
-        fetchOpenRouterResponse,
-        fetchGoogleGeminiResponseStream} from './components/FetchModelResponse';
+import {
+	fetchOpenAIAPIResponseStream,
+	fetchOpenAIAPIResponse,
+	fetchOllamaResponse,
+	fetchOllamaResponseStream,
+	fetchRESTAPIURLResponse,
+	fetchRESTAPIURLResponseStream,
+	fetchMistralResponse,
+	fetchMistralResponseStream,
+	fetchGoogleGeminiResponse,
+	fetchAnthropicResponse,
+	fetchOpenRouterResponseStream,
+	fetchOpenRouterResponse,
+	fetchGoogleGeminiResponseStream, fetchAzureOpenAIResponse
+} from './components/FetchModelResponse';
 
 export const VIEW_TYPE_CHATBOT = 'chatbot-view';
 export const ANTHROPIC_MODELS = ['claude-instant-1.2', 'claude-2.0', 'claude-2.1', 'claude-3-haiku-20240307', 'claude-3-sonnet-20240229', 'claude-3-5-sonnet-20240620', 'claude-3-opus-20240229'];
@@ -554,6 +556,9 @@ export class BMOView extends ItemView {
                     await fetchOpenAIAPIResponse(this.plugin, this.settings, index); 
                 }
             }
+			else if (this.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.includes(this.settings.general.model)) {
+				await fetchAzureOpenAIResponse(this.plugin, this.settings, index);
+			}
             else if (this.settings.APIConnections.openRouter.openRouterModels.includes(this.settings.general.model)){
                 if (this.settings.APIConnections.openRouter.enableStream) {
                     await fetchOpenRouterResponseStream(this.plugin, this.settings, index);

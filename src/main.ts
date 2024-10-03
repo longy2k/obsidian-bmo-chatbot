@@ -96,6 +96,12 @@ export interface BMOSettings {
 			enableStream: boolean,
 			openAIBaseModels: string[],
 		},
+		azureOpenAI: {
+			APIKey: string,
+			azureOpenAIBaseUrl: string,
+			azureOpenAIBaseModels: string[],
+			deploymentName: string
+		},
 		openRouter: {
 			APIKey: string,
 			enableStream: boolean,
@@ -109,6 +115,7 @@ export interface BMOSettings {
 	toggleChatHistorySettings: boolean,
 	toggleProfileSettings: boolean,
 	toggleAPIConnectionSettings: boolean,
+	toggleAzureOpenAISettings: boolean,
 	toggleOpenAISettings: boolean,
 	toggleMistralSettings: boolean,
 	toggleGoogleGeminiSettings: boolean,
@@ -210,6 +217,12 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 			enableStream: true,
 			openAIBaseModels: [],
 		},
+		azureOpenAI: {
+			APIKey: "",
+			azureOpenAIBaseModels: [],
+			azureOpenAIBaseUrl: "",
+			deploymentName: ""
+		},
 		openRouter: {
 			APIKey: '',
 			enableStream: false,
@@ -224,6 +237,7 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 	toggleProfileSettings: false,
 	toggleAPIConnectionSettings: true,
 	toggleOpenAISettings: false,
+	toggleAzureOpenAISettings: false,
 	toggleMistralSettings: false,
 	toggleGoogleGeminiSettings: false,
 	toggleAnthropicSettings: false,

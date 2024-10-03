@@ -1,6 +1,14 @@
 import { DropdownComponent, Notice, Setting, SettingTab, setIcon } from 'obsidian';
 import BMOGPT, { DEFAULT_SETTINGS } from 'src/main';
-import { fetchGoogleGeminiModels, fetchMistralModels, fetchOllamaModels, fetchOpenAIBaseModels, fetchOpenRouterModels, fetchRESTAPIURLModels } from '../FetchModelList';
+import {
+	fetchAzureOpenAIBaseModels,
+	fetchGoogleGeminiModels,
+	fetchMistralModels,
+	fetchOllamaModels,
+	fetchOpenAIBaseModels,
+	fetchOpenRouterModels,
+	fetchRESTAPIURLModels
+} from '../FetchModelList';
 import { ANTHROPIC_MODELS } from 'src/view';
 
 export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGPT, SettingTab: SettingTab) {
@@ -119,6 +127,11 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
                     const models = await fetchOpenAIBaseModels(plugin);
                     plugin.settings.APIConnections.openAI.openAIBaseModels = models || [];
                 }
+
+				if (plugin.settings.APIConnections.azureOpenAI.APIKey !== '') {
+					const models = await fetchAzureOpenAIBaseModels(plugin);
+					plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels = models || [];
+				}
     
                 if (plugin.settings.APIConnections.openRouter.APIKey !== '') {
                     const models = await fetchOpenRouterModels(plugin);

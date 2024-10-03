@@ -1721,6 +1721,153 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
     }
 }
 
+export async function fetchAzureOpenAIResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
+	abortController = new AbortController();
+
+	const prompt = await getPrompt(plugin, settings);
+
+	const filteredMessageHistory = filterMessageHistory(messageHistory);
+	const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+	const azureFormatResults = messageHistoryAtIndex.map(({role, content}) => ({
+		role,
+		content: {
+			type: "text",
+			text: content
+		}
+	}))
+
+	const messageContainerEl = document.querySelector('#messageContainer');
+	const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+	const botMessageDiv = displayLoadingBotMessage(settings);
+
+	messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+	botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+	await getActiveFileContent(plugin, settings);
+	const referenceCurrentNoteContent = getCurrentNoteContent();
+
+	const submitButton = document.querySelector('.submit-button') as HTMLElement;
+
+	// Change button text to "Cancel"
+	setIcon(submitButton, 'square');
+	submitButton.title = 'stop';
+
+	submitButton.addEventListener('click', async () => {
+		if (submitButton.title === 'stop') {
+			const controller = getAbortController();
+			if (controller) {
+				controller.abort();
+			}
+		}
+	});
+
+	try {
+		const {azureOpenAIBaseUrl, deploymentName, APIKey} = plugin.settings.APIConnections.azureOpenAI
+		const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=2024-02-15-preview`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"api-key": APIKey
+			},
+			body: JSON.stringify({
+				max_tokens: parseInt(settings.general.max_tokens),
+				messages: [
+					{
+						role: "system",
+						content: {
+							type: "text",
+							text: settings.general.system_role + prompt + referenceCurrentNoteContent
+						}
+					},
+					...azureFormatResults
+				]
+			}),
+			signal: abortController.signal
+		});
+
+		const data = await response.json();
+		let message = data.choices[0].message.content || '';
+
+		if (messageContainerEl) {
+			const targetUserMessage = messageContainerElDivs[index];
+			const targetBotMessage = targetUserMessage.nextElementSibling;
+
+			const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+			const loadingEl = targetBotMessage?.querySelector('#loading');
+
+			if (messageBlock) {
+				if (loadingEl) {
+					targetBotMessage?.removeChild(loadingEl);
+				}
+
+				await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
+
+				addParagraphBreaks(messageBlock);
+				updateUnresolvedInternalLinks(plugin, messageBlock);
+
+				const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+				copyCodeBlocks.forEach((copyCodeBlock) => {
+					copyCodeBlock.textContent = 'Copy';
+					setIcon(copyCodeBlock, 'copy');
+				});
+
+				targetBotMessage?.appendChild(messageBlock);
+			}
+			targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+
+		if (message != null) {
+			// Define regex patterns for the unwanted tags and their content
+			const regexPatterns = [
+				/<block-rendered>[\s\S]*?<\/block-rendered>/g,
+				/<note-rendered>[\s\S]*?<\/note-rendered>/g,
+				/<note-rendered>[\s\S]*?<\/note-rendered>/g
+			];
+
+			// Clean the message content by removing the unwanted tags and their content
+			regexPatterns.forEach(pattern => {
+				message = message.replace(pattern, '').trim();
+			});
+			addMessage(plugin, message.trim(), 'botMessage', settings, index);
+		}
+	} catch(error) {
+		if (error.name === 'AbortError') {
+			// Request was aborted, handle accordingly
+			console.log('Request aborted');
+			setIcon(submitButton, 'arrow-up');
+			submitButton.title = 'send';
+
+			// Request was aborted
+			if (messageContainerEl) {
+				const targetUserMessage = messageContainerElDivs[index];
+				const targetBotMessage = targetUserMessage.nextElementSibling;
+
+				const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+				const loadingEl = targetBotMessage?.querySelector('#loading');
+
+				if (messageBlock && loadingEl) {
+					targetBotMessage?.removeChild(loadingEl);
+					messageBlock.textContent = 'SYSTEM: Response aborted.';
+					addMessage(plugin, 'SYSTEM: Response aborted.', 'botMessage', settings, index);
+				}
+			}
+		} else {
+			// Handle other errors
+			const targetUserMessage = messageContainerElDivs[index];
+			const targetBotMessage = targetUserMessage.nextElementSibling;
+			targetBotMessage?.remove();
+
+			const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+			const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
+			messageContainer.appendChild(botMessageDiv);
+		}
+	} finally {
+		// Reset the abort controller
+		abortController = null;
+	}
+}
+
 // Fetch OpenAI-Based API Stream
 export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
     abortController = new AbortController();
