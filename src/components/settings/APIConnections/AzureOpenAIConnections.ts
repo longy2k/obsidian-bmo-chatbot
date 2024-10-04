@@ -30,7 +30,7 @@ export function addAzureOpenAIConnectionSettings(containerEl: HTMLElement, plugi
 		await plugin.saveSettings();
 	});
 
-	let defaultValue = plugin.settings.APIConnections.azureOpenAI?.APIKey || ""
+	let defaultValue = plugin.settings.APIConnections.azureOpenAI.APIKey || ""
 	if (defaultValue.length > 5) {
 		defaultValue = `${defaultValue.substring(0, 2)}...${defaultValue.substring(defaultValue.length - 2, defaultValue.length)}`
 	}
@@ -84,26 +84,19 @@ export function addAzureOpenAIConnectionSettings(containerEl: HTMLElement, plugi
 	);
 
 	new Setting(settingsContainer)
-		.setName('Azure Deployment Name')
-		.setDesc("Enter the model's deployment name.")
-		.addButton(button => button
-			.setButtonText('Restore Default')
-			.setIcon('rotate-cw')
-			.setClass('clickable-icon')
-			.onClick(async () => {
-				plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels = [];
-				plugin.settings.APIConnections.azureOpenAI.deploymentName = '';
-				await plugin.saveSettings();
-				SettingTab.display();
-			})
-		).addText(text => text
-		.setValue(plugin.settings.APIConnections.azureOpenAI?.deploymentName || "")
-		.onChange(async (value) => {
-			plugin.settings.APIConnections.azureOpenAI.deploymentName = value
-			await plugin.saveSettings();
+		.setName("Choose your Azure OpenAI deployment")
+		.setDesc("Enter the deployment name that matches the model you want to deploy.")
+		.setDisabled(plugin.settings.APIConnections.azureOpenAI.APIKey == null || plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseUrl == null)
+		.addDropdown(async cp => {
+			if (plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.length === 0) {
+				plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels = await fetchAzureOpenAIBaseModels(plugin)
+			}
+
+			plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.forEach(m => cp.addOption(m, m))
+			cp.onChange(value => plugin.settings.APIConnections.azureOpenAI.deploymentName = value)
+
+			if (plugin.settings.APIConnections.azureOpenAI.deploymentName != null) {
+				cp.setValue(plugin.settings.APIConnections.azureOpenAI.deploymentName)
+			}
 		})
-		.inputEl.addEventListener('focusout', async () => {
-			SettingTab.display();
-		})
-	);
 }

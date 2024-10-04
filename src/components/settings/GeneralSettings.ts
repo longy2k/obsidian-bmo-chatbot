@@ -47,7 +47,8 @@ export async function addGeneralSettings(containerEl: HTMLElement, plugin: BMOGP
             { name: 'Google Gemini Models', models: plugin.settings.APIConnections.googleGemini.geminiModels },
             { name: 'Mistral Models', models: plugin.settings.APIConnections.mistral.mistralModels },
             { name: 'OpenAI-Based Models', models: plugin.settings.APIConnections.openAI.openAIBaseModels },
-            { name: 'OpenRouter Models', models: plugin.settings.APIConnections.openRouter.openRouterModels }
+            { name: 'Azure OpenAI Models', models: plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels },
+            { name: 'OpenRouter Models', models: plugin.settings.APIConnections.openRouter.openRouterModels },
         ];
     
         const selectEl = dropdown.selectEl;

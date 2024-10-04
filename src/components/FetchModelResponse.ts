@@ -1728,13 +1728,6 @@ export async function fetchAzureOpenAIResponse(plugin: BMOGPT, settings: BMOSett
 
 	const filteredMessageHistory = filterMessageHistory(messageHistory);
 	const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
-	const azureFormatResults = messageHistoryAtIndex.map(({role, content}) => ({
-		role,
-		content: {
-			type: "text",
-			text: content
-		}
-	}))
 
 	const messageContainerEl = document.querySelector('#messageContainer');
 	const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
@@ -1775,12 +1768,9 @@ export async function fetchAzureOpenAIResponse(plugin: BMOGPT, settings: BMOSett
 				messages: [
 					{
 						role: "system",
-						content: {
-							type: "text",
-							text: settings.general.system_role + prompt + referenceCurrentNoteContent
-						}
+						content: settings.general.system_role + prompt + referenceCurrentNoteContent
 					},
-					...azureFormatResults
+					...messageHistoryAtIndex
 				]
 			}),
 			signal: abortController.signal
