@@ -19,7 +19,7 @@ import {
 	fetchAnthropicResponse,
 	fetchOpenRouterResponseStream,
 	fetchOpenRouterResponse,
-	fetchGoogleGeminiResponseStream, fetchAzureOpenAIResponse
+	fetchGoogleGeminiResponseStream, fetchAzureOpenAIResponse, fetchAzureOpenAIAPIResponseStream
 } from './components/FetchModelResponse';
 
 export const VIEW_TYPE_CHATBOT = 'chatbot-view';
@@ -557,7 +557,11 @@ export class BMOView extends ItemView {
                 }
             }
 			else if (this.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.includes(this.settings.general.model)) {
-				await fetchAzureOpenAIResponse(this.plugin, this.settings, index);
+				if (this.settings.APIConnections.azureOpenAI.enableStream) {
+					await fetchAzureOpenAIAPIResponseStream(this.plugin, this.settings, index);
+				} else {
+					await fetchAzureOpenAIResponse(this.plugin, this.settings, index);
+				}
 			}
             else if (this.settings.APIConnections.openRouter.openRouterModels.includes(this.settings.general.model)){
                 if (this.settings.APIConnections.openRouter.enableStream) {
@@ -654,6 +658,7 @@ export function populateModelDropdown(plugin: BMOGPT, settings: BMOSettings): HT
         { name: 'Google Gemini Models', models: settings.APIConnections.googleGemini.geminiModels },
         { name: 'Mistral Models', models: settings.APIConnections.mistral.mistralModels },
         { name: 'OpenAI-Based Models', models: settings.APIConnections.openAI.openAIBaseModels },
+        { name: 'Azure OpenAI Models', models: settings.APIConnections.azureOpenAI.azureOpenAIBaseModels },
         { name: 'OpenRouter Models', models: settings.APIConnections.openRouter.openRouterModels }
     ];
 

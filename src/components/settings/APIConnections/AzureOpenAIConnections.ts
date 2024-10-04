@@ -99,4 +99,14 @@ export function addAzureOpenAIConnectionSettings(containerEl: HTMLElement, plugi
 				cp.setValue(plugin.settings.APIConnections.azureOpenAI.deploymentName)
 			}
 		})
+
+	new Setting(settingsContainer)
+		.setName('Enable Stream')
+		.setDesc('Enable stream for Azure OpenAI models.')
+		.addToggle((toggle) =>
+			toggle.setValue(plugin.settings.APIConnections.azureOpenAI.enableStream).onChange(async (value) => {
+				plugin.settings.APIConnections.azureOpenAI.enableStream = value;
+				await plugin.saveSettings();
+			})
+		);
 }

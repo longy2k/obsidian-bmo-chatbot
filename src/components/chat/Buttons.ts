@@ -15,7 +15,7 @@ import {
 	fetchOpenRouterResponseStream,
 	fetchOpenRouterResponse,
 	fetchGoogleGeminiResponseStream,
-	fetchAzureOpenAIResponse
+	fetchAzureOpenAIResponse, fetchAzureOpenAIAPIResponseStream
 } from '../FetchModelResponse';
 import { getActiveFileContent } from '../editor/ReferenceCurrentNote';
 import { addParagraphBreaks } from './Message';
@@ -59,7 +59,11 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                     console.log(error.message);
                 }
             } else if (settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.includes(settings.general.model)) {
-			 	await fetchAzureOpenAIResponse(plugin, settings, index);
+				if (settings.APIConnections.azureOpenAI.enableStream) {
+					await fetchAzureOpenAIAPIResponseStream(plugin, settings, index)
+				} else {
+					await fetchAzureOpenAIResponse(plugin, settings, index);
+				}
 			} else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
                 if (settings.OllamaConnection.enableStream) {
                     await fetchOllamaResponseStream(plugin, settings, index);

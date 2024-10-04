@@ -100,7 +100,8 @@ export interface BMOSettings {
 			APIKey: string,
 			azureOpenAIBaseUrl: string,
 			azureOpenAIBaseModels: string[],
-			deploymentName: string
+			deploymentName: string,
+			enableStream: boolean
 		},
 		openRouter: {
 			APIKey: string,
@@ -221,7 +222,8 @@ export const DEFAULT_SETTINGS: BMOSettings = {
 			APIKey: "",
 			azureOpenAIBaseModels: [],
 			azureOpenAIBaseUrl: "",
-			deploymentName: ""
+			deploymentName: "",
+			enableStream: true
 		},
 		openRouter: {
 			APIKey: '',
