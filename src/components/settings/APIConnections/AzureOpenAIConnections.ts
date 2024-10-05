@@ -83,23 +83,6 @@ export function addAzureOpenAIConnectionSettings(containerEl: HTMLElement, plugi
 		})
 	);
 
-	// new Setting(settingsContainer)
-	// 	.setName("Choose your Azure OpenAI deployment")
-	// 	.setDesc("Enter the deployment name that matches the model you want to deploy.")
-	// 	.setDisabled(plugin.settings.APIConnections.azureOpenAI.APIKey == null || plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseUrl == null)
-	// 	.addDropdown(async cp => {
-	// 		if (plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.length === 0) {
-	// 			plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels = await fetchAzureOpenAIBaseModels(plugin)
-	// 		}
-	//
-	// 		plugin.settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.forEach(m => cp.addOption(m, m))
-	// 		cp.onChange(value => plugin.settings.APIConnections.azureOpenAI.deploymentName = value)
-	//
-	// 		if (plugin.settings.APIConnections.azureOpenAI.deploymentName != null) {
-	// 			cp.setValue(plugin.settings.APIConnections.azureOpenAI.deploymentName)
-	// 		}
-	// 	})
-
 	new Setting(settingsContainer)
 		.setName('Enable Stream')
 		.setDesc('Enable stream for Azure OpenAI models.')
