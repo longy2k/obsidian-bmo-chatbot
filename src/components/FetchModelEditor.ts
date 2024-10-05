@@ -222,8 +222,8 @@ export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, pr
 
 // Fetch Azure OpenAI-Based API Editor
 export async function fetchAzureOpenAIBaseAPIResponseEditor(settings: BMOSettings, prompt: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
-	const {azureOpenAIBaseUrl, deploymentName, APIKey} = settings.APIConnections.azureOpenAI
-	const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=2024-02-15-preview`, {
+	const {azureOpenAIBaseUrl, APIKey} = settings.APIConnections.azureOpenAI
+	const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${settings.general.model}/chat/completions?api-version=2024-02-15-preview`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

@@ -1795,9 +1795,9 @@ export async function fetchAzureOpenAIAPIResponseStream(plugin: BMOGPT, settings
 	});
 
 	try {
-		const {azureOpenAIBaseUrl, deploymentName, APIKey} = plugin.settings.APIConnections.azureOpenAI
+		const {azureOpenAIBaseUrl, APIKey} = plugin.settings.APIConnections.azureOpenAI
 		const messageHistoryWithCorrectFormat = makeAzureOpenAIMessageFormat(messageHistoryAtIndex);
-		const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=2024-02-15-preview`, {
+		const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${settings.general.model}/chat/completions?api-version=2024-02-15-preview`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -2016,9 +2016,9 @@ export async function fetchAzureOpenAIResponse(plugin: BMOGPT, settings: BMOSett
 	});
 
 	try {
-		const {azureOpenAIBaseUrl, deploymentName, APIKey} = plugin.settings.APIConnections.azureOpenAI
+		const {azureOpenAIBaseUrl, APIKey} = plugin.settings.APIConnections.azureOpenAI
 		const messageHistoryWithCorrectFormat = makeAzureOpenAIMessageFormat(messageHistoryAtIndex);
-		const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=2024-02-15-preview`, {
+		const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${settings.general.model}/chat/completions?api-version=2024-02-15-preview`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
