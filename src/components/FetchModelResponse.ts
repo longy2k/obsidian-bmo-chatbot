@@ -1,10 +1,10 @@
-import { MarkdownRenderer, Notice, requestUrl, setIcon } from 'obsidian';
-import BMOGPT, { BMOSettings } from '../main';
-import { messageHistory } from '../view';
-import { addMessage, addParagraphBreaks, updateUnresolvedInternalLinks } from './chat/Message';
-import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
-import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
-import { getPrompt } from './chat/Prompt';
+import {MarkdownRenderer, Notice, requestUrl, setIcon} from 'obsidian';
+import BMOGPT, {BMOSettings} from '../main';
+import {messageHistory} from '../view';
+import {addMessage, addParagraphBreaks, updateUnresolvedInternalLinks} from './chat/Message';
+import {displayErrorBotMessage, displayLoadingBotMessage} from './chat/BotMessage';
+import {getActiveFileContent, getCurrentNoteContent} from './editor/ReferenceCurrentNote';
+import {getPrompt} from './chat/Prompt';
 
 let abortController: AbortController | null = null;
 
@@ -1721,6 +1721,41 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
     }
 }
 
+function isByteArray(obj: any): obj is Uint8Array {
+	return "byteLength" in obj
+}
+
+function makeAzureOpenAIMessageFormat(messageHistoryAtIndex: { role: string; content: string; images?: Uint8Array[] | string[] }[]) {
+	return messageHistoryAtIndex.map(({role, content, images}) => {
+		const result: ({ type: "text", text: string } | {
+			type: "image_url",
+			image_url: { url: string }
+		})[] = [{type: "text", text: content}]
+
+		if (images != null) {
+			images.map(e => {
+				if (!isByteArray(e)) return e
+
+				let binaryData = "";
+				const length = e.byteLength
+
+				for (let i = 0; i < length; i++) {
+					binaryData += String.fromCharCode(e[i]);
+				}
+
+				return btoa(binaryData)
+			}).forEach(image => result.push({
+				type: "image_url",
+				image_url: {url: image}
+			}))
+		}
+		return {
+			role,
+			content: result
+		}
+	});
+}
+
 export async function fetchAzureOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
 	abortController = new AbortController();
 
@@ -1761,6 +1796,7 @@ export async function fetchAzureOpenAIAPIResponseStream(plugin: BMOGPT, settings
 
 	try {
 		const {azureOpenAIBaseUrl, deploymentName, APIKey} = plugin.settings.APIConnections.azureOpenAI
+		const messageHistoryWithCorrectFormat = makeAzureOpenAIMessageFormat(messageHistoryAtIndex);
 		const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=2024-02-15-preview`, {
 			method: "POST",
 			headers: {
@@ -1773,9 +1809,12 @@ export async function fetchAzureOpenAIAPIResponseStream(plugin: BMOGPT, settings
 				messages: [
 					{
 						role: "system",
-						content: settings.general.system_role + prompt + referenceCurrentNoteContent
+						content: [{
+							type: "text",
+							text: settings.general.system_role + prompt + referenceCurrentNoteContent
+						}]
 					},
-					...messageHistoryAtIndex
+					...messageHistoryWithCorrectFormat
 				]
 			}),
 			signal: abortController.signal
@@ -1783,6 +1822,8 @@ export async function fetchAzureOpenAIAPIResponseStream(plugin: BMOGPT, settings
 
 
 		if (!response.ok) {
+			console.error("Response body", await response.json())
+			console.error("Attempted to send", messageHistoryWithCorrectFormat)
 			new Notice(`HTTP error! Status: ${response.status}`);
 			throw new Error(`HTTP error! Status: ${response.status}`);
 		}
@@ -1976,6 +2017,7 @@ export async function fetchAzureOpenAIResponse(plugin: BMOGPT, settings: BMOSett
 
 	try {
 		const {azureOpenAIBaseUrl, deploymentName, APIKey} = plugin.settings.APIConnections.azureOpenAI
+		const messageHistoryWithCorrectFormat = makeAzureOpenAIMessageFormat(messageHistoryAtIndex);
 		const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=2024-02-15-preview`, {
 			method: "POST",
 			headers: {
@@ -1988,9 +2030,12 @@ export async function fetchAzureOpenAIResponse(plugin: BMOGPT, settings: BMOSett
 				messages: [
 					{
 						role: "system",
-						content: settings.general.system_role + prompt + referenceCurrentNoteContent
+						content: [{
+							type: "text",
+							text: settings.general.system_role + prompt + referenceCurrentNoteContent
+						}]
 					},
-					...messageHistoryAtIndex
+					...messageHistoryWithCorrectFormat
 				]
 			}),
 			signal: abortController.signal
@@ -2672,7 +2717,7 @@ function filterMessageHistory(messageHistory: { role: string; content: string; i
     return filteredMessageHistory;
 }
 
-function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; }[]) {
+function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; images?: Uint8Array[] | string[] }[]) {
     const result = [];
     let foundUserMessage = false;
 
