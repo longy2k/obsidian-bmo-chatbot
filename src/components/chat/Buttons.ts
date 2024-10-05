@@ -1,7 +1,22 @@
 import { MarkdownRenderer, Modal, Notice, TFile, setIcon } from 'obsidian';
 import BMOGPT, { BMOSettings, checkActiveFile } from 'src/main';
 import { ANTHROPIC_MODELS, OPENAI_MODELS, activeEditor, fileNameMessageHistoryJson, lastCursorPosition, lastCursorPositionFile, messageHistory } from 'src/view';
-import { fetchOpenAIAPIResponseStream, fetchOpenAIAPIResponse, fetchOllamaResponse, fetchOllamaResponseStream, fetchAnthropicResponse, fetchRESTAPIURLResponse, fetchRESTAPIURLResponseStream, fetchMistralResponseStream, fetchMistralResponse, fetchGoogleGeminiResponse, fetchOpenRouterResponseStream, fetchOpenRouterResponse, fetchGoogleGeminiResponseStream } from '../FetchModelResponse';
+import {
+	fetchOpenAIAPIResponseStream,
+	fetchOpenAIAPIResponse,
+	fetchOllamaResponse,
+	fetchOllamaResponseStream,
+	fetchAnthropicResponse,
+	fetchRESTAPIURLResponse,
+	fetchRESTAPIURLResponseStream,
+	fetchMistralResponseStream,
+	fetchMistralResponse,
+	fetchGoogleGeminiResponse,
+	fetchOpenRouterResponseStream,
+	fetchOpenRouterResponse,
+	fetchGoogleGeminiResponseStream,
+	fetchAzureOpenAIResponse, fetchAzureOpenAIAPIResponseStream
+} from '../FetchModelResponse';
 import { getActiveFileContent } from '../editor/ReferenceCurrentNote';
 import { addParagraphBreaks } from './Message';
 
@@ -43,8 +58,13 @@ export function regenerateUserButton(plugin: BMOGPT, settings: BMOSettings) {
                     new Notice('Error occurred while fetching completion: ' + error.message);
                     console.log(error.message);
                 }
-            }
-            else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
+            } else if (settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.includes(settings.general.model)) {
+				if (settings.APIConnections.azureOpenAI.enableStream) {
+					await fetchAzureOpenAIAPIResponseStream(plugin, settings, index)
+				} else {
+					await fetchAzureOpenAIResponse(plugin, settings, index);
+				}
+			} else if (settings.OllamaConnection.RESTAPIURL && settings.OllamaConnection.ollamaModels.includes(settings.general.model)) {
                 if (settings.OllamaConnection.enableStream) {
                     await fetchOllamaResponseStream(plugin, settings, index);
                 }

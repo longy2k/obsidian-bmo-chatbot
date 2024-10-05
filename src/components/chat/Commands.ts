@@ -228,6 +228,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
     const googleGeminiModels = settings.APIConnections.googleGemini.geminiModels.map(model => model);
     const mistralModels = settings.APIConnections.mistral.mistralModels.map(model => model);
     const openAIBaseModels = settings.APIConnections.openAI.openAIBaseModels.map(model => model);
+	const azureOpenAIModels = settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.map(model => model)
     const openRouterModels = settings.APIConnections.openRouter.openRouterModels.map(model => model);
 
     // Combine all models
@@ -238,6 +239,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
       ...settings.APIConnections.googleGemini.geminiModels,
       ...settings.APIConnections.mistral.mistralModels,
       ...settings.APIConnections.openAI.openAIBaseModels,
+      ...settings.APIConnections.azureOpenAI.azureOpenAIBaseModels,
       ...settings.APIConnections.openRouter.openRouterModels
   ];
   
@@ -286,6 +288,7 @@ export async function commandModel(input: string, settings: BMOSettings, plugin:
       { header: 'Google Gemini Models', items: googleGeminiModels },
       { header: 'Mistral Models', items: mistralModels },
       { header: 'OpenAI-Based Models', items: openAIBaseModels },
+      { header: "Azure OpenAI Models", items: azureOpenAIModels },
       { header: 'OpenRouter Models', items: openRouterModels }
     ];
     

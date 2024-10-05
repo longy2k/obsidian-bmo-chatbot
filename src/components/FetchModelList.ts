@@ -136,6 +136,21 @@ export async function fetchOpenAIBaseModels(plugin: BMOGPT) {
 
 }
 
+export async function fetchAzureOpenAIBaseModels(plugin: BMOGPT): Promise<string[]> {
+	const {azureOpenAIBaseUrl, APIKey} = plugin.settings.APIConnections.azureOpenAI
+	const response = await requestUrl({
+		url: `${azureOpenAIBaseUrl}/openai/deployments?api-version=2022-12-01`,
+		method: "GET",
+		headers: {
+			"Content-Type": "application/json",
+			"api-key": APIKey
+		}
+	})
+
+	return response.json.data.map((e: any) => e.id)
+}
+
+
 export async function fetchOpenRouterModels(plugin: BMOGPT) {
     try {
         const response = await requestUrl({

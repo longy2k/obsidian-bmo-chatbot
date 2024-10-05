@@ -1,6 +1,15 @@
 import { MarkdownPostProcessorContext, MarkdownRenderer, Plugin } from 'obsidian';
 import { BMOSettings } from 'src/main';
-import { fetchAnthropicResponseEditor, fetchOllamaResponseEditor, fetchRESTAPIURLDataEditor, fetchGoogleGeminiDataEditor, fetchMistralDataEditor, fetchOpenAIBaseAPIResponseEditor, fetchOpenRouterEditor } from '../FetchModelEditor';
+import {
+	fetchAnthropicResponseEditor,
+	fetchOllamaResponseEditor,
+	fetchRESTAPIURLDataEditor,
+	fetchGoogleGeminiDataEditor,
+	fetchMistralDataEditor,
+	fetchOpenAIBaseAPIResponseEditor,
+	fetchOpenRouterEditor,
+	fetchAzureOpenAIBaseAPIResponseEditor
+} from '../FetchModelEditor';
 
 export function bmoCodeBlockProcessor(plugin: Plugin, settings: BMOSettings) {
     let previousPrompt = '';
@@ -178,10 +187,14 @@ export function bmoCodeBlockProcessor(plugin: Plugin, settings: BMOSettings) {
                 } else if (settings.APIConnections.mistral.mistralModels.includes(modelName)) {
                     modelResponse = await fetchMistralDataEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
                 } else if (settings.APIConnections.openAI.openAIBaseModels.includes(modelName)) {
-                    modelResponse = await fetchOpenAIBaseAPIResponseEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
-                } else if (settings.APIConnections.openRouter.openRouterModels.includes(modelName)) {
+					modelResponse = await fetchOpenAIBaseAPIResponseEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
+				} else if (settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.includes(modelName)) {
+					modelResponse = await fetchAzureOpenAIBaseAPIResponseEditor(settings, prompt, temperature, maxTokens, signal) || contentToRender;
+				} else if (settings.APIConnections.openRouter.openRouterModels.includes(modelName)) {
                     modelResponse = await fetchOpenRouterEditor(settings, prompt, modelName, temperature, maxTokens, signal) || contentToRender;
-                } else {
+                } else if (settings.APIConnections.azureOpenAI.azureOpenAIBaseModels.includes(modelName)) {
+					modelResponse = await fetchAzureOpenAIBaseAPIResponseEditor(settings, prompt, temperature, maxTokens, signal)
+				} else {
                     bmoGenerationNotice.textContent = 'Model not found.';
                     bmoGenerationNotice.style.color = '#ff6666';
                     bmoGenerationNotice.style.display = 'inline';

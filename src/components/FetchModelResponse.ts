@@ -1,10 +1,10 @@
-import { MarkdownRenderer, Notice, requestUrl, setIcon } from 'obsidian';
-import BMOGPT, { BMOSettings } from '../main';
-import { messageHistory } from '../view';
-import { addMessage, addParagraphBreaks, updateUnresolvedInternalLinks } from './chat/Message';
-import { displayErrorBotMessage, displayLoadingBotMessage } from './chat/BotMessage';
-import { getActiveFileContent, getCurrentNoteContent } from './editor/ReferenceCurrentNote';
-import { getPrompt } from './chat/Prompt';
+import {MarkdownRenderer, Notice, requestUrl, setIcon} from 'obsidian';
+import BMOGPT, {BMOSettings} from '../main';
+import {messageHistory} from '../view';
+import {addMessage, addParagraphBreaks, updateUnresolvedInternalLinks} from './chat/Message';
+import {displayErrorBotMessage, displayLoadingBotMessage} from './chat/BotMessage';
+import {getActiveFileContent, getCurrentNoteContent} from './editor/ReferenceCurrentNote';
+import {getPrompt} from './chat/Prompt';
 
 let abortController: AbortController | null = null;
 
@@ -1721,6 +1721,409 @@ export async function fetchOpenAIAPIResponse(plugin: BMOGPT, settings: BMOSettin
     }
 }
 
+function isByteArray(obj: any): obj is Uint8Array {
+	return "byteLength" in obj
+}
+
+function makeAzureOpenAIMessageFormat(messageHistoryAtIndex: { role: string; content: string; images?: Uint8Array[] | string[] }[]) {
+	return messageHistoryAtIndex.map(({role, content, images}) => {
+		const result: ({ type: "text", text: string } | {
+			type: "image_url",
+			image_url: { url: string }
+		})[] = [{type: "text", text: content}]
+
+		if (images != null) {
+			images.map(e => {
+				if (!isByteArray(e)) return e
+
+				let binaryData = "";
+				const length = e.byteLength
+
+				for (let i = 0; i < length; i++) {
+					binaryData += String.fromCharCode(e[i]);
+				}
+
+				return btoa(binaryData)
+			}).forEach(image => result.push({
+				type: "image_url",
+				image_url: {url: image}
+			}))
+		}
+		return {
+			role,
+			content: result
+		}
+	});
+}
+
+export async function fetchAzureOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
+	abortController = new AbortController();
+
+	const prompt = await getPrompt(plugin, settings);
+
+	let message = '';
+	let isScroll = false;
+
+	const filteredMessageHistory = filterMessageHistory(messageHistory);
+	const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+
+	const messageContainerEl = document.querySelector('#messageContainer');
+	const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+	const botMessageDiv = displayLoadingBotMessage(settings);
+
+	messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+	botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+	const targetUserMessage = messageContainerElDivs[index];
+	const targetBotMessage = targetUserMessage.nextElementSibling;
+
+	await getActiveFileContent(plugin, settings);
+	const referenceCurrentNoteContent = getCurrentNoteContent();
+
+	const submitButton = document.querySelector('.submit-button') as HTMLElement;
+	// Change the submit button to a stop button
+	setIcon(submitButton, 'square');
+	submitButton.title = 'stop';
+	submitButton.addEventListener('click', () => {
+		if (submitButton.title === 'stop') {
+			const controller = getAbortController();
+			if (controller) {
+				controller.abort();
+			}
+		}
+	});
+
+	try {
+		const {azureOpenAIBaseUrl, APIKey} = plugin.settings.APIConnections.azureOpenAI
+		const messageHistoryWithCorrectFormat = makeAzureOpenAIMessageFormat(messageHistoryAtIndex);
+		const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${settings.general.model}/chat/completions?api-version=2024-02-15-preview`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"api-key": APIKey
+			},
+			body: JSON.stringify({
+				max_tokens: parseInt(settings.general.max_tokens),
+				stream: true,
+				messages: [
+					{
+						role: "system",
+						content: [{
+							type: "text",
+							text: settings.general.system_role + prompt + referenceCurrentNoteContent
+						}]
+					},
+					...messageHistoryWithCorrectFormat
+				]
+			}),
+			signal: abortController.signal
+		})
+
+
+		if (!response.ok) {
+			console.error("Response body", await response.json())
+			console.error("Attempted to send", messageHistoryWithCorrectFormat)
+			new Notice(`HTTP error! Status: ${response.status}`);
+			throw new Error(`HTTP error! Status: ${response.status}`);
+		}
+
+		if (!response.body) {
+			new Notice('Response body is null or undefined.');
+			throw new Error('Response body is null or undefined.');
+		}
+
+		const reader = response.body.getReader();
+		const decoder = new TextDecoder();
+		let reading = true;
+
+		while (reading) {
+			const { done, value } = await reader.read();
+			if (done) {
+				reading = false;
+				break;
+			}
+
+			const chunk = decoder.decode(value, { stream: true }) || '';
+			const parts = chunk.split('\n');
+
+
+			for (const part of parts) {
+				if (part.includes('data: [DONE]')) {
+					reading = false;
+					break;
+				}
+
+				try {
+					const trimmedPart = part.replace(/^data: /, '').trim();
+					if (trimmedPart) {
+						const data = JSON.parse(trimmedPart);
+						if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+							const content = data.choices[0].delta.content;
+							message += content;
+						}
+					}
+				} catch (err) {
+					console.error('Error parsing JSON:', err);
+					console.log('Part with error:', part);
+				}
+			}
+
+			if (messageContainerEl) {
+
+				const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+				const loadingEl = targetBotMessage?.querySelector('#loading');
+
+				if (messageBlock) {
+					if (loadingEl) {
+						targetBotMessage?.removeChild(loadingEl);
+					}
+
+					// Clear the messageBlock for re-rendering
+					messageBlock.innerHTML = '';
+
+					// DocumentFragment to render markdown off-DOM
+					const fragment = document.createDocumentFragment();
+					const tempContainer = document.createElement('div');
+					fragment.appendChild(tempContainer);
+
+					// Render the accumulated message to the temporary container
+					await MarkdownRenderer.render(plugin.app, message, tempContainer, '/', plugin);
+
+					// Once rendering is complete, move the content to the actual message block
+					while (tempContainer.firstChild) {
+						messageBlock.appendChild(tempContainer.firstChild);
+					}
+
+					addParagraphBreaks(messageBlock);
+					updateUnresolvedInternalLinks(plugin, messageBlock);
+
+					const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+					copyCodeBlocks.forEach((copyCodeBlock) => {
+						copyCodeBlock.textContent = 'Copy';
+						setIcon(copyCodeBlock, 'copy');
+					});
+				}
+
+				messageContainerEl.addEventListener('wheel', (event: WheelEvent) => {
+					// If the user scrolls up or down, stop auto-scrolling
+					if (event.deltaY < 0 || event.deltaY > 0) {
+						isScroll = true;
+					}
+				});
+
+				if (!isScroll) {
+					targetBotMessage?.scrollIntoView({ behavior: 'auto', block: 'start' });
+				}
+			}
+
+			if (abortController.signal.aborted) {
+				new Notice('Stream stopped.');
+				break;
+			}
+		}
+
+		// Define regex patterns for the unwanted tags and their content
+		const regexPatterns = [
+			/<block-rendered>[\s\S]*?<\/block-rendered>/g,
+			/<note-rendered>[\s\S]*?<\/note-rendered>/g
+		];
+
+		// Clean the message content by removing the unwanted tags and their content
+		regexPatterns.forEach(pattern => {
+			message = message.replace(pattern, '').trim();
+		});
+
+		addMessage(plugin, message.trim(), 'botMessage', settings, index);
+
+	} catch (error) {
+		if (error.name === 'AbortError') {
+			// Request was aborted
+			if (messageContainerEl) {
+				const targetUserMessage = messageContainerElDivs[index];
+				const targetBotMessage = targetUserMessage.nextElementSibling;
+
+				const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+				const loadingEl = targetBotMessage?.querySelector('#loading');
+
+				if (messageBlock && loadingEl) {
+					targetBotMessage?.removeChild(loadingEl);
+					messageBlock.textContent = 'SYSTEM: Response aborted.';
+				}
+			}
+		} else {
+			// Handle other errors
+			const targetUserMessage = messageContainerElDivs[index];
+			const targetBotMessage = targetUserMessage.nextElementSibling;
+			targetBotMessage?.remove();
+
+			const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+			const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
+			messageContainer.appendChild(botMessageDiv);
+		}
+
+		if (message.trim() === '') {
+			addMessage(plugin, 'SYSTEM: Response aborted.', 'botMessage', settings, index); // This will save mid-stream conversation.
+		} else {
+			addMessage(plugin, message.trim(), 'botMessage', settings, index); // This will save mid-stream conversation.
+		}
+		new Notice('Stream stopped.');
+		console.error('Error fetching chat response from OpenAI-Based Models:', error);
+	} finally {
+		// Reset the abort controller
+		abortController = null;
+	}
+
+	// Change the submit button back to a send button
+	submitButton.textContent = 'send';
+	setIcon(submitButton, 'arrow-up');
+	submitButton.title = 'send';
+}
+
+
+export async function fetchAzureOpenAIResponse(plugin: BMOGPT, settings: BMOSettings, index: number) {
+	abortController = new AbortController();
+
+	const prompt = await getPrompt(plugin, settings);
+
+	const filteredMessageHistory = filterMessageHistory(messageHistory);
+	const messageHistoryAtIndex = removeConsecutiveUserRoles(filteredMessageHistory);
+
+	const messageContainerEl = document.querySelector('#messageContainer');
+	const messageContainerElDivs = document.querySelectorAll('#messageContainer div.userMessage, #messageContainer div.botMessage');
+
+	const botMessageDiv = displayLoadingBotMessage(settings);
+
+	messageContainerEl?.insertBefore(botMessageDiv, messageContainerElDivs[index+1]);
+	botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+	await getActiveFileContent(plugin, settings);
+	const referenceCurrentNoteContent = getCurrentNoteContent();
+
+	const submitButton = document.querySelector('.submit-button') as HTMLElement;
+
+	// Change button text to "Cancel"
+	setIcon(submitButton, 'square');
+	submitButton.title = 'stop';
+
+	submitButton.addEventListener('click', async () => {
+		if (submitButton.title === 'stop') {
+			const controller = getAbortController();
+			if (controller) {
+				controller.abort();
+			}
+		}
+	});
+
+	try {
+		const {azureOpenAIBaseUrl, APIKey} = plugin.settings.APIConnections.azureOpenAI
+		const messageHistoryWithCorrectFormat = makeAzureOpenAIMessageFormat(messageHistoryAtIndex);
+		const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${settings.general.model}/chat/completions?api-version=2024-02-15-preview`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"api-key": APIKey
+			},
+			body: JSON.stringify({
+				max_tokens: parseInt(settings.general.max_tokens),
+				stream: false,
+				messages: [
+					{
+						role: "system",
+						content: [{
+							type: "text",
+							text: settings.general.system_role + prompt + referenceCurrentNoteContent
+						}]
+					},
+					...messageHistoryWithCorrectFormat
+				]
+			}),
+			signal: abortController.signal
+		});
+
+
+		const data = await response.json();
+		let message = data.choices[0].message.content || '';
+
+		if (messageContainerEl) {
+			const targetUserMessage = messageContainerElDivs[index];
+			const targetBotMessage = targetUserMessage.nextElementSibling;
+
+			const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+			const loadingEl = targetBotMessage?.querySelector('#loading');
+
+			if (messageBlock) {
+				if (loadingEl) {
+					targetBotMessage?.removeChild(loadingEl);
+				}
+
+				await MarkdownRenderer.render(plugin.app, message || '', messageBlock as HTMLElement, '/', plugin);
+
+				addParagraphBreaks(messageBlock);
+				updateUnresolvedInternalLinks(plugin, messageBlock);
+
+				const copyCodeBlocks = messageBlock.querySelectorAll('.copy-code-button') as NodeListOf<HTMLElement>;
+				copyCodeBlocks.forEach((copyCodeBlock) => {
+					copyCodeBlock.textContent = 'Copy';
+					setIcon(copyCodeBlock, 'copy');
+				});
+
+				targetBotMessage?.appendChild(messageBlock);
+			}
+			targetBotMessage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+
+		if (message != null) {
+			// Define regex patterns for the unwanted tags and their content
+			const regexPatterns = [
+				/<block-rendered>[\s\S]*?<\/block-rendered>/g,
+				/<note-rendered>[\s\S]*?<\/note-rendered>/g,
+				/<note-rendered>[\s\S]*?<\/note-rendered>/g
+			];
+
+			// Clean the message content by removing the unwanted tags and their content
+			regexPatterns.forEach(pattern => {
+				message = message.replace(pattern, '').trim();
+			});
+			addMessage(plugin, message.trim(), 'botMessage', settings, index);
+		}
+	} catch(error) {
+		if (error.name === 'AbortError') {
+			// Request was aborted, handle accordingly
+			console.log('Request aborted');
+			setIcon(submitButton, 'arrow-up');
+			submitButton.title = 'send';
+
+			// Request was aborted
+			if (messageContainerEl) {
+				const targetUserMessage = messageContainerElDivs[index];
+				const targetBotMessage = targetUserMessage.nextElementSibling;
+
+				const messageBlock = targetBotMessage?.querySelector('.messageBlock');
+				const loadingEl = targetBotMessage?.querySelector('#loading');
+
+				if (messageBlock && loadingEl) {
+					targetBotMessage?.removeChild(loadingEl);
+					messageBlock.textContent = 'SYSTEM: Response aborted.';
+					addMessage(plugin, 'SYSTEM: Response aborted.', 'botMessage', settings, index);
+				}
+			}
+		} else {
+			// Handle other errors
+			const targetUserMessage = messageContainerElDivs[index];
+			const targetBotMessage = targetUserMessage.nextElementSibling;
+			targetBotMessage?.remove();
+
+			const messageContainer = document.querySelector('#messageContainer') as HTMLDivElement;
+			const botMessageDiv = displayErrorBotMessage(plugin, settings, messageHistory, error);
+			messageContainer.appendChild(botMessageDiv);
+		}
+	} finally {
+		// Reset the abort controller
+		abortController = null;
+	}
+}
+
 // Fetch OpenAI-Based API Stream
 export async function fetchOpenAIAPIResponseStream(plugin: BMOGPT, settings: BMOSettings, index: number) {
     abortController = new AbortController();
@@ -2314,7 +2717,7 @@ function filterMessageHistory(messageHistory: { role: string; content: string; i
     return filteredMessageHistory;
 }
 
-function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; }[]) {
+function removeConsecutiveUserRoles(messageHistory: { role: string; content: string; images?: Uint8Array[] | string[] }[]) {
     const result = [];
     let foundUserMessage = false;
 

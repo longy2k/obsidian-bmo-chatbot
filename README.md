@@ -131,6 +131,13 @@ To start using the plugin, enable it in your settings menu and insert an API key
     -   gpt-4-turbo
     -   gpt-4o
     -   gpt-4o-mini
+- Azure OpenAI
+	-   gpt-3.5-turbo
+	-   gpt-4
+	-   gpt-4-32k
+	-   gpt-4-turbo
+	-   gpt-4o
+	-   gpt-4o-mini
 -   Any Openrouter provided models.
 
 ## Other Notes

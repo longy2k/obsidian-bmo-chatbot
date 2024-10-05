@@ -1,5 +1,5 @@
-import { requestUrl } from 'obsidian';
-import { BMOSettings } from 'src/main';
+import {requestUrl} from 'obsidian';
+import {BMOSettings} from 'src/main';
 
 // Request response from Ollama REST API URL (editor)
 export async function fetchOllamaResponseEditor(settings: BMOSettings, prompt: string, model?: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
@@ -218,6 +218,31 @@ export async function fetchOpenAIBaseAPIResponseEditor(settings: BMOSettings, pr
     const message = data.choices[0].message.content || '';
 
     return message;
+}
+
+// Fetch Azure OpenAI-Based API Editor
+export async function fetchAzureOpenAIBaseAPIResponseEditor(settings: BMOSettings, prompt: string, temperature?: string, maxTokens?: string, signal?: AbortSignal) {
+	const {azureOpenAIBaseUrl, APIKey} = settings.APIConnections.azureOpenAI
+	const response = await fetch(`${azureOpenAIBaseUrl}/openai/deployments/${settings.general.model}/chat/completions?api-version=2024-02-15-preview`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'api-key': APIKey,
+		},
+		body: JSON.stringify({
+			max_tokens: parseInt(maxTokens || settings.general.max_tokens),
+			temperature: parseFloat(temperature || settings.general.temperature),
+			top_p: 0.95,
+			messages: [
+				{ role: 'system', content: [{type: "text", content: settings.editor.systen_role}] },
+				{ role: 'user', content: [{type: "text", content: prompt}] }
+			],
+		}),
+		signal: signal,
+	});
+
+	const data = await response.json();
+	return data.choices[0].message.content || '';
 }
 
 // Request response from openai-based rest api url (editor)
